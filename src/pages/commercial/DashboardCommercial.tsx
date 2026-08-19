@@ -4,9 +4,7 @@ import {
   Users, 
   CalendarClock, 
   CheckCircle2, 
-  TrendingUp, 
   AlertTriangle, 
-  PhoneCall, 
   MessageSquare, 
   Plus, 
   ArrowUpRight 
@@ -14,13 +12,13 @@ import {
 import { Link } from 'react-router-dom';
 
 export const DashboardCommercial: React.FC = () => {
-  const { user, prospects, relances, currency } = useAuth();
+  const { user, myProspects, myRelances } = useAuth();
 
-  // Metrics calculation
-  const totalProspects = prospects.length;
-  const relancesAujourdhui = relances.filter(r => r.date === new Date().toISOString().split('T')[0]);
-  const relancesEnRetard = relances.filter(r => r.statut === 'en_retard');
-  const ventesConclues = prospects.filter(p => p.statut_pipeline === 'gagne').length;
+  // Strict CDC 3.2: Metrics calculation based ONLY on assigned portfolio
+  const totalProspects = myProspects.length;
+  const relancesAujourdhui = myRelances.filter(r => r.date === new Date().toISOString().split('T')[0]);
+  const relancesEnRetard = myRelances.filter(r => r.statut === 'en_retard');
+  const ventesConclues = myProspects.filter(p => p.statut_pipeline === 'gagne').length;
 
   return (
     <div className="space-y-6">
@@ -31,7 +29,7 @@ export const DashboardCommercial: React.FC = () => {
             Bonjour, {user?.prenom || 'Commercial'} 👋
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Vue d'ensemble de vos priorités et relances aujourd'hui
+            Mon portefeuille commercial : vos priorités et relances aujourd'hui
           </p>
         </div>
 
@@ -46,11 +44,11 @@ export const DashboardCommercial: React.FC = () => {
         </div>
       </div>
 
-      {/* Metrics Cards Grid */}
+      {/* Metrics Cards Grid (Personal Commercial Figures Only) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 card-lift">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Mes Prospects</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Mes Prospects Attribués</span>
             <div className="rounded-xl bg-blue-500/10 p-2 text-blue-500">
               <Users className="h-5 w-5" />
             </div>
@@ -58,14 +56,14 @@ export const DashboardCommercial: React.FC = () => {
           <div className="mt-4 flex items-baseline justify-between">
             <span className="text-2xl sm:text-3xl font-extrabold text-foreground">{totalProspects}</span>
             <span className="flex items-center text-xs font-bold text-emerald-500">
-              <ArrowUpRight className="h-3.5 w-3.5" /> +15%
+              <ArrowUpRight className="h-3.5 w-3.5" /> Mes cibles
             </span>
           </div>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 card-lift">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Relances aujourd'hui</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Mes Relances Auj.</span>
             <div className="rounded-xl bg-amber-500/10 p-2 text-amber-500">
               <CalendarClock className="h-5 w-5" />
             </div>
@@ -80,20 +78,20 @@ export const DashboardCommercial: React.FC = () => {
 
         <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 card-lift">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Relances en retard</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Mes Relances en Retard</span>
             <div className="rounded-xl bg-rose-500/10 p-2 text-rose-500">
               <AlertTriangle className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
             <span className="text-2xl sm:text-3xl font-extrabold text-rose-500">{relancesEnRetard.length}</span>
-            <span className="text-xs font-bold text-rose-500">Action urgente</span>
+            <span className="text-xs font-bold text-rose-500">Urgent</span>
           </div>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 card-lift">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ventes Conclues</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Mes Ventes Conclues</span>
             <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-500">
               <CheckCircle2 className="h-5 w-5" />
             </div>
@@ -112,17 +110,17 @@ export const DashboardCommercial: React.FC = () => {
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-foreground">Mes Priorités du Jour</h2>
             <Link to="/app/relances" className="text-xs font-bold text-primary hover:underline">
-              Voir toutes les relances →
+              Voir toutes mes relances →
             </Link>
           </div>
 
           <div className="space-y-3">
-            {relances.length === 0 ? (
+            {myRelances.length === 0 ? (
               <div className="p-8 rounded-2xl border border-dashed border-border text-center">
-                <p className="text-xs text-muted-foreground">Aucune relance programmée pour le moment.</p>
+                <p className="text-xs text-muted-foreground">Aucune relance programmée pour votre portefeuille aujourd'hui.</p>
               </div>
             ) : (
-              relances.map((relance) => (
+              myRelances.map((relance) => (
                 <div
                   key={relance.id}
                   className={`p-4 rounded-2xl border bg-card transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
@@ -144,7 +142,7 @@ export const DashboardCommercial: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <a
                       href={`https://wa.me/${relance.prospect_nom}?text=${encodeURIComponent(
-                        `Bonjour ${relance.prospect_nom}, je suis Moussa de Faciloop. Je vous relance au sujet de notre opportunité.`
+                        `Bonjour ${relance.prospect_nom}, je suis ${user?.prenom || 'commercial'} de Faciloop. Je vous relance au sujet de notre opportunité.`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -169,12 +167,12 @@ export const DashboardCommercial: React.FC = () => {
 
         {/* Quick Pipelines Overview Column */}
         <div className="space-y-4">
-          <h2 className="text-base font-bold text-foreground">Aperçu du Pipeline</h2>
+          <h2 className="text-base font-bold text-foreground">Mon Pipeline Personnel</h2>
           <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
             <div className="flex items-center justify-between text-xs font-semibold">
-              <span className="text-muted-foreground">Prospects Nouveaux</span>
+              <span className="text-muted-foreground">Nouveaux Prospects</span>
               <span className="font-bold text-foreground">
-                {prospects.filter(p => p.statut_pipeline === 'nouveau').length}
+                {myProspects.filter(p => p.statut_pipeline === 'nouveau').length}
               </span>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
@@ -184,7 +182,7 @@ export const DashboardCommercial: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-semibold">
               <span className="text-muted-foreground">À contacter / Démo</span>
               <span className="font-bold text-foreground">
-                {prospects.filter(p => ['a_contacter', 'demo_rdv'].includes(p.statut_pipeline)).length}
+                {myProspects.filter(p => ['a_contacter', 'demo_rdv'].includes(p.statut_pipeline)).length}
               </span>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
@@ -194,7 +192,7 @@ export const DashboardCommercial: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-semibold">
               <span className="text-muted-foreground">Devis Envoyés</span>
               <span className="font-bold text-foreground">
-                {prospects.filter(p => p.statut_pipeline === 'devis_envoye').length}
+                {myProspects.filter(p => p.statut_pipeline === 'devis_envoye').length}
               </span>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
@@ -204,7 +202,7 @@ export const DashboardCommercial: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-semibold">
               <span className="text-muted-foreground">Gagnés (Convertis)</span>
               <span className="font-bold text-emerald-500">
-                {prospects.filter(p => p.statut_pipeline === 'gagne').length}
+                {myProspects.filter(p => p.statut_pipeline === 'gagne').length}
               </span>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
@@ -216,7 +214,7 @@ export const DashboardCommercial: React.FC = () => {
                 to="/app/pipeline"
                 className="w-full py-2.5 rounded-xl border border-primary text-primary font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-primary/10 transition-all"
               >
-                <span>Ouvrir le Kanban 12 colonnes</span>
+                <span>Ouvrir mon Kanban</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
             </div>

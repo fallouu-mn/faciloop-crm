@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { UserRole, Organization, Commercial, Prospect, Relance, Interaction, NotificationItem, ClientFaciloop } from '../types/crm';
 import { mockOrganizations, mockCommerciaux, mockProspects, mockRelances, mockInteractions, mockNotifications, mockClients } from '../lib/mockData';
 
@@ -23,30 +23,35 @@ interface AuthContextType {
   logout: () => void;
   switchOrganization: (orgId: string) => void;
   
-  // State getters & mutators for real-time reactivity
+  // All raw state data (Admin Org & Super Admin view)
   prospects: Prospect[];
+  relances: Relance[];
+  interactions: Interaction[];
+  notifications: NotificationItem[];
+  clients: ClientFaciloop[];
+
+  // Filtered views strictly for Commercial role (CDC 3.2 Isolation)
+  myProspects: Prospect[];
+  myRelances: Relance[];
+  myInteractions: Interaction[];
+
+  // State mutators
   addProspect: (p: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>) => { success: boolean; duplicate?: boolean; prospect?: Prospect };
   updateProspectStatus: (id: string, newStep: string, motifPerte?: string) => void;
   deleteProspect: (id: string) => void;
   
-  relances: Relance[];
   addRelance: (r: Omit<Relance, 'id' | 'created_at' | 'organization_id'>) => void;
   completeRelance: (id: string) => void;
   
-  interactions: Interaction[];
   addInteraction: (i: Omit<Interaction, 'id' | 'created_at' | 'organization_id'>) => void;
-  
-  notifications: NotificationItem[];
   markNotificationAsRead: (id: string) => void;
-  
-  clients: ClientFaciloop[];
   convertProspectToClient: (prospectId: string, formule: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Default session set to commercial Moussa Diop for smooth dev preview
+  // Default session set to commercial Moussa Diop (id: 'comm-1')
   const [user, setUser] = useState<UserSession | null>({
     id: 'comm-1',
     nom: 'Diop',
@@ -80,6 +85,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [interactions, setInteractions] = useState<Interaction[]>(mockInteractions);
   const [notifications, setNotifications] = useState<NotificationItem[]>(mockNotifications);
   const [clients, setClients] = useState<ClientFaciloop[]>(mockClients);
+
+  // CDC 3.2: Filtered lists restricted strictly to user's assigned portfolio if role === 'commercial'
+  const myProspects = useMemo(() => {
+    if (!user) return [];
+    if (user.role === 'commercial') {
+      return prospects.filter(p => p.commercial_id === user.id);
+    }
+    return prospects;
+  }, [prospects, user]);
+
+  const myRelances = useMemo(() => {
+    if (!user) return [];
+    if (user.role === 'commercial') {
+      return relances.filter(r => r.commercial_id === user.id);
+    }
+    return relances;
+  }, [relances, user]);
+
+  const myInteractions = useMemo(() => {
+    if (!user) return [];
+    if (user.role === 'commercial') {
+      return interactions.filter(i => i.commercial_id === user.id);
+    }
+    return interactions;
+  }, [interactions, user]);
 
   const login = async (telephone: string, codeSecret: string): Promise<UserSession | null> => {
     const cleanPhone = telephone.replace(/\s+/g, '');
@@ -152,7 +182,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Anti-Duplicate phone check & add prospect
+  // Anti-Duplicate phone check & add prospect (Automatically assigned to current user)
   const addProspect = (newP: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>) => {
     const cleanNewPhone = newP.telephone.replace(/\s+/g, '');
     const isDuplicate = prospects.some(
@@ -168,6 +198,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...newP,
       id: `prospect-${Date.now()}`,
       organization_id: user?.organizationId || 'org-faciloop-client-1',
+      commercial_id: newP.commercial_id || (user?.role === 'commercial' ? user.id : undefined),
+      commercial_nom: newP.commercial_nom || (user ? `${user.prenom} ${user.nom}` : undefined),
       created_at: new Date().toISOString()
     };
 
@@ -200,6 +232,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...newR,
       id: `relance-${Date.now()}`,
       organization_id: user?.organizationId || 'org-faciloop-client-1',
+      commercial_id: newR.commercial_id || (user?.role === 'commercial' ? user.id : undefined),
       created_at: new Date().toISOString()
     };
     setRelances(prev => [created, ...prev]);
@@ -216,6 +249,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...newI,
       id: `inter-${Date.now()}`,
       organization_id: user?.organizationId || 'org-faciloop-client-1',
+      commercial_id: newI.commercial_id || (user?.role === 'commercial' ? user.id : undefined),
       created_at: new Date().toISOString()
     };
     setInteractions(prev => [created, ...prev]);
@@ -235,7 +269,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: `client-${Date.now()}`,
       organization_id: p.organization_id,
       prospect_id: p.id,
-      commercial_id: p.commercial_id,
+      commercial_id: p.commercial_id || user?.id,
       entreprise: p.entreprise,
       nom_responsable: `${p.prenom || ''} ${p.nom}`.trim(),
       telephone: p.telephone,
@@ -270,17 +304,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         switchOrganization,
         prospects,
+        relances,
+        interactions,
+        notifications,
+        clients,
+        myProspects,
+        myRelances,
+        myInteractions,
         addProspect,
         updateProspectStatus,
         deleteProspect,
-        relances,
         addRelance,
         completeRelance,
-        interactions,
         addInteraction,
-        notifications,
         markNotificationAsRead,
-        clients,
         convertProspectToClient
       }}
     >

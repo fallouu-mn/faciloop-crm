@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Prospect, PipelineStepId, ProspectSource } from '../../types/crm';
+import { ProspectSource } from '../../types/crm';
 import { 
   Users, 
   Search, 
   Plus, 
-  Filter, 
-  Phone, 
-  Building2, 
   AlertTriangle, 
   X, 
   Check, 
   ArrowRight,
-  Eye
+  Eye,
+  Lock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const ProspectsList: React.FC = () => {
-  const { prospects, addProspect } = useAuth();
+  const { user, myProspects, prospects, addProspect } = useAuth();
 
   const [search, setSearch] = useState<string>('');
   const [filterStep, setFilterStep] = useState<string>('all');
@@ -35,7 +33,7 @@ export const ProspectsList: React.FC = () => {
   const [duplicateAlert, setDuplicateAlert] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Phone input duplicate checker
+  // Phone input duplicate checker (checks across whole org for anti-duplicate compliance)
   const handlePhoneChange = (val: string) => {
     setNewPhone(val);
     const clean = val.replace(/\s+/g, '');
@@ -58,7 +56,9 @@ export const ProspectsList: React.FC = () => {
       telephone: newPhone,
       source: newSource,
       formule_envisagee: newFormule,
-      statut_pipeline: 'nouveau'
+      statut_pipeline: 'nouveau',
+      commercial_id: user?.id,
+      commercial_nom: user ? `${user.prenom} ${user.nom}` : undefined
     });
 
     if (res.duplicate) {
@@ -67,10 +67,9 @@ export const ProspectsList: React.FC = () => {
     }
 
     if (res.success) {
-      setSuccessMessage('Prospect créé avec succès !');
+      setSuccessMessage('Prospect créé et attribué à votre portefeuille !');
       setTimeout(() => setSuccessMessage(null), 3000);
       setIsModalOpen(false);
-      // Reset
       setNewNom('');
       setNewPrenom('');
       setNewEntreprise('');
@@ -78,8 +77,8 @@ export const ProspectsList: React.FC = () => {
     }
   };
 
-  // Filtered prospects
-  const filtered = prospects.filter(p => {
+  // CDC 3.2: Filtered strictly on myProspects for Commercial role
+  const filtered = myProspects.filter(p => {
     const matchSearch =
       p.nom.toLowerCase().includes(search.toLowerCase()) ||
       p.entreprise.toLowerCase().includes(search.toLowerCase()) ||
@@ -94,11 +93,18 @@ export const ProspectsList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-            Mes Prospects ({filtered.length})
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+              Mon Portefeuille Prospects ({filtered.length})
+            </h1>
+            {user?.role === 'commercial' && (
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold flex items-center gap-1">
+                <Lock className="w-3 h-3" /> Isolation Active
+              </span>
+            )}
+          </div>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Gérez et qualifiez vos leads commerciaux
+            Vue strictement restreinte à vos prospects attribués ({user?.prenom} {user?.nom})
           </p>
         </div>
 
@@ -170,7 +176,7 @@ export const ProspectsList: React.FC = () => {
               <th className="p-4">Téléphone</th>
               <th className="p-4">Étape Pipeline</th>
               <th className="p-4">Source</th>
-              <th className="p-4">Date création</th>
+              <th className="p-4">Responsable</th>
               <th className="p-4 text-right">Actions</th>
             </tr>
           </thead>
@@ -192,7 +198,7 @@ export const ProspectsList: React.FC = () => {
                   </span>
                 </td>
                 <td className="p-4 capitalize text-muted-foreground">{p.source.replace('_', ' ')}</td>
-                <td className="p-4 text-muted-foreground">{p.created_at.split('T')[0]}</td>
+                <td className="p-4 font-semibold text-primary">{p.commercial_nom || 'Moi'}</td>
                 <td className="p-4 text-right">
                   <Link
                     to={`/app/prospects/${p.id}`}
@@ -247,7 +253,7 @@ export const ProspectsList: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-md bg-card border border-border rounded-3xl p-6 shadow-2xl relative space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground">Nouveau Prospect</h2>
+              <h2 className="text-lg font-bold text-foreground">Nouveau Prospect (Mes Ventes)</h2>
               <button onClick={() => setIsModalOpen(false)} className="rounded-lg p-1 hover:bg-muted">
                 <X className="w-5 h-5" />
               </button>
@@ -257,7 +263,7 @@ export const ProspectsList: React.FC = () => {
             {duplicateAlert && (
               <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 text-xs font-bold flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>Attention : Ce numéro de téléphone existe déjà dans votre CRM !</span>
+                <span>Attention : Ce numéro existe déjà dans l'entreprise !</span>
               </div>
             )}
 
@@ -328,7 +334,7 @@ export const ProspectsList: React.FC = () => {
                 type="submit"
                 className="w-full mt-4 py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all"
               >
-                Créer le prospect
+                Créer et attribuer à mon portefeuille
               </button>
             </form>
           </div>

@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Prospect, MotifPerte } from '../../types/crm';
+import { MotifPerte } from '../../types/crm';
 import { 
-  Kanban, 
   Plus, 
   AlertTriangle, 
   Building2, 
-  Clock, 
   X, 
-  Check, 
   ChevronRight, 
-  ChevronLeft 
+  ChevronLeft,
+  Lock 
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -21,7 +19,7 @@ interface ColumnDef {
 }
 
 export const ProspectKanban: React.FC = () => {
-  const { prospects, updateProspectStatus } = useAuth();
+  const { user, myProspects, updateProspectStatus } = useAuth();
 
   // 12 Pipeline Steps
   const columns: ColumnDef[] = [
@@ -73,11 +71,18 @@ export const ProspectKanban: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-            Pipeline Commercial Kanban (12 Colonnes)
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+              Mon Pipeline Kanban Personnel (12 Colonnes)
+            </h1>
+            {user?.role === 'commercial' && (
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold flex items-center gap-1">
+                <Lock className="w-3 h-3" /> Portefeuille Personnel
+              </span>
+            )}
+          </div>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Faites glisser ou déplacer vos opportunités d'une étape à l'autre
+            Suivi des opportunités attribuées à {user?.prenom} {user?.nom}
           </p>
         </div>
 
@@ -93,7 +98,8 @@ export const ProspectKanban: React.FC = () => {
       {/* 12 Columns Horizontal Scroll Container */}
       <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
         {columns.map((col) => {
-          const colProspects = prospects.filter(p => p.statut_pipeline === col.id);
+          // CDC 3.2: Filtered strictly on myProspects for Commercial role
+          const colProspects = myProspects.filter(p => p.statut_pipeline === col.id);
 
           return (
             <div
@@ -166,14 +172,9 @@ export const ProspectKanban: React.FC = () => {
       {lossModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-sm bg-card border border-border rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-rose-500 font-bold text-sm">
-                <AlertTriangle className="w-5 h-5" />
-                <span>Passage en Prospect Perdu</span>
-              </div>
-              <button onClick={() => setLossModalOpen(false)} className="rounded-lg p-1 hover:bg-muted">
-                <X className="w-5 h-5" />
-              </button>
+            <div className="flex items-center gap-2 text-rose-500 font-bold text-sm">
+              <AlertTriangle className="w-5 h-5" />
+              <span>Passage en Prospect Perdu</span>
             </div>
 
             <p className="text-xs text-muted-foreground">
