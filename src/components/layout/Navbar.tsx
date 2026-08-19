@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { LogOut, Sun, Moon, Bell, Menu, Shield, Globe } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavbarProps {
@@ -10,6 +10,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
   const { user, logout, currency, setCurrency } = useAuth();
+  const navigate = useNavigate();
   const [isDark, setIsDark] = useState<boolean>(true);
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
 
@@ -25,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
   const confirmLogout = () => {
     logout();
     setShowLogoutModal(false);
+    navigate('/login', { replace: true });
   };
 
   return (

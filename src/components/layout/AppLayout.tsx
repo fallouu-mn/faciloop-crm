@@ -3,15 +3,22 @@ import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { GlobalFab } from './GlobalFab';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, Navigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const AppLayout: React.FC = () => {
+  const { user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const location = useLocation();
 
+  // Security Protection: Unauthenticated users are immediately redirected to login
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary/20 selection:text-primary">
-      <Navbar onToggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
+      <Navbar onOpenMobileMenu={() => setIsSidebarOpen(prev => !prev)} />
       
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
