@@ -220,9 +220,9 @@ export const ImportExportPage: React.FC = () => {
   const selectedComm = mockCommerciaux.find(c => c.id === selectedCommercialId);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto font-sans">
+    <div className="space-y-4 sm:space-y-6 max-w-5xl mx-auto font-sans">
       <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
           Import / Export de Données (CSV & Excel)
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
@@ -237,9 +237,9 @@ export const ImportExportPage: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold space-y-1 shadow-lg shadow-emerald-500/10"
+            className="p-4 sm:p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold space-y-1 shadow-lg shadow-emerald-500/10"
           >
-            <div className="flex items-center gap-2 text-base">
+            <div className="flex items-center gap-2 text-sm sm:text-base">
               <CheckCircle2 className="w-5 h-5 shrink-0" />
               <span>Importation exécutée avec succès !</span>
             </div>
@@ -252,17 +252,17 @@ export const ImportExportPage: React.FC = () => {
       </AnimatePresence>
 
       {/* Export Section */}
-      <div className="p-6 rounded-3xl border border-border/80 bg-card space-y-4 shadow-sm">
-        <h2 className="text-base font-extrabold text-foreground flex items-center gap-2">
+      <div className="p-4 sm:p-6 rounded-3xl border border-border/80 bg-card space-y-3 sm:space-y-4 shadow-sm">
+        <h2 className="text-sm sm:text-base font-extrabold text-foreground flex items-center gap-2">
           <Download className="w-5 h-5 text-primary" />
           <span>Exporter mes données en CSV</span>
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <motion.button
-            whileHover={{ y: -3, scale: 1.01 }}
+            whileHover={{ y: -2, scale: 1.01 }}
             onClick={() => handleExportCSV('prospects')}
-            className="p-5 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 text-left transition-all space-y-1 shadow-sm hover:shadow-md group"
+            className="p-4 sm:p-5 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 text-left transition-all space-y-1 shadow-sm hover:shadow-md group"
           >
             <div className="font-extrabold text-xs text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
               <span>Exporter les Prospects ({prospects.length})</span>
@@ -272,9 +272,9 @@ export const ImportExportPage: React.FC = () => {
           </motion.button>
 
           <motion.button
-            whileHover={{ y: -3, scale: 1.01 }}
+            whileHover={{ y: -2, scale: 1.01 }}
             onClick={() => handleExportCSV('clients')}
-            className="p-5 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 text-left transition-all space-y-1 shadow-sm hover:shadow-md group"
+            className="p-4 sm:p-5 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 text-left transition-all space-y-1 shadow-sm hover:shadow-md group"
           >
             <div className="font-extrabold text-xs text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
               <span>Exporter les Clients Faciloop ({clients.length})</span>
@@ -285,11 +285,11 @@ export const ImportExportPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Animated Dropzone Import Section */}
-      <div className="p-6 rounded-3xl border border-border/80 bg-card space-y-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Animated Dropzone Import Section (Mobile-First responsive padding) */}
+      <div className="p-4 sm:p-6 rounded-3xl border border-border/80 bg-card space-y-4 sm:space-y-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-base font-extrabold text-foreground flex items-center gap-2">
+            <h2 className="text-sm sm:text-base font-extrabold text-foreground flex items-center gap-2">
               <Upload className="w-5 h-5 text-emerald-500" />
               <span>Importer une liste de prospects (Fichier CSV)</span>
             </h2>
@@ -298,15 +298,15 @@ export const ImportExportPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Commercial Attribution Dropdown */}
-          <div className="flex items-center gap-2 bg-muted/60 p-2.5 rounded-2xl border border-border">
+          {/* Commercial Attribution Dropdown (Full width on Mobile) */}
+          <div className="w-full sm:w-auto flex items-center gap-2 bg-muted/60 p-2.5 rounded-2xl border border-border">
             <Users className="w-4 h-4 text-primary shrink-0" />
-            <div className="text-xs">
+            <div className="text-xs w-full sm:w-auto">
               <span className="block text-[10px] font-extrabold text-muted-foreground uppercase">Attribuer la liste à :</span>
               <select
                 value={selectedCommercialId}
                 onChange={(e) => setSelectedCommercialId(e.target.value)}
-                className="bg-transparent font-extrabold text-foreground focus:outline-none"
+                className="w-full sm:w-auto bg-transparent font-extrabold text-foreground focus:outline-none text-xs"
               >
                 {mockCommerciaux.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -318,7 +318,7 @@ export const ImportExportPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Polished Dropzone with Framer Motion Drop Highlight */}
+        {/* Polished Dropzone (p-6 on mobile, p-10 on desktop) */}
         <motion.div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -327,7 +327,7 @@ export const ImportExportPage: React.FC = () => {
             borderColor: isDraggingFile ? '#3b82f6' : 'rgba(150, 150, 150, 0.4)',
             backgroundColor: isDraggingFile ? 'rgba(59, 130, 246, 0.08)' : 'rgba(0, 0, 0, 0.02)'
           }}
-          className={`p-10 rounded-3xl border-2 border-dashed text-center space-y-4 transition-colors relative overflow-hidden ${
+          className={`p-6 sm:p-10 rounded-3xl border-2 border-dashed text-center space-y-3 sm:space-y-4 transition-colors relative overflow-hidden ${
             isDraggingFile ? 'ring-4 ring-primary/20 scale-[1.01]' : ''
           }`}
         >
@@ -342,23 +342,23 @@ export const ImportExportPage: React.FC = () => {
 
           <motion.div
             animate={{ scale: isDraggingFile ? 1.15 : 1 }}
-            className="w-16 h-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-md"
+            className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-md"
           >
-            <FileSpreadsheet className="w-8 h-8" />
+            <FileSpreadsheet className="w-6 h-6 sm:w-8 sm:h-8" />
           </motion.div>
 
           <div className="space-y-1">
-            <div className="text-sm font-extrabold text-foreground">
+            <div className="text-xs sm:text-sm font-extrabold text-foreground">
               {fileName ? `Fichier chargé : ${fileName}` : 'Glissez-déposez votre fichier CSV ici'}
             </div>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Ou cliquez ci-dessous pour sélectionner un fichier. Extraction automatique des colonnes <strong>Nom</strong>, <strong>Entreprise</strong> et <strong>Téléphone</strong>.
+            <p className="text-[11px] sm:text-xs text-muted-foreground max-w-md mx-auto">
+              Ou cliquez ci-dessous pour sélectionner un fichier. Extraction de <strong>Nom</strong>, <strong>Entreprise</strong> et <strong>Téléphone</strong>.
             </p>
           </div>
 
           <label
             htmlFor="csv-file-input"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-faciloop text-white text-xs font-extrabold shadow-lg shadow-primary/25 hover:opacity-95 cursor-pointer transition-all active:scale-95"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl bg-gradient-faciloop text-white text-xs font-extrabold shadow-lg shadow-primary/25 hover:opacity-95 cursor-pointer transition-all active:scale-95"
           >
             <Sparkles className="w-4 h-4" />
             <span>{fileName ? 'Changer de fichier CSV' : 'Parcourir mes fichiers'}</span>
@@ -367,8 +367,8 @@ export const ImportExportPage: React.FC = () => {
 
         {/* Micro Parsing Loader State */}
         {isParsing && (
-          <div className="p-6 rounded-2xl bg-primary/5 border border-primary/20 flex items-center justify-center gap-3 text-xs font-bold text-primary animate-pulse">
-            <Loader2 className="w-5 h-5 animate-spin" />
+          <div className="p-4 sm:p-6 rounded-2xl bg-primary/5 border border-primary/20 flex items-center justify-center gap-2.5 text-xs font-bold text-primary animate-pulse">
+            <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
             <span>Analyse du fichier CSV & scanner anti-doublon en cours...</span>
           </div>
         )}
@@ -376,31 +376,32 @@ export const ImportExportPage: React.FC = () => {
         {/* Parsed Preview Table & Validation Feedback */}
         {!isParsing && parsedRows.length > 0 && (
           <div className="space-y-4 pt-4 border-t border-border/80">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-muted/50 border border-border/80">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-3xl bg-muted/50 border border-border/80">
               <div className="space-y-1 text-xs">
-                <div className="font-extrabold text-foreground text-sm flex items-center gap-2">
+                <div className="font-extrabold text-foreground text-xs sm:text-sm flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-primary" />
                   <span>Résumé de la prévisualisation avant validation :</span>
                 </div>
-                <div className="flex flex-wrap items-center gap-4 text-muted-foreground pt-1">
-                  <span className="text-emerald-500 font-extrabold bg-emerald-500/10 px-2.5 py-0.5 rounded-full">
-                    ✓ {validRows.length} prêts à l'import
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-muted-foreground pt-1">
+                  <span className="text-emerald-500 font-extrabold bg-emerald-500/10 px-2 py-0.5 rounded-full text-[11px]">
+                    ✓ {validRows.length} prêts
                   </span>
                   {duplicateRows.length > 0 && (
-                    <span className="text-rose-500 font-extrabold bg-rose-500/10 px-2.5 py-0.5 rounded-full animate-pulse">
+                    <span className="text-rose-500 font-extrabold bg-rose-500/10 px-2 py-0.5 rounded-full text-[11px] animate-pulse">
                       ⚠️ {duplicateRows.length} doublons ignorés
                     </span>
                   )}
-                  <span>Attribution : <strong>{selectedComm?.prenom} {selectedComm?.nom}</strong></span>
+                  <span className="text-[11px]">Attribution : <strong>{selectedComm?.prenom} {selectedComm?.nom}</strong></span>
                 </div>
               </div>
 
+              {/* Full Width Action Button on Mobile */}
               <motion.button
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleConfirmImport}
                 disabled={validRows.length === 0 || isImportSuccess}
-                className={`px-6 py-3.5 rounded-2xl font-extrabold text-xs shadow-xl transition-all shrink-0 flex items-center gap-2 ${
+                className={`w-full sm:w-auto px-5 py-3 sm:px-6 sm:py-3.5 rounded-2xl font-extrabold text-xs shadow-xl transition-all shrink-0 flex items-center justify-center gap-2 ${
                   isImportSuccess
                     ? 'bg-emerald-500 text-white shadow-emerald-500/30'
                     : 'bg-gradient-faciloop text-white shadow-primary/25 hover:opacity-95'
@@ -420,35 +421,35 @@ export const ImportExportPage: React.FC = () => {
               </motion.button>
             </div>
 
-            {/* Preview Data Grid with Polished Badges */}
-            <div className="overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm">
-              <table className="w-full text-left text-xs">
+            {/* Responsive Horizontal Scroll Container for Data Table */}
+            <div className="overflow-x-auto rounded-3xl border border-border/80 bg-card shadow-sm">
+              <table className="w-full text-left text-xs min-w-[600px]">
                 <thead className="border-b border-border/80 bg-muted/60 text-[11px] font-extrabold uppercase text-muted-foreground">
                   <tr>
-                    <th className="p-4">Nom / Contact</th>
-                    <th className="p-4">Entreprise</th>
-                    <th className="p-4">Téléphone</th>
-                    <th className="p-4">Source</th>
-                    <th className="p-4">Statut Anti-Doublon</th>
+                    <th className="p-3.5 sm:p-4">Nom / Contact</th>
+                    <th className="p-3.5 sm:p-4">Entreprise</th>
+                    <th className="p-3.5 sm:p-4">Téléphone</th>
+                    <th className="p-3.5 sm:p-4">Source</th>
+                    <th className="p-3.5 sm:p-4">Statut Anti-Doublon</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60 text-[11px]">
                   {parsedRows.map((r, idx) => (
                     <tr key={idx} className={r.isDuplicate ? 'bg-rose-500/5' : 'hover:bg-muted/30 transition-colors'}>
-                      <td className="p-4 font-extrabold text-foreground">{r.prenom} {r.nom}</td>
-                      <td className="p-4 text-muted-foreground font-medium">{r.entreprise}</td>
-                      <td className="p-4 font-semibold text-foreground">{r.telephone}</td>
-                      <td className="p-4 capitalize text-muted-foreground">{r.source}</td>
-                      <td className="p-4">
+                      <td className="p-3.5 sm:p-4 font-extrabold text-foreground">{r.prenom} {r.nom}</td>
+                      <td className="p-3.5 sm:p-4 text-muted-foreground font-medium">{r.entreprise}</td>
+                      <td className="p-3.5 sm:p-4 font-semibold text-foreground">{r.telephone}</td>
+                      <td className="p-3.5 sm:p-4 capitalize text-muted-foreground">{r.source}</td>
+                      <td className="p-3.5 sm:p-4">
                         {r.isDuplicate ? (
-                          <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-500 font-extrabold text-[10px] inline-flex items-center gap-1">
+                          <span className="px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-500 font-extrabold text-[10px] inline-flex items-center gap-1">
                             <ShieldAlert className="w-3 h-3" />
-                            <span>⚠️ Doublon (Existante - Ignoré)</span>
+                            <span>⚠️ Doublon (Ignoré)</span>
                           </span>
                         ) : (
-                          <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 font-extrabold text-[10px] inline-flex items-center gap-1">
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-extrabold text-[10px] inline-flex items-center gap-1">
                             <Check className="w-3 h-3" />
-                            <span>✓ Prêt à l'import</span>
+                            <span>✓ Prêt</span>
                           </span>
                         )}
                       </td>
