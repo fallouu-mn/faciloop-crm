@@ -16,8 +16,11 @@ import {
   History, 
   Settings, 
   X,
-  UserCheck
+  UserCheck,
+  ShieldCheck,
+  Sparkles
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -65,40 +68,67 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   return (
     <>
       {/* Mobile Backdrop Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity md:hidden"
-          onClick={onClose}
-        />
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md transition-opacity md:hidden"
+            onClick={onClose}
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Sidebar Container */}
+      {/* World-Class Mobile Drawer & Desktop Sidebar */}
       <aside
-        className={`fixed bottom-0 top-16 z-40 flex w-64 flex-col border-r border-border bg-card transition-transform duration-300 md:static md:translate-x-0 ${
-          isOpen ? 'left-0 translate-x-0' : '-left-64 -translate-x-full md:translate-x-0'
+        className={`fixed bottom-0 top-0 sm:top-16 z-50 flex w-[280px] sm:w-64 flex-col border-r border-border/80 bg-card shadow-2xl transition-transform duration-300 md:static md:translate-x-0 font-sans ${
+          isOpen ? 'left-0 translate-x-0' : '-left-[280px] -translate-x-full md:translate-x-0'
         }`}
       >
-        {/* Mobile Header Close */}
-        <div className="flex items-center justify-between border-b border-border p-4 md:hidden">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Menu Navigation</span>
-          <button onClick={onClose} className="rounded-lg p-1 hover:bg-muted">
+        {/* Mobile Header Close & Brand */}
+        <div className="flex items-center justify-between border-b border-border/80 p-4 md:hidden bg-card">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-faciloop text-white flex items-center justify-center font-black text-sm shadow-md">
+              F
+            </div>
+            <span className="text-base font-extrabold text-gradient-faciloop">Faciloop Menu</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-xl p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+            aria-label="Fermer le menu"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Current Org Banner */}
-        <div className="p-4">
-          <div className="rounded-xl bg-muted/60 p-3 text-xs">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Espace de travail</div>
-            <div className="mt-1 truncate font-bold text-foreground">{currentOrg?.nom || "Digit'Advisor"}</div>
-            <div className="mt-0.5 text-[10px] font-medium text-primary">
-              Rôle: {role === 'super_admin' ? 'Super Admin' : role === 'admin_org' ? 'Admin Entreprise' : 'Commercial'}
+        {/* Current Workspace Card */}
+        <div className="p-3 sm:p-4">
+          <div className="rounded-2xl border border-border/80 bg-muted/40 p-3 space-y-1 shadow-sm">
+            <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+              <Building2 className="w-3 h-3 text-primary" />
+              <span>Espace de travail</span>
+            </div>
+            <div className="truncate font-extrabold text-xs sm:text-sm text-foreground">
+              {currentOrg?.nom || "Digit'Advisor"}
+            </div>
+            <div className="text-[10px] font-bold text-primary flex items-center gap-1 pt-0.5">
+              <ShieldCheck className="w-3 h-3" />
+              <span>{role === 'super_admin' ? 'Super Admin' : role === 'admin_org' ? 'Admin Entreprise' : 'Commercial'}</span>
             </div>
           </div>
         </div>
 
+        {/* Navigation Section Title */}
+        <div className="px-4 pb-1">
+          <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            {role === 'admin_org' ? 'Console Administration' : 'Menu Navigation'}
+          </span>
+        </div>
+
         {/* Navigation Links */}
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-6 scrollbar-hide">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-6 text-xs font-sans scrollbar-hide">
           {links.map((link) => {
             const Icon = link.icon;
             return (
@@ -107,10 +137,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 to={link.to}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
+                  `flex items-center gap-3 rounded-2xl px-3.5 py-3 sm:py-2.5 text-xs font-bold transition-all ${
                     isActive
-                      ? 'bg-gradient-faciloop text-white shadow-md'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-gradient-faciloop text-white shadow-lg shadow-primary/20'
+                      : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                   }`
                 }
               >
