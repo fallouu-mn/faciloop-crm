@@ -21,9 +21,8 @@ import {
   Play,
   CheckCircle2,
   TrendingUp,
-  Star,
-  Shield,
-  Layers,
+  Award,
+  Crown,
   ChevronRight
 } from 'lucide-react';
 
@@ -122,22 +121,22 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary/20 selection:text-primary">
-      {/* Top Banner Offer */}
-      <div className="bg-gradient-faciloop py-2 px-4 text-center text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-md">
-        <Sparkles className="w-4 h-4 animate-spin-slow shrink-0" />
-        <span>Offre Lancement V2.0 : 14 jours d'essai gratuit sur la formule Business Pro !</span>
-        <Link to="/login" className="underline font-black hover:text-white/80 shrink-0">Créer mon espace →</Link>
+      {/* Top Offer Banner (Optimized & Compact for Mobile Screens) */}
+      <div className="bg-gradient-faciloop py-1.5 px-3 text-center text-white text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-md">
+        <Sparkles className="w-3.5 h-3.5 animate-spin-slow shrink-0" />
+        <span>⚡ Offre Lancement V2.0 : 14 jours d'essai gratuit !</span>
+        <Link to="/login" className="underline font-black hover:text-white/80 shrink-0 ml-1">Créer mon compte →</Link>
       </div>
 
       {/* Header Navigation with Glassmorphism */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/80 backdrop-blur-xl transition-all font-sans">
-        <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-3.5 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl bg-gradient-faciloop text-white shadow-lg shadow-primary/25 shrink-0">
-              <span className="text-xl sm:text-2xl font-black">F</span>
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/85 backdrop-blur-xl transition-all font-sans">
+        <div className="mx-auto flex h-14 sm:h-20 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-2xl bg-gradient-faciloop text-white shadow-lg shadow-primary/25 shrink-0">
+              <span className="text-lg sm:text-2xl font-black">F</span>
             </div>
             <div className="flex flex-col shrink-0">
-              <span className="text-base sm:text-xl font-extrabold tracking-tight text-gradient-faciloop">Faciloop CRM</span>
+              <span className="text-sm sm:text-xl font-extrabold tracking-tight text-gradient-faciloop">Faciloop CRM</span>
               <span className="hidden sm:block text-[10px] font-bold text-muted-foreground uppercase tracking-widest">SaaS B2B Multi-Tenant</span>
             </div>
           </div>
@@ -148,48 +147,47 @@ export const LandingPage: React.FC = () => {
             </a>
             <a href="#features" className="hover:text-primary transition-colors">Fonctionnalités</a>
             <a href="#pricing" className="hover:text-primary transition-colors">Tarifs</a>
-            <a href="#roi" className="hover:text-primary transition-colors">Impact ROI</a>
           </nav>
 
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <Link
               to="/login"
-              className="hidden sm:inline-block rounded-xl border border-input bg-card px-4 py-2.5 text-xs font-bold text-foreground shadow-sm hover:bg-muted transition-all"
+              className="hidden sm:inline-block rounded-xl border border-input bg-card px-4 py-2 text-xs font-bold text-foreground shadow-sm hover:bg-muted transition-all"
             >
               Espace Client
             </Link>
             <Link
               to="/login"
-              className="rounded-xl bg-gradient-faciloop px-4 py-2 sm:px-5 sm:py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all shrink-0 flex items-center gap-1.5"
+              className="rounded-xl bg-gradient-faciloop px-3.5 py-1.5 sm:px-5 sm:py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all shrink-0 flex items-center gap-1"
             >
-              <span>Essai Gratuit</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>Connexion</span>
+              <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero Section with Glowing Neon Halos */}
-      <section className="relative pt-16 pb-20 md:pt-28 md:pb-36 overflow-hidden">
+      {/* Hero Section with Perfect Mobile Typography & Proportions */}
+      <section className="relative pt-8 pb-16 sm:pt-20 sm:pb-28 overflow-hidden">
         {/* Glow Spheres Background */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-tr from-primary/30 via-accent/20 to-emerald-500/20 rounded-full blur-[160px] pointer-events-none animate-pulse" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[800px] h-[600px] sm:h-[800px] bg-gradient-to-tr from-primary/25 via-accent/15 to-emerald-500/15 rounded-full blur-[140px] pointer-events-none animate-pulse" />
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-extrabold text-primary mb-6 shadow-md backdrop-blur-md"
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] sm:text-xs font-extrabold text-primary mb-4 sm:mb-6 shadow-sm backdrop-blur-md"
           >
-            <Sparkles className="h-4 w-4 animate-spin-slow" />
-            <span>CRM Multi-Entreprises 100% Isolé (Supabase RLS Active)</span>
+            <Sparkles className="h-3.5 w-3.5 animate-spin-slow shrink-0" />
+            <span>✨ CRM B2B Multi-Entreprises 2.0</span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-foreground max-w-5xl mx-auto leading-[1.1]"
+            className="text-2xl sm:text-5xl lg:text-7xl font-black tracking-tight text-foreground max-w-5xl mx-auto leading-[1.2] sm:leading-[1.1]"
           >
             Le CRM commercial B2B conçu pour accélérer vos ventes et{' '}
             <span className="text-gradient-faciloop">convertir vos prospects</span>
@@ -199,95 +197,67 @@ export const LandingPage: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-6 text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto font-semibold leading-relaxed"
+            className="mt-3 sm:mt-6 text-xs sm:text-xl text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto font-semibold leading-relaxed"
           >
-            Suivi de portefeuille individuel par commercial, pipeline Kanban 6 étapes MVP, relances automatiques et déclencheur WhatsApp direct en 1 clic.
+            Suivi de portefeuille par commercial, pipeline Kanban 6 étapes, relances quotidiennes et déclencheur WhatsApp direct en 1 clic.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="mt-6 sm:mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-4 max-w-xs sm:max-w-none mx-auto"
           >
             <Link
               to="/login"
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-faciloop text-white font-black text-sm shadow-xl shadow-primary/30 hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-2 group"
+              className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group"
             >
               <span>Accéder à la plateforme</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <a
               href="#demo-live"
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-border bg-card/80 backdrop-blur text-foreground font-extrabold text-sm hover:bg-muted transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl border border-border bg-card/80 backdrop-blur text-foreground font-bold text-xs sm:text-sm hover:bg-muted transition-all flex items-center justify-center gap-2"
             >
-              <Play className="w-4 h-4 text-primary fill-primary" />
+              <Play className="w-3.5 h-3.5 text-primary fill-primary" />
               <span>Tester le Kanban en direct</span>
             </a>
           </motion.div>
 
-          {/* Floating Live Product Mockup Showcase (Interactive Preview) */}
+          {/* Floating Live Product Mockup Showcase */}
           <motion.div
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.4 }}
-            className="mt-16 sm:mt-20 relative max-w-5xl mx-auto"
+            className="mt-10 sm:mt-20 relative max-w-5xl mx-auto"
           >
             {/* Ambient Border Glow */}
-            <div className="absolute -inset-1 rounded-3xl bg-gradient-faciloop opacity-30 blur-xl pointer-events-none" />
-
-            {/* Floating Glass Badge 1 (Left) */}
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              className="hidden lg:flex absolute -left-12 top-1/3 z-30 items-center gap-3 p-3.5 rounded-2xl border border-emerald-500/30 bg-card/90 backdrop-blur-xl shadow-2xl text-xs font-extrabold"
-            >
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
-                <CheckCircle2 className="w-5 h-5" />
-              </div>
-              <div className="text-left">
-                <div className="text-foreground">Vente Conclue !</div>
-                <div className="text-emerald-500 font-black">+ 2 000 000 FCFA</div>
-              </div>
-            </motion.div>
-
-            {/* Floating Glass Badge 2 (Right) */}
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
-              className="hidden lg:flex absolute -right-12 bottom-1/4 z-30 items-center gap-3 p-3.5 rounded-2xl border border-primary/30 bg-card/90 backdrop-blur-xl shadow-2xl text-xs font-extrabold"
-            >
-              <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                <MessageSquare className="w-5 h-5 text-emerald-500" />
-              </div>
-              <div className="text-left">
-                <div className="text-foreground">WhatsApp Direct</div>
-                <div className="text-primary font-black">Message pré-rempli envoyé</div>
-              </div>
-            </motion.div>
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-faciloop opacity-20 blur-xl pointer-events-none" />
 
             {/* Central Interactive CRM Mockup Card */}
-            <div className="relative rounded-3xl border border-border/80 bg-card/90 backdrop-blur-2xl shadow-2xl p-4 sm:p-6 overflow-hidden space-y-4">
+            <div className="relative rounded-2xl sm:rounded-3xl border border-border/80 bg-card/90 backdrop-blur-2xl shadow-2xl p-3 sm:p-6 overflow-hidden space-y-3 sm:space-y-4">
               {/* Fake Browser Window Header */}
-              <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-                  <span className="text-[11px] font-mono font-bold text-muted-foreground ml-2">app.faciloop.com/app/kanban</span>
+              <div className="flex items-center justify-between border-b border-border/60 pb-2 sm:pb-3 text-xs">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                  <span className="text-[10px] sm:text-[11px] font-mono font-bold text-muted-foreground ml-1 truncate max-w-[140px] sm:max-w-none">
+                    app.faciloop.com/app/kanban
+                  </span>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase">
-                  ● Live Workspace Active
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] sm:text-[10px] font-black uppercase shrink-0">
+                  ● Workspace Active
                 </span>
               </div>
 
               {/* Mini Interactive Kanban Columns Preview */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 text-left">
                 {demoCards.map((card, idx) => (
-                  <div key={idx} className={`p-4 rounded-2xl border ${card.color} bg-card space-y-2 shadow-sm`}>
+                  <div key={idx} className={`p-3 sm:p-4 rounded-2xl border ${card.color} bg-card space-y-1.5 shadow-sm`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-wider">{card.step}</span>
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">{card.step}</span>
+                      <Sparkles className="w-3 h-3" />
                     </div>
                     <h4 className="font-extrabold text-xs text-foreground">{card.title}</h4>
                     <div className="text-xs font-black text-foreground">{card.amount}</div>
@@ -297,12 +267,12 @@ export const LandingPage: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Key Metrics Strip with Glassmorphism */}
+          {/* Key Metrics Strip */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
-            className="mt-16 sm:mt-24 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto"
+            className="mt-10 sm:mt-24 grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 max-w-4xl mx-auto"
           >
             {[
               { val: '+120%', label: 'Taux de relance effective', color: 'text-primary' },
@@ -312,11 +282,11 @@ export const LandingPage: React.FC = () => {
             ].map((stat, idx) => (
               <motion.div
                 key={idx}
-                whileHover={{ y: -4, scale: 1.02 }}
-                className="p-4 sm:p-5 rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-lg space-y-1"
+                whileHover={{ y: -3, scale: 1.02 }}
+                className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-md space-y-0.5"
               >
-                <div className={`text-2xl sm:text-3xl font-black ${stat.color}`}>{stat.val}</div>
-                <div className="text-xs font-bold text-muted-foreground">{stat.label}</div>
+                <div className={`text-xl sm:text-3xl font-black ${stat.color}`}>{stat.val}</div>
+                <div className="text-[10px] sm:text-xs font-bold text-muted-foreground">{stat.label}</div>
               </motion.div>
             ))}
           </motion.div>
@@ -324,11 +294,11 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Live Interactive Kanban Demo Showcase Section */}
-      <section id="demo-live" className="py-20 border-t border-border/60 bg-muted/20 relative">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-8">
+      <section id="demo-live" className="py-14 sm:py-20 border-t border-border/60 bg-muted/20 relative">
+        <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8">
           <div className="max-w-3xl mx-auto space-y-2">
-            <h2 className="text-xs font-black uppercase tracking-widest text-primary">Expérience Utilisateur Interactive</h2>
-            <p className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
+            <h2 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-primary">Expérience Utilisateur Interactive</h2>
+            <p className="text-2xl sm:text-5xl font-black tracking-tight text-foreground">
               Le Pipeline Kanban 6 Étapes en Action
             </p>
             <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
@@ -336,13 +306,13 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-6 sm:p-8 rounded-3xl border border-border/80 bg-card shadow-2xl max-w-4xl mx-auto space-y-6">
-            <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="p-4 sm:p-8 rounded-3xl border border-border/80 bg-card shadow-2xl max-w-4xl mx-auto space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-1.5 sm:gap-2">
               {['1. Qualification', '2. À Contacter', '3. Démo / RDV', '4. Devis Envoyé', '5. Gagné (Client)', '6. Motif Perte'].map((step, idx) => (
                 <button
                   key={idx}
                   onClick={() => setDemoStep(idx + 1)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all ${
+                  className={`px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black transition-all ${
                     demoStep === idx + 1
                       ? 'bg-gradient-faciloop text-white shadow-md'
                       : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -353,14 +323,14 @@ export const LandingPage: React.FC = () => {
               ))}
             </div>
 
-            <div className="p-6 rounded-2xl bg-muted/40 border border-border/60 text-left space-y-3">
+            <div className="p-4 sm:p-6 rounded-2xl bg-muted/40 border border-border/60 text-left space-y-2 sm:space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-extrabold text-primary">Étape Active #{demoStep}</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black">
-                  ✔ Modalité conforme au CDC
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black">
+                  ✔ Conforme au CDC
                 </span>
               </div>
-              <h3 className="text-lg font-black text-foreground">
+              <h3 className="text-sm sm:text-lg font-black text-foreground leading-snug">
                 {demoStep === 1 && "Importation & Anti-Doublon : Le prospect est automatiquement nettoyé (E.164 +221) et vérifié."}
                 {demoStep === 2 && "Relance Quotidienne : Le commercial déclenche l'appel ou WhatsApp direct."}
                 {demoStep === 3 && "Fixation de Démo : La date de relance est mise à jour avec notification."}
@@ -373,12 +343,12 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Grid Section with Scroll Reveal */}
-      <section id="features" className="py-24 relative">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* Features Grid Section */}
+      <section id="features" className="py-16 sm:py-24 relative">
+        <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-xs font-black uppercase tracking-widest text-primary">Fonctionnalités Clés</h2>
-            <p className="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-foreground">
+            <h2 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-primary">Fonctionnalités Clés</h2>
+            <p className="mt-2 text-2xl sm:text-5xl font-black tracking-tight text-foreground">
               Conçu pour l'efficacité de vos commerciaux
             </p>
           </div>
@@ -388,7 +358,7 @@ export const LandingPage: React.FC = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
-            className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8"
+            className="mt-10 sm:mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8"
           >
             {[
               {
@@ -432,35 +402,35 @@ export const LandingPage: React.FC = () => {
                 key={idx}
                 variants={itemVariants}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="p-8 rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-lg hover:shadow-2xl hover:border-primary/40 transition-all duration-300 group"
+                className="p-6 sm:p-8 rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-md hover:shadow-2xl hover:border-primary/40 transition-all duration-300 group"
               >
-                <div className={`w-14 h-14 rounded-2xl ${feat.color} flex items-center justify-center mb-6 font-extrabold shadow-md`}>
-                  <feat.icon className="w-7 h-7" />
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl ${feat.color} flex items-center justify-center mb-4 sm:mb-6 font-extrabold shadow-md`}>
+                  <feat.icon className="w-6 h-6 sm:w-7 sm:h-7" />
                 </div>
-                <h3 className="text-xl font-extrabold text-foreground group-hover:text-primary transition-colors">{feat.title}</h3>
-                <p className="mt-3 text-xs sm:text-sm text-muted-foreground font-semibold leading-relaxed">{feat.desc}</p>
+                <h3 className="text-lg sm:text-xl font-extrabold text-foreground group-hover:text-primary transition-colors">{feat.title}</h3>
+                <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-muted-foreground font-semibold leading-relaxed">{feat.desc}</p>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* Pricing Section with Fluid Framer Motion LayoutId Switcher */}
-      <section id="pricing" className="py-24 border-t border-border/60 bg-muted/20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* Pricing Section */}
+      <section id="pricing" className="py-16 sm:py-24 border-t border-border/60 bg-muted/20">
+        <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-xs font-black uppercase tracking-widest text-primary">Tarifs Transparents</h2>
-            <p className="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-foreground">
-              Une formule adaptée à chaque étape de croissance
+            <h2 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-primary">Tarifs Transparents</h2>
+            <p className="mt-2 text-2xl sm:text-5xl font-black tracking-tight text-foreground">
+              Une formule adaptée à chaque étape
             </p>
 
-            {/* Fluid Toggle Controls with layoutId */}
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            {/* Fluid Toggle Controls */}
+            <div className="mt-6 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
               {/* Billing Cycle Toggle */}
-              <div className="relative flex items-center rounded-2xl bg-muted p-1.5 text-xs font-bold border border-border">
+              <div className="relative flex items-center rounded-2xl bg-muted p-1.5 text-xs font-bold border border-border w-full sm:w-auto justify-center">
                 <button
                   onClick={() => setBillingCycle('mensuel')}
-                  className="relative z-10 px-5 py-2.5 transition-colors text-foreground"
+                  className="relative z-10 px-4 py-2 transition-colors text-foreground"
                 >
                   {billingCycle === 'mensuel' && (
                     <motion.div
@@ -474,7 +444,7 @@ export const LandingPage: React.FC = () => {
 
                 <button
                   onClick={() => setBillingCycle('annuel')}
-                  className="relative z-10 px-5 py-2.5 transition-colors text-foreground"
+                  className="relative z-10 px-4 py-2 transition-colors text-foreground"
                 >
                   {billingCycle === 'annuel' && (
                     <motion.div
@@ -490,10 +460,10 @@ export const LandingPage: React.FC = () => {
               </div>
 
               {/* Currency Toggle */}
-              <div className="relative flex items-center rounded-2xl bg-muted p-1.5 text-xs font-bold border border-border">
+              <div className="relative flex items-center rounded-2xl bg-muted p-1.5 text-xs font-bold border border-border w-full sm:w-auto justify-center">
                 <button
                   onClick={() => setCurrency('XOF')}
-                  className="relative z-10 px-4 py-2.5 transition-colors"
+                  className="relative z-10 px-4 py-2 transition-colors"
                 >
                   {currency === 'XOF' && (
                     <motion.div
@@ -507,7 +477,7 @@ export const LandingPage: React.FC = () => {
 
                 <button
                   onClick={() => setCurrency('EUR')}
-                  className="relative z-10 px-4 py-2.5 transition-colors"
+                  className="relative z-10 px-4 py-2 transition-colors"
                 >
                   {currency === 'EUR' && (
                     <motion.div
@@ -522,20 +492,20 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Pricing Grid with Scroll Reveal */}
+          {/* Pricing Grid */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
-            className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8"
+            className="mt-10 sm:mt-16 grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8"
           >
             {plans.map((plan, idx) => (
               <motion.div
                 key={idx}
                 variants={itemVariants}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className={`relative rounded-3xl p-8 border backdrop-blur-xl transition-all duration-300 flex flex-col justify-between ${
+                whileHover={{ y: -6, scale: 1.01 }}
+                className={`relative rounded-3xl p-6 sm:p-8 border backdrop-blur-xl transition-all duration-300 flex flex-col justify-between ${
                   plan.popular
                     ? 'border-primary bg-card/90 shadow-2xl shadow-primary/15 ring-2 ring-primary'
                     : 'border-border/80 bg-card/70 shadow-lg'
@@ -546,19 +516,19 @@ export const LandingPage: React.FC = () => {
                     <span className="text-xs font-black uppercase tracking-wider text-primary">{plan.badge}</span>
                   </div>
 
-                  <h3 className="text-2xl font-black text-foreground mt-2">{plan.name}</h3>
-                  <p className="text-xs text-muted-foreground font-semibold mt-2 leading-relaxed min-h-[36px]">{plan.description}</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-foreground mt-2">{plan.name}</h3>
+                  <p className="text-xs text-muted-foreground font-semibold mt-2 leading-relaxed">{plan.description}</p>
 
                   <div className="mt-6 flex items-baseline gap-1.5">
-                    <span className="text-4xl font-black text-foreground">
+                    <span className="text-3xl sm:text-4xl font-black text-foreground">
                       {currency === 'XOF' ? plan.priceXOF : plan.priceEUR}
                     </span>
                     <span className="text-xs font-bold text-muted-foreground">{plan.period}</span>
                   </div>
 
-                  <ul className="mt-8 space-y-3.5 border-t border-border/60 pt-6">
+                  <ul className="mt-6 space-y-3 border-t border-border/60 pt-6">
                     {plan.features.map((feat, fIdx) => (
-                      <li key={fIdx} className="flex items-center gap-3 text-xs text-foreground font-bold">
+                      <li key={fIdx} className="flex items-center gap-2.5 text-xs text-foreground font-bold">
                         <div className="p-0.5 rounded-full bg-emerald-500/10 text-emerald-500 shrink-0">
                           <Check className="h-3.5 w-3.5" />
                         </div>
@@ -568,10 +538,10 @@ export const LandingPage: React.FC = () => {
                   </ul>
                 </div>
 
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <Link
                     to="/login"
-                    className={`w-full py-4 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all ${
+                    className={`w-full py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all ${
                       plan.popular
                         ? 'bg-gradient-faciloop text-white shadow-xl shadow-primary/30 hover:opacity-95'
                         : 'border border-input bg-card text-foreground hover:bg-muted'
@@ -588,14 +558,14 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/80 bg-card/90 pt-16 pb-12 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
+      <footer className="border-t border-border/80 bg-card/90 pt-12 pb-8 backdrop-blur-xl font-sans">
+        <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8 space-y-8 sm:space-y-12">
           {/* Main Footer Grid */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-xs">
             {/* Brand Column */}
             <div className="space-y-4 md:col-span-2">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-2xl bg-gradient-faciloop flex items-center justify-center text-white font-black text-base shadow-md">
+                <div className="w-9 h-9 rounded-2xl bg-gradient-faciloop flex items-center justify-center text-white font-black text-base shadow-md shrink-0">
                   F
                 </div>
                 <div className="flex flex-col">
@@ -618,15 +588,13 @@ export const LandingPage: React.FC = () => {
                   <span>contact@faciloop.com</span>
                 </a>
 
-                <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-muted-foreground pt-1">
-                  <a href="tel:+33614578547" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
-                    <span className="text-sm">🇫🇷</span>
-                    <span>+33 6 14 57 85 47</span>
+                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-muted-foreground pt-1">
+                  <a href="tel:+33614578547" className="flex items-center gap-1 hover:text-foreground transition-colors">
+                    <span>🇫🇷 +33 6 14 57 85 47</span>
                   </a>
                   <span>•</span>
-                  <a href="tel:+221711387878" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
-                    <span className="text-sm">🇸🇳</span>
-                    <span>+221 71 138 78 78</span>
+                  <a href="tel:+221711387878" className="flex items-center gap-1 hover:text-foreground transition-colors">
+                    <span>🇸🇳 +221 71 138 78 78</span>
                   </a>
                 </div>
               </div>
@@ -675,11 +643,11 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Bottom Bar */}
-          <div className="pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-muted-foreground">
+          <div className="pt-6 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-bold text-muted-foreground">
             <div>
               © 2026 Digit'Advisor. Tous droits réservés.
             </div>
-            <div className="flex items-center gap-4 text-[11px]">
+            <div className="flex items-center gap-3 text-[11px]">
               <span>CRM SaaS B2B Multi-Tenant</span>
               <span>•</span>
               <span>Dakar • Paris</span>
