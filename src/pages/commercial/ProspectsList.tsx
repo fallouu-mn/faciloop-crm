@@ -131,12 +131,12 @@ export const ProspectsList: React.FC = () => {
   const isAdminRole = user?.role === 'admin_org' || user?.role === 'super_admin';
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6 font-sans">
+      {/* Header (Stacked buttons on Mobile, Row on Desktop) */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
               Liste des Prospects ({filtered.length})
             </h1>
             {user?.role === 'commercial' ? (
@@ -149,28 +149,28 @@ export const ProspectsList: React.FC = () => {
               </span>
             )}
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             Gérez, recherchez et réattribuez les opportunités de l'entreprise
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* CDC 3.1 Bulk Reassign Action Button (Visible for Admin Org & Super Admin when at least 1 item is selected) */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+          {/* CDC 3.1 Bulk Reassign Action Button */}
           {isAdminRole && selectedIds.length > 0 && (
             <button
               onClick={() => setIsReassignModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-amber-500 text-white px-4 py-2.5 text-xs font-bold shadow-lg shadow-amber-500/25 hover:bg-amber-600 transition-all animate-pulse"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 text-white px-4 py-2.5 text-xs font-extrabold shadow-lg shadow-amber-500/25 hover:bg-amber-600 transition-all animate-pulse"
             >
-              <ArrowRightLeft className="h-4 w-4" />
+              <ArrowRightLeft className="h-4 w-4 shrink-0" />
               <span>Réattribuer la sélection ({selectedIds.length})</span>
             </button>
           )}
 
           <button
             onClick={() => setIsNewModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4 shrink-0" />
             <span>Nouveau Prospect</span>
           </button>
         </div>
@@ -178,16 +178,16 @@ export const ProspectsList: React.FC = () => {
 
       {/* Success Toast Banner */}
       {toastMessage && (
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2 shadow-md">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2 shadow-md">
           <Check className="h-4 w-4 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Controls Bar: Search & Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Controls Bar: Search & Filters (Full-width responsive inputs on Mobile) */}
+      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3.5" />
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
           <input
             type="text"
             value={search}
@@ -197,11 +197,11 @@ export const ProspectsList: React.FC = () => {
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 sm:flex gap-2">
           <select
             value={filterStep}
             onChange={(e) => setFilterStep(e.target.value)}
-            className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground focus:outline-none"
+            className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground focus:outline-none"
           >
             <option value="all">Toutes les étapes</option>
             <option value="nouveau">Nouveau Prospect</option>
@@ -215,7 +215,7 @@ export const ProspectsList: React.FC = () => {
           <select
             value={filterSource}
             onChange={(e) => setFilterSource(e.target.value)}
-            className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground focus:outline-none"
+            className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground focus:outline-none"
           >
             <option value="all">Toutes les sources</option>
             <option value="site_web">Site Web</option>
@@ -227,7 +227,7 @@ export const ProspectsList: React.FC = () => {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="hidden md:block overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <table className="w-full text-left text-xs">
           <thead className="border-b border-border bg-muted/50 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
             <tr>
@@ -292,41 +292,41 @@ export const ProspectsList: React.FC = () => {
         </table>
       </div>
 
-      {/* Mobile Stacked Cards View */}
+      {/* Mobile Stacked Cards View (p-3.5 paddings, w-5 h-5 checkboxes for easy thumb target) */}
       <div className="grid grid-cols-1 gap-3 md:hidden">
         {filtered.map((p) => {
           const isSelected = selectedIds.includes(p.id);
           return (
-            <div key={p.id} className={`p-4 rounded-2xl border bg-card space-y-3 ${isSelected ? 'border-primary bg-primary/5' : 'border-border'}`}>
-              <div className="flex items-start justify-between">
+            <div key={p.id} className={`p-3.5 rounded-2xl border bg-card space-y-2.5 shadow-sm ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border'}`}>
+              <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => handleSelectOne(p.id)}
-                    className="w-4 h-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
+                    className="w-5 h-5 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer shrink-0"
                   />
                   <div>
-                    <h3 className="font-bold text-sm text-foreground">{p.prenom} {p.nom}</h3>
-                    <p className="text-xs text-muted-foreground">{p.entreprise}</p>
+                    <h3 className="font-extrabold text-sm text-foreground">{p.prenom} {p.nom}</h3>
+                    <p className="text-xs font-medium text-muted-foreground">{p.entreprise}</p>
                   </div>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${
                   p.statut_pipeline === 'gagne' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'
                 }`}>
                   {p.statut_pipeline.replace('_', ' ')}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-muted-foreground pl-7">
-                <span>Tel: {p.telephone}</span>
-                <span className="font-bold text-primary">{p.commercial_nom}</span>
+              <div className="flex items-center justify-between text-xs text-muted-foreground pl-8">
+                <span className="font-medium text-foreground">{p.telephone}</span>
+                <span className="font-extrabold text-primary text-[11px]">{p.commercial_nom}</span>
               </div>
 
-              <div className="pt-2 border-t border-border flex justify-end pl-7">
+              <div className="pt-2 border-t border-border/60 flex justify-end pl-8">
                 <Link
                   to={`/app/prospects/${p.id}`}
-                  className="w-full py-2 rounded-xl bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5"
+                  className="w-full py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all"
                 >
                   <span>Ouvrir Fiche Prospect</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -337,16 +337,16 @@ export const ProspectsList: React.FC = () => {
         })}
       </div>
 
-      {/* CDC 3.1 Bulk Reattribution Modal */}
+      {/* CDC 3.1 Bulk Reattribution Modal (Stacked buttons on Mobile) */}
       {isReassignModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-sm bg-card border border-border rounded-3xl p-6 shadow-2xl space-y-4">
+          <div className="w-full max-w-sm bg-card border border-border rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 font-sans">
             <div className="flex items-center gap-3 text-amber-500">
               <div className="p-2.5 rounded-2xl bg-amber-500/10">
                 <ArrowRightLeft className="w-6 h-6 text-amber-500" />
               </div>
               <div>
-                <h3 className="font-bold text-base text-foreground">Réattribution en Masse</h3>
+                <h3 className="font-extrabold text-base text-foreground">Réattribution en Masse</h3>
                 <p className="text-xs text-muted-foreground">Admin Organisation</p>
               </div>
             </div>
@@ -370,16 +370,16 @@ export const ProspectsList: React.FC = () => {
               </select>
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
               <button
                 onClick={() => setIsReassignModalOpen(false)}
-                className="w-1/2 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground transition-all"
+                className="w-full sm:w-1/2 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground transition-all"
               >
                 Annuler
               </button>
               <button
                 onClick={handleConfirmReassign}
-                className="w-1/2 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 shadow-md shadow-amber-500/20 transition-all"
+                className="w-full sm:w-1/2 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 shadow-md shadow-amber-500/20 transition-all"
               >
                 Confirmer la réattribution
               </button>
@@ -391,16 +391,16 @@ export const ProspectsList: React.FC = () => {
       {/* Quick Creation Modal */}
       {isNewModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-card border border-border rounded-3xl p-6 shadow-2xl relative space-y-4">
+          <div className="w-full max-w-md bg-card border border-border rounded-3xl p-5 sm:p-6 shadow-2xl relative space-y-4 font-sans">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground">Nouveau Prospect</h2>
+              <h2 className="text-base sm:text-lg font-bold text-foreground">Nouveau Prospect</h2>
               <button onClick={() => setIsNewModalOpen(false)} className="rounded-lg p-1 hover:bg-muted">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {duplicateAlert && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 text-xs font-bold flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-bold flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span>Attention : Ce numéro existe déjà dans l'entreprise !</span>
               </div>
@@ -415,7 +415,7 @@ export const ProspectsList: React.FC = () => {
                     value={newPrenom}
                     onChange={(e) => setNewPrenom(e.target.value)}
                     placeholder="Moussa"
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50"
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50 text-foreground"
                   />
                 </div>
                 <div>
@@ -426,7 +426,7 @@ export const ProspectsList: React.FC = () => {
                     value={newNom}
                     onChange={(e) => setNewNom(e.target.value)}
                     placeholder="Diop"
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50"
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50 text-foreground"
                   />
                 </div>
               </div>
@@ -439,7 +439,7 @@ export const ProspectsList: React.FC = () => {
                   value={newEntreprise}
                   onChange={(e) => setNewEntreprise(e.target.value)}
                   placeholder="Dakar Tech Ltd"
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50 text-foreground"
                 />
               </div>
 
@@ -450,8 +450,8 @@ export const ProspectsList: React.FC = () => {
                   required
                   value={newPhone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
-                  placeholder="+221 77 000 00 00"
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50"
+                  placeholder="77 123 45 67 ou +221..."
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50 text-foreground"
                 />
               </div>
 
@@ -460,7 +460,7 @@ export const ProspectsList: React.FC = () => {
                 <select
                   value={newSource}
                   onChange={(e) => setNewSource(e.target.value as any)}
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground"
                 >
                   <option value="prospection_directe">Prospection Directe</option>
                   <option value="site_web">Site Web</option>
