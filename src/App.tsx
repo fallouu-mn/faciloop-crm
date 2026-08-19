@@ -23,6 +23,8 @@ import { EquipeCommerciale } from './pages/admin-org/EquipeCommerciale';
 import { ImportExportPage } from './pages/admin-org/ImportExportPage';
 import { JournalActionsPage } from './pages/admin-org/JournalActionsPage';
 import { ParametresEntreprise } from './pages/admin-org/ParametresEntreprise';
+import { AbonnementsPage } from './pages/admin-org/AbonnementsPage';
+import { PaiementsPage } from './pages/admin-org/PaiementsPage';
 
 // Super Admin Pages
 import { DashboardSuperAdmin } from './pages/super-admin/DashboardSuperAdmin';
@@ -59,8 +61,8 @@ function App() {
             <Route path="equipe" element={<EquipeCommerciale />} />
             <Route path="objectifs" element={<ObjectifsPage />} />
             <Route path="relances" element={<RelancesPage />} />
-            <Route path="abonnements" element={<ImportExportPage />} />
-            <Route path="paiements" element={<ImportExportPage />} />
+            <Route path="abonnements" element={<AbonnementsPage />} />
+            <Route path="paiements" element={<PaiementsPage />} />
             <Route path="import-export" element={<ImportExportPage />} />
             <Route path="journal" element={<JournalActionsPage />} />
             <Route path="parametres" element={<ParametresEntreprise />} />
