@@ -23,6 +23,7 @@ import {
   Clock,
   Briefcase
 } from 'lucide-react';
+import { WhatsAppActionModal } from '../../components/common/WhatsAppActionModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const ProspectDetail: React.FC = () => {
@@ -39,9 +40,18 @@ export const ProspectDetail: React.FC = () => {
   const [interComment, setInterComment] = useState<string>('');
   const [interNextAction, setInterNextAction] = useState<string>('');
 
-  // Conversion Modal State
-  const [isConvertModalOpen, setIsConvertModalOpen] = useState<boolean>(false);
-  const [formuleSouscrite, setFormuleSouscrite] = useState<string>('SaaS Business Pro');
+  // WhatsApp Action Modal State
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState<boolean>(false);
+
+  const handleWhatsAppClick = () => {
+    window.open(
+      `https://wa.me/${prospect.telephone.replace(/\s+/g, '')}?text=${encodeURIComponent(
+        `Bonjour ${prospect.prenom || prospect.nom}, je suis Moussa de Faciloop CRM.`
+      )}`,
+      '_blank'
+    );
+    setIsWhatsAppModalOpen(true);
+  };
 
   if (!prospect) {
     return (
@@ -139,17 +149,13 @@ export const ProspectDetail: React.FC = () => {
         {/* Quick Action Bar (WhatsApp, Call, Email & Convert) */}
         <div className="p-6 border-b border-border/60 bg-muted/20 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <a
-              href={`https://wa.me/${prospect.telephone.replace(/\s+/g, '')}?text=${encodeURIComponent(
-                `Bonjour ${prospect.prenom || prospect.nom}, je suis Moussa de Faciloop CRM.`
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={handleWhatsAppClick}
               className="px-4 py-2.5 rounded-xl bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-500/20 hover:bg-emerald-600 flex items-center gap-2 transition-all active:scale-95"
             >
               <MessageSquare className="w-4 h-4" />
               <span>WhatsApp Direct</span>
-            </a>
+            </button>
 
             <a
               href={`tel:${prospect.telephone}`}
@@ -463,6 +469,14 @@ export const ProspectDetail: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* WhatsApp Feedback Action Modal */}
+      <WhatsAppActionModal
+        isOpen={isWhatsAppModalOpen}
+        prospectId={prospect.id}
+        prospectNom={`${prospect.prenom} ${prospect.nom}`}
+        onClose={() => setIsWhatsAppModalOpen(false)}
+      />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
+import { GlobalFab } from './GlobalFab';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Outlet, useLocation } from 'react-router-dom';
 
@@ -33,6 +34,9 @@ export const AppLayout: React.FC = () => {
           </AnimatePresence>
         </main>
       </div>
+
+      {/* Floating Action Button (Global 5-second Express Entry) */}
+      <GlobalFab />
     </div>
   );
 };
