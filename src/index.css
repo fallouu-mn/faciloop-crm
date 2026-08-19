@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Faciloop CRM Design System - Charte graphique orange-rose */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 23%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 23%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 23%;
+
+    /* Primary = Orange Faciloop (#FF8A3D) */
+    --primary: 24 100% 62%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 23%;
+
+    --muted: 0 0% 97%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 24 100% 62%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 24 100% 62%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 23%;
+    --sidebar-primary: 24 100% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 23%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 24 100% 62%;
+
+    /* Faciloop brand colors */
+    --faciloop-orange: 24 100% 62%;
+    --faciloop-pink: 342 87% 62%;
+
+    /* Success */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning */
+    --warning: 24 100% 62%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Couleurs sémantiques CRM par module */
+    --color-prospects: 199 89% 48%;
+    --color-pipeline: 24 100% 62%;
+    --color-clients-crm: 142 71% 45%;
+    --color-relances: 38 92% 50%;
+    --color-paiements: 262 83% 66%;
+    --color-objectifs: 220 51% 24%;
+    --color-commercial: 340 100% 65%;
+  }
+
+  .dark {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 95%;
+
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 24 100% 62%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 24 100% 62%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 24 100% 62%;
+
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 24 100% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 24 100% 62%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Couleurs sémantiques CRM adaptées dark mode */
+    --color-prospects: 199 89% 55%;
+    --color-pipeline: 24 100% 65%;
+    --color-clients-crm: 142 71% 55%;
+    --color-relances: 38 92% 55%;
+    --color-paiements: 262 83% 72%;
+    --color-objectifs: 220 60% 65%;
+    --color-commercial: 340 100% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-faciloop {
+    background: linear-gradient(135deg, hsl(24 100% 62%) 0%, hsl(342 87% 62%) 100%);
+  }
+
+  .text-gradient-faciloop {
+    background: linear-gradient(135deg, hsl(24 100% 62%) 0%, hsl(342 87% 62%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .border-gradient-faciloop {
+    border-image: linear-gradient(135deg, hsl(24 100% 62%) 0%, hsl(342 87% 62%) 100%) 1;
+  }
+
+  .card-lift {
+    @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
+  }
+
+  .btn-press {
+    @apply transition-transform duration-100 active:scale-95;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
