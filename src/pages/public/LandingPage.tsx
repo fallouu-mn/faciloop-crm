@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Building2, 
   Kanban, 
@@ -17,12 +17,27 @@ import {
   Lock,
   ArrowUpRight,
   Mail,
-  Phone
+  Phone,
+  Play,
+  CheckCircle2,
+  TrendingUp,
+  Star,
+  Shield,
+  Layers,
+  ChevronRight
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<'mensuel' | 'annuel'>('annuel');
   const [currency, setCurrency] = useState<'XOF' | 'EUR'>('XOF');
+
+  // Interactive Live Kanban Demo State
+  const [demoStep, setDemoStep] = useState<number>(1);
+  const demoCards = [
+    { title: 'Sénégal Telecom Solutions', amount: '3 500 000 FCFA', step: 'Nouveau', color: 'bg-blue-500/10 text-blue-500 border-blue-500/30' },
+    { title: 'MaNou Fashion Services', amount: '750 000 FCFA', step: 'Devis Envoyé', color: 'bg-amber-500/10 text-amber-500 border-amber-500/30' },
+    { title: 'Dakar Agro Tech', amount: '2 000 000 FCFA', step: 'Gagné (Client)', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' }
+  ];
 
   const plans = [
     {
@@ -107,8 +122,15 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary/20 selection:text-primary">
+      {/* Top Banner Offer */}
+      <div className="bg-gradient-faciloop py-2 px-4 text-center text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-md">
+        <Sparkles className="w-4 h-4 animate-spin-slow shrink-0" />
+        <span>Offre Lancement V2.0 : 14 jours d'essai gratuit sur la formule Business Pro !</span>
+        <Link to="/login" className="underline font-black hover:text-white/80 shrink-0">Créer mon espace →</Link>
+      </div>
+
       {/* Header Navigation with Glassmorphism */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/75 backdrop-blur-xl transition-all">
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/80 backdrop-blur-xl transition-all font-sans">
         <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-3.5 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl bg-gradient-faciloop text-white shadow-lg shadow-primary/25 shrink-0">
@@ -120,11 +142,13 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          <nav className="hidden items-center gap-8 md:flex text-sm font-semibold text-muted-foreground">
-            <a href="#features" className="hover:text-foreground transition-colors">Fonctionnalités</a>
-            <a href="#demo" className="hover:text-foreground transition-colors">Démo CRM</a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">Tarifs</a>
-            <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
+          <nav className="hidden items-center gap-8 md:flex text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+            <a href="#demo-live" className="hover:text-primary transition-colors flex items-center gap-1">
+              <Zap className="w-3.5 h-3.5 text-primary" /> Démo Live
+            </a>
+            <a href="#features" className="hover:text-primary transition-colors">Fonctionnalités</a>
+            <a href="#pricing" className="hover:text-primary transition-colors">Tarifs</a>
+            <a href="#roi" className="hover:text-primary transition-colors">Impact ROI</a>
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -136,28 +160,29 @@ export const LandingPage: React.FC = () => {
             </Link>
             <Link
               to="/login"
-              className="rounded-xl bg-gradient-faciloop px-3.5 py-2 sm:px-5 sm:py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all shrink-0"
+              className="rounded-xl bg-gradient-faciloop px-4 py-2 sm:px-5 sm:py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all shrink-0 flex items-center gap-1.5"
             >
-              Essai Gratuit
+              <span>Essai Gratuit</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Section with Glowing Neon Halos */}
       <section className="relative pt-16 pb-20 md:pt-28 md:pb-36 overflow-hidden">
         {/* Glow Spheres Background */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr from-primary/20 via-accent/15 to-transparent rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-tr from-primary/30 via-accent/20 to-emerald-500/20 rounded-full blur-[160px] pointer-events-none animate-pulse" />
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary mb-6 shadow-sm"
+            className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-extrabold text-primary mb-6 shadow-md backdrop-blur-md"
           >
             <Sparkles className="h-4 w-4 animate-spin-slow" />
-            <span>Nouveau : Version SaaS Multi-Entreprises 2.0 disponible</span>
+            <span>CRM Multi-Entreprises 100% Isolé (Supabase RLS Active)</span>
           </motion.div>
 
           <motion.h1
@@ -166,17 +191,17 @@ export const LandingPage: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-foreground max-w-5xl mx-auto leading-[1.1]"
           >
-            Le CRM commercial B2B conçu pour transformer vos prospects en{' '}
-            <span className="text-gradient-faciloop">clients fidèles</span>
+            Le CRM commercial B2B conçu pour accélérer vos ventes et{' '}
+            <span className="text-gradient-faciloop">convertir vos prospects</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-6 text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto font-normal leading-relaxed"
+            className="mt-6 text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto font-semibold leading-relaxed"
           >
-            Suivi de portefeuille par commercial, pipeline Kanban 6 étapes, relances quotidiennes et déclencheur WhatsApp direct. Une plateforme multi-entreprises sécurisée et ultra-fluide.
+            Suivi de portefeuille individuel par commercial, pipeline Kanban 6 étapes MVP, relances automatiques et déclencheur WhatsApp direct en 1 clic.
           </motion.p>
 
           <motion.div
@@ -187,25 +212,97 @@ export const LandingPage: React.FC = () => {
           >
             <Link
               to="/login"
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-sm shadow-xl shadow-primary/30 hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-2 group"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-faciloop text-white font-black text-sm shadow-xl shadow-primary/30 hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-2 group"
             >
               <span>Accéder à la plateforme</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <a
-              href="#features"
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-border bg-card/80 backdrop-blur text-foreground font-bold text-sm hover:bg-muted transition-all"
+              href="#demo-live"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-border bg-card/80 backdrop-blur text-foreground font-extrabold text-sm hover:bg-muted transition-all flex items-center justify-center gap-2"
             >
-              Découvrir les fonctionnalités
+              <Play className="w-4 h-4 text-primary fill-primary" />
+              <span>Tester le Kanban en direct</span>
             </a>
+          </motion.div>
+
+          {/* Floating Live Product Mockup Showcase (Interactive Preview) */}
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+            className="mt-16 sm:mt-20 relative max-w-5xl mx-auto"
+          >
+            {/* Ambient Border Glow */}
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-faciloop opacity-30 blur-xl pointer-events-none" />
+
+            {/* Floating Glass Badge 1 (Left) */}
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+              className="hidden lg:flex absolute -left-12 top-1/3 z-30 items-center gap-3 p-3.5 rounded-2xl border border-emerald-500/30 bg-card/90 backdrop-blur-xl shadow-2xl text-xs font-extrabold"
+            >
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <div className="text-foreground">Vente Conclue !</div>
+                <div className="text-emerald-500 font-black">+ 2 000 000 FCFA</div>
+              </div>
+            </motion.div>
+
+            {/* Floating Glass Badge 2 (Right) */}
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
+              className="hidden lg:flex absolute -right-12 bottom-1/4 z-30 items-center gap-3 p-3.5 rounded-2xl border border-primary/30 bg-card/90 backdrop-blur-xl shadow-2xl text-xs font-extrabold"
+            >
+              <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                <MessageSquare className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div className="text-left">
+                <div className="text-foreground">WhatsApp Direct</div>
+                <div className="text-primary font-black">Message pré-rempli envoyé</div>
+              </div>
+            </motion.div>
+
+            {/* Central Interactive CRM Mockup Card */}
+            <div className="relative rounded-3xl border border-border/80 bg-card/90 backdrop-blur-2xl shadow-2xl p-4 sm:p-6 overflow-hidden space-y-4">
+              {/* Fake Browser Window Header */}
+              <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-rose-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                  <span className="text-[11px] font-mono font-bold text-muted-foreground ml-2">app.faciloop.com/app/kanban</span>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase">
+                  ● Live Workspace Active
+                </span>
+              </div>
+
+              {/* Mini Interactive Kanban Columns Preview */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+                {demoCards.map((card, idx) => (
+                  <div key={idx} className={`p-4 rounded-2xl border ${card.color} bg-card space-y-2 shadow-sm`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider">{card.step}</span>
+                      <Sparkles className="w-3.5 h-3.5" />
+                    </div>
+                    <h4 className="font-extrabold text-xs text-foreground">{card.title}</h4>
+                    <div className="text-xs font-black text-foreground">{card.amount}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </motion.div>
 
           {/* Key Metrics Strip with Glassmorphism */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto"
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="mt-16 sm:mt-24 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto"
           >
             {[
               { val: '+120%', label: 'Taux de relance effective', color: 'text-primary' },
@@ -216,21 +313,71 @@ export const LandingPage: React.FC = () => {
               <motion.div
                 key={idx}
                 whileHover={{ y: -4, scale: 1.02 }}
-                className="p-5 rounded-3xl border border-border/80 bg-card/70 backdrop-blur-xl shadow-lg shadow-black/5 space-y-1"
+                className="p-4 sm:p-5 rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-lg space-y-1"
               >
                 <div className={`text-2xl sm:text-3xl font-black ${stat.color}`}>{stat.val}</div>
-                <div className="text-xs font-semibold text-muted-foreground">{stat.label}</div>
+                <div className="text-xs font-bold text-muted-foreground">{stat.label}</div>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
+      {/* Live Interactive Kanban Demo Showcase Section */}
+      <section id="demo-live" className="py-20 border-t border-border/60 bg-muted/20 relative">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-8">
+          <div className="max-w-3xl mx-auto space-y-2">
+            <h2 className="text-xs font-black uppercase tracking-widest text-primary">Expérience Utilisateur Interactive</h2>
+            <p className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
+              Le Pipeline Kanban 6 Étapes en Action
+            </p>
+            <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
+              Découvrez la fluidité du glisser-déposer et de la boucle d'action WhatsApp
+            </p>
+          </div>
+
+          <div className="p-6 sm:p-8 rounded-3xl border border-border/80 bg-card shadow-2xl max-w-4xl mx-auto space-y-6">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {['1. Qualification', '2. À Contacter', '3. Démo / RDV', '4. Devis Envoyé', '5. Gagné (Client)', '6. Motif Perte'].map((step, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setDemoStep(idx + 1)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all ${
+                    demoStep === idx + 1
+                      ? 'bg-gradient-faciloop text-white shadow-md'
+                      : 'bg-muted text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {step}
+                </button>
+              ))}
+            </div>
+
+            <div className="p-6 rounded-2xl bg-muted/40 border border-border/60 text-left space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-primary">Étape Active #{demoStep}</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black">
+                  ✔ Modalité conforme au CDC
+                </span>
+              </div>
+              <h3 className="text-lg font-black text-foreground">
+                {demoStep === 1 && "Importation & Anti-Doublon : Le prospect est automatiquement nettoyé (E.164 +221) et vérifié."}
+                {demoStep === 2 && "Relance Quotidienne : Le commercial déclenche l'appel ou WhatsApp direct."}
+                {demoStep === 3 && "Fixation de Démo : La date de relance est mise à jour avec notification."}
+                {demoStep === 4 && "Transmission de l'Offre : Suivi du devis avec mise en avant du budget estimé."}
+                {demoStep === 5 && "Vente Conclue ! Le prospect bascule en Client Faciloop et génère l'accès."}
+                {demoStep === 6 && "Sauvegarde des Motifs de Perte : Formulaire obligatoire pour l'amélioration continue."}
+              </h3>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Grid Section with Scroll Reveal */}
-      <section id="features" className="py-24 border-t border-border/60 bg-muted/20 relative">
+      <section id="features" className="py-24 relative">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-xs font-extrabold uppercase tracking-widest text-primary">Fonctionnalités Clés</h2>
+            <h2 className="text-xs font-black uppercase tracking-widest text-primary">Fonctionnalités Clés</h2>
             <p className="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-foreground">
               Conçu pour l'efficacité de vos commerciaux
             </p>
@@ -287,11 +434,11 @@ export const LandingPage: React.FC = () => {
                 whileHover={{ y: -6, scale: 1.02 }}
                 className="p-8 rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-lg hover:shadow-2xl hover:border-primary/40 transition-all duration-300 group"
               >
-                <div className={`w-14 h-14 rounded-2xl ${feat.color} flex items-center justify-center mb-6 font-bold shadow-md`}>
+                <div className={`w-14 h-14 rounded-2xl ${feat.color} flex items-center justify-center mb-6 font-extrabold shadow-md`}>
                   <feat.icon className="w-7 h-7" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{feat.title}</h3>
-                <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed">{feat.desc}</p>
+                <h3 className="text-xl font-extrabold text-foreground group-hover:text-primary transition-colors">{feat.title}</h3>
+                <p className="mt-3 text-xs sm:text-sm text-muted-foreground font-semibold leading-relaxed">{feat.desc}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -299,10 +446,10 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Pricing Section with Fluid Framer Motion LayoutId Switcher */}
-      <section id="pricing" className="py-24">
+      <section id="pricing" className="py-24 border-t border-border/60 bg-muted/20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-xs font-extrabold uppercase tracking-widest text-primary">Tarifs Transparents</h2>
+            <h2 className="text-xs font-black uppercase tracking-widest text-primary">Tarifs Transparents</h2>
             <p className="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-foreground">
               Une formule adaptée à chaque étape de croissance
             </p>
@@ -400,7 +547,7 @@ export const LandingPage: React.FC = () => {
                   </div>
 
                   <h3 className="text-2xl font-black text-foreground mt-2">{plan.name}</h3>
-                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed min-h-[36px]">{plan.description}</p>
+                  <p className="text-xs text-muted-foreground font-semibold mt-2 leading-relaxed min-h-[36px]">{plan.description}</p>
 
                   <div className="mt-6 flex items-baseline gap-1.5">
                     <span className="text-4xl font-black text-foreground">
@@ -411,7 +558,7 @@ export const LandingPage: React.FC = () => {
 
                   <ul className="mt-8 space-y-3.5 border-t border-border/60 pt-6">
                     {plan.features.map((feat, fIdx) => (
-                      <li key={fIdx} className="flex items-center gap-3 text-xs text-foreground font-semibold">
+                      <li key={fIdx} className="flex items-center gap-3 text-xs text-foreground font-bold">
                         <div className="p-0.5 rounded-full bg-emerald-500/10 text-emerald-500 shrink-0">
                           <Check className="h-3.5 w-3.5" />
                         </div>
@@ -424,7 +571,7 @@ export const LandingPage: React.FC = () => {
                 <div className="mt-8">
                   <Link
                     to="/login"
-                    className={`w-full py-4 rounded-2xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all ${
+                    className={`w-full py-4 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all ${
                       plan.popular
                         ? 'bg-gradient-faciloop text-white shadow-xl shadow-primary/30 hover:opacity-95'
                         : 'border border-input bg-card text-foreground hover:bg-muted'
@@ -457,12 +604,12 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              <p className="text-xs text-muted-foreground max-w-sm leading-relaxed font-normal">
+              <p className="text-xs text-muted-foreground font-semibold max-w-sm leading-relaxed">
                 Solution CRM B2B multi-entreprises développée pour dynamiser la prospection, le suivi de pipeline et l'automatisation des relances commerciales en Afrique et à l'international.
               </p>
 
               {/* International Contact Line */}
-              <div className="space-y-2 pt-2 text-xs font-semibold text-foreground">
+              <div className="space-y-2 pt-2 text-xs font-bold text-foreground">
                 <a
                   href="mailto:contact@faciloop.com"
                   className="flex items-center gap-2 hover:text-primary transition-colors inline-block mr-4"
@@ -471,7 +618,7 @@ export const LandingPage: React.FC = () => {
                   <span>contact@faciloop.com</span>
                 </a>
 
-                <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-muted-foreground pt-1">
+                <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-muted-foreground pt-1">
                   <a href="tel:+33614578547" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
                     <span className="text-sm">🇫🇷</span>
                     <span>+33 6 14 57 85 47</span>
@@ -487,8 +634,8 @@ export const LandingPage: React.FC = () => {
 
             {/* Navigation Links Column */}
             <div className="space-y-3">
-              <h4 className="text-xs font-extrabold uppercase tracking-widest text-foreground">Navigation</h4>
-              <ul className="space-y-2.5 font-medium text-muted-foreground">
+              <h4 className="text-xs font-black uppercase tracking-widest text-foreground">Navigation</h4>
+              <ul className="space-y-2.5 font-bold text-muted-foreground">
                 <li><a href="#features" className="hover:text-foreground transition-colors">Fonctionnalités CRM</a></li>
                 <li><a href="#pricing" className="hover:text-foreground transition-colors">Tarifs Transparents</a></li>
                 <li><Link to="/login" className="hover:text-foreground transition-colors">Espace Client & Connexion</Link></li>
@@ -498,8 +645,8 @@ export const LandingPage: React.FC = () => {
 
             {/* Legal & Compliance Column */}
             <div className="space-y-3">
-              <h4 className="text-xs font-extrabold uppercase tracking-widest text-foreground">Légal & Securité</h4>
-              <ul className="space-y-2.5 font-medium text-muted-foreground">
+              <h4 className="text-xs font-black uppercase tracking-widest text-foreground">Légal & Sécurité</h4>
+              <ul className="space-y-2.5 font-bold text-muted-foreground">
                 <li>
                   <a
                     href="https://faciloop.digitadvisor.sn/privacy"
@@ -522,13 +669,13 @@ export const LandingPage: React.FC = () => {
                     <ArrowUpRight className="w-3 h-3 text-primary" />
                   </a>
                 </li>
-                <li><span className="text-[11px] text-muted-foreground">Isolation RLS Supabase Active</span></li>
+                <li><span className="text-[11px] font-bold text-muted-foreground">Isolation RLS Supabase Active</span></li>
               </ul>
             </div>
           </div>
 
           {/* Bottom Bar */}
-          <div className="pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-muted-foreground">
+          <div className="pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold text-muted-foreground">
             <div>
               © 2026 Digit'Advisor. Tous droits réservés.
             </div>
