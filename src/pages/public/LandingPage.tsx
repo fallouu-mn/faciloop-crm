@@ -15,7 +15,9 @@ import {
   Globe2, 
   Sparkles,
   Lock,
-  ArrowUpRight
+  ArrowUpRight,
+  Mail,
+  Phone
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
@@ -439,20 +441,102 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card/90 py-12 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-muted-foreground">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-faciloop flex items-center justify-center text-white font-black text-sm shadow-md">
-              F
+      <footer className="border-t border-border/80 bg-card/90 pt-16 pb-12 backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Main Footer Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-xs">
+            {/* Brand Column */}
+            <div className="space-y-4 md:col-span-2">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-gradient-faciloop flex items-center justify-center text-white font-black text-base shadow-md">
+                  F
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-lg font-extrabold tracking-tight text-gradient-faciloop">Faciloop CRM SaaS</span>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Par Digit'Advisor SAS</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground max-w-sm leading-relaxed font-normal">
+                Solution CRM B2B multi-entreprises développée pour dynamiser la prospection, le suivi de pipeline et l'automatisation des relances commerciales en Afrique et à l'international.
+              </p>
+
+              {/* International Contact Line */}
+              <div className="space-y-2 pt-2 text-xs font-semibold text-foreground">
+                <a
+                  href="mailto:contact@faciloop.com"
+                  className="flex items-center gap-2 hover:text-primary transition-colors inline-block mr-4"
+                >
+                  <Mail className="w-4 h-4 text-primary shrink-0" />
+                  <span>contact@faciloop.com</span>
+                </a>
+
+                <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-muted-foreground pt-1">
+                  <a href="tel:+33614578547" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
+                    <span className="text-sm">🇫🇷</span>
+                    <span>+33 6 14 57 85 47</span>
+                  </a>
+                  <span>•</span>
+                  <a href="tel:+221711387878" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
+                    <span className="text-sm">🇸🇳</span>
+                    <span>+221 71 138 78 78</span>
+                  </a>
+                </div>
+              </div>
             </div>
-            <span className="font-bold text-foreground">Faciloop CRM SaaS</span>
-            <span>© 2026 Digit’Advisor. Tous droits réservés.</span>
+
+            {/* Navigation Links Column */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-extrabold uppercase tracking-widest text-foreground">Navigation</h4>
+              <ul className="space-y-2.5 font-medium text-muted-foreground">
+                <li><a href="#features" className="hover:text-foreground transition-colors">Fonctionnalités CRM</a></li>
+                <li><a href="#pricing" className="hover:text-foreground transition-colors">Tarifs Transparents</a></li>
+                <li><Link to="/login" className="hover:text-foreground transition-colors">Espace Client & Connexion</Link></li>
+                <li><Link to="/login" className="hover:text-foreground transition-colors">Demander une Démo</Link></li>
+              </ul>
+            </div>
+
+            {/* Legal & Compliance Column */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-extrabold uppercase tracking-widest text-foreground">Légal & Securité</h4>
+              <ul className="space-y-2.5 font-medium text-muted-foreground">
+                <li>
+                  <a
+                    href="https://faciloop.digitadvisor.sn/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-foreground transition-colors flex items-center gap-1.5"
+                  >
+                    <span>Confidentialité</span>
+                    <ArrowUpRight className="w-3 h-3 text-primary" />
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://faciloop.digitadvisor.sn/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-foreground transition-colors flex items-center gap-1.5"
+                  >
+                    <span>CGU (Conditions Générales)</span>
+                    <ArrowUpRight className="w-3 h-3 text-primary" />
+                  </a>
+                </li>
+                <li><span className="text-[11px] text-muted-foreground">Isolation RLS Supabase Active</span></li>
+              </ul>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6 font-semibold">
-            <a href="#features" className="hover:text-foreground">Fonctionnalités</a>
-            <a href="#pricing" className="hover:text-foreground">Tarifs</a>
-            <Link to="/login" className="hover:text-foreground">Espace Connexion</Link>
+          {/* Bottom Bar */}
+          <div className="pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-muted-foreground">
+            <div>
+              © 2026 Digit'Advisor. Tous droits réservés.
+            </div>
+            <div className="flex items-center gap-4 text-[11px]">
+              <span>CRM SaaS B2B Multi-Tenant</span>
+              <span>•</span>
+              <span>Dakar • Paris</span>
+            </div>
           </div>
         </div>
       </footer>
