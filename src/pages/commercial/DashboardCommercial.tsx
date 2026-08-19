@@ -34,7 +34,7 @@ const AnimatedNumber: React.FC<{ value: number }> = ({ value }) => {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="p-3 rounded-2xl border border-border/80 bg-card/90 backdrop-blur-xl shadow-2xl space-y-1 text-xs font-sans">
+      <div className="p-2.5 rounded-2xl border border-border/80 bg-card/90 backdrop-blur-xl shadow-2xl space-y-0.5 text-xs font-sans">
         <p className="font-extrabold text-foreground">{label}</p>
         <p className="text-primary font-black flex items-center gap-1">
           <span>{payload[0].value.toLocaleString()} FCFA</span>
@@ -45,18 +45,18 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-// Skeleton Loader Component for Elite Onboarding
+// Skeleton Loader Component for Mobile-First Onboarding
 const DashboardSkeleton: React.FC = () => (
-  <div className="space-y-6 animate-pulse">
-    <div className="h-10 bg-muted/60 rounded-2xl w-1/3" />
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div className="space-y-4 sm:space-y-6 animate-pulse">
+    <div className="h-8 sm:h-10 bg-muted/60 rounded-2xl w-2/3 sm:w-1/3" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="h-32 bg-muted/50 rounded-3xl border border-border/60" />
+        <div key={i} className="h-28 sm:h-32 bg-muted/50 rounded-3xl border border-border/60" />
       ))}
     </div>
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2 h-72 bg-muted/40 rounded-3xl border border-border/60" />
-      <div className="h-72 bg-muted/40 rounded-3xl border border-border/60" />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="lg:col-span-2 h-64 sm:h-72 bg-muted/40 rounded-3xl border border-border/60" />
+      <div className="h-64 sm:h-72 bg-muted/40 rounded-3xl border border-border/60" />
     </div>
   </div>
 );
@@ -93,15 +93,15 @@ export const DashboardCommercial: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 font-sans">
-      {/* Welcome Banner */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-4 sm:space-y-6 font-sans">
+      {/* Welcome Banner (Stacked on Mobile, Row on Desktop) */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
               Bonjour, {user?.prenom || 'Commercial'} 👋
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider">
+            <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
               Centre de Commandement
             </span>
           </div>
@@ -110,10 +110,10 @@ export const DashboardCommercial: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="w-full sm:w-auto">
           <Link
             to="/app/prospects"
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all"
           >
             <Plus className="h-4 w-4" />
             <span>Nouveau prospect</span>
@@ -121,108 +121,108 @@ export const DashboardCommercial: React.FC = () => {
         </div>
       </div>
 
-      {/* Animated Metrics Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Responsive Metrics Cards Grid (1 col on Mobile, 2 on Tablet, 4 on Desktop) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <motion.div
-          whileHover={{ y: -4, scale: 1.02 }}
-          className="rounded-3xl border border-border/80 bg-card p-5 shadow-sm hover:shadow-xl hover:border-blue-500/40 transition-all space-y-3"
+          whileHover={{ y: -3, scale: 1.01 }}
+          className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Mes Prospects</span>
-            <div className="rounded-2xl bg-blue-500/10 p-2.5 text-blue-500 shadow-sm">
-              <Users className="h-5 w-5" />
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Mes Prospects</span>
+            <div className="rounded-2xl bg-blue-500/10 p-2 sm:p-2.5 text-blue-500 shadow-sm">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-3xl font-black text-foreground">
+          <div className="flex items-baseline justify-between pt-0.5">
+            <span className="text-2xl sm:text-3xl font-black text-foreground">
               <AnimatedNumber value={totalProspects} />
             </span>
-            <span className="flex items-center gap-1 text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+            <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-1.5 sm:px-2 py-0.5 rounded-full">
               <TrendingUp className="h-3 w-3" /> +12% ce mois
             </span>
           </div>
         </motion.div>
 
         <motion.div
-          whileHover={{ y: -4, scale: 1.02 }}
-          className="rounded-3xl border border-border/80 bg-card p-5 shadow-sm hover:shadow-xl hover:border-amber-500/40 transition-all space-y-3"
+          whileHover={{ y: -3, scale: 1.01 }}
+          className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Relances Auj.</span>
-            <div className="rounded-2xl bg-amber-500/10 p-2.5 text-amber-500 shadow-sm">
-              <CalendarClock className="h-5 w-5" />
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Relances Auj.</span>
+            <div className="rounded-2xl bg-amber-500/10 p-2 sm:p-2.5 text-amber-500 shadow-sm">
+              <CalendarClock className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-3xl font-black text-foreground">
+          <div className="flex items-baseline justify-between pt-0.5">
+            <span className="text-2xl sm:text-3xl font-black text-foreground">
               <AnimatedNumber value={relancesAujourdhui.length} />
             </span>
-            <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
+            <span className="text-[9px] sm:text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
               {relancesAujourdhui.length > 0 ? 'À effectuer' : 'À jour'}
             </span>
           </div>
         </motion.div>
 
         <motion.div
-          whileHover={{ y: -4, scale: 1.02 }}
-          className="rounded-3xl border border-rose-500/30 bg-rose-500/5 p-5 shadow-sm hover:shadow-xl transition-all space-y-3"
+          whileHover={{ y: -3, scale: 1.01 }}
+          className="rounded-3xl border border-rose-500/30 bg-rose-500/5 p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-rose-500">Relances en Retard</span>
-            <div className="rounded-2xl bg-rose-500/10 p-2.5 text-rose-500 shadow-sm animate-bounce">
-              <AlertTriangle className="h-5 w-5" />
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-rose-500">Relances en Retard</span>
+            <div className="rounded-2xl bg-rose-500/10 p-2 sm:p-2.5 text-rose-500 shadow-sm animate-bounce">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-3xl font-black text-rose-500">
+          <div className="flex items-baseline justify-between pt-0.5">
+            <span className="text-2xl sm:text-3xl font-black text-rose-500">
               <AnimatedNumber value={relancesEnRetard.length} />
             </span>
-            <span className="text-[10px] font-black text-white bg-rose-500 px-2.5 py-0.5 rounded-full shadow-md shadow-rose-500/30">
+            <span className="text-[9px] sm:text-[10px] font-black text-white bg-rose-500 px-2 py-0.5 rounded-full shadow-md shadow-rose-500/30">
               URGENT
             </span>
           </div>
         </motion.div>
 
         <motion.div
-          whileHover={{ y: -4, scale: 1.02 }}
-          className="rounded-3xl border border-border/80 bg-card p-5 shadow-sm hover:shadow-xl hover:border-emerald-500/40 transition-all space-y-3"
+          whileHover={{ y: -3, scale: 1.01 }}
+          className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Ventes Conclues</span>
-            <div className="rounded-2xl bg-emerald-500/10 p-2.5 text-emerald-500 shadow-sm">
-              <CheckCircle2 className="h-5 w-5" />
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Ventes Conclues</span>
+            <div className="rounded-2xl bg-emerald-500/10 p-2 sm:p-2.5 text-emerald-500 shadow-sm">
+              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-3xl font-black text-foreground">
+          <div className="flex items-baseline justify-between pt-0.5">
+            <span className="text-2xl sm:text-3xl font-black text-foreground">
               <AnimatedNumber value={ventesConclues} />
             </span>
-            <span className="flex items-center gap-1 text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+            <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-1.5 sm:px-2 py-0.5 rounded-full">
               <Sparkles className="h-3 w-3" /> Convertis
             </span>
           </div>
         </motion.div>
       </div>
 
-      {/* Main Grid: Priorities List & Recharts Curve */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Priorities List with Instant Direct Action Triggers */}
-        <div className="lg:col-span-2 space-y-4">
+      {/* Main Grid: Priorities List & Recharts Curve (Stacked on Mobile, 2/3 + 1/3 on Desktop) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Left Col: Priorities List */}
+        <div className="lg:col-span-2 space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
+            <h2 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
               <span>Mes Priorités du Jour</span>
             </h2>
-            <Link to="/app/relances" className="text-xs font-bold text-primary hover:underline">
+            <Link to="/app/relances" className="text-[11px] sm:text-xs font-bold text-primary hover:underline">
               Voir toutes mes relances →
             </Link>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5 sm:space-y-3">
             {myRelances.length === 0 ? (
-              <div className="p-8 rounded-3xl border-2 border-dashed border-border/80 bg-card/40 text-center space-y-1">
+              <div className="p-6 sm:p-8 rounded-3xl border-2 border-dashed border-border/80 bg-card/40 text-center space-y-1">
                 <p className="text-xs font-bold text-foreground">Aucune relance programmée pour le moment.</p>
-                <p className="text-[11px] text-muted-foreground">Toutes vos actions quotidiennes sont à jour !</p>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">Toutes vos actions quotidiennes sont à jour !</p>
               </div>
             ) : (
               myRelances.map((relance) => {
@@ -230,45 +230,46 @@ export const DashboardCommercial: React.FC = () => {
                 return (
                   <motion.div
                     key={relance.id}
-                    whileHover={{ scale: 1.01 }}
-                    className={`p-4 rounded-2xl border bg-card shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                    whileHover={{ scale: 1.005 }}
+                    className={`p-3.5 sm:p-4 rounded-2xl border bg-card shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                       isLate ? 'border-rose-500/50 bg-rose-500/5 ring-1 ring-rose-500/20' : 'border-border/80'
                     }`}
                   >
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-foreground">{relance.prospect_nom}</span>
-                        <span className="text-xs text-muted-foreground">({relance.prospect_entreprise})</span>
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="font-extrabold text-xs sm:text-sm text-foreground">{relance.prospect_nom}</span>
+                        <span className="text-[11px] sm:text-xs text-muted-foreground">({relance.prospect_entreprise})</span>
                         {isLate && (
-                          <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black uppercase shadow-sm">
+                          <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[8px] sm:text-[9px] font-black uppercase shadow-sm">
                             En retard
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground font-medium">{relance.commentaire || relance.motif}</p>
-                      <div className="flex items-center gap-3 text-[10px] font-semibold text-muted-foreground">
+                      <p className="text-[11px] sm:text-xs text-muted-foreground font-medium line-clamp-1">{relance.commentaire || relance.motif}</p>
+                      <div className="flex items-center gap-2.5 text-[9px] sm:text-[10px] font-semibold text-muted-foreground pt-0.5">
                         <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-primary" /> {relance.heure || '09:00'}</span>
-                        <span className="capitalize bg-muted px-2 py-0.5 rounded-md">Canal: {relance.canal}</span>
+                        <span className="capitalize bg-muted px-1.5 py-0.5 rounded-md">Canal: {relance.canal}</span>
                       </div>
                     </div>
 
-                    {/* Instant Direct Action Triggers */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    {/* Instant Action Buttons (Compact text / icon-only on mobile) */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-border/40 justify-end">
                       <a
                         href={`https://wa.me/${relance.prospect_nom}?text=${encodeURIComponent(
                           `Bonjour ${relance.prospect_nom}, je suis ${user?.prenom || 'commercial'} de Faciloop. Je vous relance au sujet de notre opportunité.`
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3.5 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-500/20 hover:bg-emerald-600 flex items-center gap-1.5 transition-all active:scale-95"
+                        className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-500 text-white text-[11px] sm:text-xs font-bold shadow-md shadow-emerald-500/20 hover:bg-emerald-600 flex items-center gap-1 transition-all active:scale-95"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
-                        <span>WhatsApp</span>
+                        <span className="hidden sm:inline">WhatsApp</span>
+                        <span className="sm:hidden">WA</span>
                       </a>
 
                       <a
                         href="tel:+221770000000"
-                        className="p-2 rounded-xl border border-input bg-card text-foreground hover:bg-muted text-xs font-bold transition-all"
+                        className="p-1.5 sm:p-2 rounded-xl border border-input bg-card text-foreground hover:bg-muted text-xs font-bold transition-all"
                         title="Appeler"
                       >
                         <Phone className="w-3.5 h-3.5 text-primary" />
@@ -276,7 +277,7 @@ export const DashboardCommercial: React.FC = () => {
 
                       <Link
                         to={`/app/prospects/${relance.prospect_id}`}
-                        className="px-3 py-2 rounded-xl border border-input bg-card text-xs font-bold hover:bg-muted transition-all"
+                        className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-input bg-card text-[11px] sm:text-xs font-bold hover:bg-muted transition-all"
                       >
                         Fiche
                       </Link>
@@ -289,14 +290,14 @@ export const DashboardCommercial: React.FC = () => {
         </div>
 
         {/* Right Col: Polished Recharts Sales Performance */}
-        <div className="space-y-4">
-          <h2 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-emerald-500" />
             <span>Performance Financière (Semaine)</span>
           </h2>
 
-          <div className="p-5 rounded-3xl border border-border/80 bg-card shadow-sm space-y-4">
-            <div className="h-48 w-full">
+          <div className="p-4 sm:p-5 rounded-3xl border border-border/80 bg-card shadow-sm space-y-3 sm:space-y-4">
+            <div className="h-44 sm:h-52 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={salesChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
@@ -314,14 +315,14 @@ export const DashboardCommercial: React.FC = () => {
               </ResponsiveContainer>
             </div>
 
-            <div className="pt-2 border-t border-border/60 flex items-center justify-between text-xs font-bold">
+            <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[11px] sm:text-xs font-bold">
               <span className="text-muted-foreground">Objectif Hebdo</span>
               <span className="text-emerald-500">4 350 000 FCFA</span>
             </div>
 
             <Link
               to="/app/pipeline"
-              className="w-full py-3 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
+              className="w-full py-2.5 sm:py-3 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
             >
               <span>Ouvrir mon Kanban 6 Étapes</span>
               <ArrowRight className="h-4 w-4" />
