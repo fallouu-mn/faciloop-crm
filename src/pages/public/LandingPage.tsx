@@ -109,14 +109,14 @@ export const LandingPage: React.FC = () => {
     <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary/20 selection:text-primary">
       {/* Header Navigation with Glassmorphism */}
       <header className="sticky top-0 z-50 border-b border-border/60 bg-card/75 backdrop-blur-xl transition-all">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-faciloop text-white shadow-lg shadow-primary/25">
-              <span className="text-2xl font-black">F</span>
+        <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-3.5 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl bg-gradient-faciloop text-white shadow-lg shadow-primary/25 shrink-0">
+              <span className="text-xl sm:text-2xl font-black">F</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-extrabold tracking-tight text-gradient-faciloop">Faciloop CRM</span>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">SaaS B2B Multi-Tenant</span>
+            <div className="flex flex-col shrink-0">
+              <span className="text-base sm:text-xl font-extrabold tracking-tight text-gradient-faciloop">Faciloop CRM</span>
+              <span className="hidden sm:block text-[10px] font-bold text-muted-foreground uppercase tracking-widest">SaaS B2B Multi-Tenant</span>
             </div>
           </div>
 
@@ -127,16 +127,16 @@ export const LandingPage: React.FC = () => {
             <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Link
               to="/login"
-              className="rounded-xl border border-input bg-card px-4 py-2.5 text-xs font-bold text-foreground shadow-sm hover:bg-muted transition-all"
+              className="hidden sm:inline-block rounded-xl border border-input bg-card px-4 py-2.5 text-xs font-bold text-foreground shadow-sm hover:bg-muted transition-all"
             >
               Espace Client
             </Link>
             <Link
               to="/login"
-              className="rounded-xl bg-gradient-faciloop px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all"
+              className="rounded-xl bg-gradient-faciloop px-3.5 py-2 sm:px-5 sm:py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all shrink-0"
             >
               Essai Gratuit
             </Link>
