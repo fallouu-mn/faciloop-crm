@@ -38,6 +38,7 @@ interface AuthContextType {
   // State mutators
   addProspect: (p: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>) => { success: boolean; duplicate?: boolean; prospect?: Prospect };
   updateProspectStatus: (id: string, newStep: string, motifPerte?: string) => void;
+  reassignProspects: (prospectIds: string[], targetCommercialId: string, targetCommercialNom: string) => void;
   deleteProspect: (id: string) => void;
   
   addRelance: (r: Omit<Relance, 'id' | 'created_at' | 'organization_id'>) => void;
@@ -182,7 +183,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Anti-Duplicate phone check & add prospect (Automatically assigned to current user)
+  // Anti-Duplicate phone check & add prospect
   const addProspect = (newP: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>) => {
     const cleanNewPhone = newP.telephone.replace(/\s+/g, '');
     const isDuplicate = prospects.some(
@@ -216,6 +217,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             statut_pipeline: newStep as any,
             motif_perte: motifPerte as any || p.motif_perte,
             date_derniere_interaction: new Date().toISOString()
+          };
+        }
+        return p;
+      })
+    );
+  };
+
+  // CDC 3.1 Bulk Reassign Prospects by Admin
+  const reassignProspects = (prospectIds: string[], targetCommercialId: string, targetCommercialNom: string) => {
+    const idSet = new Set(prospectIds);
+    setProspects(prev =>
+      prev.map(p => {
+        if (idSet.has(p.id)) {
+          return {
+            ...p,
+            commercial_id: targetCommercialId,
+            commercial_nom: targetCommercialNom
           };
         }
         return p;
@@ -313,6 +331,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         myInteractions,
         addProspect,
         updateProspectStatus,
+        reassignProspects,
         deleteProspect,
         addRelance,
         completeRelance,
