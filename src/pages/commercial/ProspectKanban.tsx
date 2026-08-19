@@ -103,7 +103,7 @@ const columns: ColumnDef[] = [
   }
 ];
 
-// Stylized Draggable Prospect Card Component with Motion & Polish
+// Stylized Draggable Prospect Card Component (High Outdoor Sunlight Visibility & Bold Typography)
 const DraggableProspectCard: React.FC<{ prospect: Prospect }> = ({ prospect }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: prospect.id,
@@ -126,7 +126,7 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect }> = ({ prospect }) =
           isDragging ? 'ring-2 ring-primary opacity-30' : ''
         }`}
       >
-        {/* Subtle Ambient Top Border Accent */}
+        {/* Ambient Top Border Accent */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-faciloop opacity-0 group-hover:opacity-100 transition-opacity" />
 
         {/* Card Header */}
@@ -138,35 +138,35 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect }> = ({ prospect }) =
             <div>
               <Link
                 to={`/app/prospects/${prospect.id}`}
-                className="font-extrabold text-xs text-foreground group-hover:text-primary transition-colors flex items-center gap-1"
+                className="font-extrabold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors flex items-center gap-1"
               >
                 <span>{prospect.prenom} {prospect.nom}</span>
-                <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
-              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium mt-0.5">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-bold mt-0.5">
                 <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="truncate max-w-[140px]">{prospect.entreprise}</span>
+                <span className="truncate max-w-[150px]">{prospect.entreprise}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Badges & Financial Info */}
-        <div className="flex items-center justify-between gap-2 pt-1">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-extrabold">
+        <div className="flex items-center justify-between gap-2 pt-1 text-xs">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-black">
             {prospect.budget_estime ? `${(prospect.budget_estime).toLocaleString()} FCFA` : 'Prospect Qualifié'}
           </span>
 
-          <span className="text-[10px] font-semibold text-muted-foreground capitalize flex items-center gap-1">
-            <MessageSquare className="w-3 h-3 text-emerald-500" />
+          <span className="text-xs font-bold text-muted-foreground capitalize flex items-center gap-1">
+            <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
             {prospect.source.replace('_', ' ')}
           </span>
         </div>
 
         {/* Card Footer */}
-        <div className="flex items-center justify-between pt-2.5 border-t border-border/60 text-[10px]">
-          <span className="text-muted-foreground font-medium">Tel: {prospect.telephone}</span>
-          <span className="font-bold text-foreground bg-muted px-2 py-0.5 rounded-md">{prospect.commercial_nom || 'Moi'}</span>
+        <div className="flex items-center justify-between pt-2.5 border-t border-border/60 text-xs">
+          <span className="text-muted-foreground font-bold">Tel: {prospect.telephone}</span>
+          <span className="font-extrabold text-foreground bg-muted px-2 py-0.5 rounded-md">{prospect.commercial_nom || 'Moi'}</span>
         </div>
       </motion.div>
     </div>
@@ -182,8 +182,8 @@ const KanbanEmptyState: React.FC<{ col: ColumnDef }> = ({ col }) => {
         <IconComponent className="w-5 h-5" />
       </div>
       <div className="space-y-0.5">
-        <h4 className="text-xs font-bold text-foreground">{col.emptyText}</h4>
-        <p className="text-[10px] text-muted-foreground leading-tight max-w-[180px] mx-auto">
+        <h4 className="text-xs font-extrabold text-foreground">{col.emptyText}</h4>
+        <p className="text-xs text-muted-foreground font-semibold leading-tight max-w-[180px] mx-auto">
           {col.emptyHint}
         </p>
       </div>
@@ -191,9 +191,9 @@ const KanbanEmptyState: React.FC<{ col: ColumnDef }> = ({ col }) => {
       {col.id === 'nouveau' && (
         <Link
           to="/app/prospects"
-          className="mt-1 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-primary/10 text-primary text-[10px] font-extrabold hover:bg-primary/20 transition-all"
+          className="mt-1 inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary/10 text-primary text-xs font-black hover:bg-primary/20 transition-all"
         >
-          <Plus className="w-3 h-3" />
+          <Plus className="w-3.5 h-3.5" />
           <span>Créer un prospect</span>
         </Link>
       )}
@@ -220,9 +220,9 @@ const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[] }> = ({ 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <col.icon className="w-4 h-4 text-muted-foreground" />
-          <span className="text-xs font-extrabold text-foreground truncate">{col.title}</span>
+          <span className="text-xs sm:text-sm font-extrabold text-foreground truncate">{col.title}</span>
         </div>
-        <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-black ${col.badgeBg}`}>
+        <span className={`rounded-full px-2.5 py-0.5 text-xs font-black ${col.badgeBg}`}>
           {prospects.length}
         </span>
       </div>
@@ -313,30 +313,30 @@ export const ProspectKanban: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
               Pipeline Commercial Kanban (6 Étapes MVP)
             </h1>
             {user?.role === 'commercial' && (
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold flex items-center gap-1">
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-black flex items-center gap-1">
                 <Lock className="w-3 h-3" /> Portefeuille Personnel
               </span>
             )}
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5">
             Glissez-déposez vos opportunités commerciales entre les 6 colonnes du CDC
           </p>
         </div>
 
         <Link
           to="/app/prospects"
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4 shrink-0" />
           <span>Nouveau Prospect</span>
         </Link>
       </div>
@@ -350,7 +350,7 @@ export const ProspectKanban: React.FC = () => {
           })}
         </div>
 
-        {/* Polished Drag Overlay during active drag (Slight Tilt, High Elevation & Glow) */}
+        {/* Polished Drag Overlay during active drag */}
         <DragOverlay>
           {activeProspect ? (
             <div className="p-4 rounded-2xl border-2 border-primary bg-card shadow-2xl rotate-3 scale-105 ring-4 ring-primary/20 space-y-3 w-72 cursor-grabbing z-50">
@@ -358,11 +358,11 @@ export const ProspectKanban: React.FC = () => {
                 <div className="font-extrabold text-xs text-foreground">
                   {activeProspect.prenom} {activeProspect.nom}
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-black">
                   En déplacement...
                 </span>
               </div>
-              <div className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+              <div className="text-xs text-muted-foreground font-bold flex items-center gap-1">
                 <Building2 className="w-3.5 h-3.5 text-primary" />
                 <span>{activeProspect.entreprise}</span>
               </div>
@@ -371,111 +371,133 @@ export const ProspectKanban: React.FC = () => {
         </DragOverlay>
       </DndContext>
 
-      {/* Mandatory Loss Reason Selection Modal */}
-      {lossModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-sm bg-card border border-border rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center gap-2 text-rose-500 font-bold text-sm">
-              <AlertTriangle className="w-5 h-5" />
-              <span>Motif de Perte Obligatoire</span>
-            </div>
+      {/* Mandatory Loss Reason Bottom Sheet Modal on Mobile, Centered on Desktop */}
+      <AnimatePresence>
+        {lossModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm font-sans">
+            <motion.div
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-sm bg-card border-t sm:border border-border/80 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 font-sans relative"
+            >
+              {/* Mobile Drag Handle */}
+              <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto sm:hidden mb-1" />
 
-            <p className="text-xs text-muted-foreground">
-              Veuillez sélectionner le motif d'abandon ou de perte de cette opportunité :
-            </p>
-
-            <div className="space-y-2 text-xs">
-              {[
-                { id: 'prix_trop_eleve', label: 'Prix trop élevé' },
-                { id: 'concurrent', label: 'Parti chez un concurrent' },
-                { id: 'pas_de_besoin_actuel', label: 'Pas de besoin actuel' },
-                { id: 'injoignable', label: 'Prospect injoignable' },
-                { id: 'mauvais_timing', label: 'Mauvais timing / Projet reporté' },
-                { id: 'autre', label: 'Autre motif' }
-              ].map((m) => (
-                <label
-                  key={m.id}
-                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                    selectedMotif === m.id
-                      ? 'border-rose-500 bg-rose-500/10 text-foreground font-bold'
-                      : 'border-border bg-card text-muted-foreground'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="motif"
-                    checked={selectedMotif === m.id}
-                    onChange={() => setSelectedMotif(m.id as MotifPerte)}
-                    className="accent-rose-500"
-                  />
-                  <span>{m.label}</span>
-                </label>
-              ))}
-            </div>
-
-            <div className="pt-2 flex gap-2">
-              <button
-                onClick={() => { setLossModalOpen(false); setPendingProspectId(null); }}
-                className="w-1/2 py-2.5 rounded-xl border text-xs font-bold hover:bg-muted"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={confirmLoss}
-                className="w-1/2 py-2.5 rounded-xl bg-rose-500 text-white font-bold text-xs hover:bg-rose-600 shadow-md"
-              >
-                Confirmer la perte
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Client Conversion Modal triggered when dropped into Gagné */}
-      {convertModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-sm bg-card border border-border rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center gap-2 text-emerald-500 font-bold text-sm">
-              <UserCheck className="w-5 h-5" />
-              <span>Conversion en Client Faciloop</span>
-            </div>
-
-            <p className="text-xs text-muted-foreground">
-              Félicitations pour cette vente ! Choisissez la formule SaaS souscrite par le client :
-            </p>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold mb-1">Formule SaaS Souscrite</label>
-                <select
-                  value={selectedFormule}
-                  onChange={(e) => setSelectedFormule(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
-                >
-                  <option value="SaaS Starter">SaaS Starter (250 000 FCFA/an)</option>
-                  <option value="SaaS Business Pro">SaaS Business Pro (750 000 FCFA/an)</option>
-                  <option value="SaaS Enterprise">SaaS Enterprise (Sur-mesure)</option>
-                </select>
+              <div className="flex items-center gap-2 text-rose-500 font-extrabold text-sm">
+                <AlertTriangle className="w-5 h-5 shrink-0" />
+                <span>Motif de Perte Obligatoire</span>
               </div>
-            </div>
 
-            <div className="pt-2 flex gap-2">
-              <button
-                onClick={() => { setConvertModalOpen(false); setPendingProspectId(null); }}
-                className="w-1/2 py-2.5 rounded-xl border text-xs font-bold hover:bg-muted"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={confirmConvert}
-                className="w-1/2 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600 shadow-md"
-              >
-                Valider la conversion
-              </button>
-            </div>
+              <p className="text-xs text-muted-foreground font-semibold">
+                Veuillez sélectionner le motif d'abandon ou de perte de cette opportunité :
+              </p>
+
+              <div className="space-y-2 text-xs">
+                {[
+                  { id: 'prix_trop_eleve', label: 'Prix trop élevé' },
+                  { id: 'concurrent', label: 'Parti chez un concurrent' },
+                  { id: 'pas_de_besoin_actuel', label: 'Pas de besoin actuel' },
+                  { id: 'injoignable', label: 'Prospect injoignable' },
+                  { id: 'mauvais_timing', label: 'Mauvais timing / Projet reporté' },
+                  { id: 'autre', label: 'Autre motif' }
+                ].map((m) => (
+                  <label
+                    key={m.id}
+                    className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${
+                      selectedMotif === m.id
+                        ? 'border-rose-500 bg-rose-500/10 text-foreground font-extrabold'
+                        : 'border-border bg-card text-muted-foreground font-semibold'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="motif"
+                      checked={selectedMotif === m.id}
+                      onChange={() => setSelectedMotif(m.id as MotifPerte)}
+                      className="accent-rose-500 w-4 h-4"
+                    />
+                    <span>{m.label}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={() => { setLossModalOpen(false); setPendingProspectId(null); }}
+                  className="w-full sm:w-1/2 py-3 rounded-2xl border border-input text-xs font-bold text-foreground hover:bg-muted"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={confirmLoss}
+                  className="w-full sm:w-1/2 py-3 rounded-2xl bg-rose-500 text-white font-extrabold text-xs hover:bg-rose-600 shadow-md shadow-rose-500/25"
+                >
+                  Confirmer la perte
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
+
+      {/* Client Conversion Bottom Sheet Modal on Mobile, Centered on Desktop */}
+      <AnimatePresence>
+        {convertModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm font-sans">
+            <motion.div
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-sm bg-card border-t sm:border border-border/80 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 font-sans relative"
+            >
+              {/* Mobile Drag Handle */}
+              <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto sm:hidden mb-1" />
+
+              <div className="flex items-center gap-2 text-emerald-500 font-extrabold text-sm sm:text-base">
+                <UserCheck className="w-5 h-5 shrink-0" />
+                <span>Conversion en Client Faciloop</span>
+              </div>
+
+              <p className="text-xs text-muted-foreground font-semibold">
+                Félicitations pour cette vente ! Choisissez la formule SaaS souscrite par le client :
+              </p>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-bold text-foreground mb-1.5">Formule SaaS Souscrite</label>
+                  <select
+                    value={selectedFormule}
+                    onChange={(e) => setSelectedFormule(e.target.value)}
+                    className="w-full p-3 rounded-2xl border border-input bg-background font-bold text-xs text-foreground focus:ring-2 focus:ring-primary/50"
+                  >
+                    <option value="SaaS Starter">SaaS Starter (250 000 FCFA/an)</option>
+                    <option value="SaaS Business Pro">SaaS Business Pro (750 000 FCFA/an)</option>
+                    <option value="SaaS Enterprise">SaaS Enterprise (Sur-mesure)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={() => { setConvertModalOpen(false); setPendingProspectId(null); }}
+                  className="w-full sm:w-1/2 py-3 rounded-2xl border border-input text-xs font-bold text-foreground hover:bg-muted"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={confirmConvert}
+                  className="w-full sm:w-1/2 py-3 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs hover:bg-emerald-600 shadow-md shadow-emerald-500/25"
+                >
+                  Valider la conversion
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
