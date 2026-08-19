@@ -59,6 +59,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
               <span>{currentOrg.nom}</span>
             </div>
           )}
+
+          {user?.role === 'commercial' && (
+            <div className="hidden items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-600 xl:flex">
+              <ShieldAlert className="h-3.5 w-3.5 text-emerald-500" />
+              <span>🔒 Vue restreinte à votre portefeuille personnel</span>
+            </div>
+          )}
         </div>
 
         {/* Right section: Currency, Theme toggle, Notifications & Profile */}

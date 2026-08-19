@@ -259,10 +259,10 @@ export const ProspectKanban: React.FC = () => {
   const [selectedMotif, setSelectedMotif] = useState<MotifPerte>('prix_trop_eleve');
   const [selectedFormule, setSelectedFormule] = useState<string>('SaaS Business Pro');
 
-  // DnD Sensors for desktop mouse & mobile touch
+  // DnD Sensors for desktop mouse & mobile touch (250ms delay for mobile scroll protection)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } })
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   );
 
   const handleDragStart = (event: DragStartEvent) => {

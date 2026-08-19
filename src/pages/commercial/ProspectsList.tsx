@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource } from '../../types/crm';
 import { mockCommerciaux } from '../../lib/mockData';
+import { formatPhoneNumber } from '../../lib/phoneUtils';
 import { 
   Users, 
   Search, 
@@ -48,12 +49,12 @@ export const ProspectsList: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Phone input duplicate checker (checks across whole org)
+  // Phone input duplicate checker (checks across whole org using formatPhoneNumber)
   const handlePhoneChange = (val: string) => {
     setNewPhone(val);
-    const clean = val.replace(/\s+/g, '');
-    if (clean.length >= 8) {
-      const exists = prospects.some(p => p.telephone.replace(/\s+/g, '') === clean);
+    const formatted = formatPhoneNumber(val);
+    if (formatted.length >= 8) {
+      const exists = prospects.some(p => formatPhoneNumber(p.telephone) === formatted);
       setDuplicateAlert(exists);
     } else {
       setDuplicateAlert(false);

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { mockCommerciaux } from '../../lib/mockData';
+import { formatPhoneNumber } from '../../lib/phoneUtils';
 import { 
   FileSpreadsheet, 
   Download, 
@@ -63,7 +64,7 @@ export const ImportExportPage: React.FC = () => {
     const sourceIdx = rawHeaders.findIndex(h => h.includes('source') || h.includes('canal') || h.includes('origine'));
     const commentIdx = rawHeaders.findIndex(h => h.includes('comment') || h.includes('note') || h.includes('desc'));
 
-    const existingPhones = new Set(prospects.map(p => p.telephone.replace(/\s+/g, '')));
+    const existingPhones = new Set(prospects.map(p => formatPhoneNumber(p.telephone)));
 
     const rows: ParsedProspectRow[] = [];
 
@@ -78,14 +79,14 @@ export const ImportExportPage: React.FC = () => {
       const sourceVal = sourceIdx !== -1 ? parts[sourceIdx] : 'prospection_directe';
       const commentVal = commentIdx !== -1 ? parts[commentIdx] : 'Importé via fichier CSV';
 
-      const cleanPhone = phoneVal.replace(/\s+/g, '');
-      const isDuplicate = existingPhones.has(cleanPhone);
+      const formattedPhone = formatPhoneNumber(phoneVal);
+      const isDuplicate = existingPhones.has(formattedPhone);
 
       rows.push({
         nom: nomVal,
         prenom: prenomVal,
         entreprise: entrepriseVal,
-        telephone: phoneVal,
+        telephone: formattedPhone,
         source: sourceVal,
         commentaire: commentVal,
         isDuplicate

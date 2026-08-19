@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { UserRole, Organization, Commercial, Prospect, Relance, Interaction, NotificationItem, ClientFaciloop } from '../types/crm';
 import { mockOrganizations, mockCommerciaux, mockProspects, mockRelances, mockInteractions, mockNotifications, mockClients } from '../lib/mockData';
+import { formatPhoneNumber } from '../lib/phoneUtils';
 
 export interface UserSession {
   id: string;
@@ -185,10 +186,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Anti-Duplicate phone check & add prospect
   const addProspect = (newP: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>) => {
-    const cleanNewPhone = newP.telephone.replace(/\s+/g, '');
+    const formattedPhone = formatPhoneNumber(newP.telephone);
     const isDuplicate = prospects.some(
       p => p.organization_id === (user?.organizationId || 'org-faciloop-client-1') &&
-           p.telephone.replace(/\s+/g, '') === cleanNewPhone
+           formatPhoneNumber(p.telephone) === formattedPhone
     );
 
     if (isDuplicate) {
@@ -197,6 +198,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const created: Prospect = {
       ...newP,
+      telephone: formattedPhone,
       id: `prospect-${Date.now()}`,
       organization_id: user?.organizationId || 'org-faciloop-client-1',
       commercial_id: newP.commercial_id || (user?.role === 'commercial' ? user.id : undefined),
