@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserRole, Organization, Commercial, Prospect, Relance, Interaction, NotificationItem, ClientFaciloop } from '../types/crm';
 import { mockOrganizations, mockCommerciaux, mockProspects, mockRelances, mockInteractions, mockNotifications, mockClients } from '../lib/mockData';
 
-interface UserSession {
+export interface UserSession {
   id: string;
   nom: string;
   prenom: string;
@@ -19,7 +19,7 @@ interface AuthContextType {
   setCurrency: (c: string) => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
-  login: (telephone: string, codeSecret: string) => Promise<boolean>;
+  login: (telephone: string, codeSecret: string) => Promise<UserSession | null>;
   logout: () => void;
   switchOrganization: (orgId: string) => void;
   
@@ -81,12 +81,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [notifications, setNotifications] = useState<NotificationItem[]>(mockNotifications);
   const [clients, setClients] = useState<ClientFaciloop[]>(mockClients);
 
-  const login = async (telephone: string, codeSecret: string): Promise<boolean> => {
+  const login = async (telephone: string, codeSecret: string): Promise<UserSession | null> => {
     const cleanPhone = telephone.replace(/\s+/g, '');
     
     // Super-Admin fallback (e.g. 770000000 or admin secret code)
     if (cleanPhone.includes('99999') || codeSecret === '0000') {
-      setUser({
+      const sess: UserSession = {
         id: 'super-admin-1',
         nom: 'Digit',
         prenom: "Advisor Admin",
@@ -94,14 +94,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: 'admin@digitadvisor.sn',
         role: 'super_admin',
         organizationId: 'org-digitadvisor'
-      });
+      };
+      setUser(sess);
       setCurrentOrg(mockOrganizations[0]);
-      return true;
+      return sess;
     }
 
     // Admin Org fallback
     if (codeSecret === '1111') {
-      setUser({
+      const sess: UserSession = {
         id: 'admin-org-1',
         nom: 'Manager',
         prenom: 'Teranga',
@@ -109,16 +110,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: 'admin@teranga.sn',
         role: 'admin_org',
         organizationId: 'org-faciloop-client-1'
-      });
+      };
+      setUser(sess);
       setCurrentOrg(mockOrganizations[1]);
-      return true;
+      return sess;
     }
 
     // Standard Commercial login
     const foundComm = mockCommerciaux.find(c => c.telephone.replace(/\s+/g, '') === cleanPhone);
     if (foundComm || codeSecret.length >= 4) {
       const comm = foundComm || mockCommerciaux[0];
-      setUser({
+      const sess: UserSession = {
         id: comm.id,
         nom: comm.nom,
         prenom: comm.prenom,
@@ -126,13 +128,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: comm.email,
         role: 'commercial',
         organizationId: comm.organization_id
-      });
+      };
+      setUser(sess);
       const org = mockOrganizations.find(o => o.id === comm.organization_id) || mockOrganizations[1];
       setCurrentOrg(org);
-      return true;
+      return sess;
     }
 
-    return false;
+    return null;
   };
 
   const logout = () => {

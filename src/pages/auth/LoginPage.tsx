@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Eye, EyeOff, AlertCircle, Phone, Lock, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Phone, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const LoginPage: React.FC = () => {
@@ -14,6 +14,16 @@ export const LoginPage: React.FC = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const redirectByRole = (role: string) => {
+    if (role === 'super_admin') {
+      navigate('/super-admin/dashboard');
+    } else if (role === 'admin_org') {
+      navigate('/admin/dashboard');
+    } else {
+      navigate('/app/dashboard');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,10 +41,9 @@ export const LoginPage: React.FC = () => {
 
     setLoading(true);
     try {
-      const success = await login(telephone, codeSecret);
-      if (success) {
-        // Redirection depending on user role
-        navigate('/app/dashboard');
+      const session = await login(telephone, codeSecret);
+      if (session) {
+        redirectByRole(session.role);
       } else {
         setErrorMsg('Numéro de téléphone ou code secret incorrect');
       }
@@ -46,12 +55,18 @@ export const LoginPage: React.FC = () => {
   };
 
   // Quick demo presets
-  const handleQuickPreset = (phone: string, pin: string, redirectPath: string) => {
+  const handleQuickPreset = async (phone: string, pin: string) => {
     setTelephone(phone);
     setCodeSecret(pin);
-    login(phone, pin).then(() => {
-      navigate(redirectPath);
-    });
+    setLoading(true);
+    try {
+      const session = await login(phone, pin);
+      if (session) {
+        redirectByRole(session.role);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -180,19 +195,19 @@ export const LoginPage: React.FC = () => {
           </p>
           <div className="grid grid-cols-3 gap-1.5 text-[10px]">
             <button
-              onClick={() => handleQuickPreset('+221771234567', '1234', '/app/dashboard')}
+              onClick={() => handleQuickPreset('+221771234567', '1234')}
               className="px-2 py-1.5 rounded-lg border border-border bg-muted/50 font-semibold hover:border-primary text-foreground transition-all truncate"
             >
               Commercial
             </button>
             <button
-              onClick={() => handleQuickPreset('+221789998877', '1111', '/admin/dashboard')}
+              onClick={() => handleQuickPreset('+221789998877', '1111')}
               className="px-2 py-1.5 rounded-lg border border-border bg-muted/50 font-semibold hover:border-primary text-foreground transition-all truncate"
             >
               Admin Org
             </button>
             <button
-              onClick={() => handleQuickPreset('+221770000000', '0000', '/super-admin/dashboard')}
+              onClick={() => handleQuickPreset('+221770000000', '0000')}
               className="px-2 py-1.5 rounded-lg border border-border bg-muted/50 font-semibold hover:border-primary text-foreground transition-all truncate"
             >
               Super-Admin

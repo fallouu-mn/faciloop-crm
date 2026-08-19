@@ -37,63 +37,45 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
 
           {/* Commercial Espace */}
-          <Route
-            path="/app/*"
-            element={
-              <AppLayout>
-                <Routes>
-                  <Route path="dashboard" element={<DashboardCommercial />} />
-                  <Route path="prospects" element={<ProspectsList />} />
-                  <Route path="prospects/:id" element={<ProspectDetail />} />
-                  <Route path="pipeline" element={<ProspectKanban />} />
-                  <Route path="relances" element={<RelancesPage />} />
-                  <Route path="objectifs" element={<ObjectifsPage />} />
-                  <Route path="notifications" element={<NotificationsPage />} />
-                  <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
-                </Routes>
-              </AppLayout>
-            }
-          />
+          <Route path="/app" element={<AppLayout />}>
+            <Route index element={<Navigate to="/app/dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardCommercial />} />
+            <Route path="prospects" element={<ProspectsList />} />
+            <Route path="prospects/:id" element={<ProspectDetail />} />
+            <Route path="pipeline" element={<ProspectKanban />} />
+            <Route path="relances" element={<RelancesPage />} />
+            <Route path="objectifs" element={<ObjectifsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
+          </Route>
 
           {/* Admin Organisation Espace */}
-          <Route
-            path="/admin/*"
-            element={
-              <AppLayout>
-                <Routes>
-                  <Route path="dashboard" element={<DashboardAdminOrg />} />
-                  <Route path="prospects" element={<ProspectsList />} />
-                  <Route path="clients" element={<ProspectsList />} />
-                  <Route path="pipeline" element={<ProspectKanban />} />
-                  <Route path="equipe" element={<EquipeCommerciale />} />
-                  <Route path="objectifs" element={<ObjectifsPage />} />
-                  <Route path="relances" element={<RelancesPage />} />
-                  <Route path="abonnements" element={<ImportExportPage />} />
-                  <Route path="paiements" element={<ImportExportPage />} />
-                  <Route path="import-export" element={<ImportExportPage />} />
-                  <Route path="journal" element={<JournalActionsPage />} />
-                  <Route path="parametres" element={<ParametresEntreprise />} />
-                  <Route path="notifications" element={<NotificationsPage />} />
-                  <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
-                </Routes>
-              </AppLayout>
-            }
-          />
+          <Route path="/admin" element={<AppLayout />}>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardAdminOrg />} />
+            <Route path="prospects" element={<ProspectsList />} />
+            <Route path="clients" element={<ProspectsList />} />
+            <Route path="pipeline" element={<ProspectKanban />} />
+            <Route path="equipe" element={<EquipeCommerciale />} />
+            <Route path="objectifs" element={<ObjectifsPage />} />
+            <Route path="relances" element={<RelancesPage />} />
+            <Route path="abonnements" element={<ImportExportPage />} />
+            <Route path="paiements" element={<ImportExportPage />} />
+            <Route path="import-export" element={<ImportExportPage />} />
+            <Route path="journal" element={<JournalActionsPage />} />
+            <Route path="parametres" element={<ParametresEntreprise />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+          </Route>
 
           {/* Super-Admin Espace */}
-          <Route
-            path="/super-admin/*"
-            element={
-              <AppLayout>
-                <Routes>
-                  <Route path="dashboard" element={<DashboardSuperAdmin />} />
-                  <Route path="organisations" element={<DashboardSuperAdmin />} />
-                  <Route path="parametres" element={<ParametresEntreprise />} />
-                  <Route path="*" element={<Navigate to="/super-admin/dashboard" replace />} />
-                </Routes>
-              </AppLayout>
-            }
-          />
+          <Route path="/super-admin" element={<AppLayout />}>
+            <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardSuperAdmin />} />
+            <Route path="organisations" element={<DashboardSuperAdmin />} />
+            <Route path="parametres" element={<ParametresEntreprise />} />
+            <Route path="*" element={<Navigate to="/super-admin/dashboard" replace />} />
+          </Route>
 
           {/* Fallback 404 Route */}
           <Route
