@@ -11,9 +11,11 @@ import {
   Zap, 
   Check, 
   ArrowRight, 
-  PhoneCall, 
   Users, 
-  Globe2 
+  Globe2, 
+  Sparkles,
+  Lock,
+  ArrowUpRight
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
@@ -23,34 +25,36 @@ export const LandingPage: React.FC = () => {
   const plans = [
     {
       name: 'SaaS Starter',
-      description: 'Idéal pour les petites équipes commerciales et TPE.',
+      badge: 'Pour petites équipes',
+      description: 'Idéal pour démarrer la gestion structurée des prospects et relances.',
       priceXOF: billingCycle === 'annuel' ? '250 000 FCFA' : '25 000 FCFA',
       priceEUR: billingCycle === 'annuel' ? '380 €' : '38 €',
       period: billingCycle === 'annuel' ? '/ an' : '/ mois',
       features: [
-        'Jusqu’à 3 utilisateurs',
-        '1000 prospects gérés',
-        'Pipeline Kanban standard (12 étapes)',
-        'Historique des relances quotidiennes',
+        'Jusqu’à 3 commerciaux',
+        '1000 prospects attribués',
+        'Pipeline Kanban 6 étapes MVP',
+        'Relances quotidiennes & Alertes',
         'Détection anti-doublon par téléphone',
-        'Export CSV'
+        'Exportation CSV & JSON'
       ],
       popular: false,
       cta: 'Démarrer gratuitement'
     },
     {
       name: 'SaaS Business Pro',
-      description: 'Pour les PME et équipes en forte croissance.',
+      badge: 'Formule Recommandée',
+      description: 'Pour PME & équipes commerciales en forte croissance.',
       priceXOF: billingCycle === 'annuel' ? '750 000 FCFA' : '75 000 FCFA',
       priceEUR: billingCycle === 'annuel' ? '1 140 €' : '114 €',
       period: billingCycle === 'annuel' ? '/ an' : '/ mois',
       features: [
-        'Jusqu’à 10 utilisateurs',
-        'Prospects illimités',
+        'Jusqu’à 10 commerciaux',
+        'Prospects & Clients illimités',
         'Pipeline Kanban + Déclencheur WhatsApp direct',
-        'Dashboard statistiques & Recharts',
-        'Import & Export CSV/Excel avec mapping',
-        'Gestion des objectifs par commercial',
+        'Réattribution en masse des prospects (Admin)',
+        'Dashboard statistiques Recharts',
+        'Import CSV avec parsing & dédoublonnage',
         'Support prioritaire 24/7'
       ],
       popular: true,
@@ -58,34 +62,60 @@ export const LandingPage: React.FC = () => {
     },
     {
       name: 'SaaS Enterprise',
-      description: 'Pour grands groupes, multi-filiales & agences.',
+      badge: 'Sur-mesure',
+      description: 'Pour grands groupes, multi-filiales & agences internationales.',
       priceXOF: 'Sur devis',
       priceEUR: 'Sur devis',
       period: '',
       features: [
-        'Utilisateurs illimités',
+        'Commerciaux illimités',
         'Pipelines multiples personnalisables',
-        'Champs personnalisés sur-mesure',
-        'Intégration API REST & Webhooks',
-        'Module Facturation & Devis PDF',
-        'Calcul des commissions commerciales',
-        'Accompagnement dédié & Formation'
+        'Accès API REST & Webhooks',
+        'Gestion multi-organisations (Super-Admin)',
+        'Facturation & Devis PDF intégrés',
+        'Commissions commerciales automatiques',
+        'Accompagnement & Formation dédiés'
       ],
       popular: false,
-      cta: 'Contacter l’équipe'
+      cta: 'Contacter notre équipe'
     }
   ];
 
+  // Stagger Container Variants for Scroll Reveal
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 24, filter: 'blur(4px)' },
+    visible: {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden">
-      {/* Header Navigation */}
-      <header className="sticky top-0 z-50 border-b border-border/80 bg-card/90 backdrop-blur-md">
+    <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary/20 selection:text-primary">
+      {/* Header Navigation with Glassmorphism */}
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/75 backdrop-blur-xl transition-all">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-faciloop text-white shadow-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-faciloop text-white shadow-lg shadow-primary/25">
               <span className="text-2xl font-black">F</span>
             </div>
-            <span className="text-xl font-extrabold tracking-tight text-gradient-faciloop">Faciloop CRM</span>
+            <div className="flex flex-col">
+              <span className="text-xl font-extrabold tracking-tight text-gradient-faciloop">Faciloop CRM</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">SaaS B2B Multi-Tenant</span>
+            </div>
           </div>
 
           <nav className="hidden items-center gap-8 md:flex text-sm font-semibold text-muted-foreground">
@@ -104,7 +134,7 @@ export const LandingPage: React.FC = () => {
             </Link>
             <Link
               to="/login"
-              className="rounded-xl bg-gradient-faciloop px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
+              className="rounded-xl bg-gradient-faciloop px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all"
             >
               Essai Gratuit
             </Link>
@@ -113,17 +143,18 @@ export const LandingPage: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-16 pb-20 md:pt-24 md:pb-32 overflow-hidden">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/15 rounded-full blur-[140px] pointer-events-none" />
+      <section className="relative pt-16 pb-20 md:pt-28 md:pb-36 overflow-hidden">
+        {/* Glow Spheres Background */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr from-primary/20 via-accent/15 to-transparent rounded-full blur-[140px] pointer-events-none" />
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary mb-6"
+            transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary mb-6 shadow-sm"
           >
-            <Zap className="h-4 w-4" />
+            <Sparkles className="h-4 w-4 animate-spin-slow" />
             <span>Nouveau : Version SaaS Multi-Entreprises 2.0 disponible</span>
           </motion.div>
 
@@ -131,19 +162,19 @@ export const LandingPage: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl sm:text-6xl font-black tracking-tight text-foreground max-w-4xl mx-auto leading-tight"
+            className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-foreground max-w-5xl mx-auto leading-[1.1]"
           >
-            Boostez votre pipeline commercial avec le CRM B2B{' '}
-            <span className="text-gradient-faciloop">100% Multi-Entreprises</span>
+            Le CRM commercial B2B conçu pour transformer vos prospects en{' '}
+            <span className="text-gradient-faciloop">clients fidèles</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-6 text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto font-normal leading-relaxed"
+            className="mt-6 text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto font-normal leading-relaxed"
           >
-            Conçu pour les équipes commerciales en Afrique et à l’international. Suivez vos prospects, automatisez vos relances quotidiennes et signez plus de contrats sans friction.
+            Suivi de portefeuille par commercial, pipeline Kanban 6 étapes, relances quotidiennes et déclencheur WhatsApp direct. Une plateforme multi-entreprises sécurisée et ultra-fluide.
           </motion.p>
 
           <motion.div
@@ -154,232 +185,274 @@ export const LandingPage: React.FC = () => {
           >
             <Link
               to="/login"
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-sm shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-sm shadow-xl shadow-primary/30 hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-2 group"
             >
               <span>Accéder à la plateforme</span>
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <a
-              href="#demo"
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-border bg-card text-foreground font-bold text-sm hover:bg-muted transition-all"
+              href="#features"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-border bg-card/80 backdrop-blur text-foreground font-bold text-sm hover:bg-muted transition-all"
             >
-              Voir la démo interactive
+              Découvrir les fonctionnalités
             </a>
           </motion.div>
 
-          {/* Key Metrics Strip */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            <div className="p-4 rounded-2xl border border-border bg-card/60 backdrop-blur">
-              <div className="text-2xl font-black text-primary">+120%</div>
-              <div className="text-xs text-muted-foreground mt-1">Taux de relance effective</div>
-            </div>
-            <div className="p-4 rounded-2xl border border-border bg-card/60 backdrop-blur">
-              <div className="text-2xl font-black text-emerald-500">100%</div>
-              <div className="text-xs text-muted-foreground mt-1">Isolation Multi-Tenant RLS</div>
-            </div>
-            <div className="p-4 rounded-2xl border border-border bg-card/60 backdrop-blur">
-              <div className="text-2xl font-black text-amber-500">0 Doublon</div>
-              <div className="text-xs text-muted-foreground mt-1">Contrôle téléphone instantané</div>
-            </div>
-            <div className="p-4 rounded-2xl border border-border bg-card/60 backdrop-blur">
-              <div className="text-2xl font-black text-purple-500">&lt; 30 sec</div>
-              <div className="text-xs text-muted-foreground mt-1">Prise en main commercial</div>
-            </div>
-          </div>
+          {/* Key Metrics Strip with Glassmorphism */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto"
+          >
+            {[
+              { val: '+120%', label: 'Taux de relance effective', color: 'text-primary' },
+              { val: '100%', label: 'Isolation Multi-Tenant RLS', color: 'text-emerald-500' },
+              { val: '0 Doublon', label: 'Anti-doublon téléphone', color: 'text-amber-500' },
+              { val: '< 30 sec', label: 'Prise en main commercial', color: 'text-purple-500' }
+            ].map((stat, idx) => (
+              <motion.div
+                key={idx}
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="p-5 rounded-3xl border border-border/80 bg-card/70 backdrop-blur-xl shadow-lg shadow-black/5 space-y-1"
+              >
+                <div className={`text-2xl sm:text-3xl font-black ${stat.color}`}>{stat.val}</div>
+                <div className="text-xs font-semibold text-muted-foreground">{stat.label}</div>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
-      {/* Features Grid Section */}
-      <section id="features" className="py-20 border-t border-border bg-muted/30">
+      {/* Features Grid Section with Scroll Reveal */}
+      <section id="features" className="py-24 border-t border-border/60 bg-muted/20 relative">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-primary">Fonctionnalités Clés</h2>
-            <p className="mt-2 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-              Tout ce dont votre équipe commerciale a besoin
+            <h2 className="text-xs font-extrabold uppercase tracking-widest text-primary">Fonctionnalités Clés</h2>
+            <p className="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-foreground">
+              Conçu pour l'efficacité de vos commerciaux
             </p>
           </div>
 
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center mb-4 font-bold">
-                <Kanban className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Pipeline Kanban 12 Étapes</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Visualisez l'avancement de vos prospects en colonnes interactives. Glissez-déposez vos cartes et attribuez un motif obligatoire en cas de perte.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4 font-bold">
-                <MessageSquare className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Déclencheur WhatsApp Direct</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Lancez des messages pré-remplis en un clic sur WhatsApp Web ou Mobile pour relancer immédiatement vos prospects sans perdre de temps.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4 font-bold">
-                <CalendarClock className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Priorités & Relances du Jour</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Ne manquez aucun rendez-vous. Recevez les alertes des relances du jour et des retards pour agir au moment précis.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center mb-4 font-bold">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Isolation Multi-Tenant</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Données scellées par entreprise au niveau de la base de données. Contrôle d'accès par rôle (Commercial, Admin Org, Super-Admin).
-              </p>
-            </div>
-
-            <div className="p-6 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center mb-4 font-bold">
-                <BarChart3 className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Analytics & Recharts</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Suivez le chiffre d'affaires généré, les conversions et comparez les performances de votre équipe commerciale en temps réel.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-3xl border border-border bg-card shadow-sm hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center mb-4 font-bold">
-                <Building2 className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Import / Export CSV & Excel</h3>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Importez vos listes avec mapping interactif de colonnes et vérification des doublons sur le numéro de téléphone.
-              </p>
-            </div>
-          </div>
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            {[
+              {
+                icon: Kanban,
+                color: 'bg-blue-500/10 text-blue-500',
+                title: 'Pipeline Kanban 6 Étapes MVP',
+                desc: 'Visualisez vos opportunités selon le modèle standard du CDC. Glissez-déposez vos cartes avec déclenchement automatique des modales de motif de perte et de conversion.'
+              },
+              {
+                icon: MessageSquare,
+                color: 'bg-emerald-500/10 text-emerald-500',
+                title: 'Déclencheur WhatsApp Direct',
+                desc: 'Lancez des conversations directes avec des messages pré-remplis sur WhatsApp en 1 clic depuis la fiche prospect ou la liste des relances.'
+              },
+              {
+                icon: CalendarClock,
+                color: 'bg-amber-500/10 text-amber-500',
+                title: 'Priorités & Relances Quotidiennes',
+                desc: 'Gardez le contrôle sur les rendez-vous prévus aujourd\'hui et éliminez les relances en retard grâce à une vue synthétique par commercial.'
+              },
+              {
+                icon: ShieldCheck,
+                color: 'bg-purple-500/10 text-purple-500',
+                title: 'Isolation Portefeuille & Multi-Tenant',
+                desc: 'Isolation stricte des prospects attribués à chaque commercial. L\'Admin conserve une vue globale et un contrôle total sur l\'organisation.'
+              },
+              {
+                icon: BarChart3,
+                color: 'bg-rose-500/10 text-rose-500',
+                title: 'Tableau de Bord & Analytics Recharts',
+                desc: 'Suivez le chiffre d\'affaires, les conversions et comparez les résultats de vos équipes grâce à des graphiques dynamiques.'
+              },
+              {
+                icon: Building2,
+                color: 'bg-cyan-500/10 text-cyan-500',
+                title: 'Import CSV & Réattribution Masse',
+                desc: 'Importez des listes CSV avec séparateurs automatiques, détection des doublons téléphoniques et attribution en masse aux commerciaux.'
+              }
+            ].map((feat, idx) => (
+              <motion.div
+                key={idx}
+                variants={itemVariants}
+                whileHover={{ y: -6, scale: 1.02 }}
+                className="p-8 rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-lg hover:shadow-2xl hover:border-primary/40 transition-all duration-300 group"
+              >
+                <div className={`w-14 h-14 rounded-2xl ${feat.color} flex items-center justify-center mb-6 font-bold shadow-md`}>
+                  <feat.icon className="w-7 h-7" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{feat.title}</h3>
+                <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed">{feat.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20">
+      {/* Pricing Section with Fluid Framer Motion LayoutId Switcher */}
+      <section id="pricing" className="py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-primary">Tarifs Transparents</h2>
-            <p className="mt-2 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-              Des formules adaptées à chaque taille d'entreprise
+            <h2 className="text-xs font-extrabold uppercase tracking-widest text-primary">Tarifs Transparents</h2>
+            <p className="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-foreground">
+              Une formule adaptée à chaque étape de croissance
             </p>
 
-            {/* Cycle & Currency Toggle */}
-            <div className="mt-8 flex items-center justify-center gap-4">
-              <div className="flex items-center rounded-xl bg-muted p-1 text-xs font-bold">
+            {/* Fluid Toggle Controls with layoutId */}
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+              {/* Billing Cycle Toggle */}
+              <div className="relative flex items-center rounded-2xl bg-muted p-1.5 text-xs font-bold border border-border">
                 <button
                   onClick={() => setBillingCycle('mensuel')}
-                  className={`px-4 py-2 rounded-lg transition-all ${
-                    billingCycle === 'mensuel' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-                  }`}
+                  className="relative z-10 px-5 py-2.5 transition-colors text-foreground"
                 >
-                  Mensuel
+                  {billingCycle === 'mensuel' && (
+                    <motion.div
+                      layoutId="billing-pill"
+                      className="absolute inset-0 bg-card rounded-xl shadow-sm -z-10"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className={billingCycle === 'mensuel' ? 'text-foreground font-black' : 'text-muted-foreground'}>Mensuel</span>
                 </button>
+
                 <button
                   onClick={() => setBillingCycle('annuel')}
-                  className={`px-4 py-2 rounded-lg transition-all ${
-                    billingCycle === 'annuel' ? 'bg-gradient-faciloop text-white shadow-sm' : 'text-muted-foreground'
-                  }`}
+                  className="relative z-10 px-5 py-2.5 transition-colors text-foreground"
                 >
-                  Annuel (-20%)
+                  {billingCycle === 'annuel' && (
+                    <motion.div
+                      layoutId="billing-pill"
+                      className="absolute inset-0 bg-gradient-faciloop rounded-xl shadow-md -z-10"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className={billingCycle === 'annuel' ? 'text-white font-black' : 'text-muted-foreground'}>
+                    Annuel (-20%)
+                  </span>
                 </button>
               </div>
 
-              <div className="flex items-center rounded-xl bg-muted p-1 text-xs font-bold">
+              {/* Currency Toggle */}
+              <div className="relative flex items-center rounded-2xl bg-muted p-1.5 text-xs font-bold border border-border">
                 <button
                   onClick={() => setCurrency('XOF')}
-                  className={`px-3 py-2 rounded-lg transition-all ${
-                    currency === 'XOF' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground'
-                  }`}
+                  className="relative z-10 px-4 py-2.5 transition-colors"
                 >
-                  FCFA (XOF)
+                  {currency === 'XOF' && (
+                    <motion.div
+                      layoutId="currency-pill"
+                      className="absolute inset-0 bg-primary rounded-xl shadow-sm -z-10"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className={currency === 'XOF' ? 'text-white font-black' : 'text-muted-foreground'}>FCFA (XOF)</span>
                 </button>
+
                 <button
                   onClick={() => setCurrency('EUR')}
-                  className={`px-3 py-2 rounded-lg transition-all ${
-                    currency === 'EUR' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground'
-                  }`}
+                  className="relative z-10 px-4 py-2.5 transition-colors"
                 >
-                  EUR (€)
+                  {currency === 'EUR' && (
+                    <motion.div
+                      layoutId="currency-pill"
+                      className="absolute inset-0 bg-primary rounded-xl shadow-sm -z-10"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className={currency === 'EUR' ? 'text-white font-black' : 'text-muted-foreground'}>EUR (€)</span>
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Pricing Grid with Scroll Reveal */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8"
+          >
             {plans.map((plan, idx) => (
-              <div
+              <motion.div
                 key={idx}
-                className={`relative rounded-3xl p-8 border ${
+                variants={itemVariants}
+                whileHover={{ y: -8, scale: 1.02 }}
+                className={`relative rounded-3xl p-8 border backdrop-blur-xl transition-all duration-300 flex flex-col justify-between ${
                   plan.popular
-                    ? 'border-primary bg-card shadow-2xl shadow-primary/10 ring-2 ring-primary'
-                    : 'border-border bg-card shadow-sm'
+                    ? 'border-primary bg-card/90 shadow-2xl shadow-primary/15 ring-2 ring-primary'
+                    : 'border-border/80 bg-card/70 shadow-lg'
                 }`}
               >
-                {plan.popular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-faciloop text-[10px] font-black uppercase text-white shadow-md">
-                    Formule la plus choisie
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black uppercase tracking-wider text-primary">{plan.badge}</span>
                   </div>
-                )}
 
-                <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
-                <p className="text-xs text-muted-foreground mt-2 min-h-[32px]">{plan.description}</p>
+                  <h3 className="text-2xl font-black text-foreground mt-2">{plan.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed min-h-[36px]">{plan.description}</p>
 
-                <div className="mt-6 flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-foreground">
-                    {currency === 'XOF' ? plan.priceXOF : plan.priceEUR}
-                  </span>
-                  <span className="text-xs font-medium text-muted-foreground">{plan.period}</span>
+                  <div className="mt-6 flex items-baseline gap-1.5">
+                    <span className="text-4xl font-black text-foreground">
+                      {currency === 'XOF' ? plan.priceXOF : plan.priceEUR}
+                    </span>
+                    <span className="text-xs font-bold text-muted-foreground">{plan.period}</span>
+                  </div>
+
+                  <ul className="mt-8 space-y-3.5 border-t border-border/60 pt-6">
+                    {plan.features.map((feat, fIdx) => (
+                      <li key={fIdx} className="flex items-center gap-3 text-xs text-foreground font-semibold">
+                        <div className="p-0.5 rounded-full bg-emerald-500/10 text-emerald-500 shrink-0">
+                          <Check className="h-3.5 w-3.5" />
+                        </div>
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
-                <ul className="mt-8 space-y-3">
-                  {plan.features.map((feat, fIdx) => (
-                    <li key={fIdx} className="flex items-center gap-3 text-xs text-foreground font-medium">
-                      <Check className="h-4 w-4 text-emerald-500 shrink-0" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  to="/login"
-                  className={`mt-8 w-full py-3.5 rounded-xl font-bold text-xs flex items-center justify-center transition-all ${
-                    plan.popular
-                      ? 'bg-gradient-faciloop text-white shadow-lg shadow-primary/25 hover:opacity-95'
-                      : 'border border-input bg-card text-foreground hover:bg-muted'
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
-              </div>
+                <div className="mt-8">
+                  <Link
+                    to="/login"
+                    className={`w-full py-4 rounded-2xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all ${
+                      plan.popular
+                        ? 'bg-gradient-faciloop text-white shadow-xl shadow-primary/30 hover:opacity-95'
+                        : 'border border-input bg-card text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    <span>{plan.cta}</span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card py-12">
+      <footer className="border-t border-border bg-card/90 py-12 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-gradient-faciloop flex items-center justify-center text-white font-bold">
+            <div className="w-8 h-8 rounded-xl bg-gradient-faciloop flex items-center justify-center text-white font-black text-sm shadow-md">
               F
             </div>
             <span className="font-bold text-foreground">Faciloop CRM SaaS</span>
-            <span>© 2026 Digit’Advisor SAS. Tous droits réservés.</span>
+            <span>© 2026 Digit’Advisor. Tous droits réservés.</span>
           </div>
 
           <div className="flex items-center gap-6 font-semibold">
             <a href="#features" className="hover:text-foreground">Fonctionnalités</a>
             <a href="#pricing" className="hover:text-foreground">Tarifs</a>
-            <Link to="/login" className="hover:text-foreground">Connexion</Link>
+            <Link to="/login" className="hover:text-foreground">Espace Connexion</Link>
           </div>
         </div>
       </footer>
