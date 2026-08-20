@@ -1,0 +1,205 @@
+import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { CalendarClock, Plus, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+export const RelancesPage: React.FC = () => {
+  const { relances, prospects, addRelance, completeRelance } = useAuth();
+  const [filterStatut, setFilterStatut] = useState<string>('all');
+
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [prospectId, setProspectId] = useState<string>('');
+  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [heure, setHeure] = useState<string>('09:30');
+  const [canal, setCanal] = useState<any>('whatsapp');
+  const [motif, setMotif] = useState<string>('Relance de courtoisie');
+  const [commentaire, setCommentaire] = useState<string>('');
+
+  const filtered = relances.filter(r => filterStatut === 'all' || r.statut === filterStatut);
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    const p = prospects.find(item => item.id === prospectId) || prospects[0];
+    addRelance({
+      prospect_id: p.id,
+      prospect_nom: `${p.prenom || ''} ${p.nom}`.trim(),
+      prospect_entreprise: p.entreprise,
+      date,
+      heure,
+      canal,
+      motif,
+      commentaire,
+      statut: 'prevue'
+    });
+    setIsModalOpen(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+            Suivi des Relances Quotidiennes
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Ne laissez passer aucune opportunité d'échange avec vos prospects
+          </p>
+        </div>
+
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/25 hover:opacity-95"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Programmer une relance</span>
+        </button>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex rounded-xl bg-muted p-1 text-xs font-bold w-fit">
+        {['all', 'prevue', 'en_retard', 'realisee'].map((st) => (
+          <button
+            key={st}
+            onClick={() => setFilterStatut(st)}
+            className={`px-4 py-2 rounded-lg capitalize transition-all ${
+              filterStatut === st ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+            }`}
+          >
+            {st === 'all' ? 'Toutes les relances' : st.replace('_', ' ')}
+          </button>
+        ))}
+      </div>
+
+      {/* Relances List Grid */}
+      <div className="space-y-3">
+        {filtered.map((relance) => (
+          <div
+            key={relance.id}
+            className={`p-4 rounded-2xl border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+              relance.statut === 'en_retard' ? 'border-rose-500/50 bg-rose-500/5' : 'border-border'
+            }`}
+          >
+            <div className="space-y-1 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm text-foreground">{relance.prospect_nom}</span>
+                <span className="text-muted-foreground">({relance.prospect_entreprise})</span>
+              </div>
+              <p className="text-muted-foreground font-medium">{relance.commentaire || relance.motif}</p>
+              <div className="flex items-center gap-4 text-[10px] font-semibold text-muted-foreground">
+                <span>Date: {relance.date} à {relance.heure}</span>
+                <span className="capitalize">Canal: {relance.canal}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {relance.statut !== 'realisee' && (
+                <button
+                  onClick={() => completeRelance(relance.id)}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-bold text-xs shadow hover:bg-emerald-600 flex items-center gap-1"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Marquer effectuée</span>
+                </button>
+              )}
+              <Link
+                to={`/app/prospects/${relance.prospect_id}`}
+                className="px-3 py-1.5 rounded-xl border text-xs font-bold hover:bg-muted"
+              >
+                Voir prospect
+              </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal Schedule Relance */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-card border border-border rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-foreground">Programmer une Relance</h2>
+              <button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg hover:bg-muted">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreate} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold mb-1">Prospect à relancer</label>
+                <select
+                  required
+                  value={prospectId}
+                  onChange={(e) => setProspectId(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
+                >
+                  <option value="">Sélectionner un prospect</option>
+                  {prospects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.prenom} {p.nom} - {p.entreprise}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold mb-1">Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">Heure</label>
+                  <input
+                    type="time"
+                    required
+                    value={heure}
+                    onChange={(e) => setHeure(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Canal de relance</label>
+                <select
+                  value={canal}
+                  onChange={(e) => setCanal(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
+                >
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="appel">Appel Téléphonique</option>
+                  <option value="email">Email</option>
+                  <option value="visite">Visite</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Motif / Commentaire</label>
+                <input
+                  type="text"
+                  required
+                  value={commentaire}
+                  onChange={(e) => setCommentaire(e.target.value)}
+                  placeholder="Ex: Confirmer la prise de RDV pour la semaine prochaine"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95"
+              >
+                Valider la relance
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
