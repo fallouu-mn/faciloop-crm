@@ -65,7 +65,7 @@ const DashboardAdminSkeleton: React.FC = () => (
 );
 
 export const DashboardAdminOrg: React.FC = () => {
-  const { currentOrg, prospects, clients, currency } = useAuth();
+  const { user, currentOrg, prospects, clients, currency, setCurrency } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -91,21 +91,59 @@ export const DashboardAdminOrg: React.FC = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6 font-sans">
-      {/* Header Banner (Stacked on Mobile, Row on Desktop) */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-              Dashboard Admin - {currentOrg?.nom || "Teranga Logistique SA"}
+      {/* Header Banner matching exact Model App Screenshot layout */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          {/* Left: Bonjour, Admin 👋 */}
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
+              Bonjour, {user?.prenom || 'Admin'} 👋
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
-              Console Direction
+            <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider">
+              Direction {currentOrg?.nom || "Teranga Logistique"}
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Vue d'ensemble de l'activité commerciale globale et performance d'équipe
-          </p>
+
+          {/* Right: Currency Switcher Pill (FCFA | EUR | USD) matching screenshot */}
+          <div className="flex items-center rounded-2xl bg-muted/80 p-1 border border-border/80 text-xs font-black shrink-0">
+            <button
+              onClick={() => setCurrency('XOF')}
+              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
+                currency === 'XOF'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              FCFA
+            </button>
+            <button
+              onClick={() => setCurrency('EUR')}
+              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
+                currency === 'EUR'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              EUR
+            </button>
+            <button
+              onClick={() => setCurrency('USD')}
+              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
+                currency === 'USD'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              USD
+            </button>
+          </div>
         </div>
+
+        {/* Subtitle */}
+        <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
+          Vue d'ensemble de l'activité commerciale globale et performance d'équipe
+        </p>
+      </div>
 
         {/* Action Buttons Header Bar */}
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -125,7 +163,6 @@ export const DashboardAdminOrg: React.FC = () => {
             <span>Nouveau Commercial</span>
           </Link>
         </div>
-      </div>
 
       {/* Animated Metrics Cards Grid (1 col on Mobile, 2 on Tablet, 4 on Desktop) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

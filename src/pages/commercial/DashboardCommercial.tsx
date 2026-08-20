@@ -62,12 +62,12 @@ const DashboardSkeleton: React.FC = () => (
 );
 
 export const DashboardCommercial: React.FC = () => {
-  const { user, myProspects, myRelances } = useAuth();
+  const { user, myProspects, myRelances, currency, setCurrency } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Simulate quick 800ms initial loading skeleton for elite SaaS feel
+  // Simulate quick initial loading skeleton for elite SaaS feel
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
+    const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
   }, []);
 
@@ -94,239 +94,247 @@ export const DashboardCommercial: React.FC = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6 font-sans">
-      {/* Welcome Banner (Stacked on Mobile, Row on Desktop) */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-              Bonjour, {user?.prenom || 'Commercial'} 👋
+      {/* Header matching exact Model App Screenshot layout */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          {/* Left: Bonjour, Moussa 👋 */}
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
+              Bonjour, {user?.prenom || 'Moussa'} 👋
             </h1>
-            <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
+            <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider">
               Centre de Commandement
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Vos priorités, relances et performance de vente aujourd'hui
-          </p>
+
+          {/* Right: Currency Switcher Pill (FCFA | EUR | USD) matching screenshot */}
+          <div className="flex items-center rounded-2xl bg-muted/80 p-1 border border-border/80 text-xs font-black shrink-0">
+            <button
+              onClick={() => setCurrency('XOF')}
+              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
+                currency === 'XOF'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              FCFA
+            </button>
+            <button
+              onClick={() => setCurrency('EUR')}
+              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
+                currency === 'EUR'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              EUR
+            </button>
+            <button
+              onClick={() => setCurrency('USD')}
+              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
+                currency === 'USD'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              USD
+            </button>
+          </div>
         </div>
 
-        <div className="w-full sm:w-auto">
+        {/* Subtitle */}
+        <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
+          Vos priorités, relances et performance de vente aujourd'hui
+        </p>
+
+        {/* Prominent Full-Width CTA Button + Nouveau Prospect */}
+        <div>
           <Link
             to="/app/prospects"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-faciloop py-3.5 px-4 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-[0.99] transition-all"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4.5 w-4.5" />
             <span>Nouveau prospect</span>
           </Link>
         </div>
       </div>
 
-      {/* Responsive Metrics Cards Grid (1 col on Mobile, 2 on Tablet, 4 on Desktop) */}
+      {/* 4 Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Card 1 */}
         <motion.div
           whileHover={{ y: -3, scale: 1.01 }}
-          className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
+          className="p-5 rounded-3xl border border-border/80 bg-card shadow-md relative overflow-hidden space-y-2"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Mes Prospects</span>
-            <div className="rounded-2xl bg-blue-500/10 p-2 sm:p-2.5 text-blue-500 shadow-sm">
-              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">Mes Prospects</span>
+            <div className="p-2 rounded-2xl bg-blue-500/10 text-blue-500">
+              <Users className="w-5 h-5" />
             </div>
           </div>
-          <div className="flex items-baseline justify-between pt-0.5">
-            <span className="text-2xl sm:text-3xl font-black text-foreground">
+          <div className="flex items-baseline justify-between">
+            <span className="text-3xl font-black text-foreground">
               <AnimatedNumber value={totalProspects} />
             </span>
-            <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-1.5 sm:px-2 py-0.5 rounded-full">
-              <TrendingUp className="h-3 w-3" /> +12% ce mois
+            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+              <TrendingUp className="w-3 h-3" /> +12% ce mois
             </span>
           </div>
         </motion.div>
 
+        {/* Card 2 */}
         <motion.div
           whileHover={{ y: -3, scale: 1.01 }}
-          className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
+          className="p-5 rounded-3xl border border-border/80 bg-card shadow-md relative overflow-hidden space-y-2"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Relances Auj.</span>
-            <div className="rounded-2xl bg-amber-500/10 p-2 sm:p-2.5 text-amber-500 shadow-sm">
-              <CalendarClock className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">Relances Auj.</span>
+            <div className="p-2 rounded-2xl bg-amber-500/10 text-amber-500">
+              <CalendarClock className="w-5 h-5" />
             </div>
           </div>
-          <div className="flex items-baseline justify-between pt-0.5">
-            <span className="text-2xl sm:text-3xl font-black text-foreground">
+          <div className="flex items-baseline justify-between">
+            <span className="text-3xl font-black text-foreground">
               <AnimatedNumber value={relancesAujourdhui.length} />
             </span>
-            <span className="text-[9px] sm:text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
-              {relancesAujourdhui.length > 0 ? 'À effectuer' : 'À jour'}
+            <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
+              À jour
             </span>
           </div>
         </motion.div>
 
+        {/* Card 3 (Relances en retard - Highlighted Alert) */}
         <motion.div
           whileHover={{ y: -3, scale: 1.01 }}
-          className="rounded-3xl border border-rose-500/30 bg-rose-500/5 p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
+          className={`p-5 rounded-3xl border ${
+            relancesEnRetard.length > 0 ? 'border-rose-500/50 bg-rose-500/5' : 'border-border/80 bg-card'
+          } shadow-md relative overflow-hidden space-y-2`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-rose-500">Relances en Retard</span>
-            <div className="rounded-2xl bg-rose-500/10 p-2 sm:p-2.5 text-rose-500 shadow-sm animate-bounce">
-              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-rose-500">Relances en Retard</span>
+            <div className="p-2 rounded-2xl bg-rose-500/10 text-rose-500">
+              <AlertTriangle className="w-5 h-5" />
             </div>
           </div>
-          <div className="flex items-baseline justify-between pt-0.5">
-            <span className="text-2xl sm:text-3xl font-black text-rose-500">
+          <div className="flex items-baseline justify-between">
+            <span className="text-3xl font-black text-rose-500">
               <AnimatedNumber value={relancesEnRetard.length} />
             </span>
-            <span className="text-[9px] sm:text-[10px] font-black text-white bg-rose-500 px-2 py-0.5 rounded-full shadow-md shadow-rose-500/30">
-              URGENT
-            </span>
+            {relancesEnRetard.length > 0 && (
+              <span className="text-[10px] font-black text-white bg-rose-500 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
+                URGENT
+              </span>
+            )}
           </div>
         </motion.div>
 
+        {/* Card 4 */}
         <motion.div
           whileHover={{ y: -3, scale: 1.01 }}
-          className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
+          className="p-5 rounded-3xl border border-border/80 bg-card shadow-md relative overflow-hidden space-y-2"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Ventes Conclues</span>
-            <div className="rounded-2xl bg-emerald-500/10 p-2 sm:p-2.5 text-emerald-500 shadow-sm">
-              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">Ventes Conclues</span>
+            <div className="p-2 rounded-2xl bg-emerald-500/10 text-emerald-500">
+              <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
-          <div className="flex items-baseline justify-between pt-0.5">
-            <span className="text-2xl sm:text-3xl font-black text-foreground">
+          <div className="flex items-baseline justify-between">
+            <span className="text-3xl font-black text-foreground">
               <AnimatedNumber value={ventesConclues} />
             </span>
-            <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-1.5 sm:px-2 py-0.5 rounded-full">
-              <Sparkles className="h-3 w-3" /> Convertis
+            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <Sparkles className="w-3 h-3" /> Convertis
             </span>
           </div>
         </motion.div>
       </div>
 
-      {/* Main Grid: Priorities List & Recharts Curve (Stacked on Mobile, 2/3 + 1/3 on Desktop) */}
+      {/* Main Content Layout: Priorities List + Recharts Performance Area Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Left Col: Priorities List */}
-        <div className="lg:col-span-2 space-y-3 sm:space-y-4">
+        {/* Left 2 Cols: Priorities of the Day List */}
+        <div className="lg:col-span-2 p-5 sm:p-6 rounded-3xl border border-border/80 bg-card shadow-md space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span>Mes Priorités du Jour</span>
-            </h2>
-            <Link to="/app/relances" className="text-[11px] sm:text-xs font-bold text-primary hover:underline">
-              Voir toutes mes relances →
+              <h3 className="font-extrabold text-sm sm:text-base text-foreground uppercase tracking-wider">
+                Mes Priorités du Jour
+              </h3>
+            </div>
+            <Link to="/app/relances" className="text-xs font-extrabold text-primary hover:underline flex items-center gap-1">
+              <span>Voir toutes mes relances</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="space-y-2.5 sm:space-y-3">
-            {myRelances.length === 0 ? (
-              <div className="p-6 sm:p-8 rounded-3xl border-2 border-dashed border-border/80 bg-card/40 text-center space-y-1">
-                <p className="text-xs font-bold text-foreground">Aucune relance programmée pour le moment.</p>
-                <p className="text-[10px] sm:text-[11px] text-muted-foreground">Toutes vos actions quotidiennes sont à jour !</p>
-              </div>
-            ) : (
-              myRelances.map((relance) => {
-                const isLate = relance.statut === 'en_retard';
-                return (
-                  <motion.div
-                    key={relance.id}
-                    whileHover={{ scale: 1.005 }}
-                    className={`p-3.5 sm:p-4 rounded-2xl border bg-card shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                      isLate ? 'border-rose-500/50 bg-rose-500/5 ring-1 ring-rose-500/20' : 'border-border/80'
-                    }`}
+          <div className="space-y-3">
+            {myRelances.slice(0, 3).map((relance) => (
+              <div
+                key={relance.id}
+                className="p-4 rounded-2xl border border-border/60 bg-muted/30 hover:border-primary/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-xs sm:text-sm text-foreground">{relance.prospect_nom}</span>
+                    <span className="text-[10px] text-muted-foreground font-semibold">({relance.prospect_entreprise})</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-semibold">{relance.notes}</p>
+                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-bold">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-primary" /> {relance.heure}
+                    </span>
+                    <span>•</span>
+                    <span>Canal: {relance.canal.replace('_', ' ')}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <a
+                    href={`https://wa.me/${relance.prospect_telephone.replace(/\s+/g, '')}?text=Bonjour%20${encodeURIComponent(relance.prospect_nom)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="py-2 px-3 rounded-xl bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-500/20 hover:bg-emerald-600 active:scale-95 transition-all flex items-center gap-1.5"
                   >
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                        <span className="font-extrabold text-xs sm:text-sm text-foreground">{relance.prospect_nom}</span>
-                        <span className="text-[11px] sm:text-xs text-muted-foreground">({relance.prospect_entreprise})</span>
-                        {isLate && (
-                          <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[8px] sm:text-[9px] font-black uppercase shadow-sm">
-                            En retard
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] sm:text-xs text-muted-foreground font-medium line-clamp-1">{relance.commentaire || relance.motif}</p>
-                      <div className="flex items-center gap-2.5 text-[9px] sm:text-[10px] font-semibold text-muted-foreground pt-0.5">
-                        <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-primary" /> {relance.heure || '09:00'}</span>
-                        <span className="capitalize bg-muted px-1.5 py-0.5 rounded-md">Canal: {relance.canal}</span>
-                      </div>
-                    </div>
-
-                    {/* Instant Action Buttons (Compact text / icon-only on mobile) */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-border/40 justify-end">
-                      <a
-                        href={`https://wa.me/${relance.prospect_nom}?text=${encodeURIComponent(
-                          `Bonjour ${relance.prospect_nom}, je suis ${user?.prenom || 'commercial'} de Faciloop. Je vous relance au sujet de notre opportunité.`
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-500 text-white text-[11px] sm:text-xs font-bold shadow-md shadow-emerald-500/20 hover:bg-emerald-600 flex items-center gap-1 transition-all active:scale-95"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">WhatsApp</span>
-                        <span className="sm:hidden">WA</span>
-                      </a>
-
-                      <a
-                        href="tel:+221770000000"
-                        className="p-1.5 sm:p-2 rounded-xl border border-input bg-card text-foreground hover:bg-muted text-xs font-bold transition-all"
-                        title="Appeler"
-                      >
-                        <Phone className="w-3.5 h-3.5 text-primary" />
-                      </a>
-
-                      <Link
-                        to={`/app/prospects/${relance.prospect_id}`}
-                        className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-input bg-card text-[11px] sm:text-xs font-bold hover:bg-muted transition-all"
-                      >
-                        Fiche
-                      </Link>
-                    </div>
-                  </motion.div>
-                );
-              })
-            )}
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>WA</span>
+                  </a>
+                  <a
+                    href={`tel:${relance.prospect_telephone}`}
+                    className="p-2 rounded-xl border border-input text-foreground hover:bg-muted active:scale-95 transition-all"
+                  >
+                    <Phone className="w-4 h-4 text-primary" />
+                  </a>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Right Col: Polished Recharts Sales Performance */}
-        <div className="space-y-3 sm:space-y-4">
-          <h2 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-emerald-500" />
-            <span>Performance Financière (Semaine)</span>
-          </h2>
+        {/* Right 1 Col: Dynamic Sales Performance Chart */}
+        <div className="p-5 sm:p-6 rounded-3xl border border-border/80 bg-card shadow-md space-y-4 flex flex-col justify-between">
+          <div className="space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">CA Ventes Hebdomadaire</span>
+            <h3 className="text-2xl font-black text-primary">
+              3 377 923 {currency === 'XOF' ? 'FCFA' : currency}
+            </h3>
+            <p className="text-xs text-muted-foreground font-semibold">Tendance des ventes conclues sur 7 jours</p>
+          </div>
 
-          <div className="p-4 sm:p-5 rounded-3xl border border-border/80 bg-card shadow-sm space-y-3 sm:space-y-4">
-            <div className="h-44 sm:h-52 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={salesChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(150,150,150,0.15)" />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="sales" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[11px] sm:text-xs font-bold">
-              <span className="text-muted-foreground">Objectif Hebdo</span>
-              <span className="text-emerald-500">4 350 000 FCFA</span>
-            </div>
-
-            <Link
-              to="/app/pipeline"
-              className="w-full py-2.5 sm:py-3 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
-            >
-              <span>Ouvrir mon Kanban 6 Étapes</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+          <div className="h-44 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={salesChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#FF8A00" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#FF3D81" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="sales" stroke="#FF8A00" strokeWidth={3} fillOpacity={1} fill="url(#salesGrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>

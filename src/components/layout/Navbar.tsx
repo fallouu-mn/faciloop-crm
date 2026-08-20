@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { LogOut, Sun, Moon, Bell, Menu, Shield } from 'lucide-react';
+import { LogOut, Menu } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaciloopBrand } from '../common/FaciloopBrand';
@@ -10,7 +10,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
-  const { user, logout, currency, setCurrency, isDarkMode, toggleDarkMode } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
 
@@ -20,11 +20,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
     navigate('/login', { replace: true });
   };
 
+  const getRoleTitle = () => {
+    if (user?.role === 'super_admin') return 'Administration Faciloop';
+    if (user?.role === 'admin_org') return 'Direction Faciloop';
+    return 'Commercial Faciloop';
+  };
+
   return (
     <>
       <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border/80 bg-card/85 px-3.5 sm:px-6 backdrop-blur-xl transition-all font-sans">
-        {/* Left: Mobile Menu Toggle, Compact Icon Logo & User Greeting */}
-        <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
+        {/* Left: Mobile Menu Trigger + Clean Icon Brand + Title */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           <button
             onClick={onOpenMobileMenu}
             className="rounded-xl p-2 text-muted-foreground hover:bg-muted hover:text-foreground md:hidden active:scale-95 transition-all"
@@ -33,114 +39,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
             <Menu className="h-5 w-5" />
           </button>
 
-          {/* Compact Icon Logo "F" to keep top header clean */}
+          {/* Clean Icon Logo "F" + Role Title matching screenshot model */}
           <Link to="/app/dashboard" className="flex items-center gap-2 group shrink-0">
             <FaciloopBrand variant="icon" className="h-8 w-8 sm:h-9 sm:w-9 group-hover:scale-105 transition-transform" />
-          </Link>
-
-          {/* Greeting "Bonjour, [Prénom] 👋" matching Screenshot */}
-          {user && (
-            <div className="flex flex-col text-left leading-tight">
-              <span className="text-xs sm:text-sm font-black text-foreground flex items-center gap-1">
-                <span>Bonjour, {user.prenom}</span>
-                <span>👋</span>
-              </span>
-              <span className="text-[10px] font-bold text-muted-foreground hidden sm:block">
-                {user.role === 'super_admin' ? 'Administration Faciloop' : user.role === 'admin_org' ? 'Direction Organisme' : 'Espace Commercial'}
-              </span>
-            </div>
-          )}
-
-          {/* Role restriction badge */}
-          {user?.role === 'commercial' && (
-            <span className="hidden xl:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-extrabold border border-emerald-500/20">
-              <Shield className="w-3 h-3" /> Portefeuille Personnel
+            <span className="font-extrabold text-sm sm:text-base text-foreground tracking-tight">
+              {getRoleTitle()}
             </span>
-          )}
+          </Link>
         </div>
 
-        {/* Right: Currency Toggle (FCFA / EUR / USD), Dark Mode & Profile */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Currency Switcher Pill: FCFA | EUR | USD (Matching Screenshot) */}
-          <div className="flex items-center rounded-2xl bg-muted/70 p-1 border border-border/70 text-xs font-black">
-            <button
-              onClick={() => setCurrency('XOF')}
-              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
-                currency === 'XOF'
-                  ? 'bg-gradient-faciloop text-white shadow-md'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              FCFA
-            </button>
-
-            <button
-              onClick={() => setCurrency('EUR')}
-              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
-                currency === 'EUR'
-                  ? 'bg-gradient-faciloop text-white shadow-md'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              EUR
-            </button>
-
-            <button
-              onClick={() => setCurrency('USD')}
-              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
-                currency === 'USD'
-                  ? 'bg-gradient-faciloop text-white shadow-md'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              USD
-            </button>
-          </div>
-
-          {/* Dark Mode Switcher Icon */}
+        {/* Right: Only Clean Logout Button matching screenshot model */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={toggleDarkMode}
-            className="rounded-xl p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-all shrink-0 active:scale-95"
-            aria-label="Basculer le mode sombre"
+            onClick={() => setShowLogoutModal(true)}
+            className="rounded-xl p-2.5 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all active:scale-95 flex items-center justify-center"
+            title="Se déconnecter"
           >
-            {isDarkMode ? <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
+            <LogOut className="h-5 w-5" />
           </button>
-
-          {/* Notifications Trigger */}
-          <Link
-            to={user?.role === 'admin_org' ? '/admin/notifications' : '/app/notifications'}
-            className="relative rounded-xl p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-all shrink-0 active:scale-95"
-          >
-            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-          </Link>
-
-          {/* User Profile Badge & Logout Trigger */}
-          {user ? (
-            <div className="flex items-center gap-2 pl-1 border-l border-border/80">
-              <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-faciloop text-white font-black text-xs shadow-md shrink-0">
-                {user.prenom?.[0] || 'U'}
-              </div>
-
-              <button
-                onClick={() => setShowLogoutModal(true)}
-                className="rounded-xl p-2 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all active:scale-95"
-                title="Se déconnecter"
-              >
-                <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-            </div>
-          ) : (
-            <Link
-              to="/login"
-              className="rounded-xl bg-gradient-faciloop px-3.5 py-2 text-xs font-extrabold text-white shadow-md hover:opacity-90"
-            >
-              Connexion
-            </Link>
-          )}
         </div>
       </header>
 
