@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { LogOut, Sun, Moon, Bell, Menu, Shield, Globe } from 'lucide-react';
+import { LogOut, Sun, Moon, Bell, Menu, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaciloopBrand } from '../common/FaciloopBrand';
@@ -33,8 +33,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
   return (
     <>
       <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border/80 bg-card/85 px-3.5 sm:px-6 backdrop-blur-xl transition-all font-sans">
-        {/* Left: Mobile Menu Toggle & Brand Logo */}
-        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+        {/* Left: Mobile Menu Toggle & Compact Icon Logo */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             onClick={onOpenMobileMenu}
             className="rounded-xl p-2 text-muted-foreground hover:bg-muted hover:text-foreground md:hidden active:scale-95 transition-all"
@@ -43,8 +43,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
             <Menu className="h-5 w-5" />
           </button>
 
-          <Link to="/app/dashboard" className="flex items-center gap-2">
-            <FaciloopBrand className="h-8 sm:h-9" />
+          {/* Compact Icon Logo "F" to keep top header clean & un-cluttered */}
+          <Link to="/app/dashboard" className="flex items-center gap-2 group">
+            <FaciloopBrand variant="icon" className="h-8 w-8 sm:h-9 sm:w-9 group-hover:scale-105 transition-transform" />
           </Link>
 
           {/* Role restriction badge */}
