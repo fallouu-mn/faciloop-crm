@@ -30,7 +30,13 @@ import {
   Sparkles,
   ArrowUpRight,
   Clock,
-  MessageSquare
+  MessageSquare,
+  Columns,
+  List,
+  ChevronDown,
+  ChevronUp,
+  Phone,
+  ArrowRight
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -103,7 +109,7 @@ const columns: ColumnDef[] = [
   }
 ];
 
-// Stylized Draggable Prospect Card Component (High Outdoor Sunlight Visibility & Bold Typography)
+// Stylized Draggable Prospect Card Component
 const DraggableProspectCard: React.FC<{ prospect: Prospect }> = ({ prospect }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: prospect.id,
@@ -177,7 +183,7 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect }> = ({ prospect }) =
 const KanbanEmptyState: React.FC<{ col: ColumnDef }> = ({ col }) => {
   const IconComponent = col.icon;
   return (
-    <div className="h-44 rounded-2xl border-2 border-dashed border-border/70 bg-card/30 flex flex-col items-center justify-center p-4 text-center space-y-2 group hover:border-primary/40 transition-colors">
+    <div className="h-40 sm:h-44 rounded-2xl border-2 border-dashed border-border/70 bg-card/30 flex flex-col items-center justify-center p-4 text-center space-y-2 group hover:border-primary/40 transition-colors">
       <div className="w-10 h-10 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground group-hover:scale-110 group-hover:text-primary transition-all">
         <IconComponent className="w-5 h-5" />
       </div>
@@ -201,7 +207,7 @@ const KanbanEmptyState: React.FC<{ col: ColumnDef }> = ({ col }) => {
   );
 };
 
-// Droppable Column Component with Illuminated Drop Zone Feedback
+// Droppable Column Component for Horizontal View
 const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[] }> = ({ col, prospects }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: col.id
@@ -252,6 +258,21 @@ export const ProspectKanban: React.FC = () => {
 
   const [activeProspect, setActiveProspect] = useState<Prospect | null>(null);
 
+  // View Mode: 'vertical' (stacked stages card view for optimum UX) vs 'horizontal' (classic kanban board)
+  const [viewMode, setViewMode] = useState<'vertical' | 'horizontal'>('vertical');
+  const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>({
+    nouveau: true,
+    a_contacter: true,
+    demo_rdv: true,
+    devis_envoye: true,
+    gagne: true,
+    perdu: false
+  });
+
+  const toggleStageExpand = (stageId: string) => {
+    setExpandedStages(prev => ({ ...prev, [stageId]: !prev[stageId] }));
+  };
+
   // Modal States
   const [lossModalOpen, setLossModalOpen] = useState<boolean>(false);
   const [convertModalOpen, setConvertModalOpen] = useState<boolean>(false);
@@ -259,7 +280,7 @@ export const ProspectKanban: React.FC = () => {
   const [selectedMotif, setSelectedMotif] = useState<MotifPerte>('prix_trop_eleve');
   const [selectedFormule, setSelectedFormule] = useState<string>('SaaS Business Pro');
 
-  // DnD Sensors for desktop mouse & mobile touch (250ms delay for mobile scroll protection)
+  // DnD Sensors for desktop mouse & mobile touch
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
@@ -295,6 +316,18 @@ export const ProspectKanban: React.FC = () => {
     }
   };
 
+  const handleStageChangeSelect = (prospectId: string, targetStep: PipelineStepId) => {
+    if (targetStep === 'perdu') {
+      setPendingProspectId(prospectId);
+      setLossModalOpen(true);
+    } else if (targetStep === 'gagne') {
+      setPendingProspectId(prospectId);
+      setConvertModalOpen(true);
+    } else {
+      updateProspectStatus(prospectId, targetStep);
+    }
+  };
+
   const confirmLoss = () => {
     if (pendingProspectId) {
       updateProspectStatus(pendingProspectId, 'perdu', selectedMotif);
@@ -314,11 +347,11 @@ export const ProspectKanban: React.FC = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6 font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+      {/* Header with Responsive View Mode Switcher */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
               Pipeline Commercial Kanban (6 Étapes MVP)
             </h1>
             {user?.role === 'commercial' && (
@@ -328,113 +361,254 @@ export const ProspectKanban: React.FC = () => {
             )}
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5">
-            Glissez-déposez vos opportunités commerciales entre les 6 colonnes du CDC
+            Suivi ergonomique vertical ou tableau Kanban horizontal des 6 étapes du CDC
           </p>
         </div>
 
-        <Link
-          to="/app/prospects"
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
-        >
-          <Plus className="h-4 w-4 shrink-0" />
-          <span>Nouveau Prospect</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          {/* View Mode Toggle Switcher */}
+          <div className="flex items-center rounded-2xl bg-muted p-1 border border-border/80 text-xs font-extrabold">
+            <button
+              onClick={() => setViewMode('vertical')}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all ${
+                viewMode === 'vertical'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title="Vue Étape par Étape Verticale (Idéale sur Mobile)"
+            >
+              <List className="w-4 h-4" />
+              <span>Verticale</span>
+            </button>
+
+            <button
+              onClick={() => setViewMode('horizontal')}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all ${
+                viewMode === 'horizontal'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title="Vue Tableau Horizontale Multi-Colonnes"
+            >
+              <Columns className="w-4 h-4" />
+              <span className="hidden sm:inline">Horizontale</span>
+            </button>
+          </div>
+
+          <Link
+            to="/app/prospects"
+            className="inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all shrink-0"
+          >
+            <Plus className="h-4 w-4 shrink-0" />
+            <span>Nouveau Prospect</span>
+          </Link>
+        </div>
       </div>
 
-      {/* DndContext Board */}
-      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
+      {/* VIEW MODE 1: VERTICAL ACCORDION STACK (Professional UX for Mobile & Desktop) */}
+      {viewMode === 'vertical' ? (
+        <div className="space-y-4">
           {columns.map((col) => {
             const colProspects = myProspects.filter(p => p.statut_pipeline === col.id);
-            return <DroppableColumn key={col.id} col={col} prospects={colProspects} />;
+            const totalBudget = colProspects.reduce((sum, p) => sum + (p.budget_estime || 0), 0);
+            const isExpanded = expandedStages[col.id] ?? true;
+
+            return (
+              <div
+                key={col.id}
+                className={`rounded-3xl border ${col.color} border-t-4 bg-card shadow-md overflow-hidden transition-all duration-300`}
+              >
+                {/* Stage Header Banner */}
+                <button
+                  onClick={() => toggleStageExpand(col.id)}
+                  className="w-full p-4 sm:p-5 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-3 text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl ${col.badgeBg} flex items-center justify-center font-black shrink-0`}>
+                      <col.icon className="w-5 h-5" />
+                    </div>
+
+                    <div>
+                      <h3 className="font-extrabold text-sm sm:text-base text-foreground">{col.title}</h3>
+                      <div className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
+                        <span>{colProspects.length} prospect(s)</span>
+                        {totalBudget > 0 && (
+                          <>
+                            <span>•</span>
+                            <span className="text-emerald-500 font-extrabold">{totalBudget.toLocaleString()} FCFA</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded-full text-xs font-black ${col.badgeBg}`}>
+                      {colProspects.length}
+                    </span>
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                    )}
+                  </div>
+                </button>
+
+                {/* Vertical Stage Content List */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="border-t border-border/60 p-4 sm:p-5 bg-muted/20"
+                    >
+                      {colProspects.length === 0 ? (
+                        <KanbanEmptyState col={col} />
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                          {colProspects.map((prospect) => (
+                            <div
+                              key={prospect.id}
+                              className="p-4 rounded-2xl border border-border/80 bg-card shadow-sm hover:shadow-lg transition-all space-y-3"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <Link
+                                    to={`/app/prospects/${prospect.id}`}
+                                    className="font-extrabold text-sm text-foreground hover:text-primary transition-colors flex items-center gap-1"
+                                  >
+                                    <span>{prospect.prenom} {prospect.nom}</span>
+                                    <ArrowUpRight className="w-3.5 h-3.5 text-primary" />
+                                  </Link>
+                                  <p className="text-xs font-bold text-muted-foreground flex items-center gap-1 mt-0.5">
+                                    <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                                    <span>{prospect.entreprise}</span>
+                                  </p>
+                                </div>
+
+                                <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary font-black text-xs shrink-0">
+                                  {prospect.budget_estime ? `${prospect.budget_estime.toLocaleString()} FCFA` : 'N/D'}
+                                </span>
+                              </div>
+
+                              {/* Stage Change Dropdown Selector */}
+                              <div className="pt-2 border-t border-border/60 flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5">
+                                  <a
+                                    href={`https://wa.me/${prospect.telephone.replace(/\s+/g, '')}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all text-xs font-bold flex items-center gap-1"
+                                    title="WhatsApp Direct"
+                                  >
+                                    <MessageSquare className="w-3.5 h-3.5" />
+                                  </a>
+
+                                  <a
+                                    href={`tel:${prospect.telephone}`}
+                                    className="p-2 rounded-xl border border-input text-foreground hover:bg-muted transition-all text-xs font-bold flex items-center gap-1"
+                                    title="Appeler"
+                                  >
+                                    <Phone className="w-3.5 h-3.5 text-primary" />
+                                  </a>
+                                </div>
+
+                                {/* Step Selector */}
+                                <select
+                                  value={prospect.statut_pipeline}
+                                  onChange={(e) => handleStageChangeSelect(prospect.id, e.target.value as PipelineStepId)}
+                                  className="px-2.5 py-1.5 rounded-xl border border-input bg-background text-xs font-bold text-foreground focus:ring-2 focus:ring-primary/50"
+                                >
+                                  {columns.map(c => (
+                                    <option key={c.id} value={c.id}>{c.title}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
           })}
         </div>
+      ) : (
+        /* VIEW MODE 2: HORIZONTAL KANBAN BOARD (DndContext) */
+        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
+            {columns.map((col) => {
+              const colProspects = myProspects.filter(p => p.statut_pipeline === col.id);
+              return <DroppableColumn key={col.id} col={col} prospects={colProspects} />;
+            })}
+          </div>
 
-        {/* Polished Drag Overlay during active drag */}
-        <DragOverlay>
-          {activeProspect ? (
-            <div className="p-4 rounded-2xl border-2 border-primary bg-card shadow-2xl rotate-3 scale-105 ring-4 ring-primary/20 space-y-3 w-72 cursor-grabbing z-50">
-              <div className="flex items-center justify-between">
-                <div className="font-extrabold text-xs text-foreground">
-                  {activeProspect.prenom} {activeProspect.nom}
-                </div>
-                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-black">
-                  En déplacement...
-                </span>
+          <DragOverlay>
+            {activeProspect ? (
+              <div className="w-72 p-4 rounded-2xl border-2 border-primary bg-card shadow-2xl space-y-3 opacity-90 scale-105">
+                <div className="font-extrabold text-sm text-foreground">{activeProspect.prenom} {activeProspect.nom}</div>
+                <div className="text-xs font-bold text-primary">{activeProspect.entreprise}</div>
               </div>
-              <div className="text-xs text-muted-foreground font-bold flex items-center gap-1">
-                <Building2 className="w-3.5 h-3.5 text-primary" />
-                <span>{activeProspect.entreprise}</span>
-              </div>
-            </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      )}
 
-      {/* Mandatory Loss Reason Bottom Sheet Modal on Mobile, Centered on Desktop */}
+      {/* Loss Reason Bottom Sheet Modal on Mobile */}
       <AnimatePresence>
         {lossModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm font-sans">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm">
             <motion.div
               initial={{ y: '100%', opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-sm bg-card border-t sm:border border-border/80 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 font-sans relative"
+              className="w-full max-w-md bg-card border-t sm:border border-border/80 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 text-left relative font-sans"
             >
-              {/* Mobile Drag Handle */}
               <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto sm:hidden mb-1" />
 
-              <div className="flex items-center gap-2 text-rose-500 font-extrabold text-sm">
-                <AlertTriangle className="w-5 h-5 shrink-0" />
-                <span>Motif de Perte Obligatoire</span>
+              <div className="flex items-center gap-3 text-rose-500">
+                <div className="p-2.5 rounded-2xl bg-rose-500/10">
+                  <AlertTriangle className="w-6 h-6 text-rose-500" />
+                </div>
+                <h3 className="font-extrabold text-base text-foreground">Motif de Perte Obligatoire (CDC 3.4)</h3>
               </div>
 
-              <p className="text-xs text-muted-foreground font-semibold">
-                Veuillez sélectionner le motif d'abandon ou de perte de cette opportunité :
+              <p className="text-xs text-muted-foreground font-semibold leading-relaxed">
+                Conformément aux règles métier du CDC, veuillez sélectionner le motif principal de perte pour alimenter le journal statistique.
               </p>
 
-              <div className="space-y-2 text-xs">
-                {[
-                  { id: 'prix_trop_eleve', label: 'Prix trop élevé' },
-                  { id: 'concurrent', label: 'Parti chez un concurrent' },
-                  { id: 'pas_de_besoin_actuel', label: 'Pas de besoin actuel' },
-                  { id: 'injoignable', label: 'Prospect injoignable' },
-                  { id: 'mauvais_timing', label: 'Mauvais timing / Projet reporté' },
-                  { id: 'autre', label: 'Autre motif' }
-                ].map((m) => (
-                  <label
-                    key={m.id}
-                    className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${
-                      selectedMotif === m.id
-                        ? 'border-rose-500 bg-rose-500/10 text-foreground font-extrabold'
-                        : 'border-border bg-card text-muted-foreground font-semibold'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="motif"
-                      checked={selectedMotif === m.id}
-                      onChange={() => setSelectedMotif(m.id as MotifPerte)}
-                      className="accent-rose-500 w-4 h-4"
-                    />
-                    <span>{m.label}</span>
-                  </label>
-                ))}
+              <div className="space-y-2">
+                <label className="block text-xs font-extrabold text-foreground">Motif de perte</label>
+                <select
+                  value={selectedMotif}
+                  onChange={(e) => setSelectedMotif(e.target.value as MotifPerte)}
+                  className="w-full p-3 rounded-2xl border border-input bg-background text-xs font-bold text-foreground"
+                >
+                  <option value="prix_trop_eleve">Prix trop élevé / Hors budget</option>
+                  <option value="concurrent">Parti chez un concurrent</option>
+                  <option value="pas_de_besoin_actuel">Pas de besoin actuel / Projet reporté</option>
+                  <option value="injoignable">Injoignable après plusieurs relances</option>
+                  <option value="mauvais_timing">Mauvais timing commercial</option>
+                  <option value="autre">Autre motif</option>
+                </select>
               </div>
 
-              <div className="pt-2 flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
                 <button
-                  onClick={() => { setLossModalOpen(false); setPendingProspectId(null); }}
-                  className="w-full sm:w-1/2 py-3 rounded-2xl border border-input text-xs font-bold text-foreground hover:bg-muted"
+                  onClick={() => setLossModalOpen(false)}
+                  className="w-full sm:w-1/2 py-3 rounded-2xl border border-input text-xs font-bold hover:bg-muted text-foreground"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={confirmLoss}
-                  className="w-full sm:w-1/2 py-3 rounded-2xl bg-rose-500 text-white font-extrabold text-xs hover:bg-rose-600 shadow-md shadow-rose-500/25"
+                  className="w-full sm:w-1/2 py-3 rounded-2xl bg-rose-500 text-white text-xs font-extrabold hover:bg-rose-600 shadow-md shadow-rose-500/20"
                 >
-                  Confirmer la perte
+                  Valider la perte
                 </button>
               </div>
             </motion.div>
@@ -442,56 +616,55 @@ export const ProspectKanban: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Client Conversion Bottom Sheet Modal on Mobile, Centered on Desktop */}
+      {/* Convert to Client Bottom Sheet Modal on Mobile */}
       <AnimatePresence>
         {convertModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm font-sans">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm">
             <motion.div
               initial={{ y: '100%', opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-sm bg-card border-t sm:border border-border/80 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 font-sans relative"
+              className="w-full max-w-md bg-card border-t sm:border border-border/80 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 text-left relative font-sans"
             >
-              {/* Mobile Drag Handle */}
               <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto sm:hidden mb-1" />
 
-              <div className="flex items-center gap-2 text-emerald-500 font-extrabold text-sm sm:text-base">
-                <UserCheck className="w-5 h-5 shrink-0" />
-                <span>Conversion en Client Faciloop</span>
+              <div className="flex items-center gap-3 text-emerald-500">
+                <div className="p-2.5 rounded-2xl bg-emerald-500/10">
+                  <UserCheck className="w-6 h-6 text-emerald-500" />
+                </div>
+                <h3 className="font-extrabold text-base text-foreground">Félicitations ! Conversion Client</h3>
               </div>
 
-              <p className="text-xs text-muted-foreground font-semibold">
-                Félicitations pour cette vente ! Choisissez la formule SaaS souscrite par le client :
+              <p className="text-xs text-muted-foreground font-semibold leading-relaxed">
+                Ce prospect va être automatiquement converti en Client officiel Faciloop CRM et son accès sera généré.
               </p>
 
-              <div className="space-y-3 text-xs">
-                <div>
-                  <label className="block font-bold text-foreground mb-1.5">Formule SaaS Souscrite</label>
-                  <select
-                    value={selectedFormule}
-                    onChange={(e) => setSelectedFormule(e.target.value)}
-                    className="w-full p-3 rounded-2xl border border-input bg-background font-bold text-xs text-foreground focus:ring-2 focus:ring-primary/50"
-                  >
-                    <option value="SaaS Starter">SaaS Starter (250 000 FCFA/an)</option>
-                    <option value="SaaS Business Pro">SaaS Business Pro (750 000 FCFA/an)</option>
-                    <option value="SaaS Enterprise">SaaS Enterprise (Sur-mesure)</option>
-                  </select>
-                </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-extrabold text-foreground">Formule SaaS Souscrite</label>
+                <select
+                  value={selectedFormule}
+                  onChange={(e) => setSelectedFormule(e.target.value)}
+                  className="w-full p-3 rounded-2xl border border-input bg-background text-xs font-bold text-foreground"
+                >
+                  <option value="SaaS Starter">SaaS Starter (250 000 FCFA/an)</option>
+                  <option value="SaaS Business Pro">SaaS Business Pro (750 000 FCFA/an)</option>
+                  <option value="SaaS Enterprise">SaaS Enterprise (Sur-mesure)</option>
+                </select>
               </div>
 
-              <div className="pt-2 flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
                 <button
-                  onClick={() => { setConvertModalOpen(false); setPendingProspectId(null); }}
-                  className="w-full sm:w-1/2 py-3 rounded-2xl border border-input text-xs font-bold text-foreground hover:bg-muted"
+                  onClick={() => setConvertModalOpen(false)}
+                  className="w-full sm:w-1/2 py-3 rounded-2xl border border-input text-xs font-bold hover:bg-muted text-foreground"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={confirmConvert}
-                  className="w-full sm:w-1/2 py-3 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs hover:bg-emerald-600 shadow-md shadow-emerald-500/25"
+                  className="w-full sm:w-1/2 py-3 rounded-2xl bg-emerald-500 text-white text-xs font-extrabold hover:bg-emerald-600 shadow-md shadow-emerald-500/25"
                 >
-                  Valider la conversion
+                  Confirmer la vente
                 </button>
               </div>
             </motion.div>
