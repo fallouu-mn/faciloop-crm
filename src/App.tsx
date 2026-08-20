@@ -4,9 +4,12 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
 import { AppLayout } from './components/layout/AppLayout';
 
-// Public Pages
+// Public & Auth Pages
 import { LandingPage } from './pages/public/LandingPage';
 import { LoginPage } from './pages/auth/LoginPage';
+import { RegisterPage } from './pages/auth/RegisterPage';
+import { PendingActivationPage } from './pages/auth/PendingActivationPage';
+import { WelcomeOnboardingPage } from './pages/auth/WelcomeOnboardingPage';
 
 // Commercial Pages
 import { DashboardCommercial } from './pages/commercial/DashboardCommercial';
@@ -34,9 +37,12 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public Routes */}
+          {/* Public & Authentication Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/pending-activation" element={<PendingActivationPage />} />
+          <Route path="/welcome" element={<WelcomeOnboardingPage />} />
 
           {/* Commercial Espace */}
           <Route path="/app" element={<AppLayout />}>

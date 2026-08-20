@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Eye, EyeOff, AlertCircle, Phone, Lock } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Phone, Lock, ChevronDown, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const LoginPage: React.FC = () => {
   const [telephone, setTelephone] = useState<string>('77 123 45 67');
-  const [codeSecret, setCodeSecret] = useState<string>('1234');
+  const [codeSecret, setCodeSecret] = useState<string>('123456');
   const [showCode, setShowCode] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export const LoginPage: React.FC = () => {
     }
 
     if (!codeSecret || codeSecret.length < 4) {
-      setErrorMsg('Le code secret doit comporter au moins 4 chiffres');
+      setErrorMsg('Le code secret doit comporter 6 chiffres');
       return;
     }
 
@@ -70,7 +70,7 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-3 sm:p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-3 sm:p-4 relative overflow-hidden font-sans selection:bg-primary/20 selection:text-primary">
       {/* Background Decorative Blur Gradients */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-72 sm:w-96 h-72 sm:h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-60 sm:w-80 h-60 sm:h-80 bg-accent/15 rounded-full blur-3xl pointer-events-none" />
@@ -84,46 +84,48 @@ export const LoginPage: React.FC = () => {
       >
         {/* Faciloop Header Logo & Title */}
         <div className="flex flex-col items-center text-center">
-          <div className="flex items-center gap-2 mb-2 sm:mb-3">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-faciloop flex items-center justify-center text-white shadow-lg">
+          <Link to="/" className="flex items-center gap-2 mb-2 sm:mb-3">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-faciloop flex items-center justify-center text-white shadow-lg shadow-primary/25">
               <span className="text-xl sm:text-2xl font-black">F</span>
             </div>
             <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-gradient-faciloop">faciloop</span>
-          </div>
+          </Link>
 
-          <h1 className="text-lg sm:text-2xl font-extrabold text-foreground mt-1 sm:mt-2">Connectez-vous</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 max-w-xs">
+          <h1 className="text-lg sm:text-2xl font-black text-foreground mt-1">Connectez-vous</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5 max-w-xs">
             Et gérez vos clients et votre activité simplement
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="mt-6 sm:mt-8 space-y-4 sm:space-y-5">
-          {/* Phone Field with Perfectly Aligned Indicator */}
+        <form onSubmit={handleSubmit} className="mt-6 sm:mt-8 space-y-4 text-xs font-sans">
+          {/* Phone Field with Perfectly Aligned Senegal Indicator */}
           <div>
-            <label className="block text-xs font-bold text-foreground mb-1.5">Téléphone</label>
+            <label className="block text-xs font-extrabold text-foreground mb-1.5">Téléphone *</label>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 px-2.5 sm:px-3 py-3 rounded-xl border border-input bg-muted/50 text-xs font-bold text-foreground shrink-0">
-                <span className="text-sm sm:text-base">🇸🇳</span>
+              <div className="flex items-center gap-1.5 px-3 py-3 rounded-2xl border border-input bg-muted/60 text-xs font-extrabold text-foreground shrink-0">
+                <span className="text-base">🇸🇳</span>
                 <span>+221</span>
+                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-0.5" />
               </div>
               <div className="relative flex-1">
                 <input
                   type="tel"
+                  required
                   value={telephone}
                   onChange={(e) => setTelephone(e.target.value)}
                   placeholder="77 123 45 67"
-                  className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-input bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground transition-all"
+                  className="w-full pl-10 pr-3.5 py-3 rounded-2xl border border-input bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground transition-all"
                 />
                 <Phone className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3.5" />
               </div>
             </div>
           </div>
 
-          {/* Secret Code Field */}
+          {/* Secret Code Field (6 Digits Format) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-bold text-foreground">Code secret</label>
+              <label className="block text-xs font-extrabold text-foreground">Code secret (6 chiffres) *</label>
               <button
                 type="button"
                 onClick={() => setErrorMsg('Veuillez contacter votre administrateur Faciloop pour réinitialiser votre code.')}
@@ -137,9 +139,9 @@ export const LoginPage: React.FC = () => {
                 type={showCode ? 'text' : 'password'}
                 value={codeSecret}
                 onChange={(e) => setCodeSecret(e.target.value)}
-                placeholder="• • • •"
-                maxLength={8}
-                className="w-full pl-10 pr-10 py-3 rounded-xl border border-input bg-background text-sm font-medium tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground transition-all"
+                placeholder="• • • • • •"
+                maxLength={6}
+                className="w-full pl-10 pr-10 py-3 rounded-2xl border border-input bg-background text-sm font-black tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground transition-all"
               />
               <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3.5" />
               <button
@@ -170,21 +172,21 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-sm shadow-lg shadow-primary/25 hover:opacity-95 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-primary/25 hover:opacity-95 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              'Se connecter'
+              <span>Se connecter</span>
             )}
           </button>
         </form>
 
-        {/* Footer Link */}
-        <div className="mt-5 sm:mt-6 text-center text-xs text-muted-foreground font-medium">
+        {/* Link to Registration Page */}
+        <div className="mt-5 text-center text-xs text-muted-foreground font-semibold">
           Pas encore de compte ?{' '}
-          <Link to="/" className="font-bold text-primary hover:underline">
-            Découvrir Faciloop SaaS
+          <Link to="/register" className="font-extrabold text-primary hover:underline">
+            S'inscrire en 1 min
           </Link>
         </div>
 
@@ -195,20 +197,20 @@ export const LoginPage: React.FC = () => {
           </p>
           <div className="grid grid-cols-3 gap-1.5 text-[10px]">
             <button
-              onClick={() => handleQuickPreset('+221771234567', '1234')}
-              className="px-2 py-2 rounded-xl border border-border/80 bg-muted/50 font-bold hover:border-primary active:scale-95 text-foreground transition-all truncate"
+              onClick={() => handleQuickPreset('+221771234567', '123456')}
+              className="px-2 py-2 rounded-xl border border-border/80 bg-muted/50 font-extrabold hover:border-primary active:scale-95 text-foreground transition-all truncate"
             >
               Commercial
             </button>
             <button
-              onClick={() => handleQuickPreset('+221789998877', '1111')}
-              className="px-2 py-2 rounded-xl border border-border/80 bg-muted/50 font-bold hover:border-primary active:scale-95 text-foreground transition-all truncate"
+              onClick={() => handleQuickPreset('+221789998877', '111111')}
+              className="px-2 py-2 rounded-xl border border-border/80 bg-muted/50 font-extrabold hover:border-primary active:scale-95 text-foreground transition-all truncate"
             >
               Admin Org
             </button>
             <button
-              onClick={() => handleQuickPreset('+221770000000', '0000')}
-              className="px-2 py-2 rounded-xl border border-border/80 bg-muted/50 font-bold hover:border-primary active:scale-95 text-foreground transition-all truncate"
+              onClick={() => handleQuickPreset('+221770000000', '000000')}
+              className="px-2 py-2 rounded-xl border border-border/80 bg-muted/50 font-extrabold hover:border-primary active:scale-95 text-foreground transition-all truncate"
             >
               Super-Admin
             </button>
