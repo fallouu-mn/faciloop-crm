@@ -16,10 +16,18 @@ export type ProspectSource =
 export type PipelineStepId =
   | 'nouveau'
   | 'a_contacter'
-  | 'demo_rdv'
-  | 'devis_envoye'
+  | 'contacte'
+  | 'interesse'
+  | 'rdv_programme'
+  | 'demo_realisee'
+  | 'essai_en_cours'
+  | 'proposition'
+  | 'paiement_att'
   | 'gagne'
-  | 'perdu';
+  | 'a_relancer'
+  | 'perdu'
+  | 'demo_rdv'
+  | 'devis_envoye';
 
 export type MotifPerte = 
   | 'prix_trop_eleve' 

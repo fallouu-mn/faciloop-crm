@@ -51,11 +51,11 @@ interface ColumnDef {
   emptyHint: string;
 }
 
-// CDC 3.4 Phase 1 MVP: 6 Strict Steps with tailored UX Onboarding Icons & Hints
+// Complete 12 Pipeline Stages matching model app
 const columns: ColumnDef[] = [
   { 
     id: 'nouveau', 
-    title: '1. Nouveau Prospect', 
+    title: '1. Nouveau', 
     color: 'border-blue-500', 
     badgeBg: 'bg-blue-500/10 text-blue-500',
     icon: Inbox,
@@ -64,34 +64,79 @@ const columns: ColumnDef[] = [
   },
   { 
     id: 'a_contacter', 
-    title: '2. À contacter / Contacté', 
+    title: '2. À contacter', 
     color: 'border-sky-500', 
     badgeBg: 'bg-sky-500/10 text-sky-500',
     icon: PhoneCall,
-    emptyText: 'Aucun prospect à relancer',
-    emptyHint: 'Glissez un nouveau prospect ici après le premier appel'
+    emptyText: 'Aucun prospect à contacter',
+    emptyHint: 'Prospects prêts pour la première prise de contact'
   },
   { 
-    id: 'demo_rdv', 
-    title: '3. Démonstration / RDV', 
+    id: 'contacte', 
+    title: '3. Contacté', 
+    color: 'border-indigo-500', 
+    badgeBg: 'bg-indigo-500/10 text-indigo-500',
+    icon: PhoneCall,
+    emptyText: 'Aucun prospect contacté',
+    emptyHint: 'Premier échange ou appel effectué'
+  },
+  { 
+    id: 'interesse', 
+    title: '4. Intéressé', 
+    color: 'border-cyan-500', 
+    badgeBg: 'bg-cyan-500/10 text-cyan-500',
+    icon: Sparkles,
+    emptyText: 'Aucun prospect intéressé',
+    emptyHint: 'Prospect ayant confirmé son intérêt pour Faciloop'
+  },
+  { 
+    id: 'rdv_programme', 
+    title: '5. RDV programmé', 
     color: 'border-purple-500', 
     badgeBg: 'bg-purple-500/10 text-purple-500',
     icon: Calendar,
-    emptyText: 'Aucune démo planifiée',
-    emptyHint: 'Déposez ici les prospects ayant accepté un rendez-vous'
+    emptyText: 'Aucun RDV planifié',
+    emptyHint: 'Déposez ici les prospects ayant fixé un rendez-vous'
   },
   { 
-    id: 'devis_envoye', 
-    title: '4. Devis / Proposition', 
+    id: 'demo_realisee', 
+    title: '6. Démo réalisée', 
+    color: 'border-violet-500', 
+    badgeBg: 'bg-violet-500/10 text-violet-500',
+    icon: Calendar,
+    emptyText: 'Aucune démo réalisée',
+    emptyHint: 'Démonstration produit effectuée'
+  },
+  { 
+    id: 'essai_en_cours', 
+    title: '7. Essai en cours', 
+    color: 'border-teal-500', 
+    badgeBg: 'bg-teal-500/10 text-teal-500',
+    icon: Clock,
+    emptyText: 'Aucun essai en cours',
+    emptyHint: 'Prospect testant actuellement la plateforme'
+  },
+  { 
+    id: 'proposition', 
+    title: '8. Proposition', 
     color: 'border-amber-500', 
     badgeBg: 'bg-amber-500/10 text-amber-500',
     icon: FileText,
-    emptyText: 'Aucune offre en cours',
-    emptyHint: 'Glissez un prospect lorsque le devis a été transmis'
+    emptyText: 'Aucune offre transmise',
+    emptyHint: 'Devis commercial ou proposition tarifaire envoyée'
+  },
+  { 
+    id: 'paiement_att', 
+    title: '9. Paiement att.', 
+    color: 'border-orange-500', 
+    badgeBg: 'bg-orange-500/10 text-orange-500',
+    icon: CalendarClock,
+    emptyText: 'Aucun paiement en attente',
+    emptyHint: 'Facture transmise, en attente de règlement'
   },
   { 
     id: 'gagne', 
-    title: '5. Gagné (Client)', 
+    title: '10. Client gagné', 
     color: 'border-emerald-500', 
     badgeBg: 'bg-emerald-500/10 text-emerald-500',
     icon: Trophy,
@@ -99,8 +144,17 @@ const columns: ColumnDef[] = [
     emptyHint: 'Déposez ici pour déclencher la conversion en Client'
   },
   { 
+    id: 'a_relancer', 
+    title: '11. À relancer', 
+    color: 'border-yellow-500', 
+    badgeBg: 'bg-yellow-500/10 text-yellow-500',
+    icon: CalendarClock,
+    emptyText: 'Aucune relance en attente',
+    emptyHint: 'Prospect à relancer plus tard'
+  },
+  { 
     id: 'perdu', 
-    title: '6. Perdu', 
+    title: '12. Perdu', 
     color: 'border-rose-500', 
     badgeBg: 'bg-rose-500/10 text-rose-500',
     icon: FolderX,
@@ -263,9 +317,15 @@ export const ProspectKanban: React.FC = () => {
   const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>({
     nouveau: true,
     a_contacter: true,
-    demo_rdv: true,
-    devis_envoye: true,
+    contacte: true,
+    interesse: true,
+    rdv_programme: true,
+    demo_realisee: true,
+    essai_en_cours: true,
+    proposition: true,
+    paiement_att: true,
     gagne: true,
+    a_relancer: true,
     perdu: false
   });
 
