@@ -496,7 +496,7 @@ export const ProspectKanban: React.FC = () => {
                               <div className="pt-2 border-t border-border/60 flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-1.5">
                                   <a
-                                    href={`https://wa.me/${prospect.telephone.replace(/\s+/g, '')}`}
+                                    href={`https://wa.me/${(prospect.telephone || '').replace(/\s+/g, '')}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all text-xs font-bold flex items-center gap-1"

@@ -281,16 +281,16 @@ export const DashboardCommercial: React.FC = () => {
                   <p className="text-xs text-muted-foreground font-semibold">{relance.notes}</p>
                   <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-bold">
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-primary" /> {relance.heure}
+                      <Clock className="w-3 h-3 text-primary" /> {relance.heure || '09:00'}
                     </span>
                     <span>•</span>
-                    <span>Canal: {relance.canal.replace('_', ' ')}</span>
+                    <span>Canal: {(relance.canal || 'whatsapp').replace('_', ' ')}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
                   <a
-                    href={`https://wa.me/${relance.prospect_telephone.replace(/\s+/g, '')}?text=Bonjour%20${encodeURIComponent(relance.prospect_nom)}`}
+                    href={`https://wa.me/${(relance.prospect_telephone || '221770000000').replace(/\s+/g, '')}?text=Bonjour%20${encodeURIComponent(relance.prospect_nom || 'Prospect')}`}
                     target="_blank"
                     rel="noreferrer"
                     className="py-2 px-3 rounded-xl bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-500/20 hover:bg-emerald-600 active:scale-95 transition-all flex items-center gap-1.5"
@@ -299,7 +299,7 @@ export const DashboardCommercial: React.FC = () => {
                     <span>WA</span>
                   </a>
                   <a
-                    href={`tel:${relance.prospect_telephone}`}
+                    href={`tel:${relance.prospect_telephone || ''}`}
                     className="p-2 rounded-xl border border-input text-foreground hover:bg-muted active:scale-95 transition-all"
                   >
                     <Phone className="w-4 h-4 text-primary" />
