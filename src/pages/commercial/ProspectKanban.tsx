@@ -414,7 +414,7 @@ export const ProspectKanban: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
-              Pipeline Commercial Kanban (6 Étapes MVP)
+              Pipeline Commercial Kanban
             </h1>
             {user?.role === 'commercial' && (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-black flex items-center gap-1">
@@ -423,7 +423,7 @@ export const ProspectKanban: React.FC = () => {
             )}
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5">
-            Suivi ergonomique vertical ou tableau Kanban horizontal des 6 étapes du CDC
+            Suivi ergonomique vertical ou tableau Kanban horizontal de votre pipeline commercial
           </p>
         </div>
 
