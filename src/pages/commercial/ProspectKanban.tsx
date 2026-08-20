@@ -36,7 +36,9 @@ import {
   ChevronDown,
   ChevronUp,
   Phone,
-  ArrowRight
+  ArrowRight,
+  CalendarClock,
+  CreditCard
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
