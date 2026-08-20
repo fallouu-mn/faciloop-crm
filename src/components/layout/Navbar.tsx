@@ -10,19 +10,9 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
-  const { user, logout, currency, setCurrency } = useAuth();
+  const { user, logout, currency, setCurrency, isDarkMode, toggleDarkMode } = useAuth();
   const navigate = useNavigate();
-  const [isDark, setIsDark] = useState<boolean>(true);
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
-
-  const toggleDarkMode = () => {
-    setIsDark(!isDark);
-    if (!isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
 
   const confirmLogout = () => {
     logout();
@@ -33,8 +23,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
   return (
     <>
       <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border/80 bg-card/85 px-3.5 sm:px-6 backdrop-blur-xl transition-all font-sans">
-        {/* Left: Mobile Menu Toggle & Compact Icon Logo */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Left: Mobile Menu Toggle, Compact Icon Logo & User Greeting */}
+        <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
           <button
             onClick={onOpenMobileMenu}
             className="rounded-xl p-2 text-muted-foreground hover:bg-muted hover:text-foreground md:hidden active:scale-95 transition-all"
@@ -43,48 +33,77 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
             <Menu className="h-5 w-5" />
           </button>
 
-          {/* Compact Icon Logo "F" to keep top header clean & un-cluttered */}
-          <Link to="/app/dashboard" className="flex items-center gap-2 group">
+          {/* Compact Icon Logo "F" to keep top header clean */}
+          <Link to="/app/dashboard" className="flex items-center gap-2 group shrink-0">
             <FaciloopBrand variant="icon" className="h-8 w-8 sm:h-9 sm:w-9 group-hover:scale-105 transition-transform" />
           </Link>
 
+          {/* Greeting "Bonjour, [Prénom] 👋" matching Screenshot */}
+          {user && (
+            <div className="flex flex-col text-left leading-tight">
+              <span className="text-xs sm:text-sm font-black text-foreground flex items-center gap-1">
+                <span>Bonjour, {user.prenom}</span>
+                <span>👋</span>
+              </span>
+              <span className="text-[10px] font-bold text-muted-foreground hidden sm:block">
+                {user.role === 'super_admin' ? 'Administration Faciloop' : user.role === 'admin_org' ? 'Direction Organisme' : 'Espace Commercial'}
+              </span>
+            </div>
+          )}
+
           {/* Role restriction badge */}
           {user?.role === 'commercial' && (
-            <span className="hidden lg:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-extrabold border border-emerald-500/20">
-              <Shield className="w-3 h-3" /> Vue restreinte à votre portefeuille personnel
+            <span className="hidden xl:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-extrabold border border-emerald-500/20">
+              <Shield className="w-3 h-3" /> Portefeuille Personnel
             </span>
           )}
         </div>
 
-        {/* Right: Currency Toggle, Dark Mode & Compact Profile Controls */}
+        {/* Right: Currency Toggle (FCFA / EUR / USD), Dark Mode & Profile */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Currency Switcher */}
-          <div className="flex items-center rounded-xl bg-muted/60 p-1 border border-border/60">
+          {/* Currency Switcher Pill: FCFA | EUR | USD (Matching Screenshot) */}
+          <div className="flex items-center rounded-2xl bg-muted/70 p-1 border border-border/70 text-xs font-black">
             <button
               onClick={() => setCurrency('XOF')}
-              className={`rounded-lg px-2 py-1 text-[10px] sm:text-xs font-black transition-all ${
-                currency === 'XOF' ? 'bg-gradient-faciloop text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
+                currency === 'XOF'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              XOF
+              FCFA
             </button>
+
             <button
               onClick={() => setCurrency('EUR')}
-              className={`rounded-lg px-2 py-1 text-[10px] sm:text-xs font-black transition-all ${
-                currency === 'EUR' ? 'bg-gradient-faciloop text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
+                currency === 'EUR'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               EUR
             </button>
+
+            <button
+              onClick={() => setCurrency('USD')}
+              className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
+                currency === 'USD'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              USD
+            </button>
           </div>
 
-          {/* Dark Mode Switcher */}
+          {/* Dark Mode Switcher Icon */}
           <button
             onClick={toggleDarkMode}
             className="rounded-xl p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-all shrink-0 active:scale-95"
             aria-label="Basculer le mode sombre"
           >
-            {isDark ? <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
+            {isDarkMode ? <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
           </button>
 
           {/* Notifications Trigger */}
@@ -102,13 +121,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
           {/* User Profile Badge & Logout Trigger */}
           {user ? (
             <div className="flex items-center gap-2 pl-1 border-l border-border/80">
-              <div className="hidden md:flex flex-col text-right leading-tight">
-                <span className="text-xs font-extrabold text-foreground">{user.prenom} {user.nom}</span>
-                <span className="text-[10px] font-bold capitalize text-primary">
-                  {user.role === 'super_admin' ? 'Super Admin' : user.role === 'admin_org' ? 'Admin Org' : 'Commercial'}
-                </span>
-              </div>
-
               <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-faciloop text-white font-black text-xs shadow-md shrink-0">
                 {user.prenom?.[0] || 'U'}
               </div>
