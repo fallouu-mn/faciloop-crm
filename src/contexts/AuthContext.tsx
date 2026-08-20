@@ -116,8 +116,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (telephone: string, codeSecret: string): Promise<UserSession | null> => {
     const cleanPhone = telephone.replace(/\s+/g, '');
     
-    // Super-Admin fallback (e.g. 770000000 or admin secret code)
-    if (cleanPhone.includes('99999') || codeSecret === '0000') {
+    // Super-Admin fallback (phone contains 770000000 or pin is '0000' or '000000')
+    if (cleanPhone.includes('770000000') || cleanPhone.includes('99999') || codeSecret === '0000' || codeSecret === '000000') {
       const sess: UserSession = {
         id: 'super-admin-1',
         nom: 'Digit',
@@ -132,12 +132,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return sess;
     }
 
-    // Admin Org fallback
-    if (codeSecret === '1111') {
+    // Admin Org fallback (phone contains 789998877 or pin is '1111' or '111111')
+    if (cleanPhone.includes('789998877') || codeSecret === '1111' || codeSecret === '111111') {
       const sess: UserSession = {
         id: 'admin-org-1',
         nom: 'Manager',
-        prenom: 'Teranga',
+        prenom: 'Teranga Admin',
         telephone: telephone,
         email: 'admin@teranga.sn',
         role: 'admin_org',
@@ -150,24 +150,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Standard Commercial login
     const foundComm = mockCommerciaux.find(c => c.telephone.replace(/\s+/g, '') === cleanPhone);
-    if (foundComm || codeSecret.length >= 4) {
-      const comm = foundComm || mockCommerciaux[0];
-      const sess: UserSession = {
-        id: comm.id,
-        nom: comm.nom,
-        prenom: comm.prenom,
-        telephone: comm.telephone,
-        email: comm.email,
-        role: 'commercial',
-        organizationId: comm.organization_id
-      };
-      setUser(sess);
-      const org = mockOrganizations.find(o => o.id === comm.organization_id) || mockOrganizations[1];
-      setCurrentOrg(org);
-      return sess;
-    }
-
-    return null;
+    const comm = foundComm || mockCommerciaux[0];
+    const sess: UserSession = {
+      id: comm.id,
+      nom: comm.nom,
+      prenom: comm.prenom,
+      telephone: comm.telephone,
+      email: comm.email,
+      role: 'commercial',
+      organizationId: comm.organization_id
+    };
+    setUser(sess);
+    const org = mockOrganizations.find(o => o.id === comm.organization_id) || mockOrganizations[1];
+    setCurrentOrg(org);
+    return sess;
   };
 
   const logout = () => {
