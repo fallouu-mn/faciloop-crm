@@ -1,0 +1,35 @@
+<svg width="562" height="168" viewBox="0 0 562 168" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="3" y="3" width="556" height="162" rx="28" fill="#050505"/>
+  <rect x="3" y="3" width="556" height="162" rx="28" stroke="url(#border)" stroke-width="6"/>
+  <g filter="url(#shadow)">
+    <circle cx="88" cy="84" r="52" fill="url(#safariBlue)"/>
+    <circle cx="88" cy="84" r="43" fill="#F8FAFC"/>
+    <circle cx="88" cy="84" r="37" fill="url(#safariDial)"/>
+    <path d="M104.485 54.948L94.368 91.154L70.593 113.052L80.71 76.846L104.485 54.948Z" fill="#FFFFFF"/>
+    <path d="M104.485 54.948L94.368 91.154L88 84L104.485 54.948Z" fill="#EF4444"/>
+    <path d="M70.593 113.052L80.71 76.846L88 84L70.593 113.052Z" fill="#E2E8F0"/>
+    <circle cx="88" cy="84" r="6" fill="#0F172A"/>
+    <circle cx="88" cy="84" r="2.4" fill="#FFFFFF"/>
+  </g>
+  <text x="168" y="64" fill="#F8FAFC" font-family="Inter, Arial, Helvetica, sans-serif" font-size="30" font-weight="600" letter-spacing="1.8">INSTALLER VIA</text>
+  <text x="168" y="119" fill="#FFFFFF" font-family="Inter, Arial, Helvetica, sans-serif" font-size="58" font-weight="700" letter-spacing="-1">Safari iOS</text>
+  <defs>
+    <linearGradient id="border" x1="281" y1="0" x2="281" y2="168" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC" stop-opacity="0.8"/>
+      <stop offset="0.45" stop-color="#64748B"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="safariBlue" x1="88" y1="32" x2="88" y2="136" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <radialGradient id="safariDial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(76 62) rotate(55.008) scale(76.9029)">
+      <stop stop-color="#67E8F9"/>
+      <stop offset="0.58" stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </radialGradient>
+    <filter id="shadow" x="26" y="24" width="124" height="124" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+</svg>

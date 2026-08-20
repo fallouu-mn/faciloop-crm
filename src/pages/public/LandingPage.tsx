@@ -25,6 +25,7 @@ import {
   Crown,
   ChevronRight
 } from 'lucide-react';
+import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 
 export const LandingPage: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<'mensuel' | 'annuel'>('annuel');
@@ -132,13 +133,9 @@ export const LandingPage: React.FC = () => {
       <header className="sticky top-0 z-50 border-b border-border/60 bg-card/85 backdrop-blur-xl transition-all font-sans">
         <div className="mx-auto flex h-14 sm:h-20 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 shrink-0">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-2xl bg-gradient-faciloop text-white shadow-lg shadow-primary/25 shrink-0">
-              <span className="text-lg sm:text-2xl font-black">F</span>
-            </div>
-            <div className="flex flex-col shrink-0">
-              <span className="text-sm sm:text-xl font-extrabold tracking-tight text-gradient-faciloop">Faciloop CRM</span>
-              <span className="hidden sm:block text-[10px] font-bold text-muted-foreground uppercase tracking-widest">SaaS B2B Multi-Tenant</span>
-            </div>
+            <Link to="/" className="flex items-center">
+              <FaciloopBrand className="h-8 sm:h-11" />
+            </Link>
           </div>
 
           <nav className="hidden items-center gap-8 md:flex text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
@@ -565,13 +562,7 @@ export const LandingPage: React.FC = () => {
             {/* Brand Column */}
             <div className="space-y-4 md:col-span-2">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-2xl bg-gradient-faciloop flex items-center justify-center text-white font-black text-base shadow-md shrink-0">
-                  F
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-lg font-extrabold tracking-tight text-gradient-faciloop">Faciloop CRM SaaS</span>
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Par Digit'Advisor SAS</span>
-                </div>
+                <FaciloopBrand className="h-9" />
               </div>
 
               <p className="text-xs text-muted-foreground font-semibold max-w-sm leading-relaxed">

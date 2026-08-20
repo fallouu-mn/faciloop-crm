@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { LogOut, Sun, Moon, Bell, Menu, Shield, Globe } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FaciloopBrand } from '../common/FaciloopBrand';
 
 interface NavbarProps {
   onOpenMobileMenu: () => void;
@@ -43,12 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
           </button>
 
           <Link to="/app/dashboard" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-faciloop text-white shadow-md shadow-primary/25 shrink-0">
-              <span className="text-xl font-black">F</span>
-            </div>
-            <span className="hidden xs:inline text-base sm:text-xl font-extrabold tracking-tight text-gradient-faciloop">
-              Faciloop CRM
-            </span>
+            <FaciloopBrand className="h-8 sm:h-9" />
           </Link>
 
           {/* Role restriction badge */}

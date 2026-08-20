@@ -21,6 +21,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FaciloopBrand } from '../common/FaciloopBrand';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -48,22 +49,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { to: '/admin/pipeline', label: 'Pipeline Kanban', icon: Kanban },
     { to: '/admin/equipe', label: 'Gestion Équipe', icon: UserPlus },
     { to: '/admin/objectifs', label: 'Objectifs Équipe', icon: Target },
-    { to: '/admin/relances', label: 'Suivi Relances', icon: CalendarClock },
-    { to: '/admin/abonnements', label: 'Abonnements', icon: CreditCard },
-    { to: '/admin/paiements', label: 'Paiements', icon: Receipt },
-    { to: '/admin/import-export', label: 'Import / Export', icon: FileSpreadsheet },
-    { to: '/admin/journal', label: 'Journal RGPD & Audit', icon: History },
+    { to: '/admin/relances', label: 'Relances Équipe', icon: CalendarClock },
+    { to: '/admin/abonnements', label: 'Abonnements SaaS', icon: CreditCard },
+    { to: '/admin/paiements', label: 'Comptabilité & Reçus', icon: Receipt },
+    { to: '/admin/import-export', label: 'Import / Export CSV', icon: FileSpreadsheet },
+    { to: '/admin/journal', label: 'Journal des Actions', icon: History },
     { to: '/admin/parametres', label: 'Paramètres Entreprise', icon: Settings },
-    { to: '/admin/notifications', label: 'Notifications Admin', icon: Bell }
+    { to: '/admin/notifications', label: 'Notifications', icon: Bell }
   ];
 
   const superAdminLinks = [
-    { to: '/super-admin/dashboard', label: 'Dashboard SaaS', icon: LayoutDashboard },
-    { to: '/super-admin/organisations', label: 'Organisations (Tenants)', icon: Building2 },
-    { to: '/super-admin/parametres', label: 'Paramètres Plateforme', icon: Settings }
+    { to: '/super-admin/dashboard', label: 'Console Super-Admin', icon: LayoutDashboard },
+    { to: '/super-admin/organisations', label: 'Toutes les Entreprises', icon: Building2 },
+    { to: '/super-admin/parametres', label: 'Configuration Plateforme', icon: Settings }
   ];
 
-  const links = role === 'super_admin' ? superAdminLinks : role === 'admin_org' ? adminOrgLinks : commercialLinks;
+  const currentLinks = 
+    role === 'super_admin' ? superAdminLinks : 
+    role === 'admin_org' ? adminOrgLinks : commercialLinks;
 
   return (
     <>
@@ -89,10 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         {/* Mobile Header Close & Brand */}
         <div className="flex items-center justify-between border-b border-border/80 p-4 md:hidden bg-card">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-faciloop text-white flex items-center justify-center font-black text-sm shadow-md">
-              F
-            </div>
-            <span className="text-base font-extrabold text-gradient-faciloop">Faciloop Menu</span>
+            <FaciloopBrand className="h-7" />
           </div>
           <button
             onClick={onClose}
@@ -107,29 +107,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="p-3 sm:p-4">
           <div className="rounded-2xl border border-border/80 bg-muted/40 p-3 space-y-1 shadow-sm">
             <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-              <Building2 className="w-3 h-3 text-primary" />
-              <span>Espace de travail</span>
+              <Building2 className="w-3 h-3 text-primary" /> Espace de travail
             </div>
-            <div className="truncate font-extrabold text-xs sm:text-sm text-foreground">
-              {currentOrg?.nom || "Digit'Advisor"}
+            <div className="text-xs font-black text-foreground truncate">
+              {currentOrg?.nom || 'Teranga Logistique SA'}
             </div>
-            <div className="text-[10px] font-bold text-primary flex items-center gap-1 pt-0.5">
-              <ShieldCheck className="w-3 h-3" />
-              <span>{role === 'super_admin' ? 'Super Admin' : role === 'admin_org' ? 'Admin Entreprise' : 'Commercial'}</span>
+            <div className="text-[10px] font-bold text-primary capitalize flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-emerald-500" />
+              {role === 'super_admin' ? 'Super Admin' : role === 'admin_org' ? 'Console Direction' : 'Commercial'}
             </div>
           </div>
         </div>
 
-        {/* Navigation Section Title */}
-        <div className="px-4 pb-1">
-          <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            {role === 'admin_org' ? 'Console Administration' : 'Menu Navigation'}
-          </span>
-        </div>
+        {/* Navigation Menu Links */}
+        <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 space-y-1">
+          <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-3 mb-2">
+            Menu Navigation
+          </div>
 
-        {/* Navigation Links */}
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-6 text-xs font-sans scrollbar-hide">
-          {links.map((link) => {
+          {currentLinks.map((link) => {
             const Icon = link.icon;
             return (
               <NavLink
@@ -137,10 +133,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 to={link.to}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-2xl px-3.5 py-3 sm:py-2.5 text-xs font-bold transition-all ${
+                  `flex items-center gap-3 px-3.5 py-2.5 sm:py-3 rounded-2xl text-xs font-extrabold transition-all ${
                     isActive
-                      ? 'bg-gradient-faciloop text-white shadow-lg shadow-primary/20'
-                      : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                      ? 'bg-gradient-faciloop text-white shadow-md shadow-primary/25'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`
                 }
               >
@@ -149,7 +145,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </NavLink>
             );
           })}
-        </nav>
+        </div>
+
+        {/* Footer Tenant Info */}
+        <div className="p-4 border-t border-border/80 bg-muted/20 text-center text-[10px] font-bold text-muted-foreground">
+          <span>Faciloop CRM v2.0 • SaaS Multi-Tenant</span>
+        </div>
       </aside>
     </>
   );

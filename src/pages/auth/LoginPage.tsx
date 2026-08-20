@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Eye, EyeOff, AlertCircle, Phone, Lock, ChevronDown, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 
 export const LoginPage: React.FC = () => {
   const [telephone, setTelephone] = useState<string>('77 123 45 67');
@@ -126,13 +127,10 @@ export const LoginPage: React.FC = () => {
         transition={{ duration: 0.3 }}
         className="w-full max-w-md bg-card border border-border/80 rounded-3xl p-5 sm:p-8 shadow-xl sm:shadow-2xl z-10 relative mt-10 sm:mt-0"
       >
-        {/* Faciloop Header Logo & Title */}
+        {/* Faciloop Header Official SVG Logo */}
         <div className="flex flex-col items-center text-center">
-          <Link to="/" className="flex items-center gap-2 mb-2 sm:mb-3 group">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-faciloop flex items-center justify-center text-white shadow-lg shadow-primary/25 group-hover:scale-105 transition-transform">
-              <span className="text-xl sm:text-2xl font-black">F</span>
-            </div>
-            <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-gradient-faciloop">faciloop</span>
+          <Link to="/" className="flex items-center justify-center mb-2 sm:mb-3 group">
+            <FaciloopBrand className="h-10 sm:h-12 group-hover:scale-105 transition-transform" />
           </Link>
 
           <h1 className="text-lg sm:text-2xl font-black text-foreground mt-1">Connectez-vous</h1>
