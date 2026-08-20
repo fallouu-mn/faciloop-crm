@@ -32,12 +32,12 @@ export const PendingActivationPage: React.FC = () => {
       >
         {/* Faciloop Header Logo */}
         <div className="flex justify-center mb-2">
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className="w-11 h-11 rounded-2xl bg-gradient-faciloop flex items-center justify-center text-white shadow-lg shadow-primary/25">
               <span className="text-2xl font-black">F</span>
             </div>
             <span className="text-2xl font-extrabold tracking-tight text-gradient-faciloop">faciloop</span>
-          </div>
+          </Link>
         </div>
 
         {/* Status Badge */}
@@ -78,21 +78,14 @@ export const PendingActivationPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Action Options */}
-        <div className="pt-2 flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={() => navigate('/welcome')}
-            className="w-full sm:w-1/2 py-3.5 rounded-2xl bg-gradient-faciloop text-white text-xs font-extrabold shadow-md hover:opacity-95 flex items-center justify-center gap-1.5"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>Voir l'écran Bienvenue</span>
-          </button>
+        {/* Action Options: Only Login Button */}
+        <div className="pt-2">
           <Link
             to="/login"
-            className="w-full sm:w-1/2 py-3.5 rounded-2xl border border-input text-xs font-extrabold text-foreground hover:bg-muted flex items-center justify-center gap-1"
+            className="w-full py-3.5 rounded-2xl border border-input text-xs sm:text-sm font-extrabold text-foreground hover:bg-muted active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <span>Aller à la connexion</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 text-primary" />
           </Link>
         </div>
       </motion.div>
