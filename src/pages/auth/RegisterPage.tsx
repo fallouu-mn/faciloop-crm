@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Eye, EyeOff, AlertCircle, Phone, Lock, Gift, ChevronDown, Check, Building2, User, HelpCircle, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Phone, Lock, Gift, ChevronDown, Check, Building2, User, HelpCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const RegisterPage: React.FC = () => {
@@ -150,17 +150,27 @@ export const RegisterPage: React.FC = () => {
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-80 sm:w-[500px] h-80 sm:h-[500px] bg-primary/20 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-70 sm:w-[400px] h-70 sm:h-[400px] bg-accent/15 rounded-full blur-[140px] pointer-events-none" />
 
+      {/* Top-Left Professional Back to Home Button */}
+      <Link
+        to="/"
+        className="fixed top-4 left-4 sm:top-6 sm:left-6 z-30 inline-flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl border border-border/80 bg-card/85 backdrop-blur-xl text-xs font-extrabold text-foreground shadow-lg hover:bg-muted active:scale-95 transition-all group"
+        title="Retourner à la page d'accueil Faciloop"
+      >
+        <ArrowLeft className="w-4 h-4 text-primary group-hover:-translate-x-1 transition-transform" />
+        <span>Accueil</span>
+      </Link>
+
       {/* Main Responsive Registration Box */}
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="w-full max-w-lg bg-card border border-border/80 rounded-3xl p-5 sm:p-8 shadow-2xl z-10 relative my-6"
+        className="w-full max-w-lg bg-card border border-border/80 rounded-3xl p-5 sm:p-8 shadow-2xl z-10 relative my-6 mt-12 sm:mt-6"
       >
         {/* Faciloop Header Logo & Title */}
         <div className="flex flex-col items-center text-center space-y-1">
-          <Link to="/" className="flex items-center gap-2 mb-2">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-faciloop flex items-center justify-center text-white shadow-lg shadow-primary/25">
+          <Link to="/" className="flex items-center gap-2 mb-2 group">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-faciloop flex items-center justify-center text-white shadow-lg shadow-primary/25 group-hover:scale-105 transition-transform">
               <span className="text-xl sm:text-2xl font-black">F</span>
             </div>
             <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-gradient-faciloop">faciloop</span>
