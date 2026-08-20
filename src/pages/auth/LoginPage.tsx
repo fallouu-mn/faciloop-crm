@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Eye, EyeOff, AlertCircle, Phone, Lock, ChevronDown, ArrowLeft, Home } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Phone, Lock, ChevronDown, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const LoginPage: React.FC = () => {
   const [telephone, setTelephone] = useState<string>('77 123 45 67');
-  const [codeSecret, setCodeSecret] = useState<string>('123456');
+  
+  // 6-digit PIN secret code boxes matching RegisterPage format
+  const [codeDigits, setCodeDigits] = useState<string[]>(['1', '2', '3', '4', '5', '6']);
   const [showCode, setShowCode] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -14,6 +16,35 @@ export const LoginPage: React.FC = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Refs for 6-digit PIN navigation
+  const codeRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null)
+  ];
+
+  const handleDigitChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+
+    const newDigits = [...codeDigits];
+    newDigits[index] = value.slice(-1);
+    setCodeDigits(newDigits);
+
+    // Auto-advance focus to next digit box
+    if (value && index < 5) {
+      codeRefs[index + 1].current?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !codeDigits[index] && index > 0) {
+      codeRefs[index - 1].current?.focus();
+    }
+  };
 
   const redirectByRole = (role: string) => {
     if (role === 'super_admin') {
@@ -34,14 +65,16 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
-    if (!codeSecret || codeSecret.length < 4) {
-      setErrorMsg('Le code secret doit comporter 6 chiffres');
+    const pin = codeDigits.join('');
+
+    if (pin.length < 4) {
+      setErrorMsg('Veuillez renseigner le code secret à 6 chiffres');
       return;
     }
 
     setLoading(true);
     try {
-      const session = await login(telephone, codeSecret);
+      const session = await login(telephone, pin);
       if (session) {
         redirectByRole(session.role);
       } else {
@@ -57,7 +90,8 @@ export const LoginPage: React.FC = () => {
   // Quick demo presets
   const handleQuickPreset = async (phone: string, pin: string) => {
     setTelephone(phone);
-    setCodeSecret(pin);
+    const pinArr = pin.padEnd(6, '0').slice(0, 6).split('');
+    setCodeDigits(pinArr);
     setLoading(true);
     try {
       const session = await login(phone, pin);
@@ -132,34 +166,43 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Secret Code Field (6 Digits Format) */}
+          {/* Secret Code Field (6 Square PIN Boxes Format) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-extrabold text-foreground">Code secret (6 chiffres) *</label>
               <button
                 type="button"
-                onClick={() => setErrorMsg('Veuillez contacter votre administrateur Faciloop pour réinitialiser votre code.')}
-                className="text-xs font-semibold text-primary hover:underline"
-              >
-                Code secret oublié ?
-              </button>
-            </div>
-            <div className="relative">
-              <input
-                type={showCode ? 'text' : 'password'}
-                value={codeSecret}
-                onChange={(e) => setCodeSecret(e.target.value)}
-                placeholder="• • • • • •"
-                maxLength={6}
-                className="w-full pl-10 pr-10 py-3 rounded-2xl border border-input bg-background text-sm font-black tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground transition-all"
-              />
-              <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3.5" />
-              <button
-                type="button"
                 onClick={() => setShowCode(!showCode)}
-                className="absolute right-3.5 top-3.5 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground p-1"
+                title="Afficher/Masquer le code"
               >
                 {showCode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+
+            {/* 6 Individual Square PIN Boxes */}
+            <div className="grid grid-cols-6 gap-1.5 sm:gap-2">
+              {codeDigits.map((digit, idx) => (
+                <input
+                  key={idx}
+                  ref={codeRefs[idx]}
+                  type={showCode ? 'text' : 'password'}
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleDigitChange(idx, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(idx, e)}
+                  className="w-full h-12 text-center text-lg font-black rounded-2xl border border-input bg-background focus:ring-2 focus:ring-primary/50 text-foreground transition-all"
+                />
+              ))}
+            </div>
+
+            <div className="flex justify-end mt-1">
+              <button
+                type="button"
+                onClick={() => setErrorMsg('Veuillez contacter votre administrateur Faciloop pour réinitialiser votre code.')}
+                className="text-[11px] font-semibold text-primary hover:underline"
+              >
+                Code secret oublié ?
               </button>
             </div>
           </div>
