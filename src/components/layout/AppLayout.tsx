@@ -18,7 +18,7 @@ export const AppLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary/20 selection:text-primary relative">
+    <div className="h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary/20 selection:text-primary relative overflow-hidden">
       <Navbar onOpenMobileMenu={() => setIsSidebarOpen(prev => !prev)} />
       
       <div className="flex flex-1 overflow-hidden">

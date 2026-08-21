@@ -31,6 +31,10 @@ import { PaiementsPage } from './pages/admin-org/PaiementsPage';
 
 // Super Admin Pages
 import { DashboardSuperAdmin } from './pages/super-admin/DashboardSuperAdmin';
+import { OrganisationsList } from './pages/super-admin/OrganisationsList';
+import { AbonnementsPageSuperAdmin } from './pages/super-admin/AbonnementsPageSuperAdmin';
+import { FacturationPage } from './pages/super-admin/FacturationPage';
+import { StatistiquesPage } from './pages/super-admin/StatistiquesPage';
 
 function App() {
   return (
@@ -40,7 +44,7 @@ function App() {
           {/* Public & Authentication Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/signup" element={<RegisterPage />} />
           <Route path="/pending-activation" element={<PendingActivationPage />} />
           <Route path="/welcome" element={<WelcomeOnboardingPage />} />
 
@@ -80,8 +84,10 @@ function App() {
           <Route path="/super-admin" element={<AppLayout />}>
             <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardSuperAdmin />} />
-            <Route path="organisations" element={<DashboardSuperAdmin />} />
-            <Route path="parametres" element={<ParametresEntreprise />} />
+            <Route path="organisations" element={<OrganisationsList />} />
+            <Route path="abonnements" element={<AbonnementsPageSuperAdmin />} />
+            <Route path="facturation" element={<FacturationPage />} />
+            <Route path="statistiques" element={<StatistiquesPage />} />
             <Route path="*" element={<Navigate to="/super-admin/dashboard" replace />} />
           </Route>
 

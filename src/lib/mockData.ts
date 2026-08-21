@@ -15,7 +15,7 @@ import {
 export const mockOrganizations: Organization[] = [
   {
     id: 'org-digitadvisor',
-    nom: "Digit'Advisor SAS",
+    nom: "Faciloop SAS",
     logo_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&h=100&fit=crop',
     devise_defaut: 'XOF',
     statut: 'actif',
@@ -150,7 +150,7 @@ export const mockProspects: Prospect[] = [
     commentaire: 'Démonstration effectuée avec le Directeur Commercial.',
     date_prochaine_relance: '2026-08-20',
     date_derniere_interaction: '2026-08-18T16:00:00Z',
-    statut_pipeline: 'demo_rdv',
+    statut_pipeline: 'demo_realisee',
     created_at: '2026-08-01T10:00:00Z'
   },
   {
@@ -173,7 +173,7 @@ export const mockProspects: Prospect[] = [
     commentaire: 'Devis envoyé le 16 Août. En attente de validation.',
     date_prochaine_relance: '2026-08-19',
     date_derniere_interaction: '2026-08-16T15:20:00Z',
-    statut_pipeline: 'devis_envoye',
+    statut_pipeline: 'proposition',
     created_at: '2026-07-28T08:30:00Z'
   },
   {

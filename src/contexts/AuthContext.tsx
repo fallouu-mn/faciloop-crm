@@ -52,19 +52,31 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Default session set to commercial Moussa Diop (id: 'comm-1')
-  const [user, setUser] = useState<UserSession | null>({
-    id: 'comm-1',
-    nom: 'Diop',
-    prenom: 'Moussa',
-    telephone: '+221771234567',
-    email: 'moussa.diop@teranga.sn',
-    role: 'commercial',
-    organizationId: 'org-faciloop-client-1'
-  });
+function getInitialUserFromPath(): { user: UserSession; orgIndex: number } {
+  const path = window.location.pathname;
+  if (path.startsWith('/super-admin')) {
+    return {
+      user: { id: 'super-admin-1', nom: 'Digit', prenom: 'Advisor Admin', telephone: '+221770000000', email: 'admin@digitadvisor.sn', role: 'super_admin', organizationId: 'org-digitadvisor' },
+      orgIndex: 0,
+    };
+  }
+  if (path.startsWith('/admin')) {
+    return {
+      user: { id: 'admin-org-1', nom: 'Ndiaye', prenom: 'Fatou', telephone: '+221789998877', email: 'fatou.ndiaye@teranga.sn', role: 'admin_org', organizationId: 'org-faciloop-client-1' },
+      orgIndex: 1,
+    };
+  }
+  return {
+    user: { id: 'comm-1', nom: 'Diop', prenom: 'Moussa', telephone: '+221771234567', email: 'moussa.diop@teranga.sn', role: 'commercial', organizationId: 'org-faciloop-client-1' },
+    orgIndex: 1,
+  };
+}
 
-  const [currentOrg, setCurrentOrg] = useState<Organization | null>(mockOrganizations[1]);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const initial = getInitialUserFromPath();
+  const [user, setUser] = useState<UserSession | null>(initial.user);
+
+  const [currentOrg, setCurrentOrg] = useState<Organization | null>(mockOrganizations[initial.orgIndex]);
   const [currency, setCurrency] = useState<string>('XOF');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
 

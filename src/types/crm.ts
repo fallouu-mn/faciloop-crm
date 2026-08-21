@@ -25,9 +25,7 @@ export type PipelineStepId =
   | 'paiement_att'
   | 'gagne'
   | 'a_relancer'
-  | 'perdu'
-  | 'demo_rdv'
-  | 'devis_envoye';
+  | 'perdu';
 
 export type MotifPerte = 
   | 'prix_trop_eleve' 

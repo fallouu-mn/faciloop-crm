@@ -204,11 +204,17 @@ export const ProspectsList: React.FC = () => {
             className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground focus:outline-none"
           >
             <option value="all">Toutes les étapes</option>
-            <option value="nouveau">Nouveau Prospect</option>
+            <option value="nouveau">Nouveau</option>
             <option value="a_contacter">À contacter</option>
-            <option value="demo_rdv">Démo / RDV</option>
-            <option value="devis_envoye">Devis Envoyé</option>
-            <option value="gagne">Gagné (Client)</option>
+            <option value="contacte">Contacté</option>
+            <option value="interesse">Intéressé</option>
+            <option value="rdv_programme">RDV programmé</option>
+            <option value="demo_realisee">Démo réalisée</option>
+            <option value="essai_en_cours">Essai en cours</option>
+            <option value="proposition">Proposition</option>
+            <option value="paiement_att">Paiement att.</option>
+            <option value="gagne">Client gagné</option>
+            <option value="a_relancer">À relancer</option>
             <option value="perdu">Perdu</option>
           </select>
 
@@ -221,7 +227,10 @@ export const ProspectsList: React.FC = () => {
             <option value="site_web">Site Web</option>
             <option value="prospection_directe">Prospection Directe</option>
             <option value="recommandation">Recommandation</option>
+            <option value="reseaux_sociaux">Réseaux Sociaux</option>
             <option value="whatsapp">WhatsApp</option>
+            <option value="evenement">Événement</option>
+            <option value="autre">Autre</option>
           </select>
         </div>
       </div>

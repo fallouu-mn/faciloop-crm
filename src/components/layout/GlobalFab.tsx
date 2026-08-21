@@ -101,7 +101,7 @@ export const GlobalFab: React.FC = () => {
       </AnimatePresence>
 
       {/* Floating Action Button (FAB) */}
-      <motion.button
+      {/* <motion.button
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
         onClick={() => setIsOpen(true)}
@@ -112,7 +112,7 @@ export const GlobalFab: React.FC = () => {
           <Zap className="w-5 h-5 animate-pulse" />
         </div>
         <span className="hidden sm:inline pr-1">Saisie Express</span>
-      </motion.button>
+      </motion.button> */}
 
       {/* Express Creation Bottom Sheet Modal on Mobile, Centered on PC */}
       <AnimatePresence>

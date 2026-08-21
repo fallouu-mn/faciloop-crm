@@ -1,24 +1,25 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Kanban, 
-  CalendarClock, 
-  Target, 
-  Bell, 
-  Building2, 
-  UserPlus, 
-  CreditCard, 
-  Receipt, 
-  FileSpreadsheet, 
-  History, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Users,
+  Kanban,
+  CalendarClock,
+  Target,
+  Bell,
+  Building2,
+  UserPlus,
+  CreditCard,
+  Receipt,
+  FileSpreadsheet,
+  History,
+  Settings,
   X,
   UserCheck,
   ShieldCheck,
-  Sparkles
+  Crown,
+  BarChart3
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaciloopBrand } from '../common/FaciloopBrand';
@@ -59,9 +60,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   ];
 
   const superAdminLinks = [
-    { to: '/super-admin/dashboard', label: 'Console Super-Admin', icon: LayoutDashboard },
-    { to: '/super-admin/organisations', label: 'Toutes les Entreprises', icon: Building2 },
-    { to: '/super-admin/parametres', label: 'Configuration Plateforme', icon: Settings }
+    { to: '/super-admin/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+    { to: '/super-admin/organisations', label: 'Entreprises', icon: Building2 },
+    { to: '/super-admin/abonnements', label: 'Abonnements', icon: Crown },
+    { to: '/super-admin/facturation', label: 'Facturation', icon: CreditCard },
+    { to: '/super-admin/statistiques', label: 'Statistiques', icon: BarChart3 }
   ];
 
   const currentLinks = 

@@ -1,649 +1,566 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Building2, 
-  Kanban, 
-  MessageSquare, 
-  ShieldCheck, 
-  CalendarClock, 
-  BarChart3, 
-  Zap, 
-  Check, 
-  ArrowRight, 
-  Users, 
-  Globe2, 
+import {
+  Kanban,
+  MessageSquare,
+  ShieldCheck,
+  CalendarClock,
+  BarChart3,
+  Building2,
+  Check,
+  ArrowRight,
   Sparkles,
-  Lock,
-  ArrowUpRight,
-  Mail,
-  Phone,
   Play,
-  CheckCircle2,
-  TrendingUp,
-  Award,
+  ArrowUpRight,
+  LockKeyhole,
+  Sun,
+  Moon,
   Crown,
-  ChevronRight
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
+import { FadeInOnScroll } from '../../components/common/FadeInOnScroll';
+import { FORMULES, PERIODICITES, Periodicite } from '../../lib/mockSuperAdmin';
+import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 
 export const LandingPage: React.FC = () => {
-  const [billingCycle, setBillingCycle] = useState<'mensuel' | 'annuel'>('annuel');
-  const [currency, setCurrency] = useState<'XOF' | 'EUR'>('XOF');
-
-  // Interactive Live Kanban Demo State
+  const { isDarkMode, toggleDarkMode } = useAuth();
+  const [billingCycle, setBillingCycle] = useState<Periodicite>('mensuel');
+  const [currency, setCurrency] = useState<DeviseCode>('XOF');
   const [demoStep, setDemoStep] = useState<number>(1);
-  const demoCards = [
-    { title: 'Sénégal Telecom Solutions', amount: '3 500 000 FCFA', step: 'Nouveau', color: 'bg-blue-500/10 text-blue-500 border-blue-500/30' },
-    { title: 'MaNou Fashion Services', amount: '750 000 FCFA', step: 'Devis Envoyé', color: 'bg-amber-500/10 text-amber-500 border-amber-500/30' },
-    { title: 'Dakar Agro Tech', amount: '2 000 000 FCFA', step: 'Gagné (Client)', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' }
-  ];
 
-  const plans = [
-    {
-      name: 'SaaS Starter',
-      badge: 'Pour petites équipes',
-      description: 'Idéal pour démarrer la gestion structurée des prospects et relances.',
-      priceXOF: billingCycle === 'annuel' ? '250 000 FCFA' : '25 000 FCFA',
-      priceEUR: billingCycle === 'annuel' ? '380 €' : '38 €',
-      period: billingCycle === 'annuel' ? '/ an' : '/ mois',
-      features: [
-        'Jusqu’à 3 commerciaux',
-        '1000 prospects attribués',
-        'Pipeline Kanban 6 étapes MVP',
-        'Relances quotidiennes & Alertes',
-        'Détection anti-doublon par téléphone',
-        'Exportation CSV & JSON'
-      ],
-      popular: false,
-      cta: 'Démarrer gratuitement'
-    },
-    {
-      name: 'SaaS Business Pro',
-      badge: 'Formule Recommandée',
-      description: 'Pour PME & équipes commerciales en forte croissance.',
-      priceXOF: billingCycle === 'annuel' ? '750 000 FCFA' : '75 000 FCFA',
-      priceEUR: billingCycle === 'annuel' ? '1 140 €' : '114 €',
-      period: billingCycle === 'annuel' ? '/ an' : '/ mois',
-      features: [
-        'Jusqu’à 10 commerciaux',
-        'Prospects & Clients illimités',
-        'Pipeline Kanban + Déclencheur WhatsApp direct',
-        'Réattribution en masse des prospects (Admin)',
-        'Dashboard statistiques Recharts',
-        'Import CSV avec parsing & dédoublonnage',
-        'Support prioritaire 24/7'
-      ],
-      popular: true,
-      cta: 'Souscrire maintenant'
-    },
-    {
-      name: 'SaaS Enterprise',
-      badge: 'Sur-mesure',
-      description: 'Pour grands groupes, multi-filiales & agences internationales.',
-      priceXOF: 'Sur devis',
-      priceEUR: 'Sur devis',
-      period: '',
-      features: [
-        'Commerciaux illimités',
-        'Pipelines multiples personnalisables',
-        'Accès API REST & Webhooks',
-        'Gestion multi-organisations (Super-Admin)',
-        'Facturation & Devis PDF intégrés',
-        'Commissions commerciales automatiques',
-        'Accompagnement & Formation dédiés'
-      ],
-      popular: false,
-      cta: 'Contacter notre équipe'
-    }
-  ];
+  const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', currency), currency);
 
-  // Stagger Container Variants for Scroll Reveal
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.12,
-        delayChildren: 0.1
-      }
-    }
+  const periodLabels: Record<Periodicite, string> = {
+    mensuel: '/mois',
+    trimestriel: '/3 mois',
+    annuel: '/an',
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 24, filter: 'blur(4px)' },
-    visible: {
-      opacity: 1,
-      y: 0,
-      filter: 'blur(0px)',
-      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
-    }
+  const getPrice = (f: typeof FORMULES[0]) => {
+    if (billingCycle === 'mensuel') return f.pricing.mensuel;
+    if (billingCycle === 'trimestriel') return f.pricing.trimestriel;
+    return f.pricing.annuel;
   };
+
+  const getNormalPrice = (f: typeof FORMULES[0]) => {
+    if (billingCycle === 'trimestriel') return f.pricing.trimestriel_normal;
+    if (billingCycle === 'annuel') return f.pricing.annuel_normal;
+    return 0;
+  };
+
+  const getRemise = (f: typeof FORMULES[0]) => {
+    if (billingCycle === 'trimestriel') return f.pricing.trimestriel_remise;
+    if (billingCycle === 'annuel') return f.pricing.annuel_remise;
+    return 0;
+  };
+
+  const offerFeatures: Record<string, string[]> = {
+    Pro: [
+      "Jusqu'à 3 commerciaux",
+      'Pipeline Kanban 12 étapes',
+      'Relances automatiques',
+      'Détection anti-doublon',
+      'Export CSV',
+      'Support standard',
+    ],
+    Business: [
+      "Jusqu'à 10 commerciaux",
+      'Toutes les fonctionnalités Pro',
+      'Objectifs d\'équipe',
+      'Journal des actions',
+      'Import CSV & dédoublonnage',
+      'Dashboard statistiques avancées',
+      'Support prioritaire 24/7',
+    ],
+    Premium: [
+      'Commerciaux illimités',
+      'Toutes les fonctionnalités Business',
+      'API & intégrations',
+      'Marque blanche',
+      'Account manager dédié',
+      'Multi-organisations (Super-Admin)',
+      'Accompagnement & Formation',
+    ],
+  };
+
+  const offerColors: Record<string, { gradient: string; border: string }> = {
+    Pro: { gradient: 'from-blue-500 to-blue-600', border: 'border-blue-500/30' },
+    Business: { gradient: 'from-amber-500 to-amber-600', border: 'border-amber-500/30' },
+    Premium: { gradient: 'from-emerald-500 to-emerald-600', border: 'border-emerald-500/30' },
+  };
+
+  const features = [
+    {
+      icon: Kanban,
+      title: 'Pipeline Kanban 12 Étapes',
+      desc: 'Visualisez vos opportunités avec le glisser-déposer et les modales de motif de perte et conversion.',
+    },
+    {
+      icon: MessageSquare,
+      title: 'Déclencheur WhatsApp Direct',
+      desc: 'Lancez des conversations WhatsApp pré-remplies en 1 clic depuis la fiche prospect.',
+    },
+    {
+      icon: CalendarClock,
+      title: 'Relances Quotidiennes',
+      desc: 'Gardez le contrôle sur les RDV du jour et éliminez les relances en retard.',
+    },
+    {
+      icon: ShieldCheck,
+      title: 'Isolation Multi-Tenant',
+      desc: 'Isolation stricte des portefeuilles par commercial avec vue globale Admin.',
+    },
+    {
+      icon: BarChart3,
+      title: 'Dashboard & Analytics',
+      desc: 'Suivez le CA, les conversions et comparez vos équipes avec des graphiques dynamiques.',
+    },
+    {
+      icon: Building2,
+      title: 'Import CSV & Réattribution',
+      desc: 'Importez des listes CSV avec détection des doublons et attribution en masse.',
+    },
+  ];
+
+  const pipelineSteps = [
+    'Nouveau', 'À contacter', 'Contacté', 'Intéressé', 'RDV programmé', 'Démo réalisée',
+    'Essai en cours', 'Proposition', 'Paiement att.', 'Client gagné', 'À relancer', 'Perdu',
+  ];
+
+  const stepDescriptions = [
+    "Nouveau Prospect : Import automatique avec nettoyage téléphone (E.164 +221) et anti-doublon.",
+    "À Contacter : Le prospect est prêt pour la première prise de contact par le commercial.",
+    "Contacté : Premier échange effectué, le commercial qualifie l'intérêt.",
+    "Intéressé : Le prospect a confirmé son intérêt pour la solution Faciloop.",
+    "RDV Programmé : Date de rendez-vous fixée avec notification automatique.",
+    "Démo Réalisée : Démonstration produit effectuée, en attente de retour.",
+    "Essai en Cours : Le prospect teste actuellement la plateforme Faciloop.",
+    "Proposition Envoyée : Devis commercial transmis avec suivi du budget estimé.",
+    "Paiement en Attente : Facture transmise, en attente de règlement client.",
+    "Client Gagné ! Le prospect bascule en Client Faciloop avec génération d'accès.",
+    "À Relancer Plus Tard : Prospect mis en veille pour relance ultérieure programmée.",
+    "Prospect Perdu : Motif de perte obligatoire pour l'amélioration continue.",
+  ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary/20 selection:text-primary">
-      {/* Top Offer Banner (Optimized & Compact for Mobile Screens) */}
-      <div className="bg-gradient-faciloop py-1.5 px-3 text-center text-white text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-md">
-        <Sparkles className="w-3.5 h-3.5 animate-spin-slow shrink-0" />
-        <span>⚡ Offre Lancement V2.0 : 14 jours d'essai gratuit !</span>
-        <Link to="/login" className="underline font-black hover:text-white/80 shrink-0 ml-1">Créer mon compte →</Link>
-      </div>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-14 max-w-6xl mx-auto">
+          <Link to="/" className="flex items-center">
+            <FaciloopBrand className="h-8 sm:h-10" />
+          </Link>
 
-      {/* Header Navigation with Glassmorphism */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/85 backdrop-blur-xl transition-all font-sans">
-        <div className="mx-auto flex h-14 sm:h-20 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 shrink-0">
-            <Link to="/" className="flex items-center">
-              <FaciloopBrand className="h-8 sm:h-11" />
-            </Link>
-          </div>
+          {/* <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
+            <a href="#demo" className="hover:text-foreground transition-colors">Démo</a>
+            <a href="#features" className="hover:text-foreground transition-colors">Fonctionnalités</a>
+            <a href="#pricing" className="hover:text-foreground transition-colors">Tarifs</a>
+          </nav> */}
 
-          <nav className="hidden items-center gap-8 md:flex text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-            <a href="#demo-live" className="hover:text-primary transition-colors flex items-center gap-1">
-              <Zap className="w-3.5 h-3.5 text-primary" /> Démo Live
-            </a>
-            <a href="#features" className="hover:text-primary transition-colors">Fonctionnalités</a>
-            <a href="#pricing" className="hover:text-primary transition-colors">Tarifs</a>
-          </nav>
+          <div className="flex items-center gap-2">
+            {/* Theme toggle */}
+            <div className="flex items-center p-1 rounded-full bg-muted border border-border gap-0.5">
+              <button
+                onClick={() => isDarkMode && toggleDarkMode()}
+                className={`p-1.5 rounded-full transition-all ${
+                  !isDarkMode ? 'bg-amber-500 text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title="Mode Clair"
+              >
+                <Sun className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => !isDarkMode && toggleDarkMode()}
+                className={`p-1.5 rounded-full transition-all ${
+                  isDarkMode ? 'bg-gradient-faciloop text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title="Mode Sombre"
+              >
+                <Moon className="w-3.5 h-3.5" />
+              </button>
+            </div>
 
-          <div className="flex items-center gap-2 shrink-0">
             <Link
               to="/login"
-              className="hidden sm:inline-block rounded-xl border border-input bg-card px-4 py-2 text-xs font-bold text-foreground shadow-sm hover:bg-muted transition-all"
+              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Espace Client
-            </Link>
-            <Link
-              to="/login"
-              className="rounded-xl bg-gradient-faciloop px-3.5 py-1.5 sm:px-5 sm:py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all shrink-0 flex items-center gap-1"
-            >
+              <LockKeyhole className="h-4 w-4" />
               <span>Connexion</span>
-              <ArrowRight className="w-3 h-3" />
             </Link>
+            {/* <Link
+              to="/login"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-faciloop text-white text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity"
+            >
+              <span>Essai gratuit</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link> */}
           </div>
         </div>
       </header>
 
-      {/* Hero Section with Perfect Mobile Typography & Proportions */}
-      <section className="relative pt-8 pb-16 sm:pt-20 sm:pb-28 overflow-hidden">
-        {/* Glow Spheres Background */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[800px] h-[600px] sm:h-[800px] bg-gradient-to-tr from-primary/25 via-accent/15 to-emerald-500/15 rounded-full blur-[140px] pointer-events-none animate-pulse" />
-
-        <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] sm:text-xs font-extrabold text-primary mb-4 sm:mb-6 shadow-sm backdrop-blur-md"
-          >
-            <Sparkles className="h-3.5 w-3.5 animate-spin-slow shrink-0" />
-            <span>✨ CRM B2B Multi-Entreprises 2.0</span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-2xl sm:text-5xl lg:text-7xl font-black tracking-tight text-foreground max-w-5xl mx-auto leading-[1.2] sm:leading-[1.1]"
-          >
-            Le CRM commercial B2B conçu pour accélérer vos ventes et{' '}
-            <span className="text-gradient-faciloop">convertir vos prospects</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-3 sm:mt-6 text-xs sm:text-xl text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto font-semibold leading-relaxed"
-          >
-            Suivi de portefeuille par commercial, pipeline Kanban 6 étapes, relances quotidiennes et déclencheur WhatsApp direct en 1 clic.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="mt-6 sm:mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-4 max-w-xs sm:max-w-none mx-auto"
-          >
-            <Link
-              to="/login"
-              className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group"
-            >
-              <span>Accéder à la plateforme</span>
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <a
-              href="#demo-live"
-              className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl border border-border bg-card/80 backdrop-blur text-foreground font-bold text-xs sm:text-sm hover:bg-muted transition-all flex items-center justify-center gap-2"
-            >
-              <Play className="w-3.5 h-3.5 text-primary fill-primary" />
-              <span>Tester le Kanban en direct</span>
-            </a>
-          </motion.div>
-
-          {/* Floating Live Product Mockup Showcase */}
-          <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-            className="mt-10 sm:mt-20 relative max-w-5xl mx-auto"
-          >
-            {/* Ambient Border Glow */}
-            <div className="absolute -inset-1 rounded-3xl bg-gradient-faciloop opacity-20 blur-xl pointer-events-none" />
-
-            {/* Central Interactive CRM Mockup Card */}
-            <div className="relative rounded-2xl sm:rounded-3xl border border-border/80 bg-card/90 backdrop-blur-2xl shadow-2xl p-3 sm:p-6 overflow-hidden space-y-3 sm:space-y-4">
-              {/* Fake Browser Window Header */}
-              <div className="flex items-center justify-between border-b border-border/60 pb-2 sm:pb-3 text-xs">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-                  <span className="text-[10px] sm:text-[11px] font-mono font-bold text-muted-foreground ml-1 truncate max-w-[140px] sm:max-w-none">
-                    app.faciloop.com/app/kanban
-                  </span>
-                </div>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] sm:text-[10px] font-black uppercase shrink-0">
-                  ● Workspace Active
-                </span>
-              </div>
-
-              {/* Mini Interactive Kanban Columns Preview */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 text-left">
-                {demoCards.map((card, idx) => (
-                  <div key={idx} className={`p-3 sm:p-4 rounded-2xl border ${card.color} bg-card space-y-1.5 shadow-sm`}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">{card.step}</span>
-                      <Sparkles className="w-3 h-3" />
-                    </div>
-                    <h4 className="font-extrabold text-xs text-foreground">{card.title}</h4>
-                    <div className="text-xs font-black text-foreground">{card.amount}</div>
-                  </div>
-                ))}
-              </div>
+      {/* Hero Section */}
+      <section className="px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+        <div className="max-w-5xl mx-auto text-center">
+          <FadeInOnScroll>
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-5">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>CRM B2B Multi-Entreprises 2.0</span>
             </div>
-          </motion.div>
 
-          {/* Key Metrics Strip */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="mt-10 sm:mt-24 grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 max-w-4xl mx-auto"
-          >
-            {[
-              { val: '+120%', label: 'Taux de relance effective', color: 'text-primary' },
-              { val: '100%', label: 'Isolation Multi-Tenant RLS', color: 'text-emerald-500' },
-              { val: '0 Doublon', label: 'Anti-doublon téléphone', color: 'text-amber-500' },
-              { val: '< 30 sec', label: 'Prise en main commercial', color: 'text-purple-500' }
-            ].map((stat, idx) => (
-              <motion.div
-                key={idx}
-                whileHover={{ y: -3, scale: 1.02 }}
-                className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-md space-y-0.5"
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight max-w-4xl mx-auto">
+              Le CRM commercial B2B conçu pour accélérer vos ventes et{' '}
+              <span className="text-gradient-faciloop">convertir vos prospects</span>
+            </h1>
+
+            <p className="mt-4 sm:mt-6 text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Suivi de portefeuille par commercial, pipeline Kanban 12 étapes, relances quotidiennes et déclencheur WhatsApp direct en 1 clic.
+            </p>
+
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                to="/login"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
               >
-                <div className={`text-xl sm:text-3xl font-black ${stat.color}`}>{stat.val}</div>
-                <div className="text-[10px] sm:text-xs font-bold text-muted-foreground">{stat.label}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+                <span>Accéder à la plateforme</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a
+                href="admin/dashboard"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 rounded-full border border-border text-foreground font-medium text-sm hover:bg-muted transition-colors"
+              >
+                <Play className="w-4 h-4 text-primary fill-primary" />
+                <span>Voir la démo</span>
+              </a>
+            </div>
+          </FadeInOnScroll>
 
-      {/* Live Interactive Kanban Demo Showcase Section */}
-      <section id="demo-live" className="py-14 sm:py-20 border-t border-border/60 bg-muted/20 relative">
-        <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8">
-          <div className="max-w-3xl mx-auto space-y-2">
-            <h2 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-primary">Expérience Utilisateur Interactive</h2>
-            <p className="text-2xl sm:text-5xl font-black tracking-tight text-foreground">
-              Le Pipeline Kanban 6 Étapes en Action
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
-              Découvrez la fluidité du glisser-déposer et de la boucle d'action WhatsApp
-            </p>
-          </div>
-
-          <div className="p-4 sm:p-8 rounded-3xl border border-border/80 bg-card shadow-2xl max-w-4xl mx-auto space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-1.5 sm:gap-2">
-              {['1. Qualification', '2. À Contacter', '3. Démo / RDV', '4. Devis Envoyé', '5. Gagné (Client)', '6. Motif Perte'].map((step, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setDemoStep(idx + 1)}
-                  className={`px-3 py-2 rounded-xl text-[11px] sm:text-xs font-black transition-all ${
-                    demoStep === idx + 1
-                      ? 'bg-gradient-faciloop text-white shadow-md'
-                      : 'bg-muted text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {step}
-                </button>
+          {/* Metrics */}
+          <FadeInOnScroll delay={200}>
+            <div className="mt-12 sm:mt-16 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto">
+              {[
+                { val: '+120%', label: 'Taux de relance' },
+                { val: '100%', label: 'Isolation RLS' },
+                { val: '0 Doublon', label: 'Anti-doublon' },
+                { val: '< 30 sec', label: 'Prise en main' },
+              ].map((stat, idx) => (
+                <div key={idx} className="p-4 rounded-xl border border-border bg-card text-center">
+                  <div className="text-lg sm:text-2xl font-bold text-primary">{stat.val}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
+                </div>
               ))}
             </div>
-
-            <div className="p-4 sm:p-6 rounded-2xl bg-muted/40 border border-border/60 text-left space-y-2 sm:space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-primary">Étape Active #{demoStep}</span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black">
-                  ✔ Conforme au CDC
-                </span>
-              </div>
-              <h3 className="text-sm sm:text-lg font-black text-foreground leading-snug">
-                {demoStep === 1 && "Importation & Anti-Doublon : Le prospect est automatiquement nettoyé (E.164 +221) et vérifié."}
-                {demoStep === 2 && "Relance Quotidienne : Le commercial déclenche l'appel ou WhatsApp direct."}
-                {demoStep === 3 && "Fixation de Démo : La date de relance est mise à jour avec notification."}
-                {demoStep === 4 && "Transmission de l'Offre : Suivi du devis avec mise en avant du budget estimé."}
-                {demoStep === 5 && "Vente Conclue ! Le prospect bascule en Client Faciloop et génère l'accès."}
-                {demoStep === 6 && "Sauvegarde des Motifs de Perte : Formulaire obligatoire pour l'amélioration continue."}
-              </h3>
-            </div>
-          </div>
+          </FadeInOnScroll>
         </div>
       </section>
 
-      {/* Features Grid Section */}
-      <section id="features" className="py-16 sm:py-24 relative">
-        <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-primary">Fonctionnalités Clés</h2>
-            <p className="mt-2 text-2xl sm:text-5xl font-black tracking-tight text-foreground">
-              Conçu pour l'efficacité de vos commerciaux
-            </p>
-          </div>
+      {/* Demo Section */}
+      <section id="demo" className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 bg-muted/30">
+        <div className="max-w-5xl mx-auto">
+          <FadeInOnScroll>
+            <div className="text-center mb-8">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">Pipeline Interactif</p>
+              <h2 className="text-xl sm:text-3xl font-bold text-foreground">
+                Le Pipeline Kanban 12 Étapes en Action
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Découvrez la fluidité du glisser-déposer et la boucle d'action WhatsApp
+              </p>
+            </div>
+          </FadeInOnScroll>
 
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="mt-10 sm:mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8"
-          >
-            {[
-              {
-                icon: Kanban,
-                color: 'bg-blue-500/10 text-blue-500',
-                title: 'Pipeline Kanban 6 Étapes MVP',
-                desc: 'Visualisez vos opportunités selon le modèle standard du CDC. Glissez-déposez vos cartes avec déclenchement automatique des modales de motif de perte et de conversion.'
-              },
-              {
-                icon: MessageSquare,
-                color: 'bg-emerald-500/10 text-emerald-500',
-                title: 'Déclencheur WhatsApp Direct',
-                desc: 'Lancez des conversations directes avec des messages pré-remplis sur WhatsApp en 1 clic depuis la fiche prospect ou la liste des relances.'
-              },
-              {
-                icon: CalendarClock,
-                color: 'bg-amber-500/10 text-amber-500',
-                title: 'Priorités & Relances Quotidiennes',
-                desc: 'Gardez le contrôle sur les rendez-vous prévus aujourd\'hui et éliminez les relances en retard grâce à une vue synthétique par commercial.'
-              },
-              {
-                icon: ShieldCheck,
-                color: 'bg-purple-500/10 text-purple-500',
-                title: 'Isolation Portefeuille & Multi-Tenant',
-                desc: 'Isolation stricte des prospects attribués à chaque commercial. L\'Admin conserve une vue globale et un contrôle total sur l\'organisation.'
-              },
-              {
-                icon: BarChart3,
-                color: 'bg-rose-500/10 text-rose-500',
-                title: 'Tableau de Bord & Analytics Recharts',
-                desc: 'Suivez le chiffre d\'affaires, les conversions et comparez les résultats de vos équipes grâce à des graphiques dynamiques.'
-              },
-              {
-                icon: Building2,
-                color: 'bg-cyan-500/10 text-cyan-500',
-                title: 'Import CSV & Réattribution Masse',
-                desc: 'Importez des listes CSV avec séparateurs automatiques, détection des doublons téléphoniques et attribution en masse aux commerciaux.'
-              }
-            ].map((feat, idx) => (
-              <motion.div
-                key={idx}
-                variants={itemVariants}
-                whileHover={{ y: -6, scale: 1.02 }}
-                className="p-6 sm:p-8 rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-md hover:shadow-2xl hover:border-primary/40 transition-all duration-300 group"
-              >
-                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl ${feat.color} flex items-center justify-center mb-4 sm:mb-6 font-extrabold shadow-md`}>
-                  <feat.icon className="w-6 h-6 sm:w-7 sm:h-7" />
+          <FadeInOnScroll delay={100}>
+            <div className="p-4 sm:p-6 rounded-xl border border-border bg-card">
+              <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mb-4">
+                {pipelineSteps.map((step, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setDemoStep(idx + 1)}
+                    className={`px-2.5 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      demoStep === idx + 1
+                        ? 'bg-gradient-faciloop text-white shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {idx + 1}. {step}
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-4 rounded-xl bg-muted/50 border border-border">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-primary">Étape #{demoStep}</span>
+                  {/* <span className="text-xs font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                    Conforme au CDC
+                  </span> */}
                 </div>
-                <h3 className="text-lg sm:text-xl font-extrabold text-foreground group-hover:text-primary transition-colors">{feat.title}</h3>
-                <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-muted-foreground font-semibold leading-relaxed">{feat.desc}</p>
-              </motion.div>
+                <p className="text-sm font-medium text-foreground leading-relaxed">
+                  {stepDescriptions[demoStep - 1]}
+                </p>
+              </div>
+            </div>
+          </FadeInOnScroll>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="max-w-5xl mx-auto">
+          <FadeInOnScroll>
+            <div className="text-center mb-8 sm:mb-12">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">Fonctionnalités Clés</p>
+              <h2 className="text-xl sm:text-3xl font-bold text-foreground">
+                Conçu pour l'efficacité de vos commerciaux
+              </h2>
+            </div>
+          </FadeInOnScroll>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {features.map((feat, idx) => (
+              <FadeInOnScroll key={idx} delay={idx * 80}>
+                <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <feat.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground">{feat.title}</h3>
+                    <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{feat.desc}</p>
+                  </div>
+                </div>
+              </FadeInOnScroll>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-16 sm:py-24 border-t border-border/60 bg-muted/20">
-        <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-primary">Tarifs Transparents</h2>
-            <p className="mt-2 text-2xl sm:text-5xl font-black tracking-tight text-foreground">
-              Une formule adaptée à chaque étape
-            </p>
+      <section id="pricing" className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 bg-muted/30">
+        <div className="max-w-5xl mx-auto">
+          <FadeInOnScroll>
+            <div className="text-center mb-8">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">Tarifs Transparents</p>
+              <h2 className="text-xl sm:text-3xl font-bold text-foreground">
+                Une formule adaptée à chaque étape
+              </h2>
 
-            {/* Fluid Toggle Controls */}
-            <div className="mt-6 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-              {/* Billing Cycle Toggle */}
-              <div className="relative flex items-center rounded-2xl bg-muted p-1.5 text-xs font-bold border border-border w-full sm:w-auto justify-center">
-                <button
-                  onClick={() => setBillingCycle('mensuel')}
-                  className="relative z-10 px-4 py-2 transition-colors text-foreground"
-                >
-                  {billingCycle === 'mensuel' && (
-                    <motion.div
-                      layoutId="billing-pill"
-                      className="absolute inset-0 bg-card rounded-xl shadow-sm -z-10"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <span className={billingCycle === 'mensuel' ? 'text-foreground font-black' : 'text-muted-foreground'}>Mensuel</span>
-                </button>
+              {/* Toggles */}
+              <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <div className="inline-flex items-center rounded-full bg-muted p-1 border border-border text-sm">
+                  {PERIODICITES.map((p) => (
+                    <button
+                      key={p.code}
+                      onClick={() => setBillingCycle(p.code)}
+                      className={`px-4 py-1.5 rounded-full font-medium transition-all ${
+                        billingCycle === p.code
+                          ? p.code === 'annuel'
+                            ? 'bg-gradient-faciloop text-white shadow-sm'
+                            : 'bg-card shadow-sm text-foreground'
+                          : 'text-muted-foreground'
+                      }`}
+                    >
+                      {p.label}{p.code === 'annuel' ? ' (-20%)' : p.code === 'trimestriel' ? ' (-10%)' : ''}
+                    </button>
+                  ))}
+                </div>
 
-                <button
-                  onClick={() => setBillingCycle('annuel')}
-                  className="relative z-10 px-4 py-2 transition-colors text-foreground"
-                >
-                  {billingCycle === 'annuel' && (
-                    <motion.div
-                      layoutId="billing-pill"
-                      className="absolute inset-0 bg-gradient-faciloop rounded-xl shadow-md -z-10"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <span className={billingCycle === 'annuel' ? 'text-white font-black' : 'text-muted-foreground'}>
-                    Annuel (-20%)
-                  </span>
-                </button>
-              </div>
-
-              {/* Currency Toggle */}
-              <div className="relative flex items-center rounded-2xl bg-muted p-1.5 text-xs font-bold border border-border w-full sm:w-auto justify-center">
-                <button
-                  onClick={() => setCurrency('XOF')}
-                  className="relative z-10 px-4 py-2 transition-colors"
-                >
-                  {currency === 'XOF' && (
-                    <motion.div
-                      layoutId="currency-pill"
-                      className="absolute inset-0 bg-primary rounded-xl shadow-sm -z-10"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <span className={currency === 'XOF' ? 'text-white font-black' : 'text-muted-foreground'}>FCFA (XOF)</span>
-                </button>
-
-                <button
-                  onClick={() => setCurrency('EUR')}
-                  className="relative z-10 px-4 py-2 transition-colors"
-                >
-                  {currency === 'EUR' && (
-                    <motion.div
-                      layoutId="currency-pill"
-                      className="absolute inset-0 bg-primary rounded-xl shadow-sm -z-10"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <span className={currency === 'EUR' ? 'text-white font-black' : 'text-muted-foreground'}>EUR (€)</span>
-                </button>
+                <div className="inline-flex items-center rounded-full bg-muted p-1 border border-border text-sm">
+                  {(['XOF', 'EUR', 'USD'] as DeviseCode[]).map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setCurrency(c)}
+                      className={`px-3 py-1.5 rounded-full font-medium transition-all ${
+                        currency === c ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {c === 'XOF' ? 'FCFA' : c}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          </FadeInOnScroll>
 
-          {/* Pricing Grid */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="mt-10 sm:mt-16 grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8"
-          >
-            {plans.map((plan, idx) => (
-              <motion.div
-                key={idx}
-                variants={itemVariants}
-                whileHover={{ y: -6, scale: 1.01 }}
-                className={`relative rounded-3xl p-6 sm:p-8 border backdrop-blur-xl transition-all duration-300 flex flex-col justify-between ${
-                  plan.popular
-                    ? 'border-primary bg-card/90 shadow-2xl shadow-primary/15 ring-2 ring-primary'
-                    : 'border-border/80 bg-card/70 shadow-lg'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase tracking-wider text-primary">{plan.badge}</span>
-                  </div>
+          {/* Plans from FORMULES */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            {FORMULES.map((f, idx) => {
+              const color = offerColors[f.code];
+              const isPopular = f.code === 'Business';
+              const price = getPrice(f);
+              const normalPrice = getNormalPrice(f);
+              const remise = getRemise(f);
 
-                  <h3 className="text-xl sm:text-2xl font-black text-foreground mt-2">{plan.name}</h3>
-                  <p className="text-xs text-muted-foreground font-semibold mt-2 leading-relaxed">{plan.description}</p>
-
-                  <div className="mt-6 flex items-baseline gap-1.5">
-                    <span className="text-3xl sm:text-4xl font-black text-foreground">
-                      {currency === 'XOF' ? plan.priceXOF : plan.priceEUR}
-                    </span>
-                    <span className="text-xs font-bold text-muted-foreground">{plan.period}</span>
-                  </div>
-
-                  <ul className="mt-6 space-y-3 border-t border-border/60 pt-6">
-                    {plan.features.map((feat, fIdx) => (
-                      <li key={fIdx} className="flex items-center gap-2.5 text-xs text-foreground font-bold">
-                        <div className="p-0.5 rounded-full bg-emerald-500/10 text-emerald-500 shrink-0">
-                          <Check className="h-3.5 w-3.5" />
-                        </div>
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="mt-6 sm:mt-8">
-                  <Link
-                    to="/login"
-                    className={`w-full py-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all ${
-                      plan.popular
-                        ? 'bg-gradient-faciloop text-white shadow-xl shadow-primary/30 hover:opacity-95'
-                        : 'border border-input bg-card text-foreground hover:bg-muted'
+              return (
+                <FadeInOnScroll key={f.code} delay={idx * 100}>
+                  <div
+                    className={`rounded-xl overflow-hidden border flex flex-col justify-between h-full ${
+                      isPopular
+                        ? `${color.border} bg-card shadow-lg ring-2 ring-amber-500/20`
+                        : 'border-border bg-card'
                     }`}
                   >
-                    <span>{plan.cta}</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                    {/* Card Gradient Header */}
+                    <div className={`px-5 py-4 bg-gradient-to-r ${color.gradient} text-white`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Crown className="h-5 w-5" />
+                          <span className="text-lg font-bold">{f.label}</span>
+                        </div>
+                        {isPopular && (
+                          <span className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold">
+                            Recommandé
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/80 mt-1">{f.description}</p>
+                    </div>
+
+                    <div className="p-5 sm:p-6 flex flex-col flex-1">
+                      {/* Price */}
+                      <div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl sm:text-3xl font-bold text-foreground">
+                            {fmt(price)}
+                          </span>
+                          <span className="text-sm text-muted-foreground">{periodLabels[billingCycle]}</span>
+                        </div>
+                        {remise > 0 && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-muted-foreground line-through">{fmt(normalPrice)}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold">
+                              -{remise}%
+                            </span>
+                          </div>
+                        )}
+                        {billingCycle === 'mensuel' && f.pricing.mensuel_premier_mois && (
+                          <div className="mt-1">
+                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-bold">
+                              1er mois: {fmt(f.pricing.mensuel_premier_mois)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Features */}
+                      <ul className="mt-5 space-y-2.5 border-t border-border pt-5 flex-1">
+                        {(offerFeatures[f.code] || []).map((feat, fIdx) => (
+                          <li key={fIdx} className="flex items-start gap-2 text-sm text-foreground">
+                            <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" strokeWidth={2.5} />
+                            <span>{feat}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* CTA */}
+                      <div className="mt-6">
+                        <Link
+                          to="/signup"
+                          className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-full font-semibold text-sm transition-all ${
+                            isPopular
+                              ? 'bg-gradient-faciloop text-white shadow-md hover:opacity-90'
+                              : 'border border-border text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          <span>{isPopular ? 'Souscrire maintenant' : f.code === 'Premium' ? 'Contacter notre équipe' : 'Démarrer gratuitement'}</span>
+                          <ArrowUpRight className="w-4 h-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </FadeInOnScroll>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Trial CTA Section */}
+      <section className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="max-w-3xl mx-auto text-center">
+          <FadeInOnScroll>
+            <div className="p-6 sm:p-10 rounded-xl border border-border bg-card">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                Prêt à transformer votre prospection ?
+              </h2>
+              <p className="mt-3 text-sm text-muted-foreground max-w-lg mx-auto">
+                14 jours d'essai gratuit. Aucune carte bancaire requise. Configurez votre pipeline en moins de 2 minutes.
+              </p>
+
+              <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-foreground">
+                {['Pipeline 12 étapes', 'WhatsApp intégré', 'Multi-Tenant RLS', 'Support prioritaire'].map((item) => (
+                  <li key={item} className="flex items-center gap-1.5">
+                    <Check className="h-4 w-4 text-primary" strokeWidth={2.5} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-6">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
+                >
+                  <span>Créer mon compte gratuitement</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </FadeInOnScroll>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/80 bg-card/90 pt-12 pb-8 backdrop-blur-xl font-sans">
-        <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8 space-y-8 sm:space-y-12">
-          {/* Main Footer Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-xs">
-            {/* Brand Column */}
-            <div className="space-y-4 md:col-span-2">
-              <div className="flex items-center gap-3">
-                <FaciloopBrand className="h-9" />
-              </div>
+      <footer className="border-t border-border bg-background py-10">
+        <div className="max-w-5xl mx-auto px-4 text-center space-y-4">
+          <FaciloopBrand className="h-7 mx-auto" />
+          <p className="text-sm text-muted-foreground">
+            CRM B2B multi-entreprises pour dynamiser votre prospection et automatiser vos relances commerciales.
+          </p>
 
-              <p className="text-xs text-muted-foreground font-semibold max-w-sm leading-relaxed">
-                Solution CRM B2B multi-entreprises développée pour dynamiser la prospection, le suivi de pipeline et l'automatisation des relances commerciales en Afrique et à l'international.
-              </p>
-
-              {/* International Contact Line */}
-              <div className="space-y-2 pt-2 text-xs font-bold text-foreground">
-                <a
-                  href="mailto:contact@faciloop.com"
-                  className="flex items-center gap-2 hover:text-primary transition-colors inline-block mr-4"
-                >
-                  <Mail className="w-4 h-4 text-primary shrink-0" />
-                  <span>contact@faciloop.com</span>
-                </a>
-
-                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-muted-foreground pt-1">
-                  <a href="tel:+33614578547" className="flex items-center gap-1 hover:text-foreground transition-colors">
-                    <span>🇫🇷 +33 6 14 57 85 47</span>
-                  </a>
-                  <span>•</span>
-                  <a href="tel:+221711387878" className="flex items-center gap-1 hover:text-foreground transition-colors">
-                    <span>🇸🇳 +221 71 138 78 78</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Navigation Links Column */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-widest text-foreground">Navigation</h4>
-              <ul className="space-y-2.5 font-bold text-muted-foreground">
-                <li><a href="#features" className="hover:text-foreground transition-colors">Fonctionnalités CRM</a></li>
-                <li><a href="#pricing" className="hover:text-foreground transition-colors">Tarifs Transparents</a></li>
-                <li><Link to="/login" className="hover:text-foreground transition-colors">Espace Client & Connexion</Link></li>
-                <li><Link to="/login" className="hover:text-foreground transition-colors">Demander une Démo</Link></li>
-              </ul>
-            </div>
-
-            {/* Legal & Compliance Column */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-widest text-foreground">Légal & Sécurité</h4>
-              <ul className="space-y-2.5 font-bold text-muted-foreground">
-                <li>
-                  <a
-                    href="https://faciloop.digitadvisor.sn/privacy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-foreground transition-colors flex items-center gap-1.5"
-                  >
-                    <span>Confidentialité</span>
-                    <ArrowUpRight className="w-3 h-3 text-primary" />
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://faciloop.digitadvisor.sn/terms"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-foreground transition-colors flex items-center gap-1.5"
-                  >
-                    <span>CGU (Conditions Générales)</span>
-                    <ArrowUpRight className="w-3 h-3 text-primary" />
-                  </a>
-                </li>
-                <li><span className="text-[11px] font-bold text-muted-foreground">Isolation RLS Supabase Active</span></li>
-              </ul>
-            </div>
+          {/* Social links */}
+          <div className="flex items-center justify-center gap-4">
+            <a href="https://www.instagram.com/faciloop_app" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Instagram">
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0h.003zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+            </a>
+            <a href="https://www.tiktok.com/@faciloop" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="TikTok">
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+            </a>
+            <a href="https://www.linkedin.com/company/faciloop" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="LinkedIn">
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/faciloop" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Facebook">
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
           </div>
 
-          {/* Bottom Bar */}
-          <div className="pt-6 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-bold text-muted-foreground">
-            <div>
-              © 2026 Digit'Advisor. Tous droits réservés.
-            </div>
-            <div className="flex items-center gap-3 text-[11px]">
-              <span>CRM SaaS B2B Multi-Tenant</span>
-              <span>•</span>
-              <span>Dakar • Paris</span>
-            </div>
+          {/* Contact */}
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground border-t border-border/50 pt-4 max-w-md mx-auto">
+            <a href="mailto:contact@faciloop.com" className="hover:text-foreground transition-colors">
+              contact@faciloop.com
+            </a>
+            <span className="hidden sm:inline">|</span>
+            <a href="tel:+33614578547" className="hover:text-foreground transition-colors">
+              🇫🇷 +33 6 14 57 85 47
+            </a>
+            <span className="hidden sm:inline">|</span>
+            <a href="tel:+221711387878" className="hover:text-foreground transition-colors">
+              🇸🇳 +221 71 138 78 78
+            </a>
           </div>
+
+          {/* Legal */}
+          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+            <a href="https://faciloop.digitadvisor.sn/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              Confidentialité
+            </a>
+            <span>|</span>
+            <a href="https://faciloop.digitadvisor.sn/terms" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              CGU
+            </a>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            © 2026 Digit'Advisor. Tous droits réservés.
+          </p>
         </div>
       </footer>
     </div>

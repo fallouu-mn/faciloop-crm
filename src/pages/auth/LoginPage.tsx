@@ -1,15 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Eye, EyeOff, AlertCircle, Phone, Lock, ChevronDown, ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
+import { PhoneInput } from '../../components/common/PhoneInput';
+import { PinInput } from '../../components/common/PinInput';
 
 export const LoginPage: React.FC = () => {
-  const [telephone, setTelephone] = useState<string>('77 123 45 67');
-  
-  // 6-digit PIN secret code boxes matching RegisterPage format
-  const [codeDigits, setCodeDigits] = useState<string[]>(['1', '2', '3', '4', '5', '6']);
+  const [phone, setPhone] = useState<string>('');
+  const [codeDigits, setCodeDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [showCode, setShowCode] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -17,35 +16,6 @@ export const LoginPage: React.FC = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  // Refs for 6-digit PIN navigation
-  const codeRefs = [
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null)
-  ];
-
-  const handleDigitChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-
-    const newDigits = [...codeDigits];
-    newDigits[index] = value.slice(-1);
-    setCodeDigits(newDigits);
-
-    // Auto-advance focus to next digit box
-    if (value && index < 5) {
-      codeRefs[index + 1].current?.focus();
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !codeDigits[index] && index > 0) {
-      codeRefs[index - 1].current?.focus();
-    }
-  };
 
   const redirectByRole = (role: string) => {
     if (role === 'super_admin') {
@@ -61,41 +31,38 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!telephone || telephone.length < 6) {
+    if (!phone || phone.length < 9) {
       setErrorMsg('Veuillez entrer un numéro de téléphone valide');
       return;
     }
 
     const pin = codeDigits.join('');
-
-    if (pin.length < 4) {
+    if (pin.length < 6) {
       setErrorMsg('Veuillez renseigner le code secret à 6 chiffres');
       return;
     }
 
     setLoading(true);
     try {
-      const session = await login(telephone, pin);
+      const session = await login(phone, pin);
       if (session) {
         redirectByRole(session.role);
       } else {
         setErrorMsg('Numéro de téléphone ou code secret incorrect');
       }
-    } catch (err) {
+    } catch {
       setErrorMsg('Erreur de connexion. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Quick demo presets
-  const handleQuickPreset = async (phone: string, pin: string) => {
-    setTelephone(phone);
-    const pinArr = pin.padEnd(6, '0').slice(0, 6).split('');
-    setCodeDigits(pinArr);
+  const handleQuickPreset = async (phoneVal: string, pin: string) => {
+    setPhone(phoneVal);
+    setCodeDigits(pin.split(''));
     setLoading(true);
     try {
-      const session = await login(phone, pin);
+      const session = await login(phoneVal, pin);
       if (session) {
         redirectByRole(session.role);
       }
@@ -105,105 +72,51 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-3 sm:p-4 relative overflow-hidden font-sans selection:bg-primary/20 selection:text-primary">
-      {/* Background Decorative Blur Gradients */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-72 sm:w-96 h-72 sm:h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-60 sm:w-80 h-60 sm:h-80 bg-accent/15 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Top-Left Professional Back to Home Button */}
-      <Link
-        to="/"
-        className="fixed top-4 left-4 sm:top-6 sm:left-6 z-30 inline-flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl border border-border/80 bg-card/85 backdrop-blur-xl text-xs font-extrabold text-foreground shadow-lg hover:bg-muted active:scale-95 transition-all group"
-        title="Retourner à la page d'accueil Faciloop"
-      >
-        <ArrowLeft className="w-4 h-4 text-primary group-hover:-translate-x-1 transition-transform" />
-        <span>Accueil</span>
-      </Link>
-
-      {/* Main Responsive Login Box */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="w-full max-w-md bg-card border border-border/80 rounded-3xl p-5 sm:p-8 shadow-xl sm:shadow-2xl z-10 relative mt-10 sm:mt-0"
-      >
-        {/* Faciloop Header Official SVG Logo */}
-        <div className="flex flex-col items-center text-center">
-          <Link to="/" className="flex items-center justify-center mb-2 sm:mb-3 group">
-            <FaciloopBrand className="h-10 sm:h-12 group-hover:scale-105 transition-transform" />
-          </Link>
-
-          <h1 className="text-lg sm:text-2xl font-black text-foreground mt-1">Connectez-vous</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5 max-w-xs">
-            Et gérez vos clients et votre activité simplement
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-sm">
+        {/* Header */}
+        <div className="text-center px-6 pt-6 pb-4">
+          <div className="flex justify-center mb-4">
+            <FaciloopBrand className="h-12 w-auto" />
+          </div>
+          <h1 className="text-xl font-medium text-foreground">Connectez-vous</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Gérez vos clients et votre activité simplement
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="mt-6 sm:mt-8 space-y-4 text-xs font-sans">
-          {/* Phone Field with Perfectly Aligned Senegal Indicator */}
-          <div>
-            <label className="block text-xs font-extrabold text-foreground mb-1.5">Téléphone *</label>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-3 rounded-2xl border border-input bg-muted/60 text-xs font-extrabold text-foreground shrink-0">
-                <span className="text-base">🇸🇳</span>
-                <span>+221</span>
-                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-0.5" />
-              </div>
-              <div className="relative flex-1">
-                <input
-                  type="tel"
-                  required
-                  value={telephone}
-                  onChange={(e) => setTelephone(e.target.value)}
-                  placeholder="77 123 45 67"
-                  className="w-full pl-10 pr-3.5 py-3 rounded-2xl border border-input bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground transition-all"
-                />
-                <Phone className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3.5" />
-              </div>
-            </div>
+        <form onSubmit={handleSubmit} className="px-6 space-y-5">
+          {/* Phone */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Téléphone</label>
+            <PhoneInput
+              value={phone}
+              onChange={setPhone}
+              placeholder="77 123 45 67"
+              disabled={loading}
+            />
           </div>
 
-          {/* Secret Code Field (6 Square PIN Boxes Format) */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-extrabold text-foreground">Code secret (6 chiffres) *</label>
-              <button
-                type="button"
-                onClick={() => setShowCode(!showCode)}
-                className="text-muted-foreground hover:text-foreground p-1"
-                title="Afficher/Masquer le code"
-              >
-                {showCode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
+          {/* PIN */}
+          <PinInput
+            value={codeDigits}
+            onChange={setCodeDigits}
+            showPin={showCode}
+            onToggleShow={() => setShowCode(!showCode)}
+            disabled={loading}
+            label="Code secret (6 chiffres)"
+          />
 
-            {/* 6 Individual Square PIN Boxes */}
-            <div className="grid grid-cols-6 gap-1.5 sm:gap-2">
-              {codeDigits.map((digit, idx) => (
-                <input
-                  key={idx}
-                  ref={codeRefs[idx]}
-                  type={showCode ? 'text' : 'password'}
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleDigitChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(idx, e)}
-                  className="w-full h-12 text-center text-lg font-black rounded-2xl border border-input bg-background focus:ring-2 focus:ring-primary/50 text-foreground transition-all"
-                />
-              ))}
-            </div>
-
-            <div className="flex justify-end mt-1">
-              <button
-                type="button"
-                onClick={() => setErrorMsg('Veuillez contacter votre administrateur Faciloop pour réinitialiser votre code.')}
-                className="text-[11px] font-semibold text-primary hover:underline"
-              >
-                Code secret oublié ?
-              </button>
-            </div>
-          </div>
+          <p className="text-center">
+            <button
+              type="button"
+              onClick={() => setErrorMsg('Veuillez contacter votre administrateur Faciloop pour réinitialiser votre code.')}
+              className="text-xs text-muted-foreground hover:underline"
+            >
+              Code secret oublié ?
+            </button>
+          </p>
 
           {/* Remember Me */}
           <div className="flex items-center gap-2">
@@ -212,75 +125,74 @@ export const LoginPage: React.FC = () => {
               id="remember"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-4 h-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
+              className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
             />
-            <label htmlFor="remember" className="text-xs font-medium text-muted-foreground cursor-pointer">
+            <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
               Se souvenir de moi
             </label>
           </div>
 
-          {/* Full-width Imposing Submit Button */}
+          {/* Error */}
+          {errorMsg && (
+            <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-sm text-destructive">
+              {errorMsg}
+            </div>
+          )}
+
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-primary/25 hover:opacity-95 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+            className="w-full h-10 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <span>Se connecter</span>
+              'Se connecter'
             )}
           </button>
         </form>
 
-        {/* Link to Registration Page */}
-        <div className="mt-5 text-center text-xs text-muted-foreground font-semibold">
-          Pas encore de compte ?{' '}
-          <Link to="/register" className="font-extrabold text-primary hover:underline">
-            S'inscrire en 1 min
-          </Link>
+        {/* Footer */}
+        <div className="px-6 py-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            Pas encore de compte ?{' '}
+            <Link to="/signup" className="text-primary hover:underline">
+              Créer un compte
+            </Link>
+          </p>
         </div>
 
-        {/* Quick Demo Presets Bar */}
-        <div className="mt-5 pt-4 border-t border-border/60">
-          <p className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground text-center mb-2">
+        {/* Quick Demo */}
+        <div className="border-t border-border mx-6 px-0 pb-6 pt-4">
+          <p className="text-xs font-medium text-muted-foreground text-center mb-2">
             Accès Rapide Démo
           </p>
-          <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+          <div className="grid grid-cols-3 gap-2 text-xs">
             <button
-              onClick={() => handleQuickPreset('+221771234567', '123456')}
-              className="px-2 py-2 rounded-xl border border-border/80 bg-muted/50 font-extrabold hover:border-primary active:scale-95 text-foreground transition-all truncate"
+              type="button"
+              onClick={() => handleQuickPreset('221771234567', '123456')}
+              className="px-2 py-2 rounded-full border border-border font-medium hover:bg-muted text-foreground transition-colors"
             >
               Commercial
             </button>
             <button
-              onClick={() => handleQuickPreset('+221789998877', '111111')}
-              className="px-2 py-2 rounded-xl border border-border/80 bg-muted/50 font-extrabold hover:border-primary active:scale-95 text-foreground transition-all truncate"
+              type="button"
+              onClick={() => handleQuickPreset('221789998877', '111111')}
+              className="px-2 py-2 rounded-full border border-border font-medium hover:bg-muted text-foreground transition-colors"
             >
               Admin Org
             </button>
             <button
-              onClick={() => handleQuickPreset('+221770000000', '000000')}
-              className="px-2 py-2 rounded-xl border border-border/80 bg-muted/50 font-extrabold hover:border-primary active:scale-95 text-foreground transition-all truncate"
+              type="button"
+              onClick={() => handleQuickPreset('221770000000', '000000')}
+              className="px-2 py-2 rounded-full border border-border font-medium hover:bg-muted text-foreground transition-colors"
             >
               Super-Admin
             </button>
           </div>
         </div>
-      </motion.div>
-
-      {/* Error Toast Banner */}
-      {errorMsg && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-faciloop text-white shadow-2xl text-xs font-bold max-w-xs sm:max-w-sm"
-        >
-          <AlertCircle className="w-5 h-5 shrink-0" />
-          <span>{errorMsg}</span>
-        </motion.div>
-      )}
+      </div>
     </div>
   );
 };
