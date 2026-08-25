@@ -17,7 +17,8 @@ import {
   FileText,
   Filter,
   Search,
-  Users
+  Users,
+  Goal
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -34,8 +35,8 @@ const ACTION_TYPE_CONFIG: Record<ActionLogType, { icon: React.ComponentType<{ cl
   offer_deleted: { icon: Package, color: 'bg-rose-500/10 text-rose-500', label: 'Suppression offre' },
   subscription_created: { icon: CreditCard, color: 'bg-indigo-500/10 text-indigo-500', label: 'Nouvel abonnement' },
   subscription_updated: { icon: CreditCard, color: 'bg-indigo-500/10 text-indigo-500', label: 'Modif. abonnement' },
-  objectif_created: { icon: Target, color: 'bg-orange-500/10 text-orange-500', label: 'Objectif défini' },
-  objectif_updated: { icon: Target, color: 'bg-orange-500/10 text-orange-500', label: 'Objectif modifié' },
+  objectif_created: { icon: Goal, color: 'bg-orange-500/10 text-orange-500', label: 'Objectif défini' },
+  objectif_updated: { icon: Goal, color: 'bg-orange-500/10 text-orange-500', label: 'Objectif modifié' },
   payment_received: { icon: CreditCard, color: 'bg-emerald-500/10 text-emerald-500', label: 'Paiement' },
   payment_updated: { icon: CreditCard, color: 'bg-amber-500/10 text-amber-500', label: 'Modif. paiement' },
   org_settings_updated: { icon: Settings, color: 'bg-slate-500/10 text-slate-500', label: 'Paramètres org.' },

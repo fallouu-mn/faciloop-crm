@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { CalendarClock, Plus, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import { Plus, CheckCircle2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const RelancesPage: React.FC = () => {
-  const { relances, prospects, addRelance, completeRelance } = useAuth();
+  const { user, myRelances, myProspects, addRelance, completeRelance } = useAuth();
   const [filterStatut, setFilterStatut] = useState<string>('all');
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -15,11 +15,11 @@ export const RelancesPage: React.FC = () => {
   const [motif, setMotif] = useState<string>('Relance de courtoisie');
   const [commentaire, setCommentaire] = useState<string>('');
 
-  const filtered = relances.filter(r => filterStatut === 'all' || r.statut === filterStatut);
+  const filtered = myRelances.filter(r => filterStatut === 'all' || r.statut === filterStatut);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    const p = prospects.find(item => item.id === prospectId) || prospects[0];
+    const p = myProspects.find(item => item.id === prospectId) || myProspects[0];
     addRelance({
       prospect_id: p.id,
       prospect_nom: `${p.prenom || ''} ${p.nom}`.trim(),
@@ -133,7 +133,7 @@ export const RelancesPage: React.FC = () => {
                   className="w-full p-2.5 rounded-xl border border-input bg-background font-medium hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 >
                   <option value="">Sélectionner un prospect</option>
-                  {prospects.map((p) => (
+                  {myProspects.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.prenom} {p.nom} - {p.entreprise}
                     </option>

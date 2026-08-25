@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Target, Plus, Check, X, Users, TrendingUp, CalendarDays } from 'lucide-react';
+import { Plus, Check, X, Users, TrendingUp, CalendarDays, Goal } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
@@ -87,7 +87,7 @@ export const ObjectifsAdminPage: React.FC = () => {
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Objectifs définis</span>
-            <Target className="h-4 w-4 text-primary" />
+            <Goal className="h-4 w-4 text-primary" />
           </div>
           <span className="text-lg font-bold text-foreground">{objectifs.length}</span>
         </div>
@@ -168,7 +168,7 @@ export const ObjectifsAdminPage: React.FC = () => {
           <div className="w-full max-w-md bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-                <Target className="w-5 h-5 text-primary" /> Définir un objectif
+                <Goal className="w-5 h-5 text-primary" /> Définir un objectif
               </h2>
               <button onClick={() => setIsDefineOpen(false)} className="p-1 hover:bg-muted rounded-lg">
                 <X className="w-5 h-5 text-muted-foreground" />

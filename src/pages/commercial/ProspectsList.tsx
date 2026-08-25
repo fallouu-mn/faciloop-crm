@@ -1,28 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource } from '../../types/crm';
 import { mockCommerciaux } from '../../lib/mockData';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
-import { 
-  Users, 
-  Search, 
-  Plus, 
-  AlertTriangle, 
-  X, 
-  Check, 
+import {
+  Users,
+  Search,
+  Plus,
+  AlertTriangle,
+  X,
+  Check,
   ArrowRight,
   Eye,
   Lock,
   UserCheck,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Download,
+  Upload,
+  FileSpreadsheet
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+
+const PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
+const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
 export const ProspectsList: React.FC = () => {
-  const { user, myProspects, prospects, addProspect, reassignProspects } = useAuth();
+  const { user, myProspects, prospects, addProspect, reassignProspects, orgOffers } = useAuth();
+  const [searchParams] = useSearchParams();
 
   const [search, setSearch] = useState<string>('');
-  const [filterStep, setFilterStep] = useState<string>('all');
+  const [filterStep, setFilterStep] = useState<string>(searchParams.get('statut') || 'all');
   const [filterSource, setFilterSource] = useState<string>('all');
 
   // Bulk Selection State
@@ -33,13 +40,25 @@ export const ProspectsList: React.FC = () => {
   const [isReassignModalOpen, setIsReassignModalOpen] = useState<boolean>(false);
   const [targetCommercialId, setTargetCommercialId] = useState<string>(mockCommerciaux[0].id);
 
-  // New Prospect Form State
+  const activeOrgOffers = orgOffers.filter((o: any) => o.actif !== false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // New Prospect Form State (matches admin org full form)
   const [newNom, setNewNom] = useState<string>('');
   const [newPrenom, setNewPrenom] = useState<string>('');
   const [newEntreprise, setNewEntreprise] = useState<string>('');
   const [newPhone, setNewPhone] = useState<string>('');
+  const [newWhatsapp, setNewWhatsapp] = useState<string>('');
+  const [newEmail, setNewEmail] = useState<string>('');
+  const [newPays, setNewPays] = useState<string>('Sénégal');
+  const [newVille, setNewVille] = useState<string>('');
+  const [newAdresse, setNewAdresse] = useState<string>('');
+  const [newSecteur, setNewSecteur] = useState<string>('');
   const [newSource, setNewSource] = useState<ProspectSource>('prospection_directe');
-  const [newFormule, setNewFormule] = useState<string>('SaaS Pro');
+  const [newFormule, setNewFormule] = useState<string>('');
+  const [newBudget, setNewBudget] = useState<string>('');
+  const [newCommentaire, setNewCommentaire] = useState<string>('');
+  const [newRelance, setNewRelance] = useState<string>('');
 
   const [duplicateAlert, setDuplicateAlert] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -61,17 +80,34 @@ export const ProspectsList: React.FC = () => {
     }
   };
 
+  const resetNewForm = () => {
+    setNewNom(''); setNewPrenom(''); setNewEntreprise(''); setNewPhone('');
+    setNewWhatsapp(''); setNewEmail(''); setNewPays('Sénégal'); setNewVille('');
+    setNewAdresse(''); setNewSecteur(''); setNewSource('prospection_directe');
+    setNewFormule(''); setNewBudget(''); setNewCommentaire(''); setNewRelance('');
+    setDuplicateAlert(false);
+  };
+
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newNom || !newEntreprise || !newPhone) return;
+    if ((!newNom && !newEntreprise) || !newPhone || !newPays) return;
 
     const res = addProspect({
-      nom: newNom,
-      prenom: newPrenom,
-      entreprise: newEntreprise,
+      nom: newNom || newEntreprise,
+      prenom: newPrenom || undefined,
+      entreprise: newEntreprise || newNom,
       telephone: newPhone,
+      whatsapp: newWhatsapp || undefined,
+      email: newEmail || undefined,
+      pays: newPays,
+      ville: newVille || undefined,
+      adresse: newAdresse || undefined,
+      secteur_activite: newSecteur || undefined,
       source: newSource,
-      formule_envisagee: newFormule,
+      formule_envisagee: newFormule || undefined,
+      budget_estime: newBudget ? Number(newBudget) : undefined,
+      commentaire: newCommentaire || undefined,
+      date_prochaine_relance: newRelance || undefined,
       statut_pipeline: 'nouveau',
       commercial_id: user?.id,
       commercial_nom: user ? `${user.prenom} ${user.nom}` : undefined
@@ -85,11 +121,79 @@ export const ProspectsList: React.FC = () => {
     if (res.success) {
       showToast('Prospect créé et attribué avec succès !');
       setIsNewModalOpen(false);
-      setNewNom('');
-      setNewPrenom('');
-      setNewEntreprise('');
-      setNewPhone('');
+      resetNewForm();
     }
+  };
+
+  // ─── Import/Export CSV ─────────────────────────────────
+  const handleExportCSV = () => {
+    const csvHeaders = 'Nom;Prenom;Entreprise;Telephone;WhatsApp;Email;Pays;Ville;Source;Etape_Pipeline;Formule;Budget_Estime\n';
+    const csvRows = myProspects
+      .map(p => `"${p.nom}";"${p.prenom || ''}";"${p.entreprise}";"${p.telephone}";"${p.whatsapp || ''}";"${p.email || ''}";"${p.pays || ''}";"${p.ville || ''}";"${p.source}";"${p.statut_pipeline}";"${p.formule_envisagee || ''}";"${p.budget_estime || ''}"`)
+      .join('\n');
+
+    const blob = new Blob([csvHeaders + csvRows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mes_prospects_export_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (!content) return;
+
+      const lines = content.split(/\r\n|\n/).filter(line => line.trim().length > 0);
+      if (lines.length <= 1) return;
+
+      const delimiter = lines[0].includes(';') ? ';' : ',';
+      const rawHeaders = lines[0].split(delimiter).map(h => h.trim().toLowerCase().replace(/"/g, ''));
+
+      const nomIdx = rawHeaders.findIndex(h => h.includes('nom') || h.includes('contact'));
+      const prenomIdx = rawHeaders.findIndex(h => h.includes('prenom') || h.includes('first'));
+      const entrepriseIdx = rawHeaders.findIndex(h => h.includes('entreprise') || h.includes('societe'));
+      const phoneIdx = rawHeaders.findIndex(h => h.includes('tel') || h.includes('phone') || h.includes('mobile'));
+      const sourceIdx = rawHeaders.findIndex(h => h.includes('source') || h.includes('canal'));
+
+      let imported = 0;
+      let skipped = 0;
+
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(delimiter).map(p => p.trim().replace(/"/g, ''));
+        const nom = nomIdx !== -1 ? parts[nomIdx] : parts[0] || 'Inconnu';
+        const prenom = prenomIdx !== -1 ? parts[prenomIdx] : '';
+        const entreprise = entrepriseIdx !== -1 ? parts[entrepriseIdx] : parts[1] || '';
+        const telephone = phoneIdx !== -1 ? parts[phoneIdx] : parts[2] || '';
+        const source = (sourceIdx !== -1 ? parts[sourceIdx] : 'prospection_directe') as ProspectSource;
+
+        if (!telephone) { skipped++; continue; }
+
+        const res = addProspect({
+          nom: nom || entreprise,
+          prenom: prenom || undefined,
+          entreprise: entreprise || nom,
+          telephone,
+          source: source || 'prospection_directe',
+          statut_pipeline: 'nouveau',
+          commercial_id: user?.id,
+          commercial_nom: user ? `${user.prenom} ${user.nom}` : undefined
+        });
+
+        if (res.success) imported++;
+        else skipped++;
+      }
+
+      showToast(`Import terminé : ${imported} prospects créés, ${skipped} ignorés (doublons/invalides)`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsText(file);
   };
 
   // CDC 3.2: Filtered strictly on myProspects for Commercial role, or all for Admin
@@ -165,6 +269,32 @@ export const ProspectsList: React.FC = () => {
               <span>Réattribuer la sélection ({selectedIds.length})</span>
             </button>
           )}
+
+          {/* Import / Export CSV */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleExportCSV}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-input bg-card px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition-all"
+              title="Exporter mes prospects en CSV"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Export</span>
+            </button>
+            <label
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-input bg-card px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition-all cursor-pointer"
+              title="Importer des prospects depuis un fichier CSV"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Import</span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.txt"
+                onChange={handleImportCSV}
+                className="hidden"
+              />
+            </label>
+          </div>
 
           <button
             onClick={() => setIsNewModalOpen(true)}
@@ -397,13 +527,13 @@ export const ProspectsList: React.FC = () => {
         </div>
       )}
 
-      {/* Quick Creation Modal */}
+      {/* Full Creation Modal (same structure as admin org) */}
       {isNewModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-card border border-border rounded-3xl p-5 sm:p-6 shadow-2xl relative space-y-4 font-sans">
+          <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto font-sans">
             <div className="flex items-center justify-between">
-              <h2 className="text-base sm:text-lg font-bold text-foreground">Nouveau Prospect</h2>
-              <button onClick={() => setIsNewModalOpen(false)} className="rounded-lg p-1 hover:bg-muted">
+              <h2 className="text-base font-bold text-foreground">Nouveau Prospect</h2>
+              <button onClick={() => { setIsNewModalOpen(false); resetNewForm(); }} className="p-1 hover:bg-muted rounded-lg">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -411,77 +541,139 @@ export const ProspectsList: React.FC = () => {
             {duplicateAlert && (
               <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-bold flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>Attention : Ce numéro existe déjà dans l'entreprise !</span>
+                <span>Attention : Ce numéro existe déjà dans l'organisation !</span>
               </div>
             )}
 
-            <form onSubmit={handleCreate} className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold mb-1">Prénom</label>
-                  <input
-                    type="text"
-                    value={newPrenom}
-                    onChange={(e) => setNewPrenom(e.target.value)}
-                    placeholder="Moussa"
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  />
+            <form onSubmit={handleCreate} className="space-y-4 text-xs">
+              {/* Section: Identité */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Identité</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-semibold mb-1">Nom *</label>
+                    <input type="text" value={newNom} onChange={(e) => setNewNom(e.target.value)}
+                      placeholder="Diop" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Prénom</label>
+                    <input type="text" value={newPrenom} onChange={(e) => setNewPrenom(e.target.value)}
+                      placeholder="Moussa" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Nom *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newNom}
-                    onChange={(e) => setNewNom(e.target.value)}
-                    placeholder="Diop"
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  />
+                  <label className="block font-semibold mb-1">Entreprise *</label>
+                  <input type="text" value={newEntreprise} onChange={(e) => setNewEntreprise(e.target.value)}
+                    placeholder="Dakar Tech Ltd" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold mb-1">Entreprise *</label>
-                <input
-                  type="text"
-                  required
-                  value={newEntreprise}
-                  onChange={(e) => setNewEntreprise(e.target.value)}
-                  placeholder="Dakar Tech Ltd"
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                />
+              {/* Section: Contact */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Contact</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-semibold mb-1">Téléphone *</label>
+                    <input type="tel" value={newPhone} onChange={(e) => handlePhoneChange(e.target.value)}
+                      placeholder="+221 77 123 45 67" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">WhatsApp</label>
+                    <input type="tel" value={newWhatsapp} onChange={(e) => setNewWhatsapp(e.target.value)}
+                      placeholder="+221 77 123 45 67" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold mb-1">Email</label>
+                    <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)}
+                      placeholder="contact@entreprise.sn" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block font-semibold mb-1">Téléphone Principal *</label>
-                <input
-                  type="tel"
-                  required
-                  value={newPhone}
-                  onChange={(e) => handlePhoneChange(e.target.value)}
-                  placeholder="77 123 45 67 ou +221..."
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                />
+              {/* Section: Localisation */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Localisation</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div>
+                    <label className="block font-semibold mb-1">Pays *</label>
+                    <select value={newPays} onChange={(e) => setNewPays(e.target.value)}
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                      {PAYS.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Ville</label>
+                    <input type="text" value={newVille} onChange={(e) => setNewVille(e.target.value)}
+                      placeholder="Dakar" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Adresse</label>
+                    <input type="text" value={newAdresse} onChange={(e) => setNewAdresse(e.target.value)}
+                      placeholder="Quartier, rue..." className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block font-semibold mb-1">Source du Prospect</label>
-                <select
-                  value={newSource}
-                  onChange={(e) => setNewSource(e.target.value as any)}
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                >
-                  <option value="prospection_directe">Prospection Directe</option>
-                  <option value="site_web">Site Web</option>
-                  <option value="recommandation">Recommandation</option>
-                  <option value="whatsapp">WhatsApp</option>
-                </select>
+              {/* Section: Qualification */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Qualification</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-semibold mb-1">Secteur d'activité</label>
+                    <select value={newSecteur} onChange={(e) => setNewSecteur(e.target.value)}
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                      <option value="">— Sélectionner —</option>
+                      {SECTEURS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Source</label>
+                    <select value={newSource} onChange={(e) => setNewSource(e.target.value as ProspectSource)}
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                      <option value="prospection_directe">Prospection directe</option>
+                      <option value="site_web">Site web</option>
+                      <option value="recommandation">Recommandation</option>
+                      <option value="reseaux_sociaux">Réseaux sociaux</option>
+                      <option value="whatsapp">WhatsApp</option>
+                      <option value="evenement">Événement</option>
+                      <option value="autre">Autre</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Formule envisagée</label>
+                    <select value={newFormule} onChange={(e) => setNewFormule(e.target.value)}
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                      <option value="">— Aucune —</option>
+                      {activeOrgOffers.map(o => <option key={o.id} value={o.nom}>{o.nom}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Budget estimé (FCFA)</label>
+                    <input type="number" value={newBudget} onChange={(e) => setNewBudget(e.target.value)}
+                      placeholder="500000" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                </div>
               </div>
 
-              <button
-                type="submit"
-                className="w-full mt-4 py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all"
-              >
+              {/* Section: Notes & Relance */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Notes & Relance</h3>
+                <div>
+                  <label className="block font-semibold mb-1">Commentaire</label>
+                  <textarea value={newCommentaire} onChange={(e) => setNewCommentaire(e.target.value)}
+                    rows={2} placeholder="Notes internes..."
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">Date prochaine relance</label>
+                  <input type="date" value={newRelance} onChange={(e) => setNewRelance(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+              </div>
+
+              <button type="submit"
+                disabled={(!newNom && !newEntreprise) || !newPhone || !newPays}
+                className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 Créer le prospect
               </button>
             </form>

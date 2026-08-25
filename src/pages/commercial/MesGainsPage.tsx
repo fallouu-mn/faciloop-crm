@@ -52,8 +52,9 @@ function getCommissionRate(periodicite: string): number {
 }
 
 export function MesGainsPage() {
-  const { user, commissions, orgOffers } = useAuth();
-  const [currency, setCurrency] = useState<Currency>('XOF');
+  const { user, commissions, orgOffers, currency: globalCurrency, setCurrency: setGlobalCurrency } = useAuth();
+  const currency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === globalCurrency)?.[0] || 'XOF') as Currency;
+  const setCurrency = (c: Currency) => setGlobalCurrency(CURRENCY_LABELS[c]);
   const [activeTab, setActiveTab] = useState<'apercu' | 'simulateur' | 'historique'>('apercu');
 
   // Filter commissions for current commercial

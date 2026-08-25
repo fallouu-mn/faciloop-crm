@@ -49,7 +49,7 @@ interface AuthContextType {
   
   addInteraction: (i: Omit<Interaction, 'id' | 'created_at' | 'organization_id'>) => void;
   markNotificationAsRead: (id: string) => void;
-  convertProspectToClient: (prospectId: string, formule: string) => void;
+  convertProspectToClient: (prospectId: string, formule: string, options?: { frequence?: string; montant?: number; modePaiement?: string }) => void;
 
   // Org-specific offers (Admin Org → ses propres offres pour ses clients)
   orgOffers: OrgOffer[];
@@ -563,13 +563,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const convertProspectToClient = (prospectId: string, formule: string) => {
+  const convertProspectToClient = (prospectId: string, formule: string, options?: { frequence?: string; montant?: number; modePaiement?: string }) => {
     const p = prospects.find(item => item.id === prospectId);
     if (!p) return;
 
-    // Find org offer to get the correct tarif
+    const freq = (options?.frequence || 'mensuel') as 'mensuel' | 'trimestriel' | 'annuel';
     const offer = myOrgOffers.find(o => o.nom === formule);
-    const montant = offer?.tarifs.mensuel || p.budget_estime || 500000;
+    const montant = options?.montant || offer?.tarifs[freq] || p.budget_estime || 500000;
+    const modePaiement = options?.modePaiement || 'wave';
 
     const clientId = `client-${Date.now()}`;
     const newClient: ClientFaciloop = {
@@ -589,7 +590,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       statut_compte: 'actif',
       statut_abonnement: 'actif',
       montant_paye: montant,
-      prochain_renouvellement: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+      prochain_renouvellement: new Date(Date.now() + (freq === 'annuel' ? 365 : freq === 'trimestriel' ? 90 : 30) * 86400000).toISOString().split('T')[0],
       nombre_utilisateurs: 5,
       created_at: new Date().toISOString()
     };
@@ -606,8 +607,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       montant_paye: montant,
       montant_restant: 0,
       date_paiement: new Date().toISOString().split('T')[0],
-      mode_paiement: 'wave',
-      reference_transaction: `WV-${Date.now().toString().slice(-9)}`,
+      mode_paiement: modePaiement,
+      reference_transaction: `${modePaiement.toUpperCase().slice(0, 2)}-${Date.now().toString().slice(-9)}`,
       statut: 'valide',
       justificatif_commentaire: `Souscription ${formule} — conversion prospect.`,
       created_at: new Date().toISOString()

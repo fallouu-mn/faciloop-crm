@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Prospect, MotifPerte, PipelineStepId } from '../../types/crm';
-import { 
-  DndContext, 
-  DragOverlay, 
-  useSensor, 
-  useSensors, 
-  PointerSensor, 
-  TouchSensor, 
-  DragEndEvent, 
-  DragStartEvent, 
-  useDroppable, 
-  useDraggable 
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  TouchSensor,
+  DragEndEvent,
+  DragStartEvent,
+  useDroppable,
+  useDraggable
 } from '@dnd-kit/core';
-import { 
-  Plus, 
-  AlertTriangle, 
-  Building2, 
-  X, 
-  Lock, 
-  UserCheck, 
+import {
+  Plus,
+  AlertTriangle,
+  Building2,
+  Lock,
+  UserCheck,
   GripVertical,
   Inbox,
   PhoneCall,
@@ -35,10 +35,7 @@ import {
   List,
   ChevronDown,
   ChevronUp,
-  Phone,
-  ArrowRight,
-  CalendarClock,
-  CreditCard
+  CalendarClock
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -166,7 +163,7 @@ const columns: ColumnDef[] = [
 ];
 
 // Stylized Draggable Prospect Card Component
-const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string }> = ({ prospect, basePath = '/app/prospects' }) => {
+const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; activeCurrency?: Currency }> = ({ prospect, basePath = '/app/prospects', activeCurrency = 'XOF' }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: prospect.id,
     data: { prospect }
@@ -216,7 +213,7 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string }>
         {/* Badges & Financial Info */}
         <div className="flex items-center justify-between gap-2 pt-1 text-xs">
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-black">
-            {prospect.budget_estime ? `${(prospect.budget_estime).toLocaleString()} FCFA` : 'Prospect Qualifié'}
+            {prospect.budget_estime ? formatMoney(prospect.budget_estime, activeCurrency) : 'Prospect Qualifié'}
           </span>
 
           <span className="text-xs font-bold text-muted-foreground capitalize flex items-center gap-1">
@@ -286,7 +283,7 @@ const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string }> = (
 };
 
 // Droppable Column Component for Horizontal View
-const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePath?: string }> = ({ col, prospects, basePath = '/app/prospects' }) => {
+const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePath?: string; activeCurrency?: Currency }> = ({ col, prospects, basePath = '/app/prospects', activeCurrency = 'XOF' }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: col.id
   });
@@ -323,18 +320,28 @@ const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePat
         {prospects.length === 0 ? (
           <KanbanEmptyState col={col} prospectsPath={basePath} />
         ) : (
-          prospects.map((p) => <DraggableProspectCard key={p.id} prospect={p} basePath={basePath} />)
+          prospects.map((p) => <DraggableProspectCard key={p.id} prospect={p} basePath={basePath} activeCurrency={activeCurrency} />)
         )}
       </div>
     </div>
   );
 };
 
+// ─── Currency helpers ─────────────────────────────────────────
+type Currency = 'XOF' | 'EUR' | 'USD';
+const CURRENCY_LABELS: Record<Currency, string> = { XOF: 'FCFA', EUR: 'EUR', USD: 'USD' };
+const EXCHANGE_RATES: Record<Currency, number> = { XOF: 1, EUR: 1 / 655.957, USD: 1 / 600 };
+
+function formatMoney(amount: number, curr: Currency): string {
+  return Math.round(amount * EXCHANGE_RATES[curr]).toLocaleString('fr-FR') + ' ' + CURRENCY_LABELS[curr];
+}
+
 export const ProspectKanban: React.FC = () => {
-  const { user, myProspects, updateProspectStatus, convertProspectToClient, orgOffers } = useAuth();
+  const { user, myProspects, updateProspectStatus, convertProspectToClient, orgOffers, currency, setCurrency } = useAuth();
   const navigate = useNavigate();
   const isAdmin = user?.role === 'admin_org' || user?.role === 'super_admin';
   const prospectBasePath = isAdmin ? '/admin/prospects' : '/app/prospects';
+  const activeCurrency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === currency)?.[0] || 'XOF') as Currency;
 
   const [activeProspect, setActiveProspect] = useState<Prospect | null>(null);
 
@@ -426,18 +433,6 @@ export const ProspectKanban: React.FC = () => {
     }
   };
 
-  const handleStageChangeSelect = (prospectId: string, targetStep: PipelineStepId) => {
-    if (targetStep === 'perdu') {
-      setPendingProspectId(prospectId);
-      setLossModalOpen(true);
-    } else if (targetStep === 'gagne') {
-      setPendingProspectId(prospectId);
-      setConvertModalOpen(true);
-    } else {
-      updateProspectStatus(prospectId, targetStep);
-    }
-  };
-
   const confirmLoss = () => {
     if (pendingProspectId) {
       updateProspectStatus(pendingProspectId, 'perdu', selectedMotif);
@@ -449,7 +444,11 @@ export const ProspectKanban: React.FC = () => {
   const confirmConvert = () => {
     if (pendingProspectId) {
       const montant = convMontant ? Number(convMontant) : autoMontant;
-      convertProspectToClient(pendingProspectId, convOffre);
+      convertProspectToClient(pendingProspectId, convOffre, {
+        frequence: convFrequence,
+        montant,
+        modePaiement: convPaiement
+      });
       setConvertModalOpen(false);
       setPendingProspectId(null);
       setConvMontant('');
@@ -479,7 +478,24 @@ export const ProspectKanban: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Currency Toggle */}
+          <div className="flex items-center rounded-2xl bg-muted/80 p-1 border border-border/80 text-xs font-black shrink-0">
+            {(['XOF', 'EUR', 'USD'] as Currency[]).map(c => (
+              <button
+                key={c}
+                onClick={() => setCurrency(CURRENCY_LABELS[c])}
+                className={`rounded-xl px-2.5 py-1 text-[10px] sm:text-xs font-black transition-all ${
+                  currency === CURRENCY_LABELS[c]
+                    ? 'bg-gradient-faciloop text-white shadow-md'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {CURRENCY_LABELS[c]}
+              </button>
+            ))}
+          </div>
+
           {/* View Mode Toggle Switcher */}
           <div className="flex items-center rounded-2xl bg-muted p-1 border border-border/80 text-xs font-extrabold">
             <button
@@ -509,19 +525,19 @@ export const ProspectKanban: React.FC = () => {
             </button>
           </div>
 
-          <Link
+          {/* <Link
             to={prospectBasePath}
             className="inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 active:scale-95 transition-all shrink-0"
           >
             <Plus className="h-4 w-4 shrink-0" />
             <span>Nouveau Prospect</span>
-          </Link>
+          </Link> */}
         </div>
       </div>
 
       {/* VIEW MODE 1: VERTICAL ACCORDION STACK WITH DnD (Professional UX) */}
       {viewMode === 'vertical' ? (
-        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="space-y-4">
             {columns.map((col) => {
               const colProspects = myProspects.filter(p => p.statut_pipeline === col.id);
@@ -547,7 +563,7 @@ export const ProspectKanban: React.FC = () => {
                           {totalBudget > 0 && (
                             <>
                               <span>•</span>
-                              <span className="text-emerald-500 font-extrabold">{totalBudget.toLocaleString()} FCFA</span>
+                              <span className="text-emerald-500 font-extrabold">{formatMoney(totalBudget, activeCurrency)}</span>
                             </>
                           )}
                         </div>
@@ -580,7 +596,7 @@ export const ProspectKanban: React.FC = () => {
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                             {colProspects.map((prospect) => (
-                              <DraggableProspectCard key={prospect.id} prospect={prospect} basePath={prospectBasePath} />
+                              <DraggableProspectCard key={prospect.id} prospect={prospect} basePath={prospectBasePath} activeCurrency={activeCurrency} />
                             ))}
                           </div>
                         )}
@@ -603,11 +619,11 @@ export const ProspectKanban: React.FC = () => {
         </DndContext>
       ) : (
         /* VIEW MODE 2: HORIZONTAL KANBAN BOARD (DndContext) */
-        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
             {columns.map((col) => {
               const colProspects = myProspects.filter(p => p.statut_pipeline === col.id);
-              return <DroppableColumn key={col.id} col={col} prospects={colProspects} basePath={prospectBasePath} />;
+              return <DroppableColumn key={col.id} col={col} prospects={colProspects} basePath={prospectBasePath} activeCurrency={activeCurrency} />;
             })}
           </div>
 

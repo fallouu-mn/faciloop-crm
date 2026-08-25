@@ -21,7 +21,8 @@ import {
   Wallet,
   ScrollText,
   DollarSign,
-  UserCircle
+  UserCircle,
+  Goal
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaciloopBrand } from '../common/FaciloopBrand';
@@ -41,10 +42,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { to: '/app/prospects', label: 'Mes Prospects', icon: Users },
     { to: '/app/pipeline', label: 'Pipeline Kanban', icon: Kanban },
     { to: '/app/gains', label: 'Mes Gains', icon: DollarSign },
+    { to: '/app/objectifs', label: 'Mes Objectifs', icon: Goal },
     { to: '/app/relances', label: 'Relances', icon: CalendarClock },
-    { to: '/app/objectifs', label: 'Mes Objectifs', icon: Target },
+    { to: '/app/notifications', label: 'Notifications', icon: Bell },
     { to: '/app/profil', label: 'Mon Profil', icon: UserCircle },
-    { to: '/app/notifications', label: 'Notifications', icon: Bell }
   ];
 
   const adminOrgSections = [
@@ -58,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       title: 'Équipe',
       links: [
         { to: '/admin/equipe', label: 'Équipe commerciale', icon: Users },
-        { to: '/admin/objectifs', label: 'Objectifs commerciaux', icon: Target },
+        { to: '/admin/objectifs', label: 'Objectifs commerciaux', icon: Goal },
       ],
     },
     {
