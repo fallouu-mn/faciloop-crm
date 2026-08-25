@@ -10,6 +10,7 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { PendingActivationPage } from './pages/auth/PendingActivationPage';
 import { WelcomeOnboardingPage } from './pages/auth/WelcomeOnboardingPage';
+import { ForgotPinPage } from './pages/auth/ForgotPinPage';
 
 // Commercial Pages
 import { DashboardCommercial } from './pages/commercial/DashboardCommercial';
@@ -51,6 +52,7 @@ function App() {
           {/* Public & Authentication Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-pin" element={<ForgotPinPage />} />
           <Route path="/signup" element={<RegisterPage />} />
           <Route path="/pending-activation" element={<PendingActivationPage />} />
           <Route path="/welcome" element={<WelcomeOnboardingPage />} />

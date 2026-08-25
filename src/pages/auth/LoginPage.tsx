@@ -109,13 +109,12 @@ export const LoginPage: React.FC = () => {
           />
 
           <p className="text-center">
-            <button
-              type="button"
-              onClick={() => setErrorMsg('Veuillez contacter votre administrateur Faciloop pour réinitialiser votre code.')}
-              className="text-xs text-muted-foreground hover:underline"
+            <Link
+              to="/forgot-pin"
+              className="text-xs text-muted-foreground hover:underline hover:text-primary transition-colors"
             >
               Code secret oublié ?
-            </button>
+            </Link>
           </p>
 
           {/* Remember Me */}
@@ -164,7 +163,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {/* Quick Demo */}
-        <div className="border-t border-border mx-6 px-0 pb-6 pt-4">
+        {/* <div className="border-t border-border mx-6 px-0 pb-6 pt-4">
           <p className="text-xs font-medium text-muted-foreground text-center mb-2">
             Accès Rapide Démo
           </p>
@@ -191,7 +190,7 @@ export const LoginPage: React.FC = () => {
               Super-Admin
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
