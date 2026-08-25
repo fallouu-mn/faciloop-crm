@@ -130,7 +130,7 @@ export const RelancesPage: React.FC = () => {
                   required
                   value={prospectId}
                   onChange={(e) => setProspectId(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 >
                   <option value="">Sélectionner un prospect</option>
                   {prospects.map((p) => (
@@ -149,7 +149,7 @@ export const RelancesPage: React.FC = () => {
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   />
                 </div>
                 <div>
@@ -159,7 +159,7 @@ export const RelancesPage: React.FC = () => {
                     required
                     value={heure}
                     onChange={(e) => setHeure(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   />
                 </div>
               </div>
@@ -169,7 +169,7 @@ export const RelancesPage: React.FC = () => {
                 <select
                   value={canal}
                   onChange={(e) => setCanal(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 >
                   <option value="whatsapp">WhatsApp</option>
                   <option value="appel">Appel Téléphonique</option>
@@ -186,7 +186,7 @@ export const RelancesPage: React.FC = () => {
                   value={commentaire}
                   onChange={(e) => setCommentaire(e.target.value)}
                   placeholder="Ex: Confirmer la prise de RDV pour la semaine prochaine"
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
               </div>
 

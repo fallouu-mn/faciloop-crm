@@ -29,7 +29,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 export const ProspectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { prospects, interactions, relances, addInteraction, convertProspectToClient } = useAuth();
+  const { user, prospects, interactions, relances, addInteraction, convertProspectToClient, orgOffers } = useAuth();
+  const isAdmin = user?.role === 'admin_org' || user?.role === 'super_admin';
+  const prospectsListPath = isAdmin ? '/admin/prospects' : '/app/prospects';
+  const clientsPath = isAdmin ? '/admin/clients' : '/app/prospects';
 
   const prospect = prospects.find(p => p.id === id);
   const [activeTab, setActiveTab] = useState<'timeline' | 'relances' | 'infos'>('timeline');
@@ -42,7 +45,8 @@ export const ProspectDetail: React.FC = () => {
 
   // Conversion Modal State
   const [isConvertModalOpen, setIsConvertModalOpen] = useState<boolean>(false);
-  const [formuleSouscrite, setFormuleSouscrite] = useState<string>('SaaS Business Pro');
+  const activeOrgOffers = orgOffers.filter(o => o.actif);
+  const [formuleSouscrite, setFormuleSouscrite] = useState<string>(activeOrgOffers[0]?.nom || '');
 
   // WhatsApp Action Modal State
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState<boolean>(false);
@@ -61,7 +65,7 @@ export const ProspectDetail: React.FC = () => {
     return (
       <div className="p-8 text-center space-y-4 font-sans">
         <p className="text-sm font-extrabold text-muted-foreground">Prospect introuvable.</p>
-        <Link to="/app/prospects" className="text-xs font-extrabold text-primary hover:underline">
+        <Link to={prospectsListPath} className="text-xs font-extrabold text-primary hover:underline">
           ← Retour à la liste des prospects
         </Link>
       </div>
@@ -93,28 +97,22 @@ export const ProspectDetail: React.FC = () => {
   const handleConvert = () => {
     convertProspectToClient(prospect.id, formuleSouscrite);
     setIsConvertModalOpen(false);
-    navigate('/admin/clients');
+    navigate(clientsPath);
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-md flex justify-end">
-      {/* Slide-over Drawer Backdrop Overlay */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={() => navigate(-1)}
-        className="absolute inset-0"
-      />
+    <div className="space-y-0 font-sans">
+      {/* Full-page detail panel */}
+      <div className="w-full max-w-4xl mx-auto bg-card border border-border/80 rounded-2xl shadow-sm flex flex-col overflow-hidden">
 
-      {/* Responsive Slide-over Content Drawer (100% width on Mobile, Side Drawer on PC) */}
-      <motion.div
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        exit={{ x: '100%' }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full h-full sm:max-w-xl md:max-w-2xl bg-card border-l border-border/80 shadow-2xl overflow-y-auto flex flex-col z-10 font-sans"
-      >
+        {/* Page Header */}
+        <div className="border-b border-border/60 bg-muted/30 px-4 sm:px-6 py-2.5">
+          <Link to={prospectsListPath} className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Retour à la liste des prospects
+          </Link>
+        </div>
+
         {/* Drawer Header (High Visibility Typography) */}
         <div className="sticky top-0 z-20 border-b border-border/80 bg-card/95 backdrop-blur-xl p-4 sm:p-6 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -141,14 +139,14 @@ export const ProspectDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Generous Touch Target Close Button */}
-          <button
-            onClick={() => navigate(-1)}
+          {/* Back Button */}
+          <Link
+            to={prospectsListPath}
             className="w-10 h-10 rounded-xl border border-input text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center transition-all shrink-0 active:scale-95"
-            title="Fermer le tiroir"
+            title="Retour à la liste"
           >
-            <X className="w-5 h-5" />
-          </button>
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
         </div>
 
         {/* Quick Action Bar (Generous Touch Paddings for Walking Commercials) */}
@@ -366,7 +364,7 @@ export const ProspectDetail: React.FC = () => {
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
 
       {/* Add Interaction Bottom Sheet Modal on Mobile */}
       <AnimatePresence>
@@ -394,7 +392,7 @@ export const ProspectDetail: React.FC = () => {
                   <select
                     value={interType}
                     onChange={(e) => setInterType(e.target.value)}
-                    className="w-full p-3 rounded-2xl border border-input bg-background font-bold text-foreground"
+                    className="w-full p-3 rounded-2xl border border-input bg-background font-bold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   >
                     <option value="appel">Appel Téléphonique</option>
                     <option value="whatsapp">Message WhatsApp</option>
@@ -474,16 +472,24 @@ export const ProspectDetail: React.FC = () => {
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="block font-bold text-foreground mb-1">Formule SaaS Souscrite</label>
-                  <select
-                    value={formuleSouscrite}
-                    onChange={(e) => setFormuleSouscrite(e.target.value)}
-                    className="w-full p-3 rounded-2xl border border-input bg-background font-bold text-foreground"
-                  >
-                    <option value="SaaS Starter">SaaS Starter (250 000 FCFA/an)</option>
-                    <option value="SaaS Business Pro">SaaS Business Pro (750 000 FCFA/an)</option>
-                    <option value="SaaS Enterprise">SaaS Enterprise (Sur-mesure)</option>
-                  </select>
+                  <label className="block font-bold text-foreground mb-1">Offre d'abonnement</label>
+                  {activeOrgOffers.length === 0 ? (
+                    <p className="text-xs text-amber-600 p-3 rounded-xl border border-amber-500/30 bg-amber-500/5">
+                      Aucune offre configurée. Créez vos offres dans Abonnements.
+                    </p>
+                  ) : (
+                    <select
+                      value={formuleSouscrite}
+                      onChange={(e) => setFormuleSouscrite(e.target.value)}
+                      className="w-full p-3 rounded-2xl border border-input bg-background font-bold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    >
+                      {activeOrgOffers.map(offer => (
+                        <option key={offer.id} value={offer.nom}>
+                          {offer.nom} ({offer.tarifs.mensuel.toLocaleString('fr-FR')} FCFA/mois)
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
 

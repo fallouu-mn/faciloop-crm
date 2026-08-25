@@ -238,7 +238,7 @@ export const OrganisationsList: React.FC = () => {
                   value={nomOrg}
                   onChange={(e) => setNomOrg(e.target.value)}
                   placeholder="Ex: Sénégal Distribution SA"
-                  className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                  className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                 />
               </div>
               <div className="space-y-1.5">
@@ -246,7 +246,7 @@ export const OrganisationsList: React.FC = () => {
                 <select
                   value={formule}
                   onChange={(e) => setFormule(e.target.value as FormuleAbonnement)}
-                  className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                  className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                 >
                   {FORMULES.filter(f => f.isActive).map(f => (
                     <option key={f.code} value={f.code}>{f.label}</option>
@@ -258,7 +258,7 @@ export const OrganisationsList: React.FC = () => {
                 <select
                   value={periodicite}
                   onChange={(e) => setPeriodicite(e.target.value as Periodicite)}
-                  className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                  className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                 >
                   {PERIODICITES.map(p => (
                     <option key={p.code} value={p.code}>{p.label}</option>
@@ -290,7 +290,7 @@ export const OrganisationsList: React.FC = () => {
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
                   placeholder="admin@entreprise.sn"
-                  className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                  className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                 />
               </div>
               <div className="flex gap-3 pt-2">

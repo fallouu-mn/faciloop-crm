@@ -1,14 +1,36 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { mockPaiements } from '../../lib/mockData';
 import { Paiement, ModePaiement } from '../../types/crm';
-import { Receipt, Download, CheckCircle2, Clock, DollarSign, Wallet, ShieldCheck, FileText } from 'lucide-react';
+import { CurrencyToggle } from '../../components/common/CurrencyToggle';
+import { SelectCustom } from '../../components/common/SelectCustom';
+import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { Receipt, Download, CheckCircle2, Clock, FileText, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const PAYMENT_ICONS: Record<string, { icon: string | null; label: string; color: string }> = {
+  wave: { icon: '/icons/Wave.png', label: 'Wave', color: 'bg-blue-500/10' },
+  orange_money: { icon: '/icons/OM.jpeg', label: 'Orange Money', color: 'bg-orange-500/10' },
+  paytech: { icon: null, label: 'PayTech', color: 'bg-violet-500/10' },
+  stripe: { icon: null, label: 'Stripe', color: 'bg-indigo-500/10' },
+  virement: { icon: null, label: 'Virement', color: 'bg-emerald-500/10' },
+  espece: { icon: '/icons/free-money.png', label: 'Espèces', color: 'bg-amber-500/10' },
+};
+
 export const PaiementsPage: React.FC = () => {
-  const { currency } = useAuth();
-  const [paiements, setPaiements] = useState<Paiement[]>(mockPaiements);
+  const { currency, paiements } = useAuth();
   const [filterMode, setFilterMode] = useState<string>('all');
+  const [devise, setDevise] = useState<DeviseCode>('XOF');
+
+  const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
+
+  const getPaymentIcon = (mode: string) => {
+    const info = PAYMENT_ICONS[mode];
+    if (!info) return null;
+    if (info.icon) {
+      return <img src={info.icon} alt={info.label} className="w-5 h-5 rounded-md object-cover" />;
+    }
+    return <CreditCard className="w-4 h-4 text-muted-foreground" />;
+  };
 
   const totalAttendu = paiements.reduce((acc, p) => acc + p.montant_attendu, 0);
   const totalRecouvre = paiements.reduce((acc, p) => acc + p.montant_paye, 0);
@@ -17,7 +39,50 @@ export const PaiementsPage: React.FC = () => {
   const filtered = paiements.filter(p => filterMode === 'all' || p.mode_paiement === filterMode);
 
   const handleDownloadInvoice = (pay: Paiement) => {
-    alert(`Génération de la Facture PDF #${pay.id.toUpperCase()} pour ${pay.entreprise} (${pay.montant_paye.toLocaleString()} ${currency})... Téléchargement démarré.`);
+    const lines = [
+      `FACTURE - ${pay.entreprise}`,
+      `Référence: FACT-2026-${pay.id.slice(0, 4).toUpperCase()}`,
+      `Date: ${new Date().toLocaleDateString('fr-FR')}`,
+      '',
+      `Client: ${pay.entreprise}`,
+      `Montant attendu: ${pay.montant_attendu.toLocaleString('fr-FR')} FCFA`,
+      `Montant payé: ${pay.montant_paye.toLocaleString('fr-FR')} FCFA`,
+      `Reste à payer: ${pay.montant_restant.toLocaleString('fr-FR')} FCFA`,
+      `Mode de paiement: ${PAYMENT_ICONS[pay.mode_paiement]?.label || pay.mode_paiement}`,
+      `Statut: ${pay.statut}`,
+      `Référence transaction: ${pay.reference_transaction || 'N/A'}`,
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Facture-${pay.entreprise.replace(/\s+/g, '_')}-${pay.id.slice(0, 6)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadReleve = () => {
+    const BOM = '﻿';
+    const separator = ';';
+    const headers = ['Référence', 'Entreprise', 'Montant Attendu (FCFA)', 'Montant Payé (FCFA)', 'Reste (FCFA)', 'Mode Paiement', 'Statut', 'Référence Transaction'];
+    const rows = filtered.map(p => [
+      `FACT-2026-${p.id.slice(0, 4).toUpperCase()}`,
+      p.entreprise,
+      p.montant_attendu.toString(),
+      p.montant_paye.toString(),
+      p.montant_restant.toString(),
+      PAYMENT_ICONS[p.mode_paiement]?.label || p.mode_paiement,
+      p.statut,
+      p.reference_transaction || '',
+    ]);
+    const csv = BOM + [headers.join(separator), ...rows.map(r => r.join(separator))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Releve-Paiements-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -38,13 +103,16 @@ export const PaiementsPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => alert("Génération du relevé comptable global au format Excel...")}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
-        >
-          <Download className="h-4 w-4 shrink-0" />
-          <span>Télécharger Relevé Globale</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <CurrencyToggle value={devise} onChange={setDevise} />
+          <button
+            onClick={handleDownloadReleve}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
+          >
+            <Download className="h-4 w-4 shrink-0" />
+            <span>Relevé</span>
+          </button>
+        </div>
       </div>
 
       {/* Financial Overview Metrics Cards Grid (1 col on mobile, 3 on desktop) */}
@@ -60,7 +128,7 @@ export const PaiementsPage: React.FC = () => {
             </div>
           </div>
           <div className="text-2xl sm:text-3xl font-black text-emerald-500 pt-1">
-            {totalRecouvre.toLocaleString()} <span className="text-xs font-extrabold">{currency}</span>
+            {fmt(totalRecouvre)}
           </div>
         </motion.div>
 
@@ -75,7 +143,7 @@ export const PaiementsPage: React.FC = () => {
             </div>
           </div>
           <div className="text-2xl sm:text-3xl font-black text-amber-500 pt-1">
-            {totalRestant.toLocaleString()} <span className="text-xs font-extrabold">{currency}</span>
+            {fmt(totalRestant)}
           </div>
         </motion.div>
 
@@ -85,12 +153,12 @@ export const PaiementsPage: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Moyen de Règlement Phare</span>
-            <div className="rounded-2xl bg-primary/10 p-2 text-primary shadow-sm">
-              <Wallet className="h-5 w-5" />
+            <div className="rounded-2xl bg-blue-500/10 p-1.5 shadow-sm overflow-hidden">
+              <img src="/icons/Wave.png" alt="Wave" className="h-7 w-7 rounded-lg object-cover" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-foreground pt-1">
-            Wave Senegal 🌊
+          <div className="flex items-center gap-2 pt-1">
+            <span className="text-xl sm:text-2xl font-black text-foreground">Wave Sénégal</span>
           </div>
         </motion.div>
       </div>
@@ -101,18 +169,19 @@ export const PaiementsPage: React.FC = () => {
           Liste des Transactions ({filtered.length})
         </span>
 
-        <select
+        <SelectCustom
           value={filterMode}
-          onChange={(e) => setFilterMode(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-input bg-card text-xs font-semibold text-foreground focus:outline-none"
-        >
-          <option value="all">Tous les moyens de paiement</option>
-          <option value="wave">Wave Sénégal</option>
-          <option value="orange_money">Orange Money</option>
-          <option value="paytech">PayTech API</option>
-          <option value="stripe">Carte bancaire (Stripe)</option>
-          <option value="virement">Virement bancaire</option>
-        </select>
+          onChange={setFilterMode}
+          className="w-48"
+          options={[
+            { value: 'all', label: 'Tous les moyens' },
+            { value: 'wave', label: 'Wave Sénégal', icon: <img src="/icons/Wave.png" className="w-4 h-4 rounded" /> },
+            { value: 'orange_money', label: 'Orange Money', icon: <img src="/icons/OM.jpeg" className="w-4 h-4 rounded" /> },
+            { value: 'paytech', label: 'PayTech API' },
+            { value: 'stripe', label: 'Carte bancaire (Stripe)' },
+            { value: 'virement', label: 'Virement bancaire' },
+          ]}
+        />
       </div>
 
       {/* Desktop Invoices Table */}
@@ -138,9 +207,14 @@ export const PaiementsPage: React.FC = () => {
                 </td>
                 <td className="p-4 font-extrabold text-foreground">{pay.entreprise}</td>
                 <td className="p-4 font-extrabold text-emerald-500">
-                  {pay.montant_paye.toLocaleString()} {currency}
+                  {fmt(pay.montant_paye)}
                 </td>
-                <td className="p-4 uppercase font-bold text-muted-foreground">{pay.mode_paiement.replace('_', ' ')}</td>
+                <td className="p-4">
+                  <div className="flex items-center gap-2">
+                    {getPaymentIcon(pay.mode_paiement)}
+                    <span className="font-bold text-foreground text-xs">{PAYMENT_ICONS[pay.mode_paiement]?.label || pay.mode_paiement}</span>
+                  </div>
+                </td>
                 <td className="p-4 font-mono text-muted-foreground">{pay.reference_transaction || 'WV-894739201'}</td>
                 <td className="p-4">
                   <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 font-extrabold text-[10px] uppercase">
@@ -179,12 +253,15 @@ export const PaiementsPage: React.FC = () => {
             <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
               <span className="font-extrabold text-foreground">{pay.entreprise}</span>
               <span className="font-extrabold text-emerald-500 text-sm">
-                {pay.montant_paye.toLocaleString()} {currency}
+                {fmt(pay.montant_paye)}
               </span>
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>Mode : <strong className="uppercase text-foreground font-bold">{pay.mode_paiement.replace('_', ' ')}</strong></span>
+              <span className="flex items-center gap-1.5">
+                {getPaymentIcon(pay.mode_paiement)}
+                <strong className="text-foreground font-bold">{PAYMENT_ICONS[pay.mode_paiement]?.label || pay.mode_paiement}</strong>
+              </span>
               <span className="font-mono">Réf: {pay.reference_transaction || 'WV-894739201'}</span>
             </div>
 

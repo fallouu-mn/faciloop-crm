@@ -15,7 +15,7 @@ export const CurrencyToggle: React.FC<Props> = ({ value, onChange }) => {
           onClick={() => onChange(d.code)}
           className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
             value === d.code
-              ? 'bg-card shadow-sm text-foreground'
+              ? 'bg-gradient-faciloop shadow-sm text-white'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >

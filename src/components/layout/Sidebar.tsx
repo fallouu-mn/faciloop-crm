@@ -11,15 +11,17 @@ import {
   Building2,
   UserPlus,
   CreditCard,
-  Receipt,
   FileSpreadsheet,
-  History,
   Settings,
   X,
   UserCheck,
   ShieldCheck,
   Crown,
-  BarChart3
+  BarChart3,
+  Wallet,
+  ScrollText,
+  DollarSign,
+  UserCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaciloopBrand } from '../common/FaciloopBrand';
@@ -38,26 +40,61 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/app/prospects', label: 'Mes Prospects', icon: Users },
     { to: '/app/pipeline', label: 'Pipeline Kanban', icon: Kanban },
+    { to: '/app/gains', label: 'Mes Gains', icon: DollarSign },
     { to: '/app/relances', label: 'Relances', icon: CalendarClock },
     { to: '/app/objectifs', label: 'Mes Objectifs', icon: Target },
+    { to: '/app/profil', label: 'Mon Profil', icon: UserCircle },
     { to: '/app/notifications', label: 'Notifications', icon: Bell }
   ];
 
-  const adminOrgLinks = [
-    { to: '/admin/dashboard', label: 'Dashboard Org', icon: LayoutDashboard },
-    { to: '/admin/prospects', label: 'Tous les Prospects', icon: Users },
-    { to: '/admin/clients', label: 'Clients Faciloop', icon: UserCheck },
-    { to: '/admin/pipeline', label: 'Pipeline Kanban', icon: Kanban },
-    { to: '/admin/equipe', label: 'Gestion Équipe', icon: UserPlus },
-    { to: '/admin/objectifs', label: 'Objectifs Équipe', icon: Target },
-    { to: '/admin/relances', label: 'Relances Équipe', icon: CalendarClock },
-    { to: '/admin/abonnements', label: 'Abonnements SaaS', icon: CreditCard },
-    { to: '/admin/paiements', label: 'Comptabilité & Reçus', icon: Receipt },
-    { to: '/admin/import-export', label: 'Import / Export CSV', icon: FileSpreadsheet },
-    { to: '/admin/journal', label: 'Journal des Actions', icon: History },
-    { to: '/admin/parametres', label: 'Paramètres Entreprise', icon: Settings },
-    { to: '/admin/notifications', label: 'Notifications', icon: Bell }
+  const adminOrgSections = [
+    {
+      title: 'Pilotage',
+      links: [
+        { to: '/admin/dashboard', label: 'Dashboard', icon: BarChart3 },
+      ],
+    },
+    {
+      title: 'Équipe',
+      links: [
+        { to: '/admin/equipe', label: 'Équipe commerciale', icon: Users },
+        { to: '/admin/objectifs', label: 'Objectifs commerciaux', icon: Target },
+      ],
+    },
+    {
+      title: 'Gestion commerciale',
+      links: [
+        { to: '/admin/prospects', label: 'Prospects', icon: UserPlus },
+        { to: '/admin/pipeline', label: 'Pipeline Kanban', icon: Kanban },
+        { to: '/admin/relances', label: 'Relances', icon: CalendarClock },
+        { to: '/admin/clients', label: 'Comptes Clients', icon: Building2 },
+      ],
+    },
+    {
+      title: 'Revenus',
+      links: [
+        { to: '/admin/abonnements', label: 'Abonnements', icon: Crown },
+        { to: '/admin/paiements', label: 'Paiements', icon: CreditCard },
+        { to: '/admin/commissions', label: 'Commissions', icon: Wallet },
+      ],
+    },
+    {
+      title: 'Administration',
+      links: [
+        { to: '/admin/journal', label: 'Journal', icon: ScrollText },
+        { to: '/admin/import-export', label: 'Import / Export', icon: FileSpreadsheet },
+        { to: '/admin/parametres', label: 'Paramètres', icon: Settings },
+      ],
+    },
+    {
+      title: 'Alertes',
+      links: [
+        { to: '/admin/notifications', label: 'Notifications', icon: Bell },
+      ],
+    },
   ];
+
+  const adminOrgLinks = adminOrgSections.flatMap(s => s.links);
 
   const superAdminLinks = [
     { to: '/super-admin/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
@@ -124,36 +161,71 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         {/* Navigation Menu Links */}
         <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 space-y-1">
-          <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-3 mb-2">
-            Menu Navigation
-          </div>
-
-          {currentLinks.map((link) => {
-            const Icon = link.icon;
-            return (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                onClick={onClose}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-2.5 sm:py-3 rounded-2xl text-xs font-extrabold transition-all ${
-                    isActive
-                      ? 'bg-gradient-faciloop text-white shadow-md shadow-primary/25'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  }`
-                }
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{link.label}</span>
-              </NavLink>
-            );
-          })}
+          {role === 'admin_org' ? (
+            <div className="space-y-4">
+              {adminOrgSections.map((section) => (
+                <div key={section.title}>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-3 mb-1.5">
+                    {section.title}
+                  </div>
+                  <div className="space-y-0.5">
+                    {section.links.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <NavLink
+                          key={link.to}
+                          to={link.to}
+                          onClick={onClose}
+                          className={({ isActive }) =>
+                            `flex items-center gap-3 px-3.5 py-2 sm:py-2.5 rounded-2xl text-xs font-extrabold transition-all ${
+                              isActive
+                                ? 'bg-gradient-faciloop text-white shadow-md shadow-primary/25'
+                                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                            }`
+                          }
+                        >
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{link.label}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-3 mb-2">
+                Menu Navigation
+              </div>
+              {currentLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3.5 py-2.5 sm:py-3 rounded-2xl text-xs font-extrabold transition-all ${
+                        isActive
+                          ? 'bg-gradient-faciloop text-white shadow-md shadow-primary/25'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      }`
+                    }
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{link.label}</span>
+                  </NavLink>
+                );
+              })}
+            </>
+          )}
         </div>
 
         {/* Footer Tenant Info */}
-        <div className="p-4 border-t border-border/80 bg-muted/20 text-center text-[10px] font-bold text-muted-foreground">
+        {/* <div className="p-4 border-t border-border/80 bg-muted/20 text-center text-[10px] font-bold text-muted-foreground">
           <span>Faciloop CRM v2.0 • SaaS Multi-Tenant</span>
-        </div>
+        </div> */}
       </aside>
     </>
   );

@@ -201,7 +201,7 @@ export const ProspectsList: React.FC = () => {
           <select
             value={filterStep}
             onChange={(e) => setFilterStep(e.target.value)}
-            className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground focus:outline-none"
+            className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
           >
             <option value="all">Toutes les étapes</option>
             <option value="nouveau">Nouveau</option>
@@ -221,7 +221,7 @@ export const ProspectsList: React.FC = () => {
           <select
             value={filterSource}
             onChange={(e) => setFilterSource(e.target.value)}
-            className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground focus:outline-none"
+            className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
           >
             <option value="all">Toutes les sources</option>
             <option value="site_web">Site Web</option>
@@ -369,7 +369,7 @@ export const ProspectsList: React.FC = () => {
               <select
                 value={targetCommercialId}
                 onChange={(e) => setTargetCommercialId(e.target.value)}
-                className="w-full p-3 rounded-xl border border-input bg-background font-bold text-xs text-foreground focus:ring-2 focus:ring-primary/50"
+                className="w-full p-3 rounded-xl border border-input bg-background font-bold text-xs text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               >
                 {mockCommerciaux.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -424,7 +424,7 @@ export const ProspectsList: React.FC = () => {
                     value={newPrenom}
                     onChange={(e) => setNewPrenom(e.target.value)}
                     placeholder="Moussa"
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50 text-foreground"
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   />
                 </div>
                 <div>
@@ -435,7 +435,7 @@ export const ProspectsList: React.FC = () => {
                     value={newNom}
                     onChange={(e) => setNewNom(e.target.value)}
                     placeholder="Diop"
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50 text-foreground"
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   />
                 </div>
               </div>
@@ -448,7 +448,7 @@ export const ProspectsList: React.FC = () => {
                   value={newEntreprise}
                   onChange={(e) => setNewEntreprise(e.target.value)}
                   placeholder="Dakar Tech Ltd"
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50 text-foreground"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
               </div>
 
@@ -460,7 +460,7 @@ export const ProspectsList: React.FC = () => {
                   value={newPhone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
                   placeholder="77 123 45 67 ou +221..."
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium focus:ring-2 focus:ring-primary/50 text-foreground"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
               </div>
 
@@ -469,7 +469,7 @@ export const ProspectsList: React.FC = () => {
                 <select
                   value={newSource}
                   onChange={(e) => setNewSource(e.target.value as any)}
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 >
                   <option value="prospection_directe">Prospection Directe</option>
                   <option value="site_web">Site Web</option>

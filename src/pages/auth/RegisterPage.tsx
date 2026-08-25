@@ -112,7 +112,7 @@ export const RegisterPage: React.FC = () => {
                 onChange={(e) => setPrenom(e.target.value)}
                 placeholder="Kira"
                 disabled={loading}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground disabled:opacity-50"
+                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none disabled:opacity-50 transition-all"
               />
             </div>
             <div className="space-y-1.5">
@@ -124,7 +124,7 @@ export const RegisterPage: React.FC = () => {
                 onChange={(e) => setNom(e.target.value)}
                 placeholder="Dupont"
                 disabled={loading}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground disabled:opacity-50"
+                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none disabled:opacity-50 transition-all"
               />
             </div>
           </div>
@@ -139,7 +139,7 @@ export const RegisterPage: React.FC = () => {
               onChange={(e) => setEntreprise(e.target.value)}
               placeholder="Ex : Salon Aminata, Boutique Diallo..."
               disabled={loading}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground disabled:opacity-50"
+              className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none disabled:opacity-50 transition-all"
             />
             <p className="text-xs text-muted-foreground">Indispensable pour accéder aux abonnements</p>
           </div>
@@ -223,7 +223,7 @@ export const RegisterPage: React.FC = () => {
               value={questionSecrete}
               onChange={(e) => setQuestionSecrete(e.target.value)}
               disabled={loading}
-              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground disabled:opacity-50"
+              className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none disabled:opacity-50 transition-all"
             >
               <option value="">Choisissez une question</option>
               <option value="animal">Quel est le nom de votre premier animal domestique ?</option>
@@ -244,7 +244,7 @@ export const RegisterPage: React.FC = () => {
                 onChange={(e) => setReponseSecrete(e.target.value)}
                 placeholder="Votre réponse..."
                 disabled={loading}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground disabled:opacity-50"
+                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none disabled:opacity-50 transition-all"
               />
             </div>
           )}

@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { mockCommerciaux } from '../../lib/mockData';
-import { Commercial } from '../../types/crm';
+import { useAuth } from '../../contexts/AuthContext';
 import { UserPlus, UserCheck, Shield, X, Check, Mail, Phone, MessageSquare, Power } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const EquipeCommerciale: React.FC = () => {
-  const [team, setTeam] = useState<Commercial[]>(mockCommerciaux);
+  const { commerciaux: team, addCommercial, toggleCommercialStatus } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const [nom, setNom] = useState<string>('');
@@ -14,24 +13,12 @@ export const EquipeCommerciale: React.FC = () => {
   const [telephone, setTelephone] = useState<string>('');
 
   const toggleStatus = (id: string) => {
-    setTeam(prev =>
-      prev.map(c => (c.id === id ? { ...c, statut: c.statut === 'actif' ? 'inactif' : 'actif' } : c))
-    );
+    toggleCommercialStatus(id);
   };
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    const newMember: Commercial = {
-      id: `comm-${Date.now()}`,
-      organization_id: 'org-faciloop-client-1',
-      nom,
-      prenom,
-      email,
-      telephone,
-      statut: 'actif',
-      created_at: new Date().toISOString()
-    };
-    setTeam([newMember, ...team]);
+    addCommercial({ nom, prenom, email, telephone, statut: 'actif' });
     setIsModalOpen(false);
     setNom('');
     setPrenom('');
@@ -187,7 +174,7 @@ export const EquipeCommerciale: React.FC = () => {
                     value={prenom}
                     onChange={(e) => setPrenom(e.target.value)}
                     placeholder="Abdoulaye"
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground"
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   />
                 </div>
                 <div>
@@ -198,7 +185,7 @@ export const EquipeCommerciale: React.FC = () => {
                     value={nom}
                     onChange={(e) => setNom(e.target.value)}
                     placeholder="Sarr"
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground"
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   />
                 </div>
               </div>
@@ -211,7 +198,7 @@ export const EquipeCommerciale: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="abdoulaye@entreprise.sn"
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
               </div>
 
@@ -223,7 +210,7 @@ export const EquipeCommerciale: React.FC = () => {
                   value={telephone}
                   onChange={(e) => setTelephone(e.target.value)}
                   placeholder="+221 77 000 11 22"
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
               </div>
 

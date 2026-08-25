@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { mockCommerciaux } from '../../lib/mockData';
+import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { 
   Users, 
@@ -65,8 +65,10 @@ const DashboardAdminSkeleton: React.FC = () => (
 );
 
 export const DashboardAdminOrg: React.FC = () => {
-  const { user, currentOrg, prospects, clients, currency, setCurrency } = useAuth();
+  const { user, currentOrg, prospects, clients, commerciaux, currency, setCurrency } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', currency as DeviseCode), currency as DeviseCode);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 700);
@@ -78,12 +80,16 @@ export const DashboardAdminOrg: React.FC = () => {
   const conversionRate = totalProspects > 0 ? Math.round((totalClients / totalProspects) * 100) : 0;
   const totalCA = clients.reduce((acc, c) => acc + (c.montant_paye || 0), 0);
 
-  // Performance comparison data for Recharts & Leaderboard
-  const teamData = [
-    { id: '1', name: 'Moussa Diop', email: 'moussa.diop@taranga.sn', prospects: 12, ventes: 4, ca: 3500000, conversion: 33 },
-    { id: '2', name: 'Awa Sow', email: 'awa.sow@taranga.sn', prospects: 8, ventes: 6, ca: 4200000, conversion: 75 },
-    { id: '3', name: 'Ibrahima Ndiaye', email: 'ibrahima@solub-digital.com', prospects: 5, ventes: 2, ca: 1500000, conversion: 40 }
-  ];
+  const teamData = commerciaux
+    .filter(c => c.statut === 'actif')
+    .map(c => {
+      const myProspects = prospects.filter(p => p.commercial_id === c.id);
+      const myClients = clients.filter(cl => cl.commercial_id === c.id);
+      const ca = myClients.reduce((sum, cl) => sum + (cl.montant_paye || 0), 0);
+      const conversion = myProspects.length > 0 ? Math.round((myClients.length / myProspects.length) * 100) : 0;
+      return { id: c.id, name: `${c.prenom} ${c.nom}`, email: c.email, prospects: myProspects.length, ventes: myClients.length, ca, conversion };
+    })
+    .sort((a, b) => b.ca - a.ca);
 
   if (isLoading) {
     return <DashboardAdminSkeleton />;
@@ -237,12 +243,12 @@ export const DashboardAdminOrg: React.FC = () => {
             </div>
           </div>
           <div className="flex items-baseline justify-between pt-0.5">
-            <span className="text-xl sm:text-2xl font-black text-foreground truncate max-w-[140px]">
-              {totalCA.toLocaleString()}
+            <span className="text-xl sm:text-xl font-black text-foreground truncate max-w-[160px]">
+              {fmt(totalCA)}
             </span>
-            <span className="text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-              {currency}
-            </span>
+            {/* <span className="text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+              Converti
+            </span> */}
           </div>
         </motion.div>
       </div>
@@ -291,7 +297,7 @@ export const DashboardAdminOrg: React.FC = () => {
                     </td>
                     <td className="p-4 font-bold text-foreground">{comm.prospects}</td>
                     <td className="p-4 font-bold text-emerald-500">{comm.ventes}</td>
-                    <td className="p-4 font-extrabold text-foreground">{comm.ca.toLocaleString()} {currency}</td>
+                    <td className="p-4 font-extrabold text-foreground">{fmt(comm.ca)}</td>
                     <td className="p-4 text-right">
                       <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 font-extrabold text-[10px]">
                         {comm.conversion}%
@@ -330,7 +336,7 @@ export const DashboardAdminOrg: React.FC = () => {
                     <strong className="text-emerald-500 font-extrabold">{comm.ventes} / {comm.prospects}</strong>
                   </div>
                   <div className="font-extrabold text-foreground text-xs">
-                    {comm.ca.toLocaleString()} {currency}
+                    {fmt(comm.ca)}
                   </div>
                 </div>
               </div>

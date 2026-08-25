@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { mockCommerciaux } from '../../lib/mockData';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
 import { 
   FileSpreadsheet, 
@@ -31,13 +30,13 @@ interface ParsedProspectRow {
 }
 
 export const ImportExportPage: React.FC = () => {
-  const { prospects, clients, addProspect } = useAuth();
+  const { prospects, clients, addProspect, commerciaux } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Import State
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsedRows, setParsedRows] = useState<ParsedProspectRow[]>([]);
-  const [selectedCommercialId, setSelectedCommercialId] = useState<string>(mockCommerciaux[0].id);
+  const [selectedCommercialId, setSelectedCommercialId] = useState<string>(commerciaux[0].id);
   const [importResult, setImportResult] = useState<{ imported: number; skipped: number; commercialNom: string } | null>(null);
   
   // UX Refactoring States: DragOver, Parsing Loader & Success Button State
@@ -144,7 +143,7 @@ export const ImportExportPage: React.FC = () => {
   const handleConfirmImport = () => {
     if (parsedRows.length === 0) return;
 
-    const comm = mockCommerciaux.find(c => c.id === selectedCommercialId) || mockCommerciaux[0];
+    const comm = commerciaux.find(c => c.id === selectedCommercialId) || commerciaux[0];
     const commNom = `${comm.prenom} ${comm.nom}`;
 
     let importedCount = 0;
@@ -217,7 +216,7 @@ export const ImportExportPage: React.FC = () => {
 
   const validRows = parsedRows.filter(r => !r.isDuplicate);
   const duplicateRows = parsedRows.filter(r => r.isDuplicate);
-  const selectedComm = mockCommerciaux.find(c => c.id === selectedCommercialId);
+  const selectedComm = commerciaux.find(c => c.id === selectedCommercialId);
 
   return (
     <div className="space-y-4 sm:space-y-6 max-w-5xl mx-auto font-sans">
@@ -308,7 +307,7 @@ export const ImportExportPage: React.FC = () => {
                 onChange={(e) => setSelectedCommercialId(e.target.value)}
                 className="w-full sm:w-auto bg-transparent font-extrabold text-foreground focus:outline-none text-xs"
               >
-                {mockCommerciaux.map((c) => (
+                {commerciaux.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.prenom} {c.nom} ({c.email})
                   </option>

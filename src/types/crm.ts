@@ -227,12 +227,38 @@ export interface NotificationItem {
   created_at: string;
 }
 
+export type ActionLogType =
+  | 'prospect_created'
+  | 'prospect_updated'
+  | 'prospect_pipeline_move'
+  | 'prospect_converted'
+  | 'prospect_lost'
+  | 'client_created'
+  | 'client_updated'
+  | 'offer_created'
+  | 'offer_updated'
+  | 'offer_deleted'
+  | 'subscription_created'
+  | 'subscription_updated'
+  | 'objectif_created'
+  | 'objectif_updated'
+  | 'payment_received'
+  | 'payment_updated'
+  | 'org_settings_updated'
+  | 'commercial_added'
+  | 'commercial_removed'
+  | 'prospect_reassigned'
+  | 'other';
+
 export interface ActionLog {
   id: string;
   organization_id: string;
   utilisateur_id: string;
   utilisateur_nom: string;
+  action_type: ActionLogType;
   action: string;
+  entite_type?: string;
+  entite_id?: string;
   cible?: string;
   ancienne_valeur?: string;
   nouvelle_valeur?: string;

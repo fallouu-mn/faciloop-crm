@@ -1,189 +1,323 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { mockAbonnements } from '../../lib/mockData';
-import { Abonnement } from '../../types/crm';
-import { CreditCard, Check, Sparkles, ShieldCheck, Zap, ArrowRight, Calendar, Users, FileText } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { OrgOffer, OrgOfferPricing } from '../../lib/mockAdminOrg';
+import { CurrencyToggle } from '../../components/common/CurrencyToggle';
+import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { Crown, Plus, Edit3, Trash2, X, Check, Package, ToggleLeft, ToggleRight } from 'lucide-react';
+
+type Periodicite = 'mensuel' | 'trimestriel' | 'annuel';
+
+const OFFER_COLORS = [
+  'from-blue-500 to-cyan-500',
+  'from-violet-500 to-purple-500',
+  'from-amber-500 to-orange-500',
+  'from-emerald-500 to-teal-500',
+  'from-rose-500 to-pink-500',
+  'from-indigo-500 to-blue-500',
+];
 
 export const AbonnementsPage: React.FC = () => {
-  const { currentOrg, currency } = useAuth();
-  const [abonnements, setAbonnements] = useState<Abonnement[]>(mockAbonnements);
-  const [selectedPlan, setSelectedPlan] = useState<string>('SaaS Business Pro');
+  const { orgOffers, addOrgOffer, updateOrgOffer, deleteOrgOffer } = useAuth();
+  const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [periodView, setPeriodView] = useState<Periodicite>('mensuel');
 
-  // Active current plan details
-  const currentPlan = {
-    name: 'SaaS Business Pro',
-    priceXOF: '75 000 FCFA / mois',
-    priceEUR: '114 € / mois',
-    renewalDate: '14 Août 2027',
-    seatsUsed: 3,
-    seatsTotal: 10,
-    features: [
-      'Jusqu’à 10 commerciaux',
-      'Prospects & Clients illimités',
-      'Pipeline Kanban + Déclencheur WhatsApp direct',
-      'Réattribution en masse des prospects (Admin)',
-      'Dashboard statistiques Recharts',
-      'Import CSV avec parsing & dédoublonnage',
-      'Support prioritaire 24/7'
-    ]
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingOffer, setEditingOffer] = useState<OrgOffer | null>(null);
+
+  // Form state
+  const [formNom, setFormNom] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formMensuel, setFormMensuel] = useState('');
+  const [formTrimestriel, setFormTrimestriel] = useState('');
+  const [formAnnuel, setFormAnnuel] = useState('');
+  const [formActif, setFormActif] = useState(true);
+
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
+
+  const openCreate = () => {
+    setEditingOffer(null);
+    setFormNom('');
+    setFormDescription('');
+    setFormMensuel('');
+    setFormTrimestriel('');
+    setFormAnnuel('');
+    setFormActif(true);
+    setModalOpen(true);
+  };
+
+  const openEdit = (offer: OrgOffer) => {
+    setEditingOffer(offer);
+    setFormNom(offer.nom);
+    setFormDescription(offer.description);
+    setFormMensuel(String(offer.tarifs.mensuel));
+    setFormTrimestriel(String(offer.tarifs.trimestriel));
+    setFormAnnuel(String(offer.tarifs.annuel));
+    setFormActif(offer.actif);
+    setModalOpen(true);
+  };
+
+  const handleSubmit = () => {
+    if (!formNom.trim() || !formMensuel) return;
+    const tarifs: OrgOfferPricing = {
+      mensuel: Number(formMensuel) || 0,
+      trimestriel: Number(formTrimestriel) || 0,
+      annuel: Number(formAnnuel) || 0,
+    };
+
+    if (editingOffer) {
+      updateOrgOffer(editingOffer.id, { nom: formNom.trim(), description: formDescription.trim(), tarifs, actif: formActif });
+      showToast('Offre modifiée avec succès');
+    } else {
+      addOrgOffer({ nom: formNom.trim(), description: formDescription.trim(), tarifs, actif: formActif });
+      showToast('Offre créée avec succès');
+    }
+    setModalOpen(false);
+  };
+
+  const handleDelete = (id: string) => {
+    deleteOrgOffer(id);
+    showToast('Offre supprimée');
+  };
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3000);
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 font-sans">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-              Gestion de l'Abonnement SaaS
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3" /> Formule Active
-            </span>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Formule souscrite, sièges commerciaux attribués et options de renouvellement
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <Crown className="w-5 h-5 text-primary" />
+            Offres d'abonnement
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Gérez les offres proposées à vos clients
           </p>
         </div>
-
-        <button
-          onClick={() => alert("Demande de mise à niveau transmise à l'équipe Faciloop SaaS. Un conseiller va vous contacter sous 24h.")}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
-        >
-          <Sparkles className="h-4 w-4 shrink-0" />
-          <span>Changer de formule (Upgrade)</span>
-        </button>
-      </div>
-
-      {/* Current Active Plan Overview Card */}
-      <div className="rounded-3xl border border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 p-5 sm:p-7 shadow-lg relative overflow-hidden space-y-5">
-        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-          <CreditCard className="w-48 h-48 text-primary" />
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-5">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-gradient-faciloop text-white text-[10px] font-black uppercase tracking-widest">
-                Compte Enterprise Active
-              </span>
-              <span className="text-xs font-bold text-muted-foreground">Tenant ID: {currentOrg?.id || 'org-client-1'}</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-foreground">{currentPlan.name}</h2>
-            <p className="text-xs text-muted-foreground font-medium">
-              Espace de travail : <strong>{currentOrg?.nom || "Teranga Logistique SA"}</strong>
-            </p>
-          </div>
-
-          <div className="text-left sm:text-right space-y-1">
-            <div className="text-2xl sm:text-3xl font-black text-primary">
-              {currency === 'EUR' ? currentPlan.priceEUR : currentPlan.priceXOF}
-            </div>
-            <div className="text-xs font-semibold text-muted-foreground flex items-center gap-1 sm:justify-end">
-              <Calendar className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Prochain renouvellement : <strong>{currentPlan.renewalDate}</strong></span>
-            </div>
-          </div>
-        </div>
-
-        {/* Seats Capacity Meter */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold">
-            <span className="flex items-center gap-1.5 text-foreground">
-              <Users className="w-4 h-4 text-primary" />
-              <span>Utilisation des sièges commerciaux</span>
-            </span>
-            <span className="text-primary font-black">
-              {currentPlan.seatsUsed} / {currentPlan.seatsTotal} commerciaux actifs ({(currentPlan.seatsUsed / currentPlan.seatsTotal) * 100}%)
-            </span>
-          </div>
-          <div className="w-full h-3 rounded-full bg-muted/60 overflow-hidden p-0.5 border border-border/60">
-            <div
-              className="h-full rounded-full bg-gradient-faciloop transition-all duration-500"
-              style={{ width: `${(currentPlan.seatsUsed / currentPlan.seatsTotal) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Active Features Checklist */}
-        <div className="pt-2 space-y-3">
-          <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-            Fonctionnalités incluses dans votre offre :
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs font-semibold text-foreground">
-            {currentPlan.features.map((feat, idx) => (
-              <div key={idx} className="flex items-center gap-2 p-2.5 rounded-xl bg-card border border-border/60 shadow-sm">
-                <div className="p-1 rounded-lg bg-emerald-500/10 text-emerald-500 shrink-0">
-                  <Check className="w-3.5 h-3.5" />
-                </div>
-                <span>{feat}</span>
-              </div>
-            ))}
-          </div>
+        <div className="flex items-center gap-2">
+          <CurrencyToggle value={devise} onChange={setDevise} />
+          <button
+            onClick={openCreate}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Ajouter une offre</span>
+          </button>
         </div>
       </div>
 
-      {/* Subscriptions History List */}
-      <div className="space-y-3">
-        <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-foreground">
-          Historique des Engagements & Abonnements
-        </h2>
+      {toastMsg && (
+        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2">
+          <Check className="w-4 h-4" /> {toastMsg}
+        </div>
+      )}
 
-        {/* Desktop Table View */}
-        <div className="hidden md:block overflow-x-auto rounded-2xl border border-border/80 bg-card shadow-sm">
-          <table className="w-full text-left text-xs min-w-[650px]">
-            <thead className="border-b border-border/80 bg-muted/60 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="p-4">Entreprise Client</th>
-                <th className="p-4">Formule</th>
-                <th className="p-4">Périodicité</th>
-                <th className="p-4">Montant</th>
-                <th className="p-4">Échéance</th>
-                <th className="p-4 text-right">Statut</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/60 text-[11px]">
-              {abonnements.map((ab) => (
-                <tr key={ab.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="p-4 font-extrabold text-foreground">{ab.entreprise}</td>
-                  <td className="p-4 font-bold text-primary">{ab.formule_souscrite}</td>
-                  <td className="p-4 capitalize text-muted-foreground font-semibold">{ab.periodicite}</td>
-                  <td className="p-4 font-extrabold text-foreground">{ab.prix.toLocaleString()} {ab.devise}</td>
-                  <td className="p-4 text-muted-foreground font-medium">{ab.date_echeance}</td>
-                  <td className="p-4 text-right">
-                    <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 font-extrabold text-[10px] uppercase">
-                      {ab.statut}
+      {/* Period Toggle */}
+      <div className="inline-flex items-center rounded-full bg-muted p-1 border border-border text-xs">
+        {(['mensuel', 'trimestriel', 'annuel'] as const).map((p) => (
+          <button
+            key={p}
+            onClick={() => setPeriodView(p)}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${
+              periodView === p ? 'bg-gradient-faciloop shadow-sm text-white' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+
+      {/* Offers Grid */}
+      {orgOffers.length === 0 ? (
+        <div className="p-12 text-center space-y-3 border border-dashed border-border rounded-2xl">
+          <div className="w-16 h-16 rounded-full bg-muted/60 flex items-center justify-center mx-auto">
+            <Package className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <p className="text-sm font-medium text-muted-foreground">Aucune offre créée</p>
+          <p className="text-xs text-muted-foreground">Créez votre première offre pour commencer à convertir des prospects</p>
+          <button
+            onClick={openCreate}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold shadow-md"
+          >
+            <Plus className="w-4 h-4" /> Créer une offre
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {orgOffers.map((offer, idx) => {
+            const colorClass = OFFER_COLORS[idx % OFFER_COLORS.length];
+            return (
+              <div key={offer.id} className={`rounded-2xl border bg-card overflow-hidden transition-all hover:shadow-md ${!offer.actif ? 'opacity-60' : 'border-border'}`}>
+                <div className={`h-2 bg-gradient-to-r ${colorClass}`} />
+                <div className="p-5 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-foreground">{offer.nom}</h3>
+                      {offer.description && (
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{offer.description}</p>
+                      )}
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${offer.actif ? 'bg-emerald-500/10 text-emerald-500' : 'bg-muted text-muted-foreground'}`}>
+                      {offer.actif ? 'Active' : 'Inactive'}
                     </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
 
-        {/* Mobile Cards View */}
-        <div className="grid grid-cols-1 gap-3 md:hidden">
-          {abonnements.map((ab) => (
-            <div key={ab.id} className="p-4 rounded-2xl border border-border/80 bg-card space-y-2 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="font-extrabold text-sm text-foreground">{ab.entreprise}</span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-extrabold text-[10px] uppercase">
-                  {ab.statut}
-                </span>
+                  <div className="text-2xl font-black text-foreground">
+                    {fmt(offer.tarifs[periodView])}
+                    <span className="text-xs font-medium text-muted-foreground ml-1">
+                      /{periodView === 'mensuel' ? 'mois' : periodView === 'trimestriel' ? 'trim.' : 'an'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-[11px] text-muted-foreground">
+                    <div className="flex justify-between">
+                      <span>Mensuel</span>
+                      <span className="font-bold text-foreground">{fmt(offer.tarifs.mensuel)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Trimestriel</span>
+                      <span className="font-bold text-foreground">{fmt(offer.tarifs.trimestriel)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Annuel</span>
+                      <span className="font-bold text-foreground">{fmt(offer.tarifs.annuel)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-border">
+                    <button
+                      onClick={() => openEdit(offer)}
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-xl border border-input text-xs font-bold text-foreground hover:bg-muted transition-all"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" /> Modifier
+                    </button>
+                    <button
+                      onClick={() => handleDelete(offer.id)}
+                      className="p-2 rounded-xl border border-input text-rose-500 hover:bg-rose-500/10 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/40">
-                <span>Formule : <strong className="text-primary font-bold">{ab.formule_souscrite}</strong></span>
-                <span className="font-extrabold text-foreground">{ab.prix.toLocaleString()} {ab.devise}</span>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Create/Edit Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                <Crown className="w-5 h-5 text-primary" />
+                {editingOffer ? 'Modifier l\'offre' : 'Créer une offre'}
+              </h2>
+              <button onClick={() => setModalOpen(false)} className="p-1 hover:bg-muted rounded-lg">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold mb-1">Nom de l'offre *</label>
+                <input
+                  type="text"
+                  value={formNom}
+                  onChange={(e) => setFormNom(e.target.value)}
+                  placeholder="Ex: Premium, VIP, Entreprise..."
+                  className="w-full p-3 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                />
               </div>
-              <div className="text-[10px] text-muted-foreground flex items-center justify-between pt-1">
-                <span>Période : {ab.periodicite}</span>
-                <span>Échéance : {ab.date_echeance}</span>
+
+              <div>
+                <label className="block font-semibold mb-1">Description</label>
+                <input
+                  type="text"
+                  value={formDescription}
+                  onChange={(e) => setFormDescription(e.target.value)}
+                  placeholder="Description courte de l'offre"
+                  className="w-full p-3 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-muted/40 border border-border space-y-2.5">
+                <p className="font-bold text-foreground text-xs">Tarification (FCFA)</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-[10px] font-medium text-muted-foreground mb-1">Mensuel *</label>
+                    <input
+                      type="number"
+                      value={formMensuel}
+                      onChange={(e) => setFormMensuel(e.target.value)}
+                      placeholder="150000"
+                      className="w-full p-2.5 rounded-lg border border-input bg-background font-medium text-foreground text-xs focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-medium text-muted-foreground mb-1">Trimestriel</label>
+                    <input
+                      type="number"
+                      value={formTrimestriel}
+                      onChange={(e) => setFormTrimestriel(e.target.value)}
+                      placeholder="405000"
+                      className="w-full p-2.5 rounded-lg border border-input bg-background font-medium text-foreground text-xs focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-medium text-muted-foreground mb-1">Annuel</label>
+                    <input
+                      type="number"
+                      value={formAnnuel}
+                      onChange={(e) => setFormAnnuel(e.target.value)}
+                      placeholder="1440000"
+                      className="w-full p-2.5 rounded-lg border border-input bg-background font-medium text-foreground text-xs focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-xl border border-border">
+                <span className="font-semibold text-foreground">Offre active</span>
+                <button
+                  type="button"
+                  onClick={() => setFormActif(!formActif)}
+                  className="text-foreground"
+                >
+                  {formActif ? (
+                    <ToggleRight className="w-7 h-7 text-emerald-500" />
+                  ) : (
+                    <ToggleLeft className="w-7 h-7 text-muted-foreground" />
+                  )}
+                </button>
               </div>
             </div>
-          ))}
+
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => setModalOpen(false)}
+                className="flex-1 py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!formNom.trim() || !formMensuel}
+                className="flex-1 py-3 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 shadow-md disabled:opacity-50"
+              >
+                {editingOffer ? 'Enregistrer' : 'Créer l\'offre'}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -19,6 +19,8 @@ import { ProspectKanban } from './pages/commercial/ProspectKanban';
 import { RelancesPage } from './pages/commercial/RelancesPage';
 import { ObjectifsPage } from './pages/commercial/ObjectifsPage';
 import { NotificationsPage } from './pages/commercial/NotificationsPage';
+import { MesGainsPage } from './pages/commercial/MesGainsPage';
+import { ProfilPage } from './pages/commercial/ProfilPage';
 
 // Admin Org Pages
 import { DashboardAdminOrg } from './pages/admin-org/DashboardAdminOrg';
@@ -28,6 +30,11 @@ import { JournalActionsPage } from './pages/admin-org/JournalActionsPage';
 import { ParametresEntreprise } from './pages/admin-org/ParametresEntreprise';
 import { AbonnementsPage } from './pages/admin-org/AbonnementsPage';
 import { PaiementsPage } from './pages/admin-org/PaiementsPage';
+import { CommissionsPage } from './pages/admin-org/CommissionsPage';
+import { ClientsListAdmin } from './pages/admin-org/ClientsListAdmin';
+import { ProspectsListAdmin } from './pages/admin-org/ProspectsListAdmin';
+import { ObjectifsAdminPage } from './pages/admin-org/ObjectifsAdminPage';
+import { NotificationsAdminPage } from './pages/admin-org/NotificationsAdminPage';
 
 // Super Admin Pages
 import { DashboardSuperAdmin } from './pages/super-admin/DashboardSuperAdmin';
@@ -55,8 +62,10 @@ function App() {
             <Route path="prospects" element={<ProspectsList />} />
             <Route path="prospects/:id" element={<ProspectDetail />} />
             <Route path="pipeline" element={<ProspectKanban />} />
+            <Route path="gains" element={<MesGainsPage />} />
             <Route path="relances" element={<RelancesPage />} />
             <Route path="objectifs" element={<ObjectifsPage />} />
+            <Route path="profil" element={<ProfilPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
           </Route>
@@ -65,18 +74,20 @@ function App() {
           <Route path="/admin" element={<AppLayout />}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardAdminOrg />} />
-            <Route path="prospects" element={<ProspectsList />} />
-            <Route path="clients" element={<ProspectsList />} />
+            <Route path="prospects" element={<ProspectsListAdmin />} />
+            <Route path="prospects/:id" element={<ProspectDetail />} />
+            <Route path="clients" element={<ClientsListAdmin />} />
             <Route path="pipeline" element={<ProspectKanban />} />
             <Route path="equipe" element={<EquipeCommerciale />} />
-            <Route path="objectifs" element={<ObjectifsPage />} />
+            <Route path="objectifs" element={<ObjectifsAdminPage />} />
             <Route path="relances" element={<RelancesPage />} />
             <Route path="abonnements" element={<AbonnementsPage />} />
             <Route path="paiements" element={<PaiementsPage />} />
+            <Route path="commissions" element={<CommissionsPage />} />
             <Route path="import-export" element={<ImportExportPage />} />
             <Route path="journal" element={<JournalActionsPage />} />
             <Route path="parametres" element={<ParametresEntreprise />} />
-            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="notifications" element={<NotificationsAdminPage />} />
             <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>
 
