@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 import { WhatsAppIcon } from '../../components/common/WhatsAppIcon';
+import { useTranslation } from 'react-i18next';
 
 // ─── Animated Count-Up ────────────────────────────────────────
 const AnimatedNumber: React.FC<{ value: number }> = ({ value }) => {
@@ -110,11 +111,8 @@ export const DashboardCommercial: React.FC = () => {
     const caGenere = myCommissions.reduce((sum, c) => sum + c.montantVente, 0);
     const mesGains = myCommissions.reduce((sum, c) => sum + c.montantCommission, 0);
 
-    const myPaiements = paiements.filter(p => p.commercial_id === user?.id);
-    const montantEncaisse = myPaiements.reduce((sum, p) => sum + p.montant_paye, 0);
-
-    return { totalProspects, relancesEnRetard, relancesAujourdhui, ventesConclues, tauxConversion, caGenere, mesGains, montantEncaisse };
-  }, [myProspects, myRelances, commissions, paiements, user]);
+    return { totalProspects, relancesAujourdhui, relancesEnRetard, ventesConclues, caGenere, mesGains, tauxConversion };
+  }, [myProspects, myRelances, commissions]);
 
   // ─── Objectives for current commercial ──────────────────────
   const myObjectifs = useMemo(() => {
@@ -124,22 +122,25 @@ export const DashboardCommercial: React.FC = () => {
   // ─── Prospect phone lookup for WA links ─────────────────────
   const getProspectPhone = (prospectId: string): string => {
     const prospect = myProspects.find(p => p.id === prospectId);
-    return (prospect?.whatsapp || prospect?.telephone || '').replace(/\s+/g, '');
+    return (prospect?.whatsapp || prospect?.telephone || '221770000000').replace(/\s+/g, '');
   };
 
   // ─── Chart data (TODO: replace with real data from backend) ─
-  const salesChartDataRaw = [
-    { day: 'Lun', sales: 250000 },
-    { day: 'Mar', sales: 400000 },
-    { day: 'Mer', sales: 300000 },
-    { day: 'Jeu', sales: 750000 },
-    { day: 'Ven', sales: 900000 },
-    { day: 'Sam', sales: 600000 },
-    { day: 'Dim', sales: 1150000 }
-  ];
+  const salesTrendData = useMemo(() => {
+    return [
+      { day: isEn ? 'Mon' : 'Lun', sales: 200000 },
+      { day: isEn ? 'Tue' : 'Mar', sales: 450000 },
+      { day: isEn ? 'Wed' : 'Mer', sales: 300000 },
+      { day: isEn ? 'Thu' : 'Jeu', sales: 850000 },
+      { day: isEn ? 'Fri' : 'Ven', sales: 1200000 },
+      { day: isEn ? 'Sat' : 'Sam', sales: 900000 },
+      { day: isEn ? 'Sun' : 'Dim', sales: 1500000 },
+    ];
+  }, [isEn]);
+  
   const salesChartData = useMemo(() =>
-    salesChartDataRaw.map(d => ({ ...d, sales: Math.round(d.sales * EXCHANGE_RATES[activeCurrency]) })),
-    [activeCurrency]
+    salesTrendData.map(d => ({ ...d, sales: Math.round(d.sales * EXCHANGE_RATES[activeCurrency]) })),
+    [salesTrendData, activeCurrency]
   );
 
   if (isLoading) {
@@ -153,10 +154,10 @@ export const DashboardCommercial: React.FC = () => {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
-              Bonjour, {user?.prenom || 'Moussa'}
+              {isEn ? 'Hello' : 'Bonjour'}, {user?.prenom || 'Moussa'}
             </h1>
             <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider">
-              Espace Commercial
+              {isEn ? 'Sales Space' : 'Espace Commercial'}
             </span>
           </div>
 
@@ -178,61 +179,19 @@ export const DashboardCommercial: React.FC = () => {
         </div>
 
         <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
-          Vos priorités, relances et performance de vente aujourd'hui
+          {isEn ? 'Your priorities, follow-ups, and sales performance today' : "Vos priorités, relances et performance de vente aujourd'hui"}
         </p>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-        <KpiCard icon={Users} color="blue" label="Mes Prospects" value={metrics.totalProspects} link="/app/prospects" />
-        <KpiCard icon={CalendarClock} color="amber" label="Relances Auj." value={metrics.relancesAujourdhui} link="/app/relances" />
-        <KpiCard icon={AlertTriangle} color="rose" label="Relances en Retard" value={metrics.relancesEnRetard} alert={metrics.relancesEnRetard > 0} link="/app/relances" />
-        {/* <KpiCard icon={CheckCircle2} color="emerald" label="Ventes Conclues" value={metrics.ventesConclues} link="/app/prospects?statut=gagne" /> */}
-        <KpiCard icon={TrendingUp} color="emerald" label="CA Généré" value={formatMoney(metrics.caGenere, activeCurrency)} isText />
-        <KpiCard icon={DollarSign} color="amber" label="Mes Gains" value={formatMoney(metrics.mesGains, activeCurrency)} isText link="/app/gains" />
-        <KpiCard icon={Percent} color="blue" label="Taux Conversion" value={`${metrics.tauxConversion}%`} isText />
+        <KpiCard icon={Users} color="blue" label={isEn ? 'MY PROSPECTS' : 'MES PROSPECTS'} value={metrics.totalProspects} link="/app/prospects" />
+        <KpiCard icon={CalendarClock} color="amber" label={isEn ? "TODAY'S FOLLOW-UPS" : 'RELANCES AUJ.'} value={metrics.relancesAujourdhui} link="/app/relances" />
+        <KpiCard icon={AlertTriangle} color="rose" label={isEn ? 'OVERDUE FOLLOW-UPS' : 'RELANCES EN RETARD'} value={metrics.relancesEnRetard} alert={metrics.relancesEnRetard > 0} link="/app/relances" />
+        <KpiCard icon={TrendingUp} color="emerald" label={isEn ? 'REVENUE GENERATED' : 'CA GÉNÉRÉ'} value={formatMoney(metrics.caGenere, activeCurrency)} isText />
+        <KpiCard icon={DollarSign} color="amber" label={isEn ? 'MY EARNINGS' : 'MES GAINS'} value={formatMoney(metrics.mesGains, activeCurrency)} isText link="/app/gains" />
+        <KpiCard icon={Percent} color="blue" label={isEn ? 'CONVERSION RATE' : 'TAUX CONVERSION'} value={`${metrics.tauxConversion}%`} isText />
       </div>
-
-      {/* Objectives Section */}
-      {/* {myObjectifs.length > 0 && (
-        <div className="p-5 sm:p-6 rounded-3xl border border-border/80 bg-card shadow-md space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-primary" />
-              <h3 className="font-extrabold text-sm sm:text-base text-foreground uppercase tracking-wider">
-                Mes Objectifs
-              </h3>
-            </div>
-            <Link to="/app/objectifs" className="text-xs font-extrabold text-primary hover:underline flex items-center gap-1">
-              Voir tout <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="space-y-3">
-            {myObjectifs.map(obj => {
-              const pct = obj.objectif > 0 ? Math.min(Math.round((obj.realise / obj.objectif) * 100), 100) : 0;
-              const valueText = obj.type === 'ca'
-                ? `${formatMoney(obj.realise, activeCurrency)} / ${formatMoney(obj.objectif, activeCurrency)}`
-                : `${obj.realise} / ${obj.objectif}`;
-              return (
-                <div key={obj.id} className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-foreground">{OBJECTIF_LABELS[obj.type] || obj.type}</span>
-                    <span className="text-xs font-bold tabular-nums text-foreground">{pct}%</span>
-                  </div>
-                  <div className="relative h-2.5 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={`absolute top-0 left-0 h-full rounded-full transition-all ${getProgressColor(pct)}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground tabular-nums">{valueText}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )} */}
 
       {/* Main Content: Priorities + Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -242,11 +201,11 @@ export const DashboardCommercial: React.FC = () => {
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
               <h3 className="font-extrabold text-sm sm:text-base text-foreground uppercase tracking-wider">
-                Mes Priorités du Jour
+                {isEn ? "Today's Priorities" : 'Mes Priorités du Jour'}
               </h3>
             </div>
             <Link to="/app/relances" className="text-xs font-extrabold text-primary hover:underline flex items-center gap-1">
-              <span>Voir toutes mes relances</span>
+              <span>{isEn ? 'View all follow-ups' : 'Voir toutes mes relances'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -279,10 +238,10 @@ export const DashboardCommercial: React.FC = () => {
                       href={`https://wa.me/${phone}?text=Bonjour%20${encodeURIComponent(relance.prospect_nom || 'Prospect')}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="py-2 px-3 rounded-xl bg-[#25D366] text-white font-extrabold text-xs shadow-md shadow-[#25D366]/20 hover:bg-[#1DA851] active:scale-95 transition-all flex items-center gap-1.5"
+                      className="py-2 px-3 rounded-xl bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-500/20 hover:bg-emerald-600 active:scale-95 transition-all flex items-center gap-1.5"
                     >
-                      <WhatsAppIcon className="w-4 h-4" />
-                      
+                      <WhatsAppIcon className="w-3.5 h-3.5 fill-white" />
+                      <span>WA</span>
                     </a>
                     <a
                       href={`tel:${phone}`}
@@ -296,7 +255,9 @@ export const DashboardCommercial: React.FC = () => {
             })}
 
             {myRelances.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center py-4">Aucune relance programmée aujourd'hui.</p>
+              <p className="text-xs text-muted-foreground text-center py-4">
+                {isEn ? 'No follow-ups scheduled today.' : "Aucune relance programmée aujourd'hui."}
+              </p>
             )}
           </div>
         </div>
