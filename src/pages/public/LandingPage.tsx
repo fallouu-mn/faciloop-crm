@@ -26,7 +26,7 @@ import { FORMULES, PERIODICITES, Periodicite } from '../../lib/mockSuperAdmin';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 
 export const LandingPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isDarkMode, toggleDarkMode } = useAuth();
   const [billingCycle, setBillingCycle] = useState<Periodicite>('mensuel');
   const [currency, setCurrency] = useState<DeviseCode>('XOF');
