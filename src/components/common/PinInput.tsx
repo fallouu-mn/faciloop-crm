@@ -12,6 +12,7 @@ interface PinInputProps {
 
 export function PinInput({ value, onChange, showPin, onToggleShow, disabled = false, label }: PinInputProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [allSelected, setAllSelected] = useState(false);
 
   const refs = [
     useRef<HTMLInputElement>(null),
@@ -24,6 +25,16 @@ export function PinInput({ value, onChange, showPin, onToggleShow, disabled = fa
 
   const handleChange = (index: number, inputValue: string) => {
     if (!/^\d*$/.test(inputValue)) return;
+
+    if (allSelected) {
+      const newDigits = ['', '', '', '', '', ''];
+      newDigits[0] = inputValue.slice(-1);
+      onChange(newDigits);
+      setAllSelected(false);
+      refs[1].current?.focus();
+      return;
+    }
+
     const newDigits = [...value];
     newDigits[index] = inputValue.slice(-1);
     onChange(newDigits);
@@ -36,13 +47,18 @@ export function PinInput({ value, onChange, showPin, onToggleShow, disabled = fa
     if (e.key === 'Backspace' && !value[index] && index > 0) {
       refs[index - 1].current?.focus();
     }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+      e.preventDefault();
+      setAllSelected(true);
+    }
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
+    setAllSelected(false);
     const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
     if (pasted) {
-      const newDigits = [...value];
+      const newDigits = ['', '', '', '', '', ''];
       for (let i = 0; i < pasted.length; i++) {
         newDigits[i] = pasted[i];
       }
@@ -66,7 +82,8 @@ export function PinInput({ value, onChange, showPin, onToggleShow, disabled = fa
               className={`relative flex w-10 h-12 items-center justify-center border-y border-r border-input text-sm transition-all ${
                 idx === 0 ? 'rounded-l-md border-l' : ''
               }${idx === 5 ? ' rounded-r-md' : ''
-              }${activeIndex === idx ? ' z-10 ring-2 ring-ring ring-offset-0' : ''}`}
+              }${activeIndex === idx ? ' z-10 ring-2 ring-ring ring-offset-0' : ''
+              }${allSelected ? ' bg-primary/10 ring-1 ring-primary' : ''}`}
             >
               <input
                 ref={refs[idx]}
@@ -80,8 +97,8 @@ export function PinInput({ value, onChange, showPin, onToggleShow, disabled = fa
                 }}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
                 onFocus={() => setActiveIndex(idx)}
-                onBlur={() => setActiveIndex(null)}
-                onPaste={idx === 0 ? handlePaste : undefined}
+                onBlur={() => { setActiveIndex(null); setAllSelected(false); }}
+                onPaste={handlePaste}
                 disabled={disabled}
                 className="absolute inset-0 w-full h-full text-center text-sm font-medium bg-transparent focus:outline-none text-foreground disabled:opacity-50 disabled:cursor-not-allowed caret-transparent"
                 aria-label={`Chiffre ${idx + 1}`}

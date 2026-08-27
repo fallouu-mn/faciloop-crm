@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
 import { UserRole, Organization, Commercial, Prospect, Relance, Interaction, NotificationItem, ClientFaciloop, Paiement, ActionLog, ActionLogType, ModePaiement } from '../types/crm';
 import { mockOrganizations, mockCommerciaux, mockProspects, mockRelances, mockInteractions, mockNotifications, mockClients, mockPaiements, mockActionLogs } from '../lib/mockData';
 import { formatPhoneNumber } from '../lib/phoneUtils';
@@ -6,6 +7,8 @@ import { OrgOffer, mockOrgOffers, ObjectifCommercialAdmin, mockObjectifsAdmin, C
 
 export interface UserSession {
   id: string;
+  authId: string;
+  commercialId?: string;
   nom: string;
   prenom: string;
   telephone: string;
@@ -16,6 +19,7 @@ export interface UserSession {
 
 interface AuthContextType {
   user: UserSession | null;
+  isLoading: boolean;
   currentOrg: Organization | null;
   currency: string;
   setCurrency: (c: string) => void;
@@ -24,8 +28,7 @@ interface AuthContextType {
   login: (telephone: string, codeSecret: string) => Promise<UserSession | null>;
   logout: () => void;
   switchOrganization: (orgId: string) => void;
-  
-  // All raw state data (Admin Org & Super Admin view)
+
   prospects: Prospect[];
   relances: Relance[];
   interactions: Interaction[];
@@ -33,110 +36,191 @@ interface AuthContextType {
   clients: ClientFaciloop[];
   paiements: Paiement[];
 
-  // Filtered views strictly for Commercial role (CDC 3.2 Isolation)
   myProspects: Prospect[];
   myRelances: Relance[];
   myInteractions: Interaction[];
 
-  // State mutators
   addProspect: (p: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>) => { success: boolean; duplicate?: boolean; prospect?: Prospect };
   updateProspectStatus: (id: string, newStep: string, motifPerte?: string) => void;
   reassignProspects: (prospectIds: string[], targetCommercialId: string, targetCommercialNom: string) => void;
   deleteProspect: (id: string) => void;
-  
+
   addRelance: (r: Omit<Relance, 'id' | 'created_at' | 'organization_id'>) => void;
   completeRelance: (id: string) => void;
-  
+
   addInteraction: (i: Omit<Interaction, 'id' | 'created_at' | 'organization_id'>) => void;
   markNotificationAsRead: (id: string) => void;
   convertProspectToClient: (prospectId: string, formule: string, options?: { frequence?: string; montant?: number; modePaiement?: ModePaiement }) => void;
 
-  // Org-specific offers (Admin Org → ses propres offres pour ses clients)
   orgOffers: OrgOffer[];
   addOrgOffer: (offer: Omit<OrgOffer, 'id' | 'organization_id' | 'created_at'>) => void;
   updateOrgOffer: (id: string, updates: Partial<Omit<OrgOffer, 'id' | 'organization_id' | 'created_at'>>) => void;
   deleteOrgOffer: (id: string) => void;
 
-  // Commerciaux (team management)
   commerciaux: Commercial[];
   addCommercial: (c: Omit<Commercial, 'id' | 'organization_id' | 'created_at'>) => void;
   updateCommercial: (id: string, updates: Partial<Omit<Commercial, 'id' | 'organization_id' | 'created_at'>>) => void;
   toggleCommercialStatus: (id: string) => void;
 
-  // Objectifs
   objectifs: ObjectifCommercialAdmin[];
   addObjectif: (o: Omit<ObjectifCommercialAdmin, 'id'>) => void;
   updateObjectif: (id: string, updates: Partial<Omit<ObjectifCommercialAdmin, 'id'>>) => void;
   deleteObjectif: (id: string) => void;
 
-  // Commissions
   commissions: CommissionEntry[];
 
-  // Journal d'activité (audit log)
   actionLogs: ActionLog[];
   addActionLog: (log: Omit<ActionLog, 'id' | 'organization_id' | 'created_at'>) => void;
 
-  // Organisation settings
   updateOrganization: (updates: Partial<Omit<Organization, 'id'>>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function getRoleFromPath(path: string): UserRole {
-  if (path.startsWith('/super-admin')) return 'super_admin';
-  if (path.startsWith('/admin')) return 'admin_org';
-  return 'commercial';
+// Convertit un numéro de téléphone en email Supabase
+function phoneToEmail(phone: string): string {
+  const digits = phone.replace(/[^0-9]/g, '');
+  return `${digits}@faciloop.app`;
 }
 
-function getInitialUserFromPath(): { user: UserSession; orgIndex: number } {
-  const path = window.location.pathname;
-  const role = getRoleFromPath(path);
+// Fetch le profil utilisateur complet depuis la DB après auth
+async function fetchUserProfile(authUserId: string): Promise<{
+  role: UserRole;
+  organizationId: string;
+  commercial?: { id: string; nom: string; prenom: string; email: string; telephone: string };
+} | null> {
+  const { data: roleData, error: roleError } = await supabase
+    .from('user_roles')
+    .select('role, organization_id')
+    .eq('user_id', authUserId)
+    .eq('is_active', true)
+    .single();
 
-  // Persist role to localStorage so it survives refresh even if path detection has a timing issue
-  try { localStorage.setItem('faciloop_crm_role', role); } catch {}
+  if (roleError || !roleData) return null;
 
-  if (role === 'super_admin') {
-    return {
-      user: { id: 'super-admin-1', nom: 'Digit', prenom: 'Advisor Admin', telephone: '+221770000000', email: 'admin@digitadvisor.sn', role: 'super_admin', organizationId: 'org-digitadvisor' },
-      orgIndex: 0,
-    };
+  let commercial: { id: string; nom: string; prenom: string; email: string; telephone: string } | undefined;
+
+  if (roleData.role === 'commercial' || roleData.role === 'admin_org') {
+    const { data: commData } = await supabase
+      .from('commerciaux')
+      .select('id, nom, prenom, email, telephone')
+      .eq('user_id', authUserId)
+      .single();
+
+    if (commData) {
+      commercial = commData;
+    }
   }
-  if (role === 'admin_org') {
-    return {
-      user: { id: 'admin-org-1', nom: 'Ndiaye', prenom: 'Fatou', telephone: '+221789998877', email: 'fatou.ndiaye@teranga.sn', role: 'admin_org', organizationId: 'org-faciloop-client-1' },
-      orgIndex: 1,
-    };
-  }
+
   return {
-    user: { id: 'comm-1', nom: 'Diop', prenom: 'Moussa', telephone: '+221771234567', email: 'moussa.diop@teranga.sn', role: 'commercial', organizationId: 'org-faciloop-client-1' },
-    orgIndex: 1,
+    role: roleData.role as UserRole,
+    organizationId: roleData.organization_id,
+    commercial,
   };
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const initial = getInitialUserFromPath();
-  const [user, setUser] = useState<UserSession | null>(initial.user);
-
-  const [currentOrg, setCurrentOrg] = useState<Organization | null>(mockOrganizations[initial.orgIndex]);
+  const [user, setUser] = useState<UserSession | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
   const [currency, setCurrency] = useState<string>('XOF');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
 
-  // Keep role synced with current path on navigation (ensures sidebar stays correct after refresh)
+  // Restaurer la session au chargement
   useEffect(() => {
-    const syncRole = () => {
-      const role = getRoleFromPath(window.location.pathname);
-      try { localStorage.setItem('faciloop_crm_role', role); } catch {}
-      if (user && user.role !== role) {
-        const synced = getInitialUserFromPath();
-        setUser(synced.user);
-        setCurrentOrg(mockOrganizations[synced.orgIndex]);
+    const restoreSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await buildUserSession(session.user.id, session.user.email || '');
+        }
+      } catch (e) {
+        console.error('Erreur restauration session:', e);
+      } finally {
+        setIsLoading(false);
       }
     };
-    window.addEventListener('popstate', syncRole);
-    return () => window.removeEventListener('popstate', syncRole);
+
+    restoreSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setCurrentOrg(null);
+      }
+      if (event === 'SIGNED_IN' && session?.user) {
+        await buildUserSession(session.user.id, session.user.email || '');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const buildUserSession = async (authId: string, email: string) => {
+    const profile = await fetchUserProfile(authId);
+    if (!profile) return;
+
+    // Fetch l'organisation
+    const { data: orgData } = await supabase
+      .from('organizations')
+      .select('*')
+      .eq('id', profile.organizationId)
+      .single();
+
+    const sess: UserSession = {
+      id: profile.commercial?.id || authId,
+      authId,
+      commercialId: profile.commercial?.id,
+      nom: profile.commercial?.nom || 'Admin',
+      prenom: profile.commercial?.prenom || 'Super',
+      telephone: profile.commercial?.telephone || '',
+      email: profile.commercial?.email || email,
+      role: profile.role,
+      organizationId: profile.organizationId,
+    };
+
+    setUser(sess);
+
+    if (orgData) {
+      setCurrentOrg({
+        id: orgData.id,
+        nom: orgData.nom,
+        logo_url: orgData.logo_url,
+        devise_defaut: orgData.devise_defaut,
+        statut: orgData.statut,
+        created_at: orgData.created_at,
+      });
+    }
+  };
+
+  // Auto-logout après 30 minutes d'inactivité
+  useEffect(() => {
+    if (!user) return;
+
+    const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const resetTimer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+        setCurrentOrg(null);
+        window.location.href = '/login';
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    const events = ['mousedown', 'keydown', 'touchstart', 'scroll'];
+    events.forEach(e => window.addEventListener(e, resetTimer));
+    resetTimer();
+
+    return () => {
+      clearTimeout(timer);
+      events.forEach(e => window.removeEventListener(e, resetTimer));
+    };
   }, [user]);
 
-  // Initializing dark mode class on document
+  // Dark mode
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -145,11 +229,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [isDarkMode]);
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
-  };
+  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
-  // State data store
+  // ============================================
+  // DATA LAYER (mock pour l'instant — sera remplacé par services/hooks)
+  // ============================================
   const [prospects, setProspects] = useState<Prospect[]>(mockProspects);
   const [relances, setRelances] = useState<Relance[]>(mockRelances);
   const [interactions, setInteractions] = useState<Interaction[]>(mockInteractions);
@@ -157,7 +241,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [clients, setClients] = useState<ClientFaciloop[]>(mockClients);
   const [paiements, setPaiements] = useState<Paiement[]>(mockPaiements);
   const [orgOffers, setOrgOffers] = useState<OrgOffer[]>(mockOrgOffers);
-
   const [commerciaux, setCommerciaux] = useState<Commercial[]>(mockCommerciaux);
   const [objectifs, setObjectifs] = useState<ObjectifCommercialAdmin[]>(mockObjectifsAdmin);
   const [commissions] = useState<CommissionEntry[]>(mockCommissions);
@@ -168,23 +251,132 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const entry: ActionLog = {
       ...log,
       id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      organization_id: user?.organizationId || 'org-faciloop-client-1',
+      organization_id: user?.organizationId || '',
       created_at: new Date().toISOString(),
     };
     setActionLogs(prev => [entry, ...prev]);
   }, [user]);
 
-  // Commerciaux CRUD
+  // ============================================
+  // AUTH ACTIONS
+  // ============================================
+  const login = async (telephone: string, codeSecret: string): Promise<UserSession | null> => {
+    const cleanPhone = telephone.replace(/\s+/g, '');
+    const email = phoneToEmail(cleanPhone);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: codeSecret,
+    });
+
+    if (error) {
+      console.error('Login error:', error.message);
+      return null;
+    }
+
+    if (data.user) {
+      const profile = await fetchUserProfile(data.user.id);
+      if (!profile) return null;
+
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', profile.organizationId)
+        .single();
+
+      const sess: UserSession = {
+        id: profile.commercial?.id || data.user.id,
+        authId: data.user.id,
+        commercialId: profile.commercial?.id,
+        nom: profile.commercial?.nom || 'Admin',
+        prenom: profile.commercial?.prenom || 'Super',
+        telephone: profile.commercial?.telephone || '',
+        email: profile.commercial?.email || email,
+        role: profile.role,
+        organizationId: profile.organizationId,
+      };
+
+      setUser(sess);
+
+      if (orgData) {
+        setCurrentOrg({
+          id: orgData.id,
+          nom: orgData.nom,
+          logo_url: orgData.logo_url,
+          devise_defaut: orgData.devise_defaut,
+          statut: orgData.statut,
+          created_at: orgData.created_at,
+        });
+      }
+
+      return sess;
+    }
+
+    return null;
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setCurrentOrg(null);
+  };
+
+  const switchOrganization = (orgId: string) => {
+    if (user) {
+      setUser({ ...user, organizationId: orgId });
+    }
+  };
+
+  // ============================================
+  // DATA FILTERING (CDC 3.2 Isolation)
+  // ============================================
   const myCommerciaux = useMemo(() => {
     if (!user) return [];
     return commerciaux.filter(c => c.organization_id === user.organizationId);
   }, [commerciaux, user]);
 
+  const myProspects = useMemo(() => {
+    if (!user) return [];
+    if (user.role === 'commercial') {
+      return prospects.filter(p => p.commercial_id === user.id);
+    }
+    return prospects;
+  }, [prospects, user]);
+
+  const myRelances = useMemo(() => {
+    if (!user) return [];
+    if (user.role === 'commercial') {
+      return relances.filter(r => r.commercial_id === user.id);
+    }
+    return relances;
+  }, [relances, user]);
+
+  const myInteractions = useMemo(() => {
+    if (!user) return [];
+    if (user.role === 'commercial') {
+      return interactions.filter(i => i.commercial_id === user.id);
+    }
+    return interactions;
+  }, [interactions, user]);
+
+  const myOrgOffers = useMemo(() => {
+    if (!user) return [];
+    return orgOffers.filter(o => o.organization_id === user.organizationId);
+  }, [orgOffers, user]);
+
+  const myObjectifs = useMemo(() => {
+    if (!user) return [];
+    return objectifs;
+  }, [objectifs, user]);
+
+  // ============================================
+  // CRUD COMMERCIAUX
+  // ============================================
   const addCommercial = (c: Omit<Commercial, 'id' | 'organization_id' | 'created_at'>) => {
     const created: Commercial = {
       ...c,
       id: `comm-${Date.now()}`,
-      organization_id: user?.organizationId || 'org-faciloop-client-1',
+      organization_id: user?.organizationId || '',
       created_at: new Date().toISOString(),
     };
     setCommerciaux(prev => [created, ...prev]);
@@ -226,12 +418,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // Objectifs CRUD
-  const myObjectifs = useMemo(() => {
-    if (!user) return [];
-    return objectifs;
-  }, [objectifs, user]);
-
+  // ============================================
+  // CRUD OBJECTIFS
+  // ============================================
   const addObjectif = (o: Omit<ObjectifCommercialAdmin, 'id'>) => {
     const created: ObjectifCommercialAdmin = { ...o, id: `obj-${Date.now()}` };
     setObjectifs(prev => [...prev, created]);
@@ -257,7 +446,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setObjectifs(prev => prev.filter(o => o.id !== id));
   };
 
-  // Organisation update
+  // ============================================
+  // CRUD ORGANISATION
+  // ============================================
   const updateOrganization = (updates: Partial<Omit<Organization, 'id'>>) => {
     setCurrentOrg(prev => prev ? { ...prev, ...updates } : prev);
     addActionLog({
@@ -273,103 +464,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // CDC 3.2: Filtered lists restricted strictly to user's assigned portfolio if role === 'commercial'
-  const myProspects = useMemo(() => {
-    if (!user) return [];
-    if (user.role === 'commercial') {
-      return prospects.filter(p => p.commercial_id === user.id);
-    }
-    return prospects;
-  }, [prospects, user]);
-
-  const myRelances = useMemo(() => {
-    if (!user) return [];
-    if (user.role === 'commercial') {
-      return relances.filter(r => r.commercial_id === user.id);
-    }
-    return relances;
-  }, [relances, user]);
-
-  const myInteractions = useMemo(() => {
-    if (!user) return [];
-    if (user.role === 'commercial') {
-      return interactions.filter(i => i.commercial_id === user.id);
-    }
-    return interactions;
-  }, [interactions, user]);
-
-  const login = async (telephone: string, codeSecret: string): Promise<UserSession | null> => {
-    const cleanPhone = telephone.replace(/\s+/g, '');
-    
-    // Super-Admin fallback (phone contains 770000000 or pin is '0000' or '000000')
-    if (cleanPhone.includes('770000000') || cleanPhone.includes('99999') || codeSecret === '0000' || codeSecret === '000000') {
-      const sess: UserSession = {
-        id: 'super-admin-1',
-        nom: 'Digit',
-        prenom: "Advisor Admin",
-        telephone: telephone,
-        email: 'admin@digitadvisor.sn',
-        role: 'super_admin',
-        organizationId: 'org-digitadvisor'
-      };
-      setUser(sess);
-      setCurrentOrg(mockOrganizations[0]);
-      return sess;
-    }
-
-    // Admin Org fallback (phone contains 789998877 or pin is '1111' or '111111')
-    if (cleanPhone.includes('789998877') || codeSecret === '1111' || codeSecret === '111111') {
-      const sess: UserSession = {
-        id: 'admin-org-1',
-        nom: 'Manager',
-        prenom: 'Teranga Admin',
-        telephone: telephone,
-        email: 'admin@teranga.sn',
-        role: 'admin_org',
-        organizationId: 'org-faciloop-client-1'
-      };
-      setUser(sess);
-      setCurrentOrg(mockOrganizations[1]);
-      return sess;
-    }
-
-    // Standard Commercial login
-    const foundComm = mockCommerciaux.find(c => c.telephone.replace(/\s+/g, '') === cleanPhone);
-    const comm = foundComm || mockCommerciaux[0];
-    const sess: UserSession = {
-      id: comm.id,
-      nom: comm.nom,
-      prenom: comm.prenom,
-      telephone: comm.telephone,
-      email: comm.email,
-      role: 'commercial',
-      organizationId: comm.organization_id
-    };
-    setUser(sess);
-    const org = mockOrganizations.find(o => o.id === comm.organization_id) || mockOrganizations[1];
-    setCurrentOrg(org);
-    return sess;
-  };
-
-  const logout = () => {
-    setUser(null);
-  };
-
-  const switchOrganization = (orgId: string) => {
-    const org = mockOrganizations.find(o => o.id === orgId);
-    if (org) {
-      setCurrentOrg(org);
-      if (user) {
-        setUser({ ...user, organizationId: orgId });
-      }
-    }
-  };
-
-  // Anti-Duplicate phone check & add prospect
+  // ============================================
+  // CRUD PROSPECTS
+  // ============================================
   const addProspect = (newP: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>) => {
     const formattedPhone = formatPhoneNumber(newP.telephone);
     const isDuplicate = prospects.some(
-      p => p.organization_id === (user?.organizationId || 'org-faciloop-client-1') &&
+      p => p.organization_id === (user?.organizationId || '') &&
            formatPhoneNumber(p.telephone) === formattedPhone
     );
 
@@ -381,7 +482,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...newP,
       telephone: formattedPhone,
       id: `prospect-${Date.now()}`,
-      organization_id: user?.organizationId || 'org-faciloop-client-1',
+      organization_id: user?.organizationId || '',
       commercial_id: newP.commercial_id || (user?.role === 'commercial' ? user.id : undefined),
       commercial_nom: newP.commercial_nom || (user ? `${user.prenom} ${user.nom}` : undefined),
       created_at: new Date().toISOString()
@@ -437,17 +538,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // CDC 3.1 Bulk Reassign Prospects by Admin
   const reassignProspects = (prospectIds: string[], targetCommercialId: string, targetCommercialNom: string) => {
     const idSet = new Set(prospectIds);
     setProspects(prev =>
       prev.map(p => {
         if (idSet.has(p.id)) {
-          return {
-            ...p,
-            commercial_id: targetCommercialId,
-            commercial_nom: targetCommercialNom
-          };
+          return { ...p, commercial_id: targetCommercialId, commercial_nom: targetCommercialNom };
         }
         return p;
       })
@@ -470,11 +566,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProspects(prev => prev.filter(p => p.id !== id));
   };
 
+  // ============================================
+  // CRUD RELANCES & INTERACTIONS
+  // ============================================
   const addRelance = (newR: Omit<Relance, 'id' | 'created_at' | 'organization_id'>) => {
     const created: Relance = {
       ...newR,
       id: `relance-${Date.now()}`,
-      organization_id: user?.organizationId || 'org-faciloop-client-1',
+      organization_id: user?.organizationId || '',
       commercial_id: newR.commercial_id || (user?.role === 'commercial' ? user.id : undefined),
       created_at: new Date().toISOString()
     };
@@ -482,16 +581,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const completeRelance = (id: string) => {
-    setRelances(prev =>
-      prev.map(r => (r.id === id ? { ...r, statut: 'realisee' } : r))
-    );
+    setRelances(prev => prev.map(r => (r.id === id ? { ...r, statut: 'realisee' } : r)));
   };
 
   const addInteraction = (newI: Omit<Interaction, 'id' | 'created_at' | 'organization_id'>) => {
     const created: Interaction = {
       ...newI,
       id: `inter-${Date.now()}`,
-      organization_id: user?.organizationId || 'org-faciloop-client-1',
+      organization_id: user?.organizationId || '',
       commercial_id: newI.commercial_id || (user?.role === 'commercial' ? user.id : undefined),
       created_at: new Date().toISOString()
     };
@@ -499,22 +596,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const markNotificationAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, lue: true } : n))
-    );
+    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, lue: true } : n)));
   };
 
-  // --- Org Offers CRUD (offers propres à l'organisation) ---
-  const myOrgOffers = useMemo(() => {
-    if (!user) return [];
-    return orgOffers.filter(o => o.organization_id === user.organizationId);
-  }, [orgOffers, user]);
-
+  // ============================================
+  // CRUD ORG OFFERS
+  // ============================================
   const addOrgOffer = (offer: Omit<OrgOffer, 'id' | 'organization_id' | 'created_at'>) => {
     const created: OrgOffer = {
       ...offer,
       id: `org-offer-${Date.now()}`,
-      organization_id: user?.organizationId || 'org-faciloop-client-1',
+      organization_id: user?.organizationId || '',
       created_at: new Date().toISOString(),
     };
     setOrgOffers(prev => [created, ...prev]);
@@ -563,6 +655,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  // ============================================
+  // CONVERSION PROSPECT → CLIENT
+  // ============================================
   const convertProspectToClient = (prospectId: string, formule: string, options?: { frequence?: string; montant?: number; modePaiement?: ModePaiement }) => {
     const p = prospects.find(item => item.id === prospectId);
     if (!p) return;
@@ -595,7 +690,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       created_at: new Date().toISOString()
     };
 
-    // Create associated payment entry
     const newPaiement: Paiement = {
       id: `pay-${Date.now()}`,
       organization_id: p.organization_id,
@@ -636,6 +730,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         user,
+        isLoading,
         currentOrg,
         currency,
         setCurrency,

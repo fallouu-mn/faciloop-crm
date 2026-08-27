@@ -113,7 +113,7 @@ export const ObjectifsPage: React.FC = () => {
       {/* Objectifs list */}
       {myObjectifs.length === 0 ? (
         <div className="rounded-2xl border border-border p-8 text-center space-y-3">
-          <Target className="w-12 h-12 text-muted-foreground mx-auto" />
+          <Goal className="w-12 h-12 text-muted-foreground mx-auto" />
           <h3 className="text-sm font-bold text-foreground">Aucun objectif défini</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             Vos objectifs seront définis par votre administrateur d'organisation.
