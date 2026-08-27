@@ -6,12 +6,16 @@ import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DateRange, isInDateRange, searchParamsToDateRange, buildFilteredUrl } from '../../lib/dateFilter';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 import { mockTenants, mockFactures, FORMULES } from '../../lib/mockSuperAdmin';
+import { useTranslation } from 'react-i18next';
 
 export const StatistiquesPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
   const [devise, setDevise] = useState<DeviseCode>('XOF');
+
+  const isEn = i18n.language?.startsWith('en');
 
   const filteredFactures = useMemo(() =>
     mockFactures.filter(f => isInDateRange(f.date_emission, period)),
@@ -43,10 +47,10 @@ export const StatistiquesPage: React.FC = () => {
     return Array.from(map.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([month, montant]) => ({
-        mois: new Date(month + '-01').toLocaleDateString('fr-FR', { month: 'short' }),
+        mois: new Date(month + '-01').toLocaleDateString(isEn ? 'en-US' : 'fr-FR', { month: 'short' }),
         montant,
       }));
-  }, [filteredFactures]);
+  }, [filteredFactures, isEn]);
 
   const maxRevenue = Math.max(...revenueByMonth.map(r => r.montant), 1);
 
@@ -76,13 +80,15 @@ export const StatistiquesPage: React.FC = () => {
   }, [filteredTenants, filteredFactures]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Statistiques Plateforme</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+            {isEn ? 'Platform Analytics' : 'Statistiques Plateforme'}
+          </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Métriques globales et performance SaaS
+            {isEn ? 'Global SaaS metrics and performance' : 'Métriques globales et performance SaaS'}
           </p>
         </div>
         <CurrencyToggle value={devise} onChange={setDevise} />
@@ -98,7 +104,7 @@ export const StatistiquesPage: React.FC = () => {
           className="rounded-xl border border-border bg-card p-4 space-y-2 text-left hover:border-primary/40 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Revenus</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Revenue' : 'Revenus'}</span>
             <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
               <TrendingUp className="h-4 w-4 text-emerald-500" />
             </div>
@@ -107,7 +113,7 @@ export const StatistiquesPage: React.FC = () => {
             <span className="text-lg font-bold text-foreground">{fmt(totalRevenu)}</span>
             <div className="flex items-center gap-1 mt-1">
               <ArrowUpRight className="h-3 w-3 text-emerald-500" />
-              <span className="text-xs text-emerald-500 font-medium">période sélectionnée</span>
+              <span className="text-xs text-emerald-500 font-medium">{isEn ? 'selected period' : 'période sélectionnée'}</span>
             </div>
           </div>
         </button>
@@ -117,7 +123,7 @@ export const StatistiquesPage: React.FC = () => {
           className="rounded-xl border border-border bg-card p-4 space-y-2 text-left hover:border-primary/40 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Orgs Actives</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Active Orgs' : 'Orgs Actives'}</span>
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
               <Building2 className="h-4 w-4 text-primary" />
             </div>
@@ -130,7 +136,7 @@ export const StatistiquesPage: React.FC = () => {
           className="rounded-xl border border-border bg-card p-4 space-y-2 text-left hover:border-primary/40 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Factures</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Invoices' : 'Factures'}</span>
             <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center">
               <FileText className="h-4 w-4 text-blue-500" />
             </div>

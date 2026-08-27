@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Building2, Save, Upload, Check, Globe, Phone, Mail, MapPin, Briefcase } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const ParametresEntreprise: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { currentOrg, currency, setCurrency, updateOrganization } = useAuth();
   const [nom, setNom] = useState(currentOrg?.nom || "Teranga Logistique SA");
   const [pays, setPays] = useState('Sénégal');
@@ -14,6 +16,8 @@ export const ParametresEntreprise: React.FC = () => {
   const [secteur, setSecteur] = useState('Logistique / Transport');
   const [logoPreview, setLogoPreview] = useState<string | null>(currentOrg?.logo_url || null);
   const [saved, setSaved] = useState(false);
+
+  const isEn = i18n.language?.startsWith('en');
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,20 +36,20 @@ export const ParametresEntreprise: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6 max-w-3xl mx-auto font-sans">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-          Paramètres de l'Entreprise
+          {isEn ? 'Company Settings' : "Paramètres de l'Entreprise"}
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Informations générales, coordonnées et préférences de votre organisation
+          {isEn ? 'General information, contact details, and organization preferences' : 'Informations générales, coordonnées et préférences de votre organisation'}
         </p>
       </div>
 
       {saved && (
         <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2">
           <Check className="w-4 h-4" />
-          <span>Paramètres sauvegardés avec succès !</span>
+          <span>{isEn ? 'Settings saved successfully!' : 'Paramètres sauvegardés avec succès !'}</span>
         </div>
       )}
 
@@ -53,7 +57,7 @@ export const ParametresEntreprise: React.FC = () => {
         {/* Logo Section */}
         <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-primary" /> Identité visuelle
+            <Building2 className="w-4 h-4 text-primary" /> {isEn ? 'Visual Identity' : 'Identité visuelle'}
           </h2>
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-border bg-muted/40 flex items-center justify-center overflow-hidden">

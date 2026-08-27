@@ -5,10 +5,14 @@ import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { DateRange, isInDateRange, searchParamsToDateRange } from '../../lib/dateFilter';
 import { formatAmount } from '../../lib/currency';
 import { mockTenants, TenantData, FormuleAbonnement, Periodicite, FORMULES, PERIODICITES, getOfferPrice } from '../../lib/mockSuperAdmin';
+import { useTranslation } from 'react-i18next';
 
 export const OrganisationsList: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const initialStatut = (searchParams.get('statut') as 'actif' | 'suspendu') || 'tous';
+
+  const isEn = i18n.language?.startsWith('en');
 
   const [tenants, setTenants] = useState<TenantData[]>(mockTenants);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,13 +65,15 @@ export const OrganisationsList: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Organisations</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+            {isEn ? 'Organizations' : 'Organisations'}
+          </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Gérez toutes les entreprises clientes ({filtered.length} résultat{filtered.length > 1 ? 's' : ''})
+            {isEn ? `Manage all client companies (${filtered.length} results)` : `Gérez toutes les entreprises clientes (${filtered.length} résultat${filtered.length > 1 ? 's' : ''})`}
           </p>
         </div>
         <button
@@ -75,7 +81,7 @@ export const OrganisationsList: React.FC = () => {
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-gradient-faciloop px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity"
         >
           <Plus className="h-4 w-4" />
-          <span>Nouvelle Entreprise</span>
+          <span>{isEn ? '+ New Organization' : 'Nouvelle Entreprise'}</span>
         </button>
       </div>
 
@@ -88,7 +94,7 @@ export const OrganisationsList: React.FC = () => {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Rechercher une organisation..."
+            placeholder={isEn ? 'Search an organization...' : 'Rechercher une organisation...'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-10 pl-9 pr-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
@@ -105,7 +111,7 @@ export const OrganisationsList: React.FC = () => {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {s === 'tous' ? 'Tous' : s === 'actif' ? 'Actifs' : 'Suspendus'}
+              {s === 'tous' ? (isEn ? 'All' : 'Tous') : s === 'actif' ? (isEn ? 'Active' : 'Actifs') : (isEn ? 'Suspended' : 'Suspendus')}
             </button>
           ))}
         </div>
@@ -116,8 +122,8 @@ export const OrganisationsList: React.FC = () => {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border bg-muted/50">
             <tr className="text-xs font-medium text-muted-foreground">
-              <th className="px-4 py-3">Entreprise</th>
-              <th className="px-4 py-3">Formule</th>
+              <th className="px-4 py-3">{isEn ? 'Company' : 'Entreprise'}</th>
+              <th className="px-4 py-3">{isEn ? 'Plan' : 'Formule'}</th>
               <th className="px-4 py-3">Créée le</th>
               <th className="px-4 py-3">Statut</th>
               <th className="px-4 py-3 text-right">Action</th>

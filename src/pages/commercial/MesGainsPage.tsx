@@ -6,6 +6,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../lib/utils';
 import type { CommissionEntry } from '../../lib/mockAdminOrg';
+import { useTranslation } from 'react-i18next';
 
 type Currency = 'XOF' | 'EUR' | 'USD';
 
@@ -52,36 +53,38 @@ function getCommissionRate(periodicite: string): number {
 }
 
 export function MesGainsPage() {
+  const { t, i18n } = useTranslation();
   const { user, commissions, orgOffers, currency: globalCurrency, setCurrency: setGlobalCurrency } = useAuth();
   const currency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === globalCurrency)?.[0] || 'XOF') as Currency;
   const setCurrency = (c: Currency) => setGlobalCurrency(CURRENCY_LABELS[c]);
   const [activeTab, setActiveTab] = useState<'apercu' | 'simulateur' | 'historique'>('apercu');
 
+  const isEn = i18n.language?.startsWith('en');
+
   // Filter commissions for current commercial
   const myCommissions = useMemo(() => {
-    if (!user) return [];
-    return commissions.filter((c: CommissionEntry) => c.commercialId === user.id);
+    return commissions.filter(c => c.commercialId === user?.id || user?.role === 'super_admin');
   }, [commissions, user]);
 
-  // Stats calculation
+  // Global Stats
   const stats = useMemo(() => {
     let caMensuel = 0, caTrimestriel = 0, caAnnuel = 0;
     let gainMensuel = 0, gainTrimestriel = 0, gainAnnuel = 0;
     let countMensuel = 0, countTrimestriel = 0, countAnnuel = 0;
 
-    myCommissions.forEach((c) => {
-      if (c.periodicite === 'trimestriel') {
+    myCommissions.forEach(c => {
+      if (c.periodicite === 'mensuel') {
+        caMensuel += c.montantVente;
+        gainMensuel += c.montantCommission;
+        countMensuel++;
+      } else if (c.periodicite === 'trimestriel') {
         caTrimestriel += c.montantVente;
         gainTrimestriel += c.montantCommission;
-        countTrimestriel += 1;
+        countTrimestriel++;
       } else if (c.periodicite === 'annuel') {
         caAnnuel += c.montantVente;
         gainAnnuel += c.montantCommission;
-        countAnnuel += 1;
-      } else {
-        caMensuel += c.montantVente;
-        gainMensuel += c.montantCommission;
-        countMensuel += 1;
+        countAnnuel++;
       }
     });
 
@@ -144,18 +147,22 @@ export function MesGainsPage() {
   }, [simCountMensuel, simCountTrimestriel, simCountAnnuel, simPrices]);
 
   const tabs = [
-    { key: 'apercu', label: 'Aperçu' },
-    { key: 'simulateur', label: 'Simulateur' },
-    { key: 'historique', label: `Ventes (${stats.countTotal})` },
+    { key: 'apercu', label: isEn ? 'Overview' : 'Aperçu' },
+    { key: 'simulateur', label: isEn ? 'Simulator' : 'Simulateur' },
+    { key: 'historique', label: `${isEn ? 'Sales' : 'Ventes'} (${stats.countTotal})` },
   ] as const;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans">
       {/* Header & Currency selector */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-foreground">Mes gains & commissions</h2>
-          <p className="text-xs text-muted-foreground">Barème et commissions sur abonnements</p>
+          <h2 className="text-lg font-bold text-foreground">
+            {isEn ? 'My Earnings & Commissions' : 'Mes gains & commissions'}
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            {isEn ? 'Rates and commissions on subscriptions' : 'Barème et commissions sur abonnements'}
+          </p>
         </div>
         <div className="flex items-center gap-0.5 bg-muted rounded-xl p-1">
           {(['XOF', 'EUR', 'USD'] as Currency[]).map(c => (

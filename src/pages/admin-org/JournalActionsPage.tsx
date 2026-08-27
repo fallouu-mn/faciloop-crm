@@ -46,20 +46,23 @@ const ACTION_TYPE_CONFIG: Record<ActionLogType, { icon: React.ComponentType<{ cl
   other: { icon: Activity, color: 'bg-muted text-muted-foreground', label: 'Autre' },
 };
 
-const FILTER_CATEGORIES = [
-  { value: 'all', label: 'Toutes les actions' },
-  { value: 'prospect', label: 'Prospects' },
-  { value: 'client', label: 'Clients' },
-  { value: 'offer', label: 'Offres' },
-  { value: 'payment', label: 'Paiements' },
-  { value: 'objectif', label: 'Objectifs' },
-  { value: 'org', label: 'Organisation' },
-];
-
 export const JournalActionsPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { actionLogs } = useAuth();
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+
+  const isEn = i18n.language?.startsWith('en');
+
+  const FILTER_CATEGORIES = [
+    { value: 'all', label: isEn ? 'All actions' : 'Toutes les actions' },
+    { value: 'prospect', label: 'Prospects' },
+    { value: 'client', label: 'Clients' },
+    { value: 'offer', label: isEn ? 'Offers & Subscriptions' : 'Offres & Abonnements' },
+    { value: 'payment', label: isEn ? 'Payments' : 'Paiements' },
+    { value: 'objectif', label: isEn ? 'Objectives' : 'Objectifs' },
+    { value: 'org', label: isEn ? 'Organization' : 'Organisation' },
+  ];
 
   const sorted = useMemo(() =>
     [...actionLogs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
@@ -104,7 +107,7 @@ export const JournalActionsPage: React.FC = () => {
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return d.toLocaleDateString(isEn ? 'en-US' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   };
 
   return (
@@ -114,18 +117,18 @@ export const JournalActionsPage: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
-              Journal d'Activité
+              {isEn ? 'Activity Audit Log' : "Journal d'Activité"}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-slate-500/10 text-slate-600 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
               <History className="w-3 h-3" /> Audit Log
             </span>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5">
-            Historique chronologique des modifications et opérations critiques effectuées par l'équipe
+            {isEn ? 'Complete history of user actions and operations performed in your organization' : "Historique complet des actions et opérations effectuées par les utilisateurs de votre entreprise"}
           </p>
         </div>
         <div className="text-xs font-bold text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl border border-border/60">
-          {filtered.length} événement(s)
+          {filtered.length} {isEn ? 'event(s)' : 'événement(s)'}
         </div>
       </div>
 

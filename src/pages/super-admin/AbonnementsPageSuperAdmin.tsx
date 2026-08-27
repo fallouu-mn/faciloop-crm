@@ -4,10 +4,15 @@ import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DeviseCode, convertAmount, formatAmount, getDeviseSymbol } from '../../lib/currency';
 import { FORMULES, PERIODICITES, FormuleConfig, FormuleAbonnement, Periodicite, OfferPricing } from '../../lib/mockSuperAdmin';
 
+import { useTranslation } from 'react-i18next';
+
 export const AbonnementsPageSuperAdmin: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [devise, setDevise] = useState<DeviseCode>('XOF');
   const [formules, setFormules] = useState<FormuleConfig[]>(FORMULES);
   const [editingFormule, setEditingFormule] = useState<string | null>(null);
+
+  const isEn = i18n.language?.startsWith('en');
   const [editPricing, setEditPricing] = useState<FormuleConfig['pricing'] | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newLabel, setNewLabel] = useState('');
@@ -129,13 +134,15 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Abonnements</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              {isEn ? 'Subscriptions' : 'Abonnements'}
+            </h1>
             <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-              Source de référence
+              {isEn ? 'Reference Source' : 'Source de référence'}
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Configuration des offres et tarifs — 3 formules × 3 périodes
+            {isEn ? 'Offer and pricing configuration — 3 plans × 3 billing periods' : 'Configuration des offres et tarifs — 3 formules × 3 périodes'}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -145,8 +152,8 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
             className="inline-flex items-center gap-2 rounded-full bg-gradient-faciloop px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity"
           >
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Ajouter une offre</span>
-            <span className="sm:hidden">Offre</span>
+            <span className="hidden sm:inline">{isEn ? '+ Add Offer' : 'Ajouter une offre'}</span>
+            <span className="sm:hidden">{isEn ? 'Offer' : 'Offre'}</span>
           </button>
         </div>
       </div>

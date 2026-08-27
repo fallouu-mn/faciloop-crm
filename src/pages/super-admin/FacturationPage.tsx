@@ -7,14 +7,18 @@ import { DateRange, isInDateRange, searchParamsToDateRange, buildFilteredUrl } f
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 import { mockFactures, FactureData } from '../../lib/mockSuperAdmin';
 import { downloadCsv } from '../../lib/exportCsv';
+import { useTranslation } from 'react-i18next';
 
 export const FacturationPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
   const [devise, setDevise] = useState<DeviseCode>('XOF');
   const [search, setSearch] = useState('');
   const [filterStatut, setFilterStatut] = useState<'tous' | 'payee' | 'en_attente' | 'impayee'>('tous');
+
+  const isEn = i18n.language?.startsWith('en');
 
   const filtered = useMemo(() =>
     mockFactures.filter(f => {
@@ -34,9 +38,14 @@ export const FacturationPage: React.FC = () => {
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
 
   const statutLabel = (s: FactureData['statut']) => {
-    if (s === 'payee') return 'Payée';
-    if (s === 'en_attente') return 'En attente';
-    return 'Impayée';
+    if (!isEn) {
+      if (s === 'payee') return 'Payée';
+      if (s === 'en_attente') return 'En attente';
+      return 'Impayée';
+    }
+    if (s === 'payee') return 'Paid';
+    if (s === 'en_attente') return 'Pending';
+    return 'Unpaid';
   };
 
   const statutClass = (s: FactureData['statut']) => {
@@ -46,7 +55,9 @@ export const FacturationPage: React.FC = () => {
   };
 
   const handleExportCsv = () => {
-    const headers = ['Entreprise', 'Formule', 'Montant', 'Devise', 'Émission', 'Échéance', 'Statut'];
+    const headers = isEn
+      ? ['Company', 'Plan', 'Amount', 'Currency', 'Issued', 'Due Date', 'Status']
+      : ['Entreprise', 'Formule', 'Montant', 'Devise', 'Émission', 'Échéance', 'Statut'];
     const rows = filtered.map(f => [
       f.tenant_nom,
       f.formule,
@@ -61,13 +72,15 @@ export const FacturationPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Facturation</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+            {isEn ? 'Billing & Invoices' : 'Facturation'}
+          </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Suivi des abonnements et paiements ({filtered.length} facture{filtered.length > 1 ? 's' : ''})
+            {isEn ? `Subscriptions and payments tracking (${filtered.length} invoices)` : `Suivi des abonnements et paiements (${filtered.length} facture${filtered.length > 1 ? 's' : ''})`}
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
@@ -77,7 +90,7 @@ export const FacturationPage: React.FC = () => {
             className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
             <Download className="h-4 w-4" />
-            <span>CSV</span>
+            <span>Export CSV</span>
           </button>
         </div>
       </div>
@@ -89,7 +102,7 @@ export const FacturationPage: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Revenus</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Revenue' : 'Revenus'}</span>
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
@@ -101,7 +114,7 @@ export const FacturationPage: React.FC = () => {
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Payées</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Paid' : 'Payées'}</span>
             <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             </div>
@@ -111,7 +124,7 @@ export const FacturationPage: React.FC = () => {
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">En attente</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Pending' : 'En attente'}</span>
             <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
               <CreditCard className="h-4 w-4 text-amber-500" />
             </div>
@@ -124,7 +137,7 @@ export const FacturationPage: React.FC = () => {
           className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-2 text-left hover:border-destructive/40 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-destructive">Impayées</span>
+            <span className="text-xs font-medium text-destructive">{isEn ? 'Unpaid' : 'Impayées'}</span>
             <div className="h-8 w-8 rounded-full bg-destructive/10 flex items-center justify-center">
               <AlertTriangle className="h-4 w-4 text-destructive" />
             </div>
