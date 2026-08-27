@@ -1,0 +1,15 @@
+{
+  "appName": "Faciloop Sales",
+  "welcome": "Welcome, {{name}}",
+  "search": "Search...",
+  "export": "Export CSV",
+  "import": "Import CSV",
+  "actions": "Actions",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "status": "Status",
+  "loading": "Loading...",
+  "logout": "Log out"
+}

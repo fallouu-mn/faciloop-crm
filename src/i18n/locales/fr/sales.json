@@ -1,0 +1,24 @@
+{
+  "pipelineTitle": "Pipeline Commercial Kanban",
+  "pipelineSubtitle": "Suivi ergonomique vertical ou tableau Kanban horizontal de votre pipeline commercial",
+  "personalPortfolio": "Portefeuille Personnel",
+  "steps": {
+    "nouveau": "1. Nouveau",
+    "a_contacter": "2. À contacter",
+    "contacte": "3. Contacté",
+    "interesse": "4. Intéressé",
+    "rdv_programme": "5. RDV programmé",
+    "demo_realisee": "6. Démo réalisée",
+    "essai_en_cours": "7. Essai en cours",
+    "proposition": "8. Proposition",
+    "paiement_att": "9. Paiement att.",
+    "gagne": "10. Client gagné",
+    "a_relancer": "11. À relancer",
+    "perdu": "12. Perdu"
+  },
+  "relancesTitle": "Suivi des Relances Quotidiennes",
+  "relancesSubtitle": "Ne laissez passer aucune opportunité d'échange avec vos prospects",
+  "addRelance": "+ Programmer une relance",
+  "markCompleted": "Marquer effectuée",
+  "viewProspect": "Voir prospect"
+}

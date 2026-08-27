@@ -1,0 +1,13 @@
+{
+  "adminTitle": "Super-Admin Dashboard",
+  "adminSubtitle": "Global overview of the Multi-Tenant SaaS platform",
+  "orgTitle": "Management {{name}}",
+  "orgSubtitle": "Global sales overview and team performance",
+  "teamTitle": "Sales Team Management",
+  "teamSubtitle": "Manage access for your company sales representatives",
+  "addSalesRep": "+ Add Sales Rep",
+  "actions": {
+    "importCsv": "Import CSV",
+    "newRep": "New Sales Rep"
+  }
+}

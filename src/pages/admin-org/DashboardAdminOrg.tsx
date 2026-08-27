@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, useSpring, useTransform } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 // Animated Count-Up Number Component
 const AnimatedNumber: React.FC<{ value: number }> = ({ value }) => {
@@ -65,8 +66,12 @@ const DashboardAdminSkeleton: React.FC = () => (
 );
 
 export const DashboardAdminOrg: React.FC = () => {
-  const { user, currentOrg, prospects, clients, commerciaux, currency, setCurrency } = useAuth();
+  const { t, i18n } = useTranslation();
+  const { user, currentOrg, prospects, clients, commerciaux } = useAuth();
+  const [currency, setCurrency] = useState<DeviseCode>('XOF');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const isEn = i18n.language?.startsWith('en');
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', currency as DeviseCode), currency as DeviseCode);
 
@@ -103,10 +108,10 @@ export const DashboardAdminOrg: React.FC = () => {
           {/* Left: Bonjour, Admin 👋 */}
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
-              Bonjour, {user?.prenom || 'Admin'} 👋
+              {isEn ? 'Hello' : 'Bonjour'}, {user?.prenom || 'Admin'} 👋
             </h1>
             <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider">
-              Direction {currentOrg?.nom || "Teranga Logistique"}
+              {isEn ? 'Management' : 'Direction'} {currentOrg?.nom || "Teranga Logistique"}
             </span>
           </div>
 
@@ -147,7 +152,7 @@ export const DashboardAdminOrg: React.FC = () => {
 
         {/* Subtitle */}
         <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
-          Vue d'ensemble de l'activité commerciale globale et performance d'équipe
+          {isEn ? 'Global sales overview and team performance' : "Vue d'ensemble de l'activité commerciale globale et performance d'équipe"}
         </p>
       </div>
 
@@ -158,7 +163,7 @@ export const DashboardAdminOrg: React.FC = () => {
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-input bg-card px-3 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-foreground shadow-sm hover:bg-muted transition-all"
           >
             <FileSpreadsheet className="h-4 w-4 text-emerald-500 shrink-0" />
-            <span>Import CSV</span>
+            <span>{isEn ? 'Import CSV' : 'Import CSV'}</span>
           </Link>
 
           <Link
@@ -166,7 +171,7 @@ export const DashboardAdminOrg: React.FC = () => {
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-faciloop px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
           >
             <UserPlus className="h-4 w-4 shrink-0" />
-            <span>Nouveau Commercial</span>
+            <span>{isEn ? '+ New Sales Rep' : 'Nouveau Commercial'}</span>
           </Link>
         </div>
 
@@ -177,7 +182,9 @@ export const DashboardAdminOrg: React.FC = () => {
           className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Total Prospects</span>
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+              {isEn ? 'Total Prospects' : 'Total Prospects'}
+            </span>
             <div className="rounded-2xl bg-blue-500/10 p-2 sm:p-2.5 text-blue-500 shadow-sm">
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
@@ -187,7 +194,7 @@ export const DashboardAdminOrg: React.FC = () => {
               <AnimatedNumber value={totalProspects} />
             </span>
             <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full">
-              <TrendingUp className="h-3 w-3" /> +18% ce mois
+              <TrendingUp className="h-3 w-3" /> {isEn ? '+18% this month' : '+18% ce mois'}
             </span>
           </div>
         </motion.div>
@@ -197,7 +204,9 @@ export const DashboardAdminOrg: React.FC = () => {
           className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Clients Actifs</span>
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+              {isEn ? 'Active Clients' : 'Clients Actifs'}
+            </span>
             <div className="rounded-2xl bg-emerald-500/10 p-2 sm:p-2.5 text-emerald-500 shadow-sm">
               <UserCheck className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>

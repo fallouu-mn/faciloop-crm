@@ -1,0 +1,18 @@
+{
+  "title": "Sales Dashboard",
+  "welcome": "Hello, {{name}}",
+  "space": "Sales Space",
+  "subtitle": "Your priorities, follow-ups, and sales performance today",
+  "kpis": {
+    "myProspects": "MY PROSPECTS",
+    "todayRelances": "TODAY'S FOLLOW-UPS",
+    "overdueRelances": "OVERDUE FOLLOW-UPS",
+    "revenue": "REVENUE GENERATED",
+    "earnings": "MY EARNINGS",
+    "conversion": "CONVERSION RATE"
+  },
+  "prioritiesTitle": "Today's Priorities",
+  "viewAllRelances": "View all follow-ups",
+  "weeklySales": "WEEKLY SALES REVENUE",
+  "salesTrend": "Sales trend of deals closed over 7 days"
+}

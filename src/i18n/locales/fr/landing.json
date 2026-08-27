@@ -1,0 +1,14 @@
+{
+  "badge": "CRM B2B Multi-Entreprises 2.0",
+  "heroTitle": "Le CRM commercial B2B conçu pour accélérer vos ventes et convertir vos prospects",
+  "heroSubtitle": "Suivi de portefeuille par commercial, pipeline Kanban 12 étapes, relances quotidiennes et déclencheur WhatsApp direct en 1 clic.",
+  "accessButton": "Accéder à la plateforme",
+  "demoButton": "Voir la démo",
+  "loginButton": "Connexion",
+  "metrics": {
+    "relance": "Taux de relance",
+    "isolation": "Isolation RLS",
+    "dedup": "Anti-doublon",
+    "onboarding": "Prise en main"
+  }
+}

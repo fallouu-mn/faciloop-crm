@@ -17,7 +17,10 @@ import {
   Eye,
   MessageSquare
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 export const ClientsListAdmin: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { clients, commerciaux } = useAuth();
   const [devise, setDevise] = useState<DeviseCode>('XOF');
   const [search, setSearch] = useState('');
@@ -26,6 +29,8 @@ export const ClientsListAdmin: React.FC = () => {
   const [filterFormule, setFilterFormule] = useState<string>('all');
   const [filterCommercial, setFilterCommercial] = useState<string>('all');
   const [selectedClient, setSelectedClient] = useState<ClientFaciloop | null>(null);
+
+  const isEn = i18n.language?.startsWith('en');
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
 
@@ -66,14 +71,14 @@ export const ClientsListAdmin: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-              Comptes Clients ({clients.length})
+              {isEn ? 'Client Accounts' : 'Comptes Clients'} ({clients.length})
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold flex items-center gap-1">
-              <Building2 className="w-3 h-3" /> Prospects convertis
+              <Building2 className="w-3 h-3" /> {isEn ? 'Converted Prospects' : 'Prospects convertis'}
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Clients issus de la conversion de prospects — abonnements et comptes actifs
+            {isEn ? 'Clients resulting from prospect conversion — active accounts & subscriptions' : 'Clients issus de la conversion de prospects — abonnements et comptes actifs'}
           </p>
         </div>
         <CurrencyToggle value={devise} onChange={setDevise} />
@@ -83,7 +88,7 @@ export const ClientsListAdmin: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Total clients</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Total clients' : 'Total clients'}</span>
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
               <Building2 className="h-4 w-4 text-primary" />
             </div>
@@ -92,7 +97,7 @@ export const ClientsListAdmin: React.FC = () => {
         </div>
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Comptes actifs</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Active accounts' : 'Comptes actifs'}</span>
             <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
               <Users className="h-4 w-4 text-emerald-500" />
             </div>
@@ -101,7 +106,7 @@ export const ClientsListAdmin: React.FC = () => {
         </div>
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">CA total</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Total Revenue' : 'CA total'}</span>
             <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center">
               <Crown className="h-4 w-4 text-blue-500" />
             </div>
@@ -110,7 +115,7 @@ export const ClientsListAdmin: React.FC = () => {
         </div>
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Renouvellements à venir</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Upcoming Renewals' : 'Renouvellements à venir'}</span>
             <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
               <Calendar className="h-4 w-4 text-amber-500" />
             </div>

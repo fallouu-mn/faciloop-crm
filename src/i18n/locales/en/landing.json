@@ -1,0 +1,14 @@
+{
+  "badge": "#1 B2B Multi-Tenant CRM Solution",
+  "heroTitle": "The B2B sales CRM designed to accelerate your sales and convert your prospects",
+  "heroSubtitle": "Portfolio tracking per sales rep, 12-stage Kanban pipeline, daily follow-ups, and 1-click direct WhatsApp trigger.",
+  "accessButton": "Access Platform",
+  "demoButton": "View Demo",
+  "loginButton": "Log in",
+  "metrics": {
+    "relance": "Follow-up rate",
+    "isolation": "RLS Isolation",
+    "dedup": "Anti-duplicate",
+    "onboarding": "Onboarding time"
+  }
+}

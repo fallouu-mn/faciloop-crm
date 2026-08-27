@@ -324,12 +324,14 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-5xl mx-auto">
           <FadeInOnScroll>
             <div className="text-center mb-8">
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">Pipeline Interactif</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
+                {isEn ? 'INTERACTIVE PIPELINE' : 'Pipeline Interactif'}
+              </p>
               <h2 className="text-xl sm:text-3xl font-bold text-foreground">
-                Le Pipeline Kanban 12 Étapes en Action
+                {isEn ? '12-Stage Kanban Pipeline in Action' : 'Le Pipeline Kanban 12 Étapes en Action'}
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Découvrez la fluidité du glisser-déposer et la boucle d'action WhatsApp
+                {isEn ? 'Experience smooth drag-and-drop and WhatsApp action loop' : "Découvrez la fluidité du glisser-déposer et la boucle d'action WhatsApp"}
               </p>
             </div>
           </FadeInOnScroll>
@@ -354,10 +356,9 @@ export const LandingPage: React.FC = () => {
 
               <div className="p-4 rounded-xl bg-muted/50 border border-border">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-primary">Étape #{demoStep}</span>
-                  {/* <span className="text-xs font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                    Conforme au CDC
-                  </span> */}
+                  <span className="text-xs font-medium text-primary">
+                    {isEn ? `Step #${demoStep}` : `Étape #${demoStep}`}
+                  </span>
                 </div>
                 <p className="text-sm font-medium text-foreground leading-relaxed">
                   {stepDescriptions[demoStep - 1]}
@@ -373,9 +374,11 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-5xl mx-auto">
           <FadeInOnScroll>
             <div className="text-center mb-8 sm:mb-12">
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">Fonctionnalités Clés</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
+                {isEn ? 'KEY FEATURES' : 'Fonctionnalités Clés'}
+              </p>
               <h2 className="text-xl sm:text-3xl font-bold text-foreground">
-                Conçu pour l'efficacité de vos commerciaux
+                {isEn ? "Designed for your sales reps' efficiency" : "Conçu pour l'efficacité de vos commerciaux"}
               </h2>
             </div>
           </FadeInOnScroll>
@@ -403,9 +406,11 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-5xl mx-auto">
           <FadeInOnScroll>
             <div className="text-center mb-8">
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">Tarifs Transparents</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
+                {isEn ? 'TRANSPARENT PRICING' : 'Tarifs Transparents'}
+              </p>
               <h2 className="text-xl sm:text-3xl font-bold text-foreground">
-                Une formule adaptée à chaque étape
+                {isEn ? 'A plan tailored for every stage' : 'Une formule adaptée à chaque étape'}
               </h2>
 
               {/* Toggles */}
@@ -423,7 +428,8 @@ export const LandingPage: React.FC = () => {
                           : 'text-muted-foreground'
                       }`}
                     >
-                      {p.label}{p.code === 'annuel' ? ' (-20%)' : p.code === 'trimestriel' ? ' (-10%)' : ''}
+                      {isEn ? (p.code === 'mensuel' ? 'Monthly' : p.code === 'trimestriel' ? 'Quarterly' : 'Annual') : p.label}
+                      {p.code === 'annuel' ? ' (-20%)' : p.code === 'trimestriel' ? ' (-10%)' : ''}
                     </button>
                   ))}
                 </div>
@@ -472,11 +478,15 @@ export const LandingPage: React.FC = () => {
                         </div>
                         {isPopular && (
                           <span className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold">
-                            Recommandé
+                            {isEn ? 'Recommended' : 'Recommandé'}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-white/80 mt-1">{f.description}</p>
+                      <p className="text-xs text-white/80 mt-1">
+                        {isEn
+                          ? f.code === 'Pro' ? 'Ideal for small sales teams' : f.code === 'Business' ? 'For growing businesses' : 'Complete solution for large organizations'
+                          : f.description}
+                      </p>
                     </div>
 
                     <div className="p-5 sm:p-6 flex flex-col flex-1">
@@ -499,7 +509,7 @@ export const LandingPage: React.FC = () => {
                         {billingCycle === 'mensuel' && f.pricing.mensuel_premier_mois && (
                           <div className="mt-1">
                             <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-bold">
-                              1er mois: {fmt(f.pricing.mensuel_premier_mois)}
+                              {isEn ? `1st month: ${fmt(f.pricing.mensuel_premier_mois)}` : `1er mois: ${fmt(f.pricing.mensuel_premier_mois)}`}
                             </span>
                           </div>
                         )}
@@ -525,7 +535,13 @@ export const LandingPage: React.FC = () => {
                               : 'border border-border text-foreground hover:bg-muted'
                           }`}
                         >
-                          <span>{isPopular ? 'Souscrire maintenant' : f.code === 'Premium' ? 'Contacter notre équipe' : 'Démarrer gratuitement'}</span>
+                          <span>
+                            {isPopular
+                              ? (isEn ? 'Subscribe Now' : 'Souscrire maintenant')
+                              : f.code === 'Premium'
+                              ? (isEn ? 'Contact our team' : 'Contacter notre équipe')
+                              : (isEn ? 'Start for free' : 'Démarrer gratuitement')}
+                          </span>
                           <ArrowUpRight className="w-4 h-4" />
                         </Link>
                       </div>
@@ -544,14 +560,19 @@ export const LandingPage: React.FC = () => {
           <FadeInOnScroll>
             <div className="p-6 sm:p-10 rounded-xl border border-border bg-card">
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                Prêt à transformer votre prospection ?
+                {isEn ? 'Ready to transform your sales prospecting?' : 'Prêt à transformer votre prospection ?'}
               </h2>
               <p className="mt-3 text-sm text-muted-foreground max-w-lg mx-auto">
-                14 jours d'essai gratuit. Aucune carte bancaire requise. Configurez votre pipeline en moins de 2 minutes.
+                {isEn
+                  ? '14-day free trial. No credit card required. Set up your pipeline in less than 2 minutes.'
+                  : "14 jours d'essai gratuit. Aucune carte bancaire requise. Configurez votre pipeline en moins de 2 minutes."}
               </p>
 
               <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-foreground">
-                {['Pipeline 12 étapes', 'WhatsApp intégré', 'Multi-Tenant RLS', 'Support prioritaire'].map((item) => (
+                {(isEn
+                  ? ['12-stage pipeline', 'Built-in WhatsApp', 'Multi-Tenant RLS', 'Priority support']
+                  : ['Pipeline 12 étapes', 'WhatsApp intégré', 'Multi-Tenant RLS', 'Support prioritaire']
+                ).map((item) => (
                   <li key={item} className="flex items-center gap-1.5">
                     <Check className="h-4 w-4 text-primary" strokeWidth={2.5} />
                     <span>{item}</span>
@@ -564,7 +585,7 @@ export const LandingPage: React.FC = () => {
                   to="/login"
                   className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
                 >
-                  <span>Créer mon compte gratuitement</span>
+                  <span>{isEn ? 'Create my free account' : 'Créer mon compte gratuitement'}</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -578,7 +599,9 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-5xl mx-auto px-4 text-center space-y-4">
           <FaciloopBrand className="h-7 mx-auto" />
           <p className="text-sm text-muted-foreground">
-            CRM B2B multi-entreprises pour dynamiser votre prospection et automatiser vos relances commerciales.
+            {isEn
+              ? 'Multi-tenant B2B CRM to boost your prospecting and automate sales follow-ups.'
+              : 'CRM B2B multi-entreprises pour dynamiser votre prospection et automatiser vos relances commerciales.'}
           </p>
 
           {/* Social links */}
@@ -615,16 +638,16 @@ export const LandingPage: React.FC = () => {
           {/* Legal */}
           <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
             <a href="https://faciloop.digitadvisor.sn/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-              Confidentialité
+              {isEn ? 'Privacy Policy' : 'Confidentialité'}
             </a>
             <span>|</span>
             <a href="https://faciloop.digitadvisor.sn/terms" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-              CGU
+              {isEn ? 'Terms of Service' : 'CGU'}
             </a>
           </div>
 
           <p className="text-xs text-muted-foreground">
-            © 2026 Digit'Advisor. Tous droits réservés.
+            {isEn ? "© 2026 Digit'Advisor. All rights reserved." : "© 2026 Digit'Advisor. Tous droits réservés."}
           </p>
         </div>
       </footer>

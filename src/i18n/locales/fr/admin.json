@@ -1,0 +1,13 @@
+{
+  "adminTitle": "Super-Admin Dashboard",
+  "adminSubtitle": "Vue globale de la plateforme SaaS Multi-Tenant",
+  "orgTitle": "Direction {{name}}",
+  "orgSubtitle": "Vue d'ensemble de l'activité commerciale globale et performance d'équipe",
+  "teamTitle": "Gestion de l'Équipe Commerciale",
+  "teamSubtitle": "Gérez l'accès des commerciaux de votre entreprise",
+  "addSalesRep": "+ Ajouter un commercial",
+  "actions": {
+    "importCsv": "Import CSV",
+    "newRep": "Nouveau Commercial"
+  }
+}

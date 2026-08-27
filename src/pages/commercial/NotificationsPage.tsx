@@ -2,9 +2,13 @@ import React, { useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Bell, CheckCircle2, BellOff, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export const NotificationsPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { user, notifications, markNotificationAsRead } = useAuth();
+
+  const isEn = i18n.language?.startsWith('en');
 
   // Backend-ready: filter notifications for current commercial only
   const myNotifications = useMemo(() => {
@@ -24,10 +28,10 @@ export const NotificationsPage: React.FC = () => {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-            Notifications
+            {isEn ? 'Notifications' : 'Notifications'}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
-            Historique de vos alertes et relances
+            {isEn ? 'History of your alerts and follow-ups' : 'Historique de vos alertes et relances'}
           </p>
         </div>
 
@@ -37,7 +41,7 @@ export const NotificationsPage: React.FC = () => {
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-input bg-card text-xs font-bold text-foreground hover:bg-muted transition-all shrink-0"
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Tout marquer lu ({unreadCount})</span>
+            <span>{isEn ? `Mark all as read (${unreadCount})` : `Tout marquer lu (${unreadCount})`}</span>
           </button>
         )}
       </div>
@@ -46,9 +50,11 @@ export const NotificationsPage: React.FC = () => {
       {myNotifications.length === 0 ? (
         <div className="rounded-2xl border border-border p-8 text-center space-y-3">
           <BellOff className="w-12 h-12 text-muted-foreground mx-auto" />
-          <h3 className="text-sm font-bold text-foreground">Aucune notification</h3>
+          <h3 className="text-sm font-bold text-foreground">
+            {isEn ? 'No notifications' : 'Aucune notification'}
+          </h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            Vos alertes de relances en retard, nouveaux prospects attribués et autres notifications apparaîtront ici.
+            {isEn ? 'Your overdue follow-up alerts, assigned prospect notifications, and updates will appear here.' : 'Vos alertes de relances en retard, nouveaux prospects attribués et autres notifications apparaîtront ici.'}
           </p>
         </div>
       ) : (

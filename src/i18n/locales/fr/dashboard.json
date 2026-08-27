@@ -1,0 +1,18 @@
+{
+  "title": "Tableau de bord Commercial",
+  "welcome": "Bonjour, {{name}}",
+  "space": "Espace Commercial",
+  "subtitle": "Vos priorités, relances et performance de vente aujourd'hui",
+  "kpis": {
+    "myProspects": "Mes Prospects",
+    "todayRelances": "Relances Auj.",
+    "overdueRelances": "Relances en Retard",
+    "revenue": "CA Généré",
+    "earnings": "Mes Gains",
+    "conversion": "Taux Conversion"
+  },
+  "prioritiesTitle": "Mes Priorités du Jour",
+  "viewAllRelances": "Voir toutes mes relances",
+  "weeklySales": "CA Ventes Hebdomadaire",
+  "salesTrend": "Tendance des ventes conclues sur 7 jours"
+}

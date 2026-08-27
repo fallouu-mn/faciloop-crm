@@ -4,8 +4,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../../components/ui/input-otp';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
+import { useTranslation } from 'react-i18next';
 
 export function ProfilPage() {
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -15,6 +17,8 @@ export function ProfilPage() {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState('');
 
+  const isEn = i18n.language?.startsWith('en');
+
   const initiales = user
     ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase()
     : '?';
@@ -22,11 +26,11 @@ export function ProfilPage() {
   const handleChangePassword = () => {
     setError('');
     if (nouveau.length !== 6) {
-      setError('Le code secret doit contenir exactement 6 chiffres.');
+      setError(isEn ? 'Secret PIN code must contain 6 digits.' : 'Le code secret doit contenir exactement 6 chiffres.');
       return;
     }
     if (nouveau !== confirmation) {
-      setError('Les codes ne correspondent pas.');
+      setError(isEn ? 'PIN codes do not match.' : 'Les codes ne correspondent pas.');
       return;
     }
     setIsPending(true);
@@ -66,7 +70,7 @@ export function ProfilPage() {
           <h3 className="text-lg font-bold text-foreground">
             {user?.prenom} {user?.nom}
           </h3>
-          <p className="text-sm text-muted-foreground">Commercial</p>
+          <p className="text-sm text-muted-foreground">{isEn ? 'Sales Representative' : 'Commercial'}</p>
         </div>
       </div>
 
@@ -75,7 +79,7 @@ export function ProfilPage() {
         <div className="flex items-center gap-3">
           <User className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="flex-1 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Nom complet</span>
+            <span className="text-xs text-muted-foreground">{isEn ? 'Full Name' : 'Nom complet'}</span>
             <span className="text-sm font-medium">{user?.prenom} {user?.nom}</span>
           </div>
         </div>
@@ -89,16 +93,16 @@ export function ProfilPage() {
         <div className="flex items-center gap-3">
           <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="flex-1 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Téléphone</span>
+            <span className="text-xs text-muted-foreground">{isEn ? 'Phone' : 'Téléphone'}</span>
             <span className="text-sm font-medium">{user?.telephone}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <ShieldCheck className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="flex-1 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Rôle</span>
+            <span className="text-xs text-muted-foreground">{isEn ? 'Role' : 'Rôle'}</span>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-              Commercial
+              {isEn ? 'Sales Rep' : 'Commercial'}
             </span>
           </div>
         </div>
@@ -113,8 +117,8 @@ export function ProfilPage() {
         >
           <KeyRound className="h-4 w-4 text-primary" />
           <div className="flex-1">
-            <span className="text-sm font-bold text-foreground">Modifier mon code secret</span>
-            <p className="text-xs text-muted-foreground">Changer votre code PIN de connexion</p>
+            <span className="text-sm font-bold text-foreground">{isEn ? 'Change my secret PIN code' : 'Modifier mon code secret'}</span>
+            <p className="text-xs text-muted-foreground">{isEn ? 'Update your 6-digit login PIN code' : 'Changer votre code PIN de connexion'}</p>
           </div>
         </button>
 
