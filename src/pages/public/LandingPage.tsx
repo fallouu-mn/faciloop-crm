@@ -18,12 +18,15 @@ import {
   Crown,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
+import { LanguageToggle } from '../../components/common/LanguageToggle';
 import { FadeInOnScroll } from '../../components/common/FadeInOnScroll';
 import { FORMULES, PERIODICITES, Periodicite } from '../../lib/mockSuperAdmin';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 
 export const LandingPage: React.FC = () => {
+  const { t } = useTranslation();
   const { isDarkMode, toggleDarkMode } = useAuth();
   const [billingCycle, setBillingCycle] = useState<Periodicite>('mensuel');
   const [currency, setCurrency] = useState<DeviseCode>('XOF');
@@ -563,6 +566,11 @@ export const LandingPage: React.FC = () => {
           </p>
         </div>
       </footer>
+
+      {/* Floating Language Switcher Pill (FR / EN) */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <LanguageToggle />
+      </div>
     </div>
   );
 };

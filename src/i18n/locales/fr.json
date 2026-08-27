@@ -18,7 +18,27 @@
     "email": "E-mail",
     "company": "Entreprise",
     "name": "Nom",
-    "role": "Rôle"
+    "role": "Rôle",
+    "today": "Aujourd'hui",
+    "all": "Tous",
+    "export": "Exporter CSV",
+    "import": "Importer CSV"
+  },
+  "landing": {
+    "badge": "Solution CRM N°1 au Sénégal & Afrique de l'Ouest",
+    "title": "Boostez vos ventes commerciales avec",
+    "subtitle": "La plateforme CRM tout-en-un conçue pour les équipes commerciales africaines. Suivez vos prospects, gérez vos relances et automatisez vos paiements.",
+    "ctaStart": "Démarrer gratuitement",
+    "ctaDemo": "Demander une démo",
+    "featuresTitle": "Des fonctionnalités taillées pour la performance",
+    "feature1Title": "Pipeline Kanban Intuitif",
+    "feature1Desc": "Visualisez et déplacez vos prospects en 1 clic à travers 12 étapes de vente.",
+    "feature2Title": "Relances WhatsApp & Appel",
+    "feature2Desc": "Déclenchez directement des appels ou messages pré-remplis sur WhatsApp.",
+    "feature3Title": "Paiements Mobile Money",
+    "feature3Desc": "Acceptez Wave, Orange Money et cartes pour vos abonnements et factures.",
+    "pricingTitle": "Des tarifs transparents pour toutes les entreprises",
+    "footer": "© 2026 Faciloop CRM. Tous droits réservés."
   },
   "nav": {
     "dashboard": "Tableau de Bord",
@@ -31,7 +51,10 @@
     "subscriptions": "Abonnements",
     "payments": "Paiements",
     "notifications": "Notifications",
-    "audit": "Journal d'actions"
+    "audit": "Journal d'actions",
+    "clients": "Clients",
+    "commissions": "Mes Gains",
+    "profile": "Mon Profil"
   },
   "mobileAppModal": {
     "title": "Faciloop est une application mobile",
@@ -42,7 +65,7 @@
   },
   "auth": {
     "welcomeTitle": "Bienvenue sur Faciloop CRM",
-    "loginSubtitle": "Entrez votre numéro et votre code à 6 chiffres",
+    "loginSubtitle": "Entrez votre numéro et votre code secret à 6 chiffres",
     "registerSubtitle": "Créez votre compte commercial en quelques secondes",
     "phoneLabel": "Numéro de Téléphone",
     "pinLabel": "Code Secret à 6 chiffres",
@@ -61,6 +84,26 @@
     "subtitle": "Suivi ergonomique vertical ou tableau Kanban horizontal de votre pipeline commercial",
     "verticalView": "Verticale",
     "horizontalView": "Horizontale",
-    "addProspect": "Nouveau prospect"
+    "addProspect": "Nouveau prospect",
+    "stepNouveau": "1. Nouveau",
+    "stepAContacter": "2. À contacter",
+    "stepContacte": "3. Contacté",
+    "stepInteresse": "4. Intéressé",
+    "stepRdvProgramme": "5. RDV programmé",
+    "stepDemoRealisee": "6. Démo réalisée",
+    "stepEssaiEnCours": "7. Essai en cours",
+    "stepProposition": "8. Proposition",
+    "stepPaiementAtt": "9. Paiement att.",
+    "stepGagne": "10. Client gagné",
+    "stepARelancer": "11. À relancer",
+    "stepPerdu": "12. Perdu"
+  },
+  "dashboardCommercial": {
+    "greeting": "Bonjour",
+    "subtitle": "Vos priorités, relances et performance de vente aujourd'hui",
+    "newProspect": "Créer un prospect",
+    "pipelineValue": "Valeur du Pipeline",
+    "myRelances": "Mes Relances du Jour",
+    "quickAdd": "Saisie Express (5 sec)"
   }
 }

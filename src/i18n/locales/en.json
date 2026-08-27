@@ -18,7 +18,27 @@
     "email": "Email",
     "company": "Company",
     "name": "Name",
-    "role": "Role"
+    "role": "Role",
+    "today": "Today",
+    "all": "All",
+    "export": "Export CSV",
+    "import": "Import CSV"
+  },
+  "landing": {
+    "badge": "#1 CRM Solution in Senegal & West Africa",
+    "title": "Boost your sales performance with",
+    "subtitle": "The all-in-one CRM platform built for African sales teams. Track your prospects, manage follow-ups, and automate your payments.",
+    "ctaStart": "Start for free",
+    "ctaDemo": "Request a demo",
+    "featuresTitle": "Features built for performance",
+    "feature1Title": "Intuitive Kanban Pipeline",
+    "feature1Desc": "Visualize and move your prospects in 1 click across 12 sales stages.",
+    "feature2Title": "WhatsApp & Phone Follow-ups",
+    "feature2Desc": "Trigger direct calls or pre-filled messages on WhatsApp.",
+    "feature3Title": "Mobile Money Payments",
+    "feature3Desc": "Accept Wave, Orange Money, and cards for your subscriptions and invoices.",
+    "pricingTitle": "Transparent pricing for every business",
+    "footer": "© 2026 Faciloop CRM. All rights reserved."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -31,7 +51,10 @@
     "subscriptions": "Subscriptions",
     "payments": "Payments",
     "notifications": "Notifications",
-    "audit": "Action Log"
+    "audit": "Action Log",
+    "clients": "Clients",
+    "commissions": "My Earnings",
+    "profile": "My Profile"
   },
   "mobileAppModal": {
     "title": "Faciloop is a mobile app",
@@ -42,7 +65,7 @@
   },
   "auth": {
     "welcomeTitle": "Welcome to Faciloop CRM",
-    "loginSubtitle": "Enter your phone number and 6-digit PIN code",
+    "loginSubtitle": "Enter your phone number and 6-digit secret PIN code",
     "registerSubtitle": "Create your sales account in a few seconds",
     "phoneLabel": "Phone Number",
     "pinLabel": "6-digit Secret PIN",
@@ -61,6 +84,26 @@
     "subtitle": "Ergonomic vertical cards or horizontal Kanban board for your sales pipeline",
     "verticalView": "Vertical",
     "horizontalView": "Horizontal",
-    "addProspect": "New prospect"
+    "addProspect": "New prospect",
+    "stepNouveau": "1. New",
+    "stepAContacter": "2. To contact",
+    "stepContacte": "3. Contacted",
+    "stepInteresse": "4. Interested",
+    "stepRdvProgramme": "5. Meeting set",
+    "stepDemoRealisee": "6. Demo done",
+    "stepEssaiEnCours": "7. Trial ongoing",
+    "stepProposition": "8. Proposal",
+    "stepPaiementAtt": "9. Payment pending",
+    "stepGagne": "10. Won Client",
+    "stepARelancer": "11. To follow-up",
+    "stepPerdu": "12. Lost"
+  },
+  "dashboardCommercial": {
+    "greeting": "Hello",
+    "subtitle": "Your priorities, follow-ups, and sales performance today",
+    "newProspect": "New prospect",
+    "pipelineValue": "Pipeline Value",
+    "myRelances": "Today's Follow-ups",
+    "quickAdd": "Express Entry (5 sec)"
   }
 }
