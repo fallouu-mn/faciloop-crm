@@ -1,0 +1,24 @@
+{
+  "pipelineTitle": "Sales Kanban Pipeline",
+  "pipelineSubtitle": "Ergonomic vertical card view or horizontal Kanban board for your sales pipeline",
+  "personalPortfolio": "Personal Portfolio",
+  "steps": {
+    "nouveau": "1. New",
+    "a_contacter": "2. To Contact",
+    "contacte": "3. Contacted",
+    "interesse": "4. Interested",
+    "rdv_programme": "5. Meeting Set",
+    "demo_realisee": "6. Demo Done",
+    "essai_en_cours": "7. Trial Ongoing",
+    "proposition": "8. Proposal",
+    "paiement_att": "9. Payment Pending",
+    "gagne": "10. Won Client",
+    "a_relancer": "11. To Follow-up",
+    "perdu": "12. Lost"
+  },
+  "relancesTitle": "Daily Follow-ups Tracking",
+  "relancesSubtitle": "Never miss an opportunity to engage with your prospects",
+  "addRelance": "+ Schedule a Follow-up",
+  "markCompleted": "Mark completed",
+  "viewProspect": "View prospect"
+}

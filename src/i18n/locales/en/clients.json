@@ -1,0 +1,9 @@
+{
+  "title": "Client Accounts ({{count}})",
+  "subtitle": "Clients resulting from prospect conversion — active accounts & subscriptions",
+  "badge": "Converted Prospects",
+  "totalClients": "Total clients",
+  "activeAccounts": "Active accounts",
+  "totalRevenue": "Total Revenue",
+  "upcomingRenewals": "Upcoming Renewals"
+}
