@@ -1,9 +1,12 @@
 import React from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MessageSquare, Clock, ShieldCheck, CheckCircle2, ArrowRight, Sparkles, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { LanguageToggle } from '../../components/common/LanguageToggle';
 
 export const PendingActivationPage: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const regData = location.state || JSON.parse(localStorage.getItem('faciloop_pending_registration') || '{}');
@@ -43,17 +46,16 @@ export const PendingActivationPage: React.FC = () => {
         {/* Status Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-black">
           <Clock className="w-4 h-4 animate-spin-slow shrink-0" />
-          <span>Inscription enregistrée — Activation en attente</span>
+          <span>{t('auth.pendingTitle')}</span>
         </div>
 
         {/* Main Title & Explanation */}
         <div className="space-y-2">
           <h1 className="text-xl sm:text-2xl font-black text-foreground">
-            Demande d'activation transmise !
+            {t('auth.pendingTitle')}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold leading-relaxed max-w-md mx-auto">
-            Votre compte pour l'entreprise <strong className="text-foreground font-extrabold">{companyName}</strong> a été créé avec succès.
-            Afin d'assurer la sécurité multi-tenant, un Super-Admin doit valider votre accès.
+            {t('auth.pendingDescription')}
           </p>
         </div>
 
@@ -64,8 +66,8 @@ export const PendingActivationPage: React.FC = () => {
               <MessageSquare className="w-5 h-5" />
             </div>
             <div>
-              <div>Contacter le Super-Admin sur WhatsApp</div>
-              <div className="text-[11px] font-semibold text-muted-foreground">Activation rapide en 2 minutes par message direct</div>
+              <div>{t('auth.contactWhatsApp')}</div>
+              <div className="text-[11px] font-semibold text-muted-foreground">Activation rapide par message direct</div>
             </div>
           </div>
 
@@ -74,21 +76,26 @@ export const PendingActivationPage: React.FC = () => {
             className="w-full py-3.5 px-4 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-emerald-500/25 hover:bg-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <MessageSquare className="w-4.5 h-4.5 fill-white" />
-            <span>Envoyer la demande sur WhatsApp (+221 71 138 78 78)</span>
+            <span>{t('auth.contactWhatsApp')} (+221 71 138 78 78)</span>
           </button>
         </div>
 
-        {/* Action Options: Only Login Button */}
+        {/* Action Options */}
         <div className="pt-2">
           <Link
             to="/login"
             className="w-full py-3.5 rounded-2xl border border-input text-xs sm:text-sm font-extrabold text-foreground hover:bg-muted active:scale-95 transition-all flex items-center justify-center gap-2"
           >
-            <span>Aller à la connexion</span>
+            <span>{t('auth.goToLogin')}</span>
             <ArrowRight className="w-4 h-4 text-primary" />
           </Link>
         </div>
       </motion.div>
+
+      {/* Floating Language Switcher Pill */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <LanguageToggle />
+      </div>
     </div>
   );
 };

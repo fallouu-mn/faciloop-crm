@@ -5,6 +5,7 @@ import { Loader2, Gift, ChevronDown, ChevronUp, ArrowRight, CheckCircle, XCircle
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { PinInput } from '../../components/common/PinInput';
+import { LanguageToggle } from '../../components/common/LanguageToggle';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -300,6 +301,11 @@ export const RegisterPage: React.FC = () => {
             </Link>
           </p>
         </div>
+      </div>
+
+      {/* Floating Language Switcher Pill */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <LanguageToggle />
       </div>
     </div>
   );

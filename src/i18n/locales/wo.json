@@ -1,0 +1,66 @@
+{
+  "common": {
+    "welcome": "Dalal ak jamm",
+    "backToHome": "Delu ci kër gi",
+    "login": "Duggu ci kër gi",
+    "register": "Bindu ci kër gi",
+    "logout": "Génn",
+    "search": "Wérante...",
+    "filter": "Séen",
+    "save": "Denc",
+    "cancel": "Bàyyi",
+    "delete": "Far",
+    "edit": "Soppi",
+    "status": "Melokaan",
+    "actions": "Jëf yiy am",
+    "loading": "Yéwénna...",
+    "phone": "Telfon",
+    "email": "Imeel",
+    "company": "Kéwél / Njiit",
+    "name": "Tur",
+    "role": "Wétt"
+  },
+  "nav": {
+    "dashboard": "Tey ak Yéene",
+    "prospects": "Kiliyã yi",
+    "pipeline": "Liggéey bi",
+    "relances": "Woote yi",
+    "objectifs": "Jubluwaay",
+    "team": "Mbootay gi",
+    "settings": "Paramaatar",
+    "subscriptions": "Fey yu yaag",
+    "payments": "Fey yépp",
+    "notifications": "Xibaar yi",
+    "audit": "Taro yiy am"
+  },
+  "mobileAppModal": {
+    "title": "Faciloop ab aplikaasoŋ mobiil la",
+    "subtitle": "Ngir duggu wala bindu, ubbi Faciloop ci sa telfon.",
+    "openAddress": "Ubbi adares bi ci sa telfon :",
+    "sendLinkHint": "Mànn nga yónnee sa bopp lii ci WhatsApp wala imeel.",
+    "backHome": "Delu ci kër gi"
+  },
+  "auth": {
+    "welcomeTitle": "Dalal ak jamm ci Faciloop CRM",
+    "loginSubtitle": "Duggalal sa limu telfon ak sa kood 6 nimro",
+    "registerSubtitle": "Bindul sa kood commerce ci lu yaaw",
+    "phoneLabel": "Limu Telfon",
+    "pinLabel": "Kood Secret 6 nimro",
+    "forgotPin": "Fattewoo sa kood ?",
+    "noAccount": "Amoo kood ba teey ?",
+    "hasAccount": "Am nga kood ba noppi ?",
+    "submitLogin": "Duggu ci kaarange",
+    "submitRegister": "Sos sama kood",
+    "pendingTitle": "Kood bi dafa nekk ci ngelaw",
+    "pendingDescription": "Sa mbindam jàll na. Ngir kaarange, Super-Admin dafa wara ubbi sa kood.",
+    "contactWhatsApp": "Yónnee laaj bi ci WhatsApp",
+    "goToLogin": "Dem ci duggu gi"
+  },
+  "kanban": {
+    "title": "Liggéey Commercial Kanban",
+    "subtitle": "Nuy gise ak taxawu liggéey yi ci 12 étapes yi",
+    "verticalView": "Taxaw",
+    "horizontalView": "Tëdd",
+    "addProspect": "Kiliyã bu bées"
+  }
+}

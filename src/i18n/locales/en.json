@@ -1,0 +1,66 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "backToHome": "Back to home",
+    "login": "Log in",
+    "register": "Sign up",
+    "logout": "Log out",
+    "search": "Search...",
+    "filter": "Filter",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "status": "Status",
+    "actions": "Actions",
+    "loading": "Loading...",
+    "phone": "Phone",
+    "email": "Email",
+    "company": "Company",
+    "name": "Name",
+    "role": "Role"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "prospects": "Prospects",
+    "pipeline": "Kanban Pipeline",
+    "relances": "Follow-ups",
+    "objectifs": "Objectives",
+    "team": "Sales Team",
+    "settings": "Settings",
+    "subscriptions": "Subscriptions",
+    "payments": "Payments",
+    "notifications": "Notifications",
+    "audit": "Action Log"
+  },
+  "mobileAppModal": {
+    "title": "Faciloop is a mobile app",
+    "subtitle": "To log in or create an account, open Faciloop from your phone.",
+    "openAddress": "Open this address on your phone:",
+    "sendLinkHint": "You can also send yourself this link via WhatsApp or email.",
+    "backHome": "Back to home"
+  },
+  "auth": {
+    "welcomeTitle": "Welcome to Faciloop CRM",
+    "loginSubtitle": "Enter your phone number and 6-digit PIN code",
+    "registerSubtitle": "Create your sales account in a few seconds",
+    "phoneLabel": "Phone Number",
+    "pinLabel": "6-digit Secret PIN",
+    "forgotPin": "Forgot PIN code?",
+    "noAccount": "Don't have an account yet?",
+    "hasAccount": "Already have an account?",
+    "submitLogin": "Secure Login",
+    "submitRegister": "Create Account",
+    "pendingTitle": "Account Pending Activation",
+    "pendingDescription": "Your registration has been saved. For security reasons, your account must be activated by the Super-Admin.",
+    "contactWhatsApp": "Send request via WhatsApp",
+    "goToLogin": "Go to Login"
+  },
+  "kanban": {
+    "title": "Sales Kanban Pipeline",
+    "subtitle": "Ergonomic vertical cards or horizontal Kanban board for your sales pipeline",
+    "verticalView": "Vertical",
+    "horizontalView": "Horizontal",
+    "addProspect": "New prospect"
+  }
+}

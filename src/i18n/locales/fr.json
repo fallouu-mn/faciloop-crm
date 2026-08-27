@@ -1,0 +1,66 @@
+{
+  "common": {
+    "welcome": "Bienvenue",
+    "backToHome": "Retour à l'accueil",
+    "login": "Se connecter",
+    "register": "S'inscrire",
+    "logout": "Se déconnecter",
+    "search": "Rechercher...",
+    "filter": "Filtrer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "status": "Statut",
+    "actions": "Actions",
+    "loading": "Chargement...",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "company": "Entreprise",
+    "name": "Nom",
+    "role": "Rôle"
+  },
+  "nav": {
+    "dashboard": "Tableau de Bord",
+    "prospects": "Prospects",
+    "pipeline": "Pipeline Kanban",
+    "relances": "Relances",
+    "objectifs": "Objectifs",
+    "team": "Équipe Commerciale",
+    "settings": "Paramètres",
+    "subscriptions": "Abonnements",
+    "payments": "Paiements",
+    "notifications": "Notifications",
+    "audit": "Journal d'actions"
+  },
+  "mobileAppModal": {
+    "title": "Faciloop est une application mobile",
+    "subtitle": "Pour vous connecter ou créer un compte, ouvrez Faciloop depuis votre téléphone.",
+    "openAddress": "Ouvrez cette adresse sur votre téléphone :",
+    "sendLinkHint": "Vous pouvez également vous envoyer ce lien via WhatsApp ou e-mail.",
+    "backHome": "Retour à l'accueil"
+  },
+  "auth": {
+    "welcomeTitle": "Bienvenue sur Faciloop CRM",
+    "loginSubtitle": "Entrez votre numéro et votre code à 6 chiffres",
+    "registerSubtitle": "Créez votre compte commercial en quelques secondes",
+    "phoneLabel": "Numéro de Téléphone",
+    "pinLabel": "Code Secret à 6 chiffres",
+    "forgotPin": "Code secret oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?",
+    "submitLogin": "Connexion sécurisée",
+    "submitRegister": "Créer mon compte",
+    "pendingTitle": "Compte en attente d'activation",
+    "pendingDescription": "Votre inscription a bien été enregistrée. Pour des raisons de sécurité, votre compte doit être activé par le Super-Admin.",
+    "contactWhatsApp": "Envoyer la demande sur WhatsApp",
+    "goToLogin": "Aller à la connexion"
+  },
+  "kanban": {
+    "title": "Pipeline Commercial Kanban",
+    "subtitle": "Suivi ergonomique vertical ou tableau Kanban horizontal de votre pipeline commercial",
+    "verticalView": "Verticale",
+    "horizontalView": "Horizontale",
+    "addProspect": "Nouveau prospect"
+  }
+}

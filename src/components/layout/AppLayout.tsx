@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { GlobalFab } from './GlobalFab';
+import { LanguageToggle } from '../common/LanguageToggle';
 import { motion } from 'framer-motion';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -62,6 +63,11 @@ export const AppLayout: React.FC = () => {
         >
           <Moon className="w-4 h-4" />
         </button>
+      </div>
+
+      {/* Floating Language Switcher Pill (Matching Screenshot Bottom Right) */}
+      <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
+        <LanguageToggle />
       </div>
 
       {/* Floating Action Button (Global 5-second Express Entry) */}
