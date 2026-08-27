@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource } from '../../types/crm';
-import { mockCommerciaux } from '../../lib/mockData';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
 import {
   Users,
@@ -25,7 +24,7 @@ const PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
 export const ProspectsList: React.FC = () => {
-  const { user, myProspects, prospects, addProspect, reassignProspects, orgOffers } = useAuth();
+  const { user, myProspects, prospects, addProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
   const [searchParams] = useSearchParams();
 
   const [search, setSearch] = useState<string>('');
@@ -38,7 +37,7 @@ export const ProspectsList: React.FC = () => {
   // Modals State
   const [isNewModalOpen, setIsNewModalOpen] = useState<boolean>(false);
   const [isReassignModalOpen, setIsReassignModalOpen] = useState<boolean>(false);
-  const [targetCommercialId, setTargetCommercialId] = useState<string>(mockCommerciaux[0].id);
+  const [targetCommercialId, setTargetCommercialId] = useState<string>('');
 
   const activeOrgOffers = orgOffers.filter((o: any) => o.actif !== false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -88,11 +87,11 @@ export const ProspectsList: React.FC = () => {
     setDuplicateAlert(false);
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!newNom && !newEntreprise) || !newPhone || !newPays) return;
 
-    const res = addProspect({
+    const res = await addProspect({
       nom: newNom || newEntreprise,
       prenom: newPrenom || undefined,
       entreprise: newEntreprise || newNom,
@@ -146,7 +145,7 @@ export const ProspectsList: React.FC = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const content = event.target?.result as string;
       if (!content) return;
 
@@ -175,7 +174,7 @@ export const ProspectsList: React.FC = () => {
 
         if (!telephone) { skipped++; continue; }
 
-        const res = addProspect({
+        const res = await addProspect({
           nom: nom || entreprise,
           prenom: prenom || undefined,
           entreprise: entreprise || nom,
@@ -223,7 +222,8 @@ export const ProspectsList: React.FC = () => {
   };
 
   const handleConfirmReassign = () => {
-    const targetComm = mockCommerciaux.find(c => c.id === targetCommercialId) || mockCommerciaux[0];
+    const targetComm = commerciaux.find(c => c.id === targetCommercialId) || commerciaux[0];
+    if (!targetComm) return;
     const commNom = `${targetComm.prenom} ${targetComm.nom}`;
 
     reassignProspects(selectedIds, targetComm.id, commNom);
@@ -501,7 +501,7 @@ export const ProspectsList: React.FC = () => {
                 onChange={(e) => setTargetCommercialId(e.target.value)}
                 className="w-full p-3 rounded-xl border border-input bg-background font-bold text-xs text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               >
-                {mockCommerciaux.map((c) => (
+                {commerciaux.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.prenom} {c.nom} ({c.email})
                   </option>

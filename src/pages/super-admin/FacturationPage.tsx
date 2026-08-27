@@ -5,7 +5,19 @@ import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DateRange, isInDateRange, searchParamsToDateRange, buildFilteredUrl } from '../../lib/dateFilter';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
-import { mockFactures, FactureData } from '../../lib/mockSuperAdmin';
+
+interface FactureData {
+  id: string;
+  tenant_id: string;
+  tenant_nom: string;
+  formule: string;
+  montant_xof: number;
+  statut: 'payee' | 'en_attente' | 'impayee';
+  date_emission: string;
+  date_echeance: string;
+}
+
+const mockFactures: FactureData[] = [];
 import { downloadCsv } from '../../lib/exportCsv';
 
 export const FacturationPage: React.FC = () => {

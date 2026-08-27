@@ -5,13 +5,41 @@ import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DateRange, isInDateRange, searchParamsToDateRange, buildFilteredUrl } from '../../lib/dateFilter';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
-import { mockTenants, mockFactures, FORMULES } from '../../lib/mockSuperAdmin';
+import { FormuleConfig, getFormules } from '../../services/formulesSaas';
+
+interface TenantData {
+  id: string;
+  nom: string;
+  formule: string;
+  statut: 'actif' | 'suspendu';
+  users_count: number;
+  created_at: string;
+}
+
+interface FactureData {
+  id: string;
+  tenant_id: string;
+  tenant_nom: string;
+  formule: string;
+  montant_xof: number;
+  statut: 'payee' | 'en_attente' | 'impayee';
+  date_emission: string;
+  date_echeance: string;
+}
+
+const mockTenants: TenantData[] = [];
+const mockFactures: FactureData[] = [];
 
 export const StatistiquesPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
   const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [formules, setFormules] = useState<FormuleConfig[]>([]);
+
+  React.useEffect(() => {
+    getFormules().then(setFormules).catch(() => {});
+  }, []);
 
   const filteredFactures = useMemo(() =>
     mockFactures.filter(f => isInDateRange(f.date_emission, period)),
@@ -66,14 +94,14 @@ export const StatistiquesPage: React.FC = () => {
   }, [filteredFactures]);
 
   const formulaDistribution = useMemo(() => {
-    return FORMULES.map(f => ({
+    return formules.map(f => ({
       ...f,
       count: filteredTenants.filter(t => t.formule === f.code).length,
       revenu: filteredFactures
         .filter(fa => fa.formule === f.code && fa.statut === 'payee')
         .reduce((s, fa) => s + fa.montant_xof, 0),
     }));
-  }, [filteredTenants, filteredFactures]);
+  }, [formules, filteredTenants, filteredFactures]);
 
   return (
     <div className="space-y-6">

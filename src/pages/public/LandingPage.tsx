@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Kanban,
@@ -22,39 +22,50 @@ import { useTranslation } from 'react-i18next';
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
 import { FadeInOnScroll } from '../../components/common/FadeInOnScroll';
-import { FORMULES, PERIODICITES, Periodicite } from '../../lib/mockSuperAdmin';
+import { FormuleConfig, getFormules } from '../../services/formulesSaas';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 
 export const LandingPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { isDarkMode, toggleDarkMode } = useAuth();
-  const [billingCycle, setBillingCycle] = useState<Periodicite>('mensuel');
+  const [billingCycle, setBillingCycle] = useState<string>('mensuel');
   const [currency, setCurrency] = useState<DeviseCode>('XOF');
   const [demoStep, setDemoStep] = useState<number>(1);
+  const [formules, setFormules] = useState<FormuleConfig[]>([]);
+
+  useEffect(() => {
+    getFormules().then(data => setFormules(data.filter(f => f.isActive))).catch(() => {});
+  }, []);
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', currency), currency);
 
   const isEn = i18n.language?.startsWith('en');
 
-  const periodLabels: Record<Periodicite, string> = {
+  const PERIODICITES = [
+    { code: 'mensuel', label: 'Mensuel' },
+    { code: 'trimestriel', label: 'Trimestriel' },
+    { code: 'annuel', label: 'Annuel' },
+  ];
+
+  const periodLabels: Record<string, string> = {
     mensuel: isEn ? '/month' : '/mois',
     trimestriel: isEn ? '/3 months' : '/3 mois',
     annuel: isEn ? '/year' : '/an',
   };
 
-  const getPrice = (f: typeof FORMULES[0]) => {
+  const getPrice = (f: FormuleConfig) => {
     if (billingCycle === 'mensuel') return f.pricing.mensuel;
     if (billingCycle === 'trimestriel') return f.pricing.trimestriel;
     return f.pricing.annuel;
   };
 
-  const getNormalPrice = (f: typeof FORMULES[0]) => {
+  const getNormalPrice = (f: FormuleConfig) => {
     if (billingCycle === 'trimestriel') return f.pricing.trimestriel_normal;
     if (billingCycle === 'annuel') return f.pricing.annuel_normal;
     return 0;
   };
 
-  const getRemise = (f: typeof FORMULES[0]) => {
+  const getRemise = (f: FormuleConfig) => {
     if (billingCycle === 'trimestriel') return f.pricing.trimestriel_remise;
     if (billingCycle === 'annuel') return f.pricing.annuel_remise;
     return 0;
@@ -436,7 +447,7 @@ export const LandingPage: React.FC = () => {
 
           {/* Plans from FORMULES */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            {FORMULES.map((f, idx) => {
+            {formules.map((f, idx) => {
               const color = offerColors[f.code];
               const isPopular = f.code === 'Business';
               const price = getPrice(f);

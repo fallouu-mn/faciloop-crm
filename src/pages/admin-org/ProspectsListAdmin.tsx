@@ -86,12 +86,12 @@ export const ProspectsListAdmin: React.FC = () => {
     }
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!fNom && !fEntreprise) || !fTelephone || !fPays) return;
 
     const commercial = commerciaux.find(c => c.id === fCommercialId);
-    const res = addProspect({
+    const res = await addProspect({
       nom: fNom || fEntreprise,
       prenom: fPrenom,
       entreprise: fEntreprise || fNom,

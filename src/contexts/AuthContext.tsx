@@ -1,9 +1,20 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { UserRole, Organization, Commercial, Prospect, Relance, Interaction, NotificationItem, ClientFaciloop, Paiement, ActionLog, ActionLogType, ModePaiement } from '../types/crm';
-import { mockOrganizations, mockCommerciaux, mockProspects, mockRelances, mockInteractions, mockNotifications, mockClients, mockPaiements, mockActionLogs } from '../lib/mockData';
+import { UserRole, Organization, Commercial, Prospect, Relance, Interaction, NotificationItem, ClientFaciloop, Paiement, ActionLog, ActionLogType, ModePaiement, Commission, ObjectifCommercial, Offre } from '../types/crm';
 import { formatPhoneNumber } from '../lib/phoneUtils';
-import { OrgOffer, mockOrgOffers, ObjectifCommercialAdmin, mockObjectifsAdmin, CommissionEntry, mockCommissions } from '../lib/mockAdminOrg';
+import { OrgOffer, ObjectifCommercialAdmin, CommissionEntry } from '../lib/mockAdminOrg';
+
+import * as prospectsService from '../services/prospects';
+import * as relancesService from '../services/relances';
+import * as interactionsService from '../services/interactions';
+import * as notificationsService from '../services/notifications';
+import * as clientsService from '../services/clients';
+import * as paiementsService from '../services/paiements';
+import * as offresService from '../services/offres';
+import * as commerciauxService from '../services/commerciaux';
+import * as objectifsService from '../services/objectifs';
+import * as commissionsService from '../services/commissions';
+import * as journalService from '../services/journal';
 
 export interface UserSession {
   id: string;
@@ -14,7 +25,7 @@ export interface UserSession {
   telephone: string;
   email: string;
   role: UserRole;
-  organizationId: string;
+  organizationId: string; // vide '' pour super_admin sans org
 }
 
 interface AuthContextType {
@@ -40,7 +51,7 @@ interface AuthContextType {
   myRelances: Relance[];
   myInteractions: Interaction[];
 
-  addProspect: (p: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>) => { success: boolean; duplicate?: boolean; prospect?: Prospect };
+  addProspect: (p: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>) => Promise<{ success: boolean; duplicate?: boolean; prospect?: Prospect }>;
   updateProspectStatus: (id: string, newStep: string, motifPerte?: string) => void;
   reassignProspects: (prospectIds: string[], targetCommercialId: string, targetCommercialNom: string) => void;
   deleteProspect: (id: string) => void;
@@ -77,16 +88,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Convertit un numéro de téléphone en email Supabase
 function phoneToEmail(phone: string): string {
   const digits = phone.replace(/[^0-9]/g, '');
   return `${digits}@faciloop.app`;
 }
 
-// Fetch le profil utilisateur complet depuis la DB après auth
 async function fetchUserProfile(authUserId: string): Promise<{
   role: UserRole;
-  organizationId: string;
+  organizationId: string | null;
   commercial?: { id: string; nom: string; prenom: string; email: string; telephone: string };
 } | null> {
   const { data: roleData, error: roleError } = await supabase
@@ -114,8 +123,49 @@ async function fetchUserProfile(authUserId: string): Promise<{
 
   return {
     role: roleData.role as UserRole,
-    organizationId: roleData.organization_id,
+    organizationId: roleData.organization_id || null,
     commercial,
+  };
+}
+
+// Mappers: DB types → mock types (keeps pages working without changes)
+function mapCommissionToEntry(c: Commission): CommissionEntry {
+  return {
+    id: c.id,
+    commercialId: c.commercial_id,
+    commercialNom: c.commercial_nom || '',
+    clientNom: c.client_nom || '',
+    formule: c.formule || '',
+    periodicite: (c.periodicite || 'mensuel') as 'mensuel' | 'trimestriel' | 'annuel',
+    montantVente: c.montant_vente,
+    tauxCommission: c.taux_commission,
+    montantCommission: c.montant_commission,
+    dateVente: c.date_vente,
+    statut: c.statut,
+  };
+}
+
+function mapObjectifToAdmin(o: ObjectifCommercial): ObjectifCommercialAdmin {
+  return {
+    id: o.id,
+    commercialId: o.commercial_id,
+    commercialNom: o.commercial_nom || '',
+    type: o.type as 'ca' | 'ventes' | 'prospects',
+    objectif: o.valeur_cible,
+    realise: o.valeur_actuelle,
+    periode: o.date_debut?.slice(0, 7) || '',
+  };
+}
+
+function mapOffreToOrgOffer(o: Offre): OrgOffer {
+  return {
+    id: o.id,
+    organization_id: o.organization_id,
+    nom: o.nom,
+    description: o.description || '',
+    tarifs: o.tarifs || { mensuel: o.prix_mensuel || 0, trimestriel: (o.prix_mensuel || 0) * 3, annuel: o.prix_annuel || 0 },
+    actif: o.actif,
+    created_at: o.created_at,
   };
 }
 
@@ -126,7 +176,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currency, setCurrency] = useState<string>('XOF');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
 
-  // Restaurer la session au chargement
+  // Data state (initialized empty, fetched from Supabase)
+  const [prospects, setProspects] = useState<Prospect[]>([]);
+  const [relances, setRelances] = useState<Relance[]>([]);
+  const [interactions, setInteractions] = useState<Interaction[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [clients, setClients] = useState<ClientFaciloop[]>([]);
+  const [paiements, setPaiements] = useState<Paiement[]>([]);
+  const [offres, setOffres] = useState<Offre[]>([]);
+  const [commerciaux, setCommerciaux] = useState<Commercial[]>([]);
+  const [objectifsRaw, setObjectifsRaw] = useState<ObjectifCommercial[]>([]);
+  const [commissionsRaw, setCommissionsRaw] = useState<Commission[]>([]);
+  const [actionLogs, setActionLogs] = useState<ActionLog[]>([]);
+
+  // Fetch all org data after user session is established
+  const fetchAllData = useCallback(async (orgId: string) => {
+    try {
+      const [
+        prospectsData,
+        relancesData,
+        interactionsData,
+        notificationsData,
+        clientsData,
+        paiementsData,
+        offresData,
+        commerciauxData,
+        objectifsData,
+        commissionsData,
+        logsData,
+      ] = await Promise.all([
+        prospectsService.getProspects(orgId),
+        relancesService.getRelances(orgId),
+        interactionsService.getInteractions(orgId),
+        notificationsService.getNotifications(orgId),
+        clientsService.getClients(orgId),
+        paiementsService.getPaiements(orgId),
+        offresService.getOffres(orgId),
+        commerciauxService.getCommerciaux(orgId),
+        objectifsService.getObjectifs(orgId),
+        commissionsService.getCommissions(orgId),
+        journalService.getActionLogs(orgId),
+      ]);
+
+      setProspects(prospectsData);
+      setRelances(relancesData);
+      setInteractions(interactionsData);
+      setNotifications(notificationsData);
+      setClients(clientsData);
+      setPaiements(paiementsData);
+      setOffres(offresData);
+      setCommerciaux(commerciauxData);
+      setObjectifsRaw(objectifsData);
+      setCommissionsRaw(commissionsData);
+      setActionLogs(logsData);
+    } catch (e) {
+      console.error('Erreur chargement données:', e);
+    }
+  }, []);
+
+  // Restore session on mount
   useEffect(() => {
     const restoreSession = async () => {
       try {
@@ -160,13 +268,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const profile = await fetchUserProfile(authId);
     if (!profile) return;
 
-    // Fetch l'organisation
-    const { data: orgData } = await supabase
-      .from('organizations')
-      .select('*')
-      .eq('id', profile.organizationId)
-      .single();
-
     const sess: UserSession = {
       id: profile.commercial?.id || authId,
       authId,
@@ -176,10 +277,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       telephone: profile.commercial?.telephone || '',
       email: profile.commercial?.email || email,
       role: profile.role,
-      organizationId: profile.organizationId,
+      organizationId: profile.organizationId || '',
     };
 
     setUser(sess);
+
+    // Super admin sans org → pas de fetch org ni data
+    if (!profile.organizationId) {
+      setCurrentOrg(null);
+      return;
+    }
+
+    const { data: orgData } = await supabase
+      .from('organizations')
+      .select('*')
+      .eq('id', profile.organizationId)
+      .single();
 
     if (orgData) {
       setCurrentOrg({
@@ -191,9 +304,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         created_at: orgData.created_at,
       });
     }
+
+    await fetchAllData(profile.organizationId);
   };
 
-  // Auto-logout après 30 minutes d'inactivité
+  // Auto-logout after 30 minutes of inactivity
   useEffect(() => {
     if (!user) return;
 
@@ -232,32 +347,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
   // ============================================
-  // DATA LAYER (mock pour l'instant — sera remplacé par services/hooks)
-  // ============================================
-  const [prospects, setProspects] = useState<Prospect[]>(mockProspects);
-  const [relances, setRelances] = useState<Relance[]>(mockRelances);
-  const [interactions, setInteractions] = useState<Interaction[]>(mockInteractions);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(mockNotifications);
-  const [clients, setClients] = useState<ClientFaciloop[]>(mockClients);
-  const [paiements, setPaiements] = useState<Paiement[]>(mockPaiements);
-  const [orgOffers, setOrgOffers] = useState<OrgOffer[]>(mockOrgOffers);
-  const [commerciaux, setCommerciaux] = useState<Commercial[]>(mockCommerciaux);
-  const [objectifs, setObjectifs] = useState<ObjectifCommercialAdmin[]>(mockObjectifsAdmin);
-  const [commissions] = useState<CommissionEntry[]>(mockCommissions);
-  const [actionLogs, setActionLogs] = useState<ActionLog[]>(mockActionLogs);
-
-  // Auto-logging helper
-  const addActionLog = useCallback((log: Omit<ActionLog, 'id' | 'organization_id' | 'created_at'>) => {
-    const entry: ActionLog = {
-      ...log,
-      id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      organization_id: user?.organizationId || '',
-      created_at: new Date().toISOString(),
-    };
-    setActionLogs(prev => [entry, ...prev]);
-  }, [user]);
-
-  // ============================================
   // AUTH ACTIONS
   // ============================================
   const login = async (telephone: string, codeSecret: string): Promise<UserSession | null> => {
@@ -278,12 +367,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const profile = await fetchUserProfile(data.user.id);
       if (!profile) return null;
 
-      const { data: orgData } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', profile.organizationId)
-        .single();
-
       const sess: UserSession = {
         id: profile.commercial?.id || data.user.id,
         authId: data.user.id,
@@ -293,20 +376,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         telephone: profile.commercial?.telephone || '',
         email: profile.commercial?.email || email,
         role: profile.role,
-        organizationId: profile.organizationId,
+        organizationId: profile.organizationId || '',
       };
 
       setUser(sess);
 
-      if (orgData) {
-        setCurrentOrg({
-          id: orgData.id,
-          nom: orgData.nom,
-          logo_url: orgData.logo_url,
-          devise_defaut: orgData.devise_defaut,
-          statut: orgData.statut,
-          created_at: orgData.created_at,
-        });
+      if (profile.organizationId) {
+        const { data: orgData } = await supabase
+          .from('organizations')
+          .select('*')
+          .eq('id', profile.organizationId)
+          .single();
+
+        if (orgData) {
+          setCurrentOrg({
+            id: orgData.id,
+            nom: orgData.nom,
+            logo_url: orgData.logo_url,
+            devise_defaut: orgData.devise_defaut,
+            statut: orgData.statut,
+            created_at: orgData.created_at,
+          });
+        }
+
+        await fetchAllData(profile.organizationId);
       }
 
       return sess;
@@ -322,19 +415,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const switchOrganization = (orgId: string) => {
-    if (user) {
+    if (user && orgId) {
       setUser({ ...user, organizationId: orgId });
+      fetchAllData(orgId);
     }
   };
 
   // ============================================
   // DATA FILTERING (CDC 3.2 Isolation)
   // ============================================
-  const myCommerciaux = useMemo(() => {
-    if (!user) return [];
-    return commerciaux.filter(c => c.organization_id === user.organizationId);
-  }, [commerciaux, user]);
-
   const myProspects = useMemo(() => {
     if (!user) return [];
     if (user.role === 'commercial') {
@@ -359,172 +448,248 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return interactions;
   }, [interactions, user]);
 
-  const myOrgOffers = useMemo(() => {
-    if (!user) return [];
-    return orgOffers.filter(o => o.organization_id === user.organizationId);
-  }, [orgOffers, user]);
+  const orgOffers = useMemo(() => {
+    return offres.map(mapOffreToOrgOffer);
+  }, [offres]);
 
-  const myObjectifs = useMemo(() => {
-    if (!user) return [];
-    return objectifs;
-  }, [objectifs, user]);
+  const objectifs = useMemo(() => {
+    return objectifsRaw.map(mapObjectifToAdmin);
+  }, [objectifsRaw]);
+
+  const commissions = useMemo(() => {
+    return commissionsRaw.map(mapCommissionToEntry);
+  }, [commissionsRaw]);
+
+  // ============================================
+  // LOGGING HELPER
+  // ============================================
+  const addActionLog = useCallback(async (log: Omit<ActionLog, 'id' | 'organization_id' | 'created_at'>) => {
+    if (!user) return;
+    try {
+      const entry = await journalService.createActionLog({
+        ...log,
+        organization_id: user.organizationId,
+      });
+      setActionLogs(prev => [entry, ...prev]);
+    } catch (e) {
+      console.error('Erreur log action:', e);
+    }
+  }, [user]);
 
   // ============================================
   // CRUD COMMERCIAUX
   // ============================================
-  const addCommercial = (c: Omit<Commercial, 'id' | 'organization_id' | 'created_at'>) => {
-    const created: Commercial = {
-      ...c,
-      id: `comm-${Date.now()}`,
-      organization_id: user?.organizationId || '',
-      created_at: new Date().toISOString(),
-    };
-    setCommerciaux(prev => [created, ...prev]);
-    addActionLog({
-      utilisateur_id: user?.id || '',
-      utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
-      action_type: 'commercial_added',
-      action: 'Ajout d\'un commercial',
-      entite_type: 'commercial',
-      entite_id: created.id,
-      cible: `${c.prenom} ${c.nom}`,
-      nouvelle_valeur: c.email,
-      date: new Date().toISOString().split('T')[0],
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-    });
+  const addCommercial = async (c: Omit<Commercial, 'id' | 'organization_id' | 'created_at'>) => {
+    if (!user) return;
+    try {
+      const created = await commerciauxService.createCommercial({
+        ...c,
+        organization_id: user.organizationId,
+      });
+      setCommerciaux(prev => [created, ...prev]);
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'commercial_added',
+        action: 'Ajout d\'un commercial',
+        entite_type: 'commercial',
+        entite_id: created.id,
+        cible: `${c.prenom} ${c.nom}`,
+        nouvelle_valeur: c.email,
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
+    } catch (e) {
+      console.error('Erreur ajout commercial:', e);
+    }
   };
 
-  const updateCommercial = (id: string, updates: Partial<Omit<Commercial, 'id' | 'organization_id' | 'created_at'>>) => {
-    setCommerciaux(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+  const updateCommercial = async (id: string, updates: Partial<Omit<Commercial, 'id' | 'organization_id' | 'created_at'>>) => {
+    try {
+      const updated = await commerciauxService.updateCommercial(id, updates);
+      setCommerciaux(prev => prev.map(c => c.id === id ? updated : c));
+    } catch (e) {
+      console.error('Erreur mise à jour commercial:', e);
+    }
   };
 
-  const toggleCommercialStatus = (id: string) => {
+  const toggleCommercialStatus = async (id: string) => {
     const target = commerciaux.find(c => c.id === id);
-    if (!target) return;
+    if (!target || !user) return;
     const newStatut = target.statut === 'actif' ? 'inactif' : 'actif';
-    setCommerciaux(prev => prev.map(c => c.id === id ? { ...c, statut: newStatut } : c));
-    addActionLog({
-      utilisateur_id: user?.id || '',
-      utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
-      action_type: newStatut === 'inactif' ? 'commercial_removed' : 'commercial_added',
-      action: newStatut === 'inactif' ? 'Désactivation d\'un commercial' : 'Réactivation d\'un commercial',
-      entite_type: 'commercial',
-      entite_id: id,
-      cible: `${target.prenom} ${target.nom}`,
-      ancienne_valeur: target.statut,
-      nouvelle_valeur: newStatut,
-      date: new Date().toISOString().split('T')[0],
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-    });
+    try {
+      const updated = await commerciauxService.updateCommercial(id, { statut: newStatut });
+      setCommerciaux(prev => prev.map(c => c.id === id ? updated : c));
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: newStatut === 'inactif' ? 'commercial_removed' : 'commercial_added',
+        action: newStatut === 'inactif' ? 'Désactivation d\'un commercial' : 'Réactivation d\'un commercial',
+        entite_type: 'commercial',
+        entite_id: id,
+        cible: `${target.prenom} ${target.nom}`,
+        ancienne_valeur: target.statut,
+        nouvelle_valeur: newStatut,
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
+    } catch (e) {
+      console.error('Erreur toggle statut commercial:', e);
+    }
   };
 
   // ============================================
   // CRUD OBJECTIFS
   // ============================================
-  const addObjectif = (o: Omit<ObjectifCommercialAdmin, 'id'>) => {
-    const created: ObjectifCommercialAdmin = { ...o, id: `obj-${Date.now()}` };
-    setObjectifs(prev => [...prev, created]);
-    addActionLog({
-      utilisateur_id: user?.id || '',
-      utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
-      action_type: 'objectif_created',
-      action: 'Définition d\'un objectif',
-      entite_type: 'objectif',
-      entite_id: created.id,
-      cible: `${o.commercialNom} — ${o.type}`,
-      nouvelle_valeur: `Objectif: ${o.objectif} · ${o.periode}`,
-      date: new Date().toISOString().split('T')[0],
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-    });
+  const addObjectif = async (o: Omit<ObjectifCommercialAdmin, 'id'>) => {
+    if (!user) return;
+    try {
+      const created = await objectifsService.createObjectif({
+        organization_id: user.organizationId,
+        commercial_id: o.commercialId,
+        commercial_nom: o.commercialNom,
+        type: o.type as any,
+        periode: 'mensuel',
+        date_debut: `${o.periode}-01`,
+        date_fin: `${o.periode}-28`,
+        valeur_cible: o.objectif,
+        valeur_actuelle: o.realise,
+        statut: 'en_cours',
+      });
+      setObjectifsRaw(prev => [...prev, created]);
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'objectif_created',
+        action: 'Définition d\'un objectif',
+        entite_type: 'objectif',
+        entite_id: created.id,
+        cible: `${o.commercialNom} — ${o.type}`,
+        nouvelle_valeur: `Objectif: ${o.objectif} · ${o.periode}`,
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
+    } catch (e) {
+      console.error('Erreur ajout objectif:', e);
+    }
   };
 
-  const updateObjectif = (id: string, updates: Partial<Omit<ObjectifCommercialAdmin, 'id'>>) => {
-    setObjectifs(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
+  const updateObjectif = async (id: string, updates: Partial<Omit<ObjectifCommercialAdmin, 'id'>>) => {
+    try {
+      const dbUpdates: Partial<ObjectifCommercial> = {};
+      if (updates.objectif !== undefined) dbUpdates.valeur_cible = updates.objectif;
+      if (updates.realise !== undefined) dbUpdates.valeur_actuelle = updates.realise;
+      if (updates.commercialNom !== undefined) dbUpdates.commercial_nom = updates.commercialNom;
+      if (updates.type !== undefined) dbUpdates.type = updates.type as any;
+
+      const updated = await objectifsService.updateObjectif(id, dbUpdates);
+      setObjectifsRaw(prev => prev.map(o => o.id === id ? updated : o));
+    } catch (e) {
+      console.error('Erreur mise à jour objectif:', e);
+    }
   };
 
-  const deleteObjectif = (id: string) => {
-    setObjectifs(prev => prev.filter(o => o.id !== id));
+  const deleteObjectif = async (id: string) => {
+    try {
+      await objectifsService.deleteObjectif(id);
+      setObjectifsRaw(prev => prev.filter(o => o.id !== id));
+    } catch (e) {
+      console.error('Erreur suppression objectif:', e);
+    }
   };
 
   // ============================================
   // CRUD ORGANISATION
   // ============================================
-  const updateOrganization = (updates: Partial<Omit<Organization, 'id'>>) => {
-    setCurrentOrg(prev => prev ? { ...prev, ...updates } : prev);
-    addActionLog({
-      utilisateur_id: user?.id || '',
-      utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
-      action_type: 'org_settings_updated',
-      action: 'Modification paramètres organisation',
-      entite_type: 'organisation',
-      entite_id: user?.organizationId || '',
-      cible: currentOrg?.nom || '',
-      date: new Date().toISOString().split('T')[0],
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-    });
+  const updateOrganization = async (updates: Partial<Omit<Organization, 'id'>>) => {
+    if (!user || !currentOrg) return;
+    try {
+      const { error } = await supabase
+        .from('organizations')
+        .update(updates)
+        .eq('id', currentOrg.id);
+      if (error) throw error;
+
+      setCurrentOrg(prev => prev ? { ...prev, ...updates } : prev);
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'org_settings_updated',
+        action: 'Modification paramètres organisation',
+        entite_type: 'organisation',
+        entite_id: currentOrg.id,
+        cible: currentOrg.nom,
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
+    } catch (e) {
+      console.error('Erreur mise à jour organisation:', e);
+    }
   };
 
   // ============================================
   // CRUD PROSPECTS
   // ============================================
-  const addProspect = (newP: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>) => {
+  const addProspect = async (newP: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>): Promise<{ success: boolean; duplicate?: boolean; prospect?: Prospect }> => {
+    if (!user) return { success: false };
+
     const formattedPhone = formatPhoneNumber(newP.telephone);
     const isDuplicate = prospects.some(
-      p => p.organization_id === (user?.organizationId || '') &&
-           formatPhoneNumber(p.telephone) === formattedPhone
+      p => formatPhoneNumber(p.telephone) === formattedPhone
     );
 
     if (isDuplicate) {
       return { success: false, duplicate: true };
     }
 
-    const created: Prospect = {
-      ...newP,
-      telephone: formattedPhone,
-      id: `prospect-${Date.now()}`,
-      organization_id: user?.organizationId || '',
-      commercial_id: newP.commercial_id || (user?.role === 'commercial' ? user.id : undefined),
-      commercial_nom: newP.commercial_nom || (user ? `${user.prenom} ${user.nom}` : undefined),
-      created_at: new Date().toISOString()
-    };
+    try {
+      const created = await prospectsService.createProspect({
+        ...newP,
+        telephone: formattedPhone,
+        organization_id: user.organizationId,
+        commercial_id: newP.commercial_id || (user.role === 'commercial' ? user.id : undefined),
+        commercial_nom: newP.commercial_nom || `${user.prenom} ${user.nom}`,
+      });
 
-    setProspects(prev => [created, ...prev]);
-    addActionLog({
-      utilisateur_id: user?.id || '',
-      utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
-      action_type: 'prospect_created',
-      action: 'Création d\'un prospect',
-      entite_type: 'prospect',
-      entite_id: created.id,
-      cible: created.entreprise || `${created.prenom || ''} ${created.nom}`,
-      nouvelle_valeur: `Source: ${created.source} · Étape: ${created.statut_pipeline}`,
-      date: new Date().toISOString().split('T')[0],
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-    });
-    return { success: true, prospect: created };
+      setProspects(prev => [created, ...prev]);
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'prospect_created',
+        action: 'Création d\'un prospect',
+        entite_type: 'prospect',
+        entite_id: created.id,
+        cible: created.entreprise || `${created.prenom || ''} ${created.nom}`,
+        nouvelle_valeur: `Source: ${created.source} · Étape: ${created.statut_pipeline}`,
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
+      return { success: true, prospect: created };
+    } catch (e) {
+      console.error('Erreur création prospect:', e);
+      return { success: false };
+    }
   };
 
-  const updateProspectStatus = (id: string, newStep: string, motifPerte?: string) => {
+  const updateProspectStatus = async (id: string, newStep: string, motifPerte?: string) => {
     const target = prospects.find(p => p.id === id);
-    const oldStep = target?.statut_pipeline || '';
-    setProspects(prev =>
-      prev.map(p => {
-        if (p.id === id) {
-          return {
-            ...p,
-            statut_pipeline: newStep as any,
-            motif_perte: motifPerte as any || p.motif_perte,
-            date_derniere_interaction: new Date().toISOString()
-          };
-        }
-        return p;
-      })
-    );
-    if (target) {
+    if (!target || !user) return;
+    const oldStep = target.statut_pipeline;
+
+    try {
+      const updates: Partial<Prospect> = {
+        statut_pipeline: newStep as any,
+        date_derniere_interaction: new Date().toISOString(),
+      };
+      if (motifPerte) updates.motif_perte = motifPerte as any;
+
+      const updated = await prospectsService.updateProspect(id, updates);
+      setProspects(prev => prev.map(p => p.id === id ? updated : p));
+
       const actionType = newStep === 'gagne' ? 'prospect_converted' : newStep === 'perdu' ? 'prospect_lost' : 'prospect_pipeline_move';
       addActionLog({
-        utilisateur_id: user?.id || '',
-        utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
         action_type: actionType,
         action: `Pipeline: ${oldStep} → ${newStep}`,
         entite_type: 'prospect',
@@ -535,195 +700,254 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         date: new Date().toISOString().split('T')[0],
         heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
       });
+    } catch (e) {
+      console.error('Erreur mise à jour pipeline:', e);
     }
   };
 
-  const reassignProspects = (prospectIds: string[], targetCommercialId: string, targetCommercialNom: string) => {
-    const idSet = new Set(prospectIds);
-    setProspects(prev =>
-      prev.map(p => {
-        if (idSet.has(p.id)) {
-          return { ...p, commercial_id: targetCommercialId, commercial_nom: targetCommercialNom };
-        }
-        return p;
-      })
-    );
-    addActionLog({
-      utilisateur_id: user?.id || '',
-      utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
-      action_type: 'prospect_reassigned',
-      action: `Réattribution de ${prospectIds.length} prospect(s)`,
-      entite_type: 'prospect',
-      entite_id: prospectIds[0] || '',
-      cible: targetCommercialNom,
-      nouvelle_valeur: `${prospectIds.length} prospects → ${targetCommercialNom}`,
-      date: new Date().toISOString().split('T')[0],
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-    });
+  const reassignProspects = async (prospectIds: string[], targetCommercialId: string, targetCommercialNom: string) => {
+    if (!user) return;
+    try {
+      await Promise.all(
+        prospectIds.map(id =>
+          prospectsService.updateProspect(id, {
+            commercial_id: targetCommercialId,
+            commercial_nom: targetCommercialNom,
+          })
+        )
+      );
+
+      setProspects(prev =>
+        prev.map(p =>
+          prospectIds.includes(p.id)
+            ? { ...p, commercial_id: targetCommercialId, commercial_nom: targetCommercialNom }
+            : p
+        )
+      );
+
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'prospect_reassigned',
+        action: `Réattribution de ${prospectIds.length} prospect(s)`,
+        entite_type: 'prospect',
+        entite_id: prospectIds[0] || '',
+        cible: targetCommercialNom,
+        nouvelle_valeur: `${prospectIds.length} prospects → ${targetCommercialNom}`,
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
+    } catch (e) {
+      console.error('Erreur réattribution:', e);
+    }
   };
 
-  const deleteProspect = (id: string) => {
-    setProspects(prev => prev.filter(p => p.id !== id));
+  const deleteProspect = async (id: string) => {
+    try {
+      await prospectsService.deleteProspect(id);
+      setProspects(prev => prev.filter(p => p.id !== id));
+    } catch (e) {
+      console.error('Erreur suppression prospect:', e);
+    }
   };
 
   // ============================================
   // CRUD RELANCES & INTERACTIONS
   // ============================================
-  const addRelance = (newR: Omit<Relance, 'id' | 'created_at' | 'organization_id'>) => {
-    const created: Relance = {
-      ...newR,
-      id: `relance-${Date.now()}`,
-      organization_id: user?.organizationId || '',
-      commercial_id: newR.commercial_id || (user?.role === 'commercial' ? user.id : undefined),
-      created_at: new Date().toISOString()
-    };
-    setRelances(prev => [created, ...prev]);
+  const addRelance = async (newR: Omit<Relance, 'id' | 'created_at' | 'organization_id'>) => {
+    if (!user) return;
+    try {
+      const created = await relancesService.createRelance({
+        ...newR,
+        organization_id: user.organizationId,
+        commercial_id: newR.commercial_id || (user.role === 'commercial' ? user.id : undefined),
+      });
+      setRelances(prev => [created, ...prev]);
+    } catch (e) {
+      console.error('Erreur création relance:', e);
+    }
   };
 
-  const completeRelance = (id: string) => {
-    setRelances(prev => prev.map(r => (r.id === id ? { ...r, statut: 'realisee' } : r)));
+  const completeRelance = async (id: string) => {
+    try {
+      const updated = await relancesService.completeRelance(id);
+      setRelances(prev => prev.map(r => r.id === id ? updated : r));
+    } catch (e) {
+      console.error('Erreur completion relance:', e);
+    }
   };
 
-  const addInteraction = (newI: Omit<Interaction, 'id' | 'created_at' | 'organization_id'>) => {
-    const created: Interaction = {
-      ...newI,
-      id: `inter-${Date.now()}`,
-      organization_id: user?.organizationId || '',
-      commercial_id: newI.commercial_id || (user?.role === 'commercial' ? user.id : undefined),
-      created_at: new Date().toISOString()
-    };
-    setInteractions(prev => [created, ...prev]);
+  const addInteraction = async (newI: Omit<Interaction, 'id' | 'created_at' | 'organization_id'>) => {
+    if (!user) return;
+    try {
+      const created = await interactionsService.createInteraction({
+        ...newI,
+        organization_id: user.organizationId,
+        commercial_id: newI.commercial_id || (user.role === 'commercial' ? user.id : undefined),
+      });
+      setInteractions(prev => [created, ...prev]);
+    } catch (e) {
+      console.error('Erreur création interaction:', e);
+    }
   };
 
-  const markNotificationAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, lue: true } : n)));
+  const markNotificationAsRead = async (id: string) => {
+    try {
+      await notificationsService.markNotificationAsRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, lue: true } : n));
+    } catch (e) {
+      console.error('Erreur marquage notification:', e);
+    }
   };
 
   // ============================================
   // CRUD ORG OFFERS
   // ============================================
-  const addOrgOffer = (offer: Omit<OrgOffer, 'id' | 'organization_id' | 'created_at'>) => {
-    const created: OrgOffer = {
-      ...offer,
-      id: `org-offer-${Date.now()}`,
-      organization_id: user?.organizationId || '',
-      created_at: new Date().toISOString(),
-    };
-    setOrgOffers(prev => [created, ...prev]);
-    addActionLog({
-      utilisateur_id: user?.id || '',
-      utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
-      action_type: 'offer_created',
-      action: 'Création d\'une offre',
-      entite_type: 'offre',
-      entite_id: created.id,
-      cible: offer.nom,
-      nouvelle_valeur: `${offer.tarifs.mensuel} FCFA/mois`,
-      date: new Date().toISOString().split('T')[0],
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-    });
+  const addOrgOffer = async (offer: Omit<OrgOffer, 'id' | 'organization_id' | 'created_at'>) => {
+    if (!user) return;
+    try {
+      const created = await offresService.createOffre({
+        organization_id: user.organizationId,
+        nom: offer.nom,
+        description: offer.description,
+        tarifs: offer.tarifs,
+        actif: offer.actif,
+      });
+      setOffres(prev => [created, ...prev]);
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'offer_created',
+        action: 'Création d\'une offre',
+        entite_type: 'offre',
+        entite_id: created.id,
+        cible: offer.nom,
+        nouvelle_valeur: `${offer.tarifs.mensuel} FCFA/mois`,
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
+    } catch (e) {
+      console.error('Erreur création offre:', e);
+    }
   };
 
-  const updateOrgOffer = (id: string, updates: Partial<Omit<OrgOffer, 'id' | 'organization_id' | 'created_at'>>) => {
-    setOrgOffers(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
-    addActionLog({
-      utilisateur_id: user?.id || '',
-      utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
-      action_type: 'offer_updated',
-      action: 'Modification d\'une offre',
-      entite_type: 'offre',
-      entite_id: id,
-      cible: updates.nom || '',
-      date: new Date().toISOString().split('T')[0],
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-    });
+  const updateOrgOffer = async (id: string, updates: Partial<Omit<OrgOffer, 'id' | 'organization_id' | 'created_at'>>) => {
+    try {
+      const dbUpdates: Partial<Offre> = {};
+      if (updates.nom !== undefined) dbUpdates.nom = updates.nom;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.tarifs !== undefined) dbUpdates.tarifs = updates.tarifs;
+      if (updates.actif !== undefined) dbUpdates.actif = updates.actif;
+
+      const updated = await offresService.updateOffre(id, dbUpdates);
+      setOffres(prev => prev.map(o => o.id === id ? updated : o));
+      addActionLog({
+        utilisateur_id: user?.id || '',
+        utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
+        action_type: 'offer_updated',
+        action: 'Modification d\'une offre',
+        entite_type: 'offre',
+        entite_id: id,
+        cible: updates.nom || '',
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
+    } catch (e) {
+      console.error('Erreur mise à jour offre:', e);
+    }
   };
 
-  const deleteOrgOffer = (id: string) => {
-    const target = orgOffers.find(o => o.id === id);
-    setOrgOffers(prev => prev.filter(o => o.id !== id));
-    addActionLog({
-      utilisateur_id: user?.id || '',
-      utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
-      action_type: 'offer_deleted',
-      action: 'Suppression d\'une offre',
-      entite_type: 'offre',
-      entite_id: id,
-      cible: target?.nom || '',
-      date: new Date().toISOString().split('T')[0],
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-    });
+  const deleteOrgOffer = async (id: string) => {
+    const target = offres.find(o => o.id === id);
+    try {
+      await offresService.deleteOffre(id);
+      setOffres(prev => prev.filter(o => o.id !== id));
+      addActionLog({
+        utilisateur_id: user?.id || '',
+        utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
+        action_type: 'offer_deleted',
+        action: 'Suppression d\'une offre',
+        entite_type: 'offre',
+        entite_id: id,
+        cible: target?.nom || '',
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
+    } catch (e) {
+      console.error('Erreur suppression offre:', e);
+    }
   };
 
   // ============================================
   // CONVERSION PROSPECT → CLIENT
   // ============================================
-  const convertProspectToClient = (prospectId: string, formule: string, options?: { frequence?: string; montant?: number; modePaiement?: ModePaiement }) => {
+  const convertProspectToClient = async (prospectId: string, formule: string, options?: { frequence?: string; montant?: number; modePaiement?: ModePaiement }) => {
+    if (!user) return;
     const p = prospects.find(item => item.id === prospectId);
     if (!p) return;
 
     const freq = (options?.frequence || 'mensuel') as 'mensuel' | 'trimestriel' | 'annuel';
-    const offer = myOrgOffers.find(o => o.nom === formule);
-    const montant = options?.montant || offer?.tarifs[freq] || p.budget_estime || 500000;
+    const offer = offres.find(o => o.nom === formule);
+    const tarifs = offer?.tarifs;
+    const montant = options?.montant || (tarifs ? tarifs[freq] : null) || p.budget_estime || 500000;
     const modePaiement = options?.modePaiement || 'wave';
 
-    const clientId = `client-${Date.now()}`;
-    const newClient: ClientFaciloop = {
-      id: clientId,
-      organization_id: p.organization_id,
-      prospect_id: p.id,
-      commercial_id: p.commercial_id || user?.id,
-      entreprise: p.entreprise,
-      nom_responsable: `${p.prenom || ''} ${p.nom}`.trim(),
-      telephone: p.telephone,
-      whatsapp: p.whatsapp,
-      email: p.email,
-      pays: p.pays,
-      ville: p.ville,
-      secteur_activite: p.secteur_activite,
-      formule_souscrite: formule,
-      statut_compte: 'actif',
-      statut_abonnement: 'actif',
-      montant_paye: montant,
-      prochain_renouvellement: new Date(Date.now() + (freq === 'annuel' ? 365 : freq === 'trimestriel' ? 90 : 30) * 86400000).toISOString().split('T')[0],
-      nombre_utilisateurs: 5,
-      created_at: new Date().toISOString()
-    };
+    try {
+      const newClient = await clientsService.createClient({
+        organization_id: p.organization_id,
+        prospect_id: p.id,
+        commercial_id: p.commercial_id || user.id,
+        entreprise: p.entreprise,
+        nom_responsable: `${p.prenom || ''} ${p.nom}`.trim(),
+        telephone: p.telephone,
+        whatsapp: p.whatsapp,
+        email: p.email,
+        pays: p.pays,
+        ville: p.ville,
+        secteur_activite: p.secteur_activite,
+        formule_souscrite: formule,
+        statut_compte: 'actif',
+        statut_abonnement: 'actif',
+        montant_paye: montant,
+        prochain_renouvellement: new Date(Date.now() + (freq === 'annuel' ? 365 : freq === 'trimestriel' ? 90 : 30) * 86400000).toISOString().split('T')[0],
+        nombre_utilisateurs: 5,
+      });
 
-    const newPaiement: Paiement = {
-      id: `pay-${Date.now()}`,
-      organization_id: p.organization_id,
-      client_id: clientId,
-      abonnement_id: `ab-${Date.now()}`,
-      commercial_id: p.commercial_id || user?.id,
-      entreprise: p.entreprise || `${p.prenom || ''} ${p.nom}`.trim(),
-      montant_attendu: montant,
-      montant_paye: montant,
-      montant_restant: 0,
-      date_paiement: new Date().toISOString().split('T')[0],
-      mode_paiement: modePaiement,
-      reference_transaction: `${modePaiement.toUpperCase().slice(0, 2)}-${Date.now().toString().slice(-9)}`,
-      statut: 'valide',
-      justificatif_commentaire: `Souscription ${formule} — conversion prospect.`,
-      created_at: new Date().toISOString()
-    };
+      const newPaiement = await paiementsService.createPaiement({
+        organization_id: p.organization_id,
+        client_id: newClient.id,
+        commercial_id: p.commercial_id || user.id,
+        entreprise: p.entreprise || `${p.prenom || ''} ${p.nom}`.trim(),
+        montant_attendu: montant,
+        montant_paye: montant,
+        montant_restant: 0,
+        date_paiement: new Date().toISOString().split('T')[0],
+        mode_paiement: modePaiement,
+        reference_transaction: `${modePaiement.toUpperCase().slice(0, 2)}-${Date.now().toString().slice(-9)}`,
+        statut: 'valide',
+        justificatif_commentaire: `Souscription ${formule} — conversion prospect.`,
+      });
 
-    setClients(prev => [newClient, ...prev]);
-    setPaiements(prev => [newPaiement, ...prev]);
-    updateProspectStatus(prospectId, 'gagne');
-    addActionLog({
-      utilisateur_id: user?.id || '',
-      utilisateur_nom: user ? `${user.prenom} ${user.nom}` : 'Système',
-      action_type: 'prospect_converted',
-      action: 'Conversion prospect en client',
-      entite_type: 'prospect',
-      entite_id: prospectId,
-      cible: p.entreprise || `${p.prenom || ''} ${p.nom}`,
-      ancienne_valeur: `Prospect — ${p.statut_pipeline}`,
-      nouvelle_valeur: `Client actif — ${formule}`,
-      date: new Date().toISOString().split('T')[0],
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-    });
+      setClients(prev => [newClient, ...prev]);
+      setPaiements(prev => [newPaiement, ...prev]);
+      await updateProspectStatus(prospectId, 'gagne');
+
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'prospect_converted',
+        action: 'Conversion prospect en client',
+        entite_type: 'prospect',
+        entite_id: prospectId,
+        cible: p.entreprise || `${p.prenom || ''} ${p.nom}`,
+        ancienne_valeur: `Prospect — ${p.statut_pipeline}`,
+        nouvelle_valeur: `Client actif — ${formule}`,
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
+    } catch (e) {
+      console.error('Erreur conversion prospect:', e);
+    }
   };
 
   return (
@@ -757,15 +981,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addInteraction,
         markNotificationAsRead,
         convertProspectToClient,
-        orgOffers: myOrgOffers,
+        orgOffers,
         addOrgOffer,
         updateOrgOffer,
         deleteOrgOffer,
-        commerciaux: myCommerciaux,
+        commerciaux,
         addCommercial,
         updateCommercial,
         toggleCommercialStatus,
-        objectifs: myObjectifs,
+        objectifs,
         addObjectif,
         updateObjectif,
         deleteObjectif,

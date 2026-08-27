@@ -140,7 +140,7 @@ export const ImportExportPage: React.FC = () => {
     if (file) processFile(file);
   };
 
-  const handleConfirmImport = () => {
+  const handleConfirmImport = async () => {
     if (parsedRows.length === 0) return;
 
     const comm = commerciaux.find(c => c.id === selectedCommercialId) || commerciaux[0];
@@ -149,11 +149,11 @@ export const ImportExportPage: React.FC = () => {
     let importedCount = 0;
     let skippedCount = 0;
 
-    parsedRows.forEach(row => {
+    for (const row of parsedRows) {
       if (row.isDuplicate) {
         skippedCount++;
       } else {
-        addProspect({
+        const res = await addProspect({
           nom: row.nom,
           prenom: row.prenom,
           entreprise: row.entreprise,
@@ -164,9 +164,10 @@ export const ImportExportPage: React.FC = () => {
           commercial_id: comm.id,
           commercial_nom: commNom
         });
-        importedCount++;
+        if (res.success) importedCount++;
+        else skippedCount++;
       }
-    });
+    }
 
     setIsImportSuccess(true);
     setImportResult({
