@@ -250,6 +250,38 @@ export type ActionLogType =
   | 'prospect_reassigned'
   | 'other';
 
+export interface Offre {
+  id: string;
+  organization_id: string;
+  nom: string;
+  description: string;
+  tarifs?: {
+    mensuel: number;
+    trimestriel: number;
+    annuel: number;
+  };
+  prix_mensuel?: number;
+  prix_annuel?: number;
+  actif: boolean;
+  created_at: string;
+}
+
+export interface Commission {
+  id: string;
+  organization_id: string;
+  commercial_id: string;
+  commercial_nom?: string;
+  client_nom?: string;
+  formule?: string;
+  periodicite?: string;
+  montant_vente: number;
+  taux_commission: number;
+  montant_commission: number;
+  date_vente: string;
+  statut: 'a_verser' | 'verse' | 'annule';
+  created_at: string;
+}
+
 export interface ActionLog {
   id: string;
   organization_id: string;
