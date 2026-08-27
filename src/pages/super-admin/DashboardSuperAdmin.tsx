@@ -6,12 +6,16 @@ import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DateRange, isInDateRange, searchParamsToDateRange, buildFilteredUrl } from '../../lib/dateFilter';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 import { mockTenants, mockFactures, mockActivity } from '../../lib/mockSuperAdmin';
+import { useTranslation } from 'react-i18next';
 
 export const DashboardSuperAdmin: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
   const [devise, setDevise] = useState<DeviseCode>('XOF');
+
+  const isEn = i18n.language?.startsWith('en');
 
   const filteredTenants = useMemo(() =>
     mockTenants.filter(t => isInDateRange(t.created_at, period)),
@@ -43,13 +47,15 @@ export const DashboardSuperAdmin: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              {isEn ? 'Super-Admin Dashboard' : 'Dashboard Super-Admin'}
+            </h1>
             <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
               Super-Admin
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Vue globale de la plateforme SaaS Multi-Tenant
+            {isEn ? 'Global overview of the Multi-Tenant SaaS platform' : 'Vue globale de la plateforme SaaS Multi-Tenant'}
           </p>
         </div>
         <CurrencyToggle value={devise} onChange={setDevise} />
@@ -65,14 +71,14 @@ export const DashboardSuperAdmin: React.FC = () => {
           className="rounded-xl border border-border bg-card p-4 space-y-2 text-left hover:border-primary/40 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Actives</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Active' : 'Actives'}</span>
             <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
               <Building2 className="h-4 w-4 text-emerald-500" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-emerald-500">{activeCount}</span>
-            <span className="text-xs text-muted-foreground">organisations</span>
+            <span className="text-xs text-muted-foreground">{isEn ? 'organizations' : 'organisations'}</span>
           </div>
         </button>
 
@@ -81,14 +87,14 @@ export const DashboardSuperAdmin: React.FC = () => {
           className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-2 text-left hover:border-destructive/40 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-destructive">Suspendues</span>
+            <span className="text-xs font-medium text-destructive">{isEn ? 'Suspended' : 'Suspendues'}</span>
             <div className="h-8 w-8 rounded-full bg-destructive/10 flex items-center justify-center">
               <ShieldAlert className="h-4 w-4 text-destructive" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-destructive">{suspendedCount}</span>
-            <span className="text-xs text-muted-foreground">impayés</span>
+            <span className="text-xs text-muted-foreground">{isEn ? 'unpaid' : 'impayés'}</span>
           </div>
         </button>
 
@@ -113,7 +119,7 @@ export const DashboardSuperAdmin: React.FC = () => {
           className="rounded-xl border border-border bg-card p-4 space-y-2 text-left hover:border-primary/40 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Revenus</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Revenue' : 'Revenus'}</span>
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
@@ -129,11 +135,15 @@ export const DashboardSuperAdmin: React.FC = () => {
         <div className="lg:col-span-2 rounded-xl border border-border bg-card">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <Activity className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold text-foreground">Activité Récente</h2>
+            <h2 className="text-sm font-semibold text-foreground">
+              {isEn ? 'Recent Activity' : 'Activité Récente'}
+            </h2>
           </div>
           <div className="divide-y divide-border max-h-64 overflow-y-auto">
             {filteredActivity.length === 0 ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">Aucune activité sur cette période</div>
+              <div className="p-6 text-center text-sm text-muted-foreground">
+                {isEn ? 'No activity during this period' : 'Aucune activité sur cette période'}
+              </div>
             ) : (
               filteredActivity.map((item) => (
                 <div key={item.id} className="px-4 py-3 flex items-start gap-3">
@@ -144,7 +154,7 @@ export const DashboardSuperAdmin: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-foreground">{item.text}</p>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {new Date(item.date).toLocaleDateString(isEn ? 'en-US' : 'fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </span>
                   </div>
                 </div>
@@ -156,7 +166,9 @@ export const DashboardSuperAdmin: React.FC = () => {
         {/* Accès Rapides */}
         <div className="rounded-xl border border-border bg-card">
           <div className="px-4 py-3 border-b border-border">
-            <h2 className="text-sm font-semibold text-foreground">Accès Rapides</h2>
+            <h2 className="text-sm font-semibold text-foreground">
+              {isEn ? 'Quick Actions' : 'Accès Rapides'}
+            </h2>
           </div>
           <div className="p-3 space-y-2">
             <button
@@ -167,8 +179,12 @@ export const DashboardSuperAdmin: React.FC = () => {
                 <Building2 className="h-4 w-4" />
               </div>
               <div>
-                <span className="text-sm font-medium text-foreground">Organisations</span>
-                <p className="text-xs text-muted-foreground">Gérer les tenants</p>
+                <span className="text-sm font-medium text-foreground">
+                  {isEn ? 'Organizations' : 'Organisations'}
+                </span>
+                <p className="text-xs text-muted-foreground">
+                  {isEn ? 'Manage tenants' : 'Gérer les tenants'}
+                </p>
               </div>
             </button>
             <button
@@ -179,8 +195,12 @@ export const DashboardSuperAdmin: React.FC = () => {
                 <TrendingUp className="h-4 w-4" />
               </div>
               <div>
-                <span className="text-sm font-medium text-foreground">Facturation</span>
-                <p className="text-xs text-muted-foreground">Paiements & abonnements</p>
+                <span className="text-sm font-medium text-foreground">
+                  {isEn ? 'Billing' : 'Facturation'}
+                </span>
+                <p className="text-xs text-muted-foreground">
+                  {isEn ? 'Payments & subscriptions' : 'Paiements & abonnements'}
+                </p>
               </div>
             </button>
             <button
@@ -191,8 +211,12 @@ export const DashboardSuperAdmin: React.FC = () => {
                 <Globe2 className="h-4 w-4" />
               </div>
               <div>
-                <span className="text-sm font-medium text-foreground">Statistiques</span>
-                <p className="text-xs text-muted-foreground">Métriques plateforme</p>
+                <span className="text-sm font-medium text-foreground">
+                  {isEn ? 'Analytics' : 'Statistiques'}
+                </span>
+                <p className="text-xs text-muted-foreground">
+                  {isEn ? 'Platform metrics' : 'Métriques plateforme'}
+                </p>
               </div>
             </button>
           </div>
@@ -202,7 +226,9 @@ export const DashboardSuperAdmin: React.FC = () => {
       {/* Top Organisations */}
       <div className="rounded-xl border border-border bg-card">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">Top Organisations</h2>
+          <h2 className="text-sm font-semibold text-foreground">
+            {isEn ? 'Top Organizations' : 'Top Organisations'}
+          </h2>
           <button
             onClick={() => navigate('/super-admin/organisations')}
             className="text-xs text-primary hover:underline"

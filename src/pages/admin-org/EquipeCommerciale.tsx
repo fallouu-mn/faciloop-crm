@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserPlus, UserCheck, Shield, X, Check, Mail, Phone, MessageSquare, Power } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export const EquipeCommerciale: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { commerciaux: team, addCommercial, toggleCommercialStatus } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  const isEn = i18n.language?.startsWith('en');
 
   const [nom, setNom] = useState<string>('');
   const [prenom, setPrenom] = useState<string>('');
@@ -32,10 +36,10 @@ export const EquipeCommerciale: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-            Gestion de l'Équipe Commerciale
+            {isEn ? 'Sales Team Management' : "Gestion de l'Équipe Commerciale"}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Gérez l'accès des commerciaux de votre entreprise
+            {isEn ? 'Manage access for your company sales representatives' : "Gérez l'accès des commerciaux de votre entreprise"}
           </p>
         </div>
 
@@ -44,7 +48,7 @@ export const EquipeCommerciale: React.FC = () => {
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
         >
           <UserPlus className="h-4 w-4 shrink-0" />
-          <span>Ajouter un commercial</span>
+          <span>{isEn ? '+ Add Sales Rep' : 'Ajouter un commercial'}</span>
         </button>
       </div>
 
@@ -53,10 +57,10 @@ export const EquipeCommerciale: React.FC = () => {
         <table className="w-full text-left text-xs min-w-[650px]">
           <thead className="border-b border-border/80 bg-muted/60 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
             <tr>
-              <th className="p-4">Commercial</th>
+              <th className="p-4">{isEn ? 'Sales Rep' : 'Commercial'}</th>
               <th className="p-4">Email</th>
-              <th className="p-4">Téléphone</th>
-              <th className="p-4">Statut</th>
+              <th className="p-4">{isEn ? 'Phone' : 'Téléphone'}</th>
+              <th className="p-4">{isEn ? 'Status' : 'Statut'}</th>
               <th className="p-4 text-right">Action</th>
             </tr>
           </thead>
