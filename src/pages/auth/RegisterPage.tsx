@@ -6,10 +6,14 @@ import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { PinInput } from '../../components/common/PinInput';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
+import { useTranslation } from 'react-i18next';
 
 export const RegisterPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  const isEn = i18n.language?.startsWith('en');
 
   const [prenom, setPrenom] = useState<string>('');
   const [nom, setNom] = useState<string>('');
@@ -37,32 +41,32 @@ export const RegisterPage: React.FC = () => {
     setErrorMsg(null);
 
     if (!prenom.trim() || !nom.trim()) {
-      setErrorMsg('Veuillez renseigner votre prénom et votre nom');
+      setErrorMsg(isEn ? 'Please enter your first and last name' : 'Veuillez renseigner votre prénom et votre nom');
       return;
     }
 
     if (!entreprise.trim()) {
-      setErrorMsg("Le nom de votre entreprise est indispensable");
+      setErrorMsg(isEn ? 'Company name is required' : "Le nom de votre entreprise est indispensable");
       return;
     }
 
     if (!phone || phone.length < 9) {
-      setErrorMsg('Veuillez entrer un numéro de téléphone valide');
+      setErrorMsg(isEn ? 'Please enter a valid phone number' : 'Veuillez entrer un numéro de téléphone valide');
       return;
     }
 
     if (pin.length < 6) {
-      setErrorMsg('Le code secret doit comporter exactement 6 chiffres');
+      setErrorMsg(isEn ? 'PIN code must contain exactly 6 digits' : 'Le code secret doit comporter exactement 6 chiffres');
       return;
     }
 
     if (pin !== confirmPin) {
-      setErrorMsg('Les deux codes secrets ne correspondent pas');
+      setErrorMsg(isEn ? 'The two PIN codes do not match' : 'Les deux codes secrets ne correspondent pas');
       return;
     }
 
     if (!acceptTerms) {
-      setErrorMsg("Veuillez accepter les Conditions Générales d'Utilisation");
+      setErrorMsg(isEn ? 'Please accept the Terms of Service' : "Veuillez accepter les Conditions Générales d'Utilisation");
       return;
     }
 
@@ -87,16 +91,18 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 font-sans">
       <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-sm my-6">
         {/* Header */}
         <div className="text-center px-6 pt-6 pb-4">
           <div className="flex justify-center mb-4">
             <FaciloopBrand className="h-12 w-auto" />
           </div>
-          <h1 className="text-xl font-medium text-foreground">Créer votre compte</h1>
+          <h1 className="text-xl font-medium text-foreground">
+            {isEn ? 'Create your account' : 'Créer votre compte'}
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Inscrivez-vous et gérez votre activité simplement
+            {isEn ? 'Sign up and manage your sales activity easily' : 'Inscrivez-vous et gérez votre activité simplement'}
           </p>
         </div>
 
@@ -105,7 +111,9 @@ export const RegisterPage: React.FC = () => {
           {/* Prénom / Nom */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Prénom *</label>
+              <label className="text-sm font-medium text-foreground">
+                {isEn ? 'First Name *' : 'Prénom *'}
+              </label>
               <input
                 type="text"
                 required
@@ -117,7 +125,9 @@ export const RegisterPage: React.FC = () => {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Nom *</label>
+              <label className="text-sm font-medium text-foreground">
+                {isEn ? 'Last Name *' : 'Nom *'}
+              </label>
               <input
                 type="text"
                 required
@@ -132,22 +142,28 @@ export const RegisterPage: React.FC = () => {
 
           {/* Entreprise */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Nom de votre entreprise *</label>
+            <label className="text-sm font-medium text-foreground">
+              {isEn ? 'Company Name *' : 'Nom de votre entreprise *'}
+            </label>
             <input
               type="text"
               required
               value={entreprise}
               onChange={(e) => setEntreprise(e.target.value)}
-              placeholder="Ex : Salon Aminata, Boutique Diallo..."
+              placeholder={isEn ? "E.g.: Salon Aminata, Boutique Diallo..." : "Ex : Salon Aminata, Boutique Diallo..."}
               disabled={loading}
               className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none disabled:opacity-50 transition-all"
             />
-            <p className="text-xs text-muted-foreground">Indispensable pour accéder aux abonnements</p>
+            <p className="text-xs text-muted-foreground">
+              {isEn ? 'Required to access subscription plans' : 'Indispensable pour accéder aux abonnements'}
+            </p>
           </div>
 
           {/* Téléphone */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Téléphone *</label>
+            <label className="text-sm font-medium text-foreground">
+              {isEn ? 'Phone Number *' : 'Téléphone *'}
+            </label>
             <PhoneInput
               value={phone}
               onChange={setPhone}
@@ -164,7 +180,7 @@ export const RegisterPage: React.FC = () => {
               className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
             >
               <Gift className="h-4 w-4" />
-              <span>Vous avez un code de parrainage ?</span>
+              <span>{isEn ? 'Do you have a referral code?' : 'Vous avez un code de parrainage ?'}</span>
               {showParrainage ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
             </button>
 
@@ -187,9 +203,11 @@ export const RegisterPage: React.FC = () => {
             showPin={showCode}
             onToggleShow={() => setShowCode(!showCode)}
             disabled={loading}
-            label="Code secret (6 chiffres) *"
+            label={isEn ? 'Secret PIN code (6 digits) *' : 'Code secret (6 chiffres) *'}
           />
-          <p className="text-xs text-muted-foreground text-center -mt-1">Ce code vous servira à vous connecter</p>
+          <p className="text-xs text-muted-foreground text-center -mt-1">
+            {isEn ? 'This code will be used to log into your account' : 'Ce code vous servira à vous connecter'}
+          </p>
 
           {/* Confirmation code */}
           <div className="space-y-2">
@@ -200,18 +218,18 @@ export const RegisterPage: React.FC = () => {
                 showPin={showConfirmCode}
                 onToggleShow={() => setShowConfirmCode(!showConfirmCode)}
                 disabled={loading}
-                label="Confirmez le code *"
+                label={isEn ? 'Confirm PIN code *' : 'Confirmez le code *'}
               />
             </div>
             <div className="flex items-center justify-center gap-1.5">
               {pinsMatch && (
                 <span className="flex items-center gap-1 text-xs text-emerald-600">
-                  <CheckCircle className="h-3.5 w-3.5" /> Codes identiques
+                  <CheckCircle className="h-3.5 w-3.5" /> {isEn ? 'PIN codes match' : 'Codes identiques'}
                 </span>
               )}
               {pinsMismatch && (
                 <span className="flex items-center gap-1 text-xs text-destructive">
-                  <XCircle className="h-3.5 w-3.5" /> Les codes ne correspondent pas
+                  <XCircle className="h-3.5 w-3.5" /> {isEn ? 'PIN codes do not match' : 'Les codes ne correspondent pas'}
                 </span>
               )}
             </div>
@@ -219,31 +237,37 @@ export const RegisterPage: React.FC = () => {
 
           {/* Question secrète */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Question secrète *</label>
+            <label className="text-sm font-medium text-foreground">
+              {isEn ? 'Security Question *' : 'Question secrète *'}
+            </label>
             <select
               value={questionSecrete}
               onChange={(e) => setQuestionSecrete(e.target.value)}
               disabled={loading}
               className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none disabled:opacity-50 transition-all"
             >
-              <option value="">Choisissez une question</option>
-              <option value="animal">Quel est le nom de votre premier animal domestique ?</option>
-              <option value="ville">Quelle est votre ville de naissance ?</option>
-              <option value="mere">Quel est le prénom de votre mère ?</option>
-              <option value="ecole">{"Quel est le nom de votre première école ?"}</option>
+              <option value="">{isEn ? 'Choose a question' : 'Choisissez une question'}</option>
+              <option value="animal">{isEn ? 'What is the name of your first pet?' : 'Quel est le nom de votre premier animal domestique ?'}</option>
+              <option value="ville">{isEn ? 'What is your birthplace city?' : 'Quelle est votre ville de naissance ?'}</option>
+              <option value="mere">{isEn ? "What is your mother's first name?" : 'Quel est le prénom de votre mère ?'}</option>
+              <option value="ecole">{isEn ? 'What is the name of your first school?' : 'Quel est le nom de votre première école ?'}</option>
             </select>
-            <p className="text-xs text-muted-foreground">Servira à récupérer votre compte</p>
+            <p className="text-xs text-muted-foreground">
+              {isEn ? 'Used to recover your account' : 'Servira à récupérer votre compte'}
+            </p>
           </div>
 
           {questionSecrete && (
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Réponse secrète *</label>
+              <label className="text-sm font-medium text-foreground">
+                {isEn ? 'Security Answer *' : 'Réponse secrète *'}
+              </label>
               <input
                 type="text"
                 required
                 value={reponseSecrete}
                 onChange={(e) => setReponseSecrete(e.target.value)}
-                placeholder="Votre réponse..."
+                placeholder={isEn ? 'Your answer...' : 'Votre réponse...'}
                 disabled={loading}
                 className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none disabled:opacity-50 transition-all"
               />
@@ -261,10 +285,10 @@ export const RegisterPage: React.FC = () => {
               className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer mt-0.5"
             />
             <label htmlFor="acceptTerms" className="text-xs text-muted-foreground cursor-pointer leading-relaxed">
-              {"J'accepte les "}
-              <span className="text-primary hover:underline">Conditions Générales</span>
-              {" et la "}
-              <span className="text-primary hover:underline">Politique de Confidentialité</span>.
+              {isEn ? 'I accept the ' : "J'accepte les "}
+              <span className="text-primary hover:underline">{isEn ? 'Terms of Service' : 'Conditions Générales'}</span>
+              {isEn ? ' and the ' : ' et la '}
+              <span className="text-primary hover:underline">{isEn ? 'Privacy Policy' : 'Politique de Confidentialité'}</span>.
             </label>
           </div>
 
@@ -285,7 +309,7 @@ export const RegisterPage: React.FC = () => {
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                <span>{"S'inscrire et continuer"}</span>
+                <span>{isEn ? 'Sign Up and Continue' : "S'inscrire et continuer"}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -295,9 +319,9 @@ export const RegisterPage: React.FC = () => {
         {/* Footer */}
         <div className="px-6 py-4 text-center">
           <p className="text-sm text-muted-foreground">
-            Déjà un compte ?{' '}
+            {isEn ? 'Already have an account? ' : 'Déjà un compte ? '}
             <Link to="/login" className="text-primary hover:underline">
-              Se connecter
+              {isEn ? 'Log in' : 'Se connecter'}
             </Link>
           </p>
         </div>
