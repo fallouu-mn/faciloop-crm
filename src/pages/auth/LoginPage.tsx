@@ -15,8 +15,11 @@ export const LoginPage: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
+  const { t, i18n } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const isEn = i18n.language?.startsWith('en');
 
   const redirectByRole = (role: string) => {
     if (role === 'super_admin') {
@@ -33,13 +36,13 @@ export const LoginPage: React.FC = () => {
     setErrorMsg(null);
 
     if (!phone || phone.length < 9) {
-      setErrorMsg('Veuillez entrer un numéro de téléphone valide');
+      setErrorMsg(isEn ? 'Please enter a valid phone number' : 'Veuillez entrer un numéro de téléphone valide');
       return;
     }
 
     const pin = codeDigits.join('');
     if (pin.length < 6) {
-      setErrorMsg('Veuillez renseigner le code secret à 6 chiffres');
+      setErrorMsg(isEn ? 'Please enter your 6-digit secret PIN code' : 'Veuillez renseigner le code secret à 6 chiffres');
       return;
     }
 
@@ -49,10 +52,10 @@ export const LoginPage: React.FC = () => {
       if (session) {
         redirectByRole(session.role);
       } else {
-        setErrorMsg('Numéro de téléphone ou code secret incorrect');
+        setErrorMsg(isEn ? 'Incorrect phone number or PIN code' : 'Numéro de téléphone ou code secret incorrect');
       }
     } catch {
-      setErrorMsg('Erreur de connexion. Veuillez réessayer.');
+      setErrorMsg(isEn ? 'Connection error. Please try again.' : 'Erreur de connexion. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -80,9 +83,9 @@ export const LoginPage: React.FC = () => {
           <div className="flex justify-center mb-4">
             <FaciloopBrand className="h-12 w-auto" />
           </div>
-          <h1 className="text-xl font-medium text-foreground">Connectez-vous</h1>
+          <h1 className="text-xl font-medium text-foreground">{isEn ? 'Log in to your account' : 'Connectez-vous'}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Gérez vos clients et votre activité simplement
+            {isEn ? 'Manage your prospects and sales activity simply' : 'Gérez vos clients et votre activité simplement'}
           </p>
         </div>
 
@@ -90,7 +93,7 @@ export const LoginPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="px-6 space-y-5">
           {/* Phone */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Téléphone</label>
+            <label className="text-sm font-medium text-foreground">{isEn ? 'Phone Number' : 'Téléphone'}</label>
             <PhoneInput
               value={phone}
               onChange={setPhone}
@@ -106,7 +109,7 @@ export const LoginPage: React.FC = () => {
             showPin={showCode}
             onToggleShow={() => setShowCode(!showCode)}
             disabled={loading}
-            label="Code secret (6 chiffres)"
+            label={isEn ? 'Secret PIN code (6 digits)' : 'Code secret (6 chiffres)'}
           />
 
           <p className="text-center">
@@ -114,7 +117,7 @@ export const LoginPage: React.FC = () => {
               to="/forgot-pin"
               className="text-xs text-muted-foreground hover:underline hover:text-primary transition-colors"
             >
-              Code secret oublié ?
+              {isEn ? 'Forgot secret PIN code?' : 'Code secret oublié ?'}
             </Link>
           </p>
 
@@ -128,7 +131,7 @@ export const LoginPage: React.FC = () => {
               className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
             />
             <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
-              Se souvenir de moi
+              {isEn ? 'Remember me' : 'Se souvenir de moi'}
             </label>
           </div>
 
@@ -148,7 +151,7 @@ export const LoginPage: React.FC = () => {
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              'Se connecter'
+              isEn ? 'Log in' : 'Se connecter'
             )}
           </button>
         </form>
@@ -156,9 +159,9 @@ export const LoginPage: React.FC = () => {
         {/* Footer */}
         <div className="px-6 py-4 text-center">
           <p className="text-sm text-muted-foreground">
-            Pas encore de compte ?{' '}
+            {isEn ? "Don't have an account yet?" : "Pas encore de compte ?"}{' '}
             <Link to="/signup" className="text-primary hover:underline">
-              Créer un compte
+              {isEn ? 'Create an account' : 'Créer un compte'}
             </Link>
           </p>
         </div>

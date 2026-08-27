@@ -38,6 +38,7 @@ import {
   CalendarClock
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ColumnDef {
@@ -337,8 +338,11 @@ function formatMoney(amount: number, curr: Currency): string {
 }
 
 export const ProspectKanban: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { user, myProspects, updateProspectStatus, convertProspectToClient, orgOffers, currency, setCurrency } = useAuth();
   const navigate = useNavigate();
+
+  const isEn = i18n.language?.startsWith('en');
   const isAdmin = user?.role === 'admin_org' || user?.role === 'super_admin';
   const prospectBasePath = isAdmin ? '/admin/prospects' : '/app/prospects';
   const activeCurrency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === currency)?.[0] || 'XOF') as Currency;
@@ -465,16 +469,18 @@ export const ProspectKanban: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
-              Pipeline Commercial Kanban
+              {isEn ? 'Sales Kanban Pipeline' : 'Pipeline Commercial Kanban'}
             </h1>
             {user?.role === 'commercial' && (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-black flex items-center gap-1">
-                <Lock className="w-3 h-3" /> Portefeuille Personnel
+                <Lock className="w-3 h-3" /> {isEn ? 'Personal Portfolio' : 'Portefeuille Personnel'}
               </span>
             )}
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5">
-            Suivi ergonomique vertical ou tableau Kanban horizontal de votre pipeline commercial
+            {isEn 
+              ? 'Ergonomic vertical card view or horizontal Kanban board for your sales pipeline'
+              : 'Suivi ergonomique vertical ou tableau Kanban horizontal de votre pipeline commercial'}
           </p>
         </div>
 

@@ -9,13 +9,27 @@ const resources = {
   en: { translation: en }
 };
 
-const savedLang = localStorage.getItem('i18nextLng') || 'fr';
+const getInitialLanguage = (): string => {
+  const saved = localStorage.getItem('i18nextLng');
+  if (saved) return saved;
+
+  if (typeof window !== 'undefined' && window.navigator) {
+    const navLang = window.navigator.language || (window.navigator as any).userLanguage || '';
+    if (navLang.toLowerCase().startsWith('en')) {
+      return 'en';
+    }
+  }
+
+  return 'fr';
+};
+
+const initialLang = getInitialLanguage();
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: savedLang,
+    lng: initialLang,
     fallbackLng: 'fr',
     interpolation: {
       escapeValue: false
