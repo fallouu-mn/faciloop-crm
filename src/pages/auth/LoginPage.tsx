@@ -6,6 +6,7 @@ import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { PinInput } from '../../components/common/PinInput';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
+import { useTranslation } from 'react-i18next';
 
 export const LoginPage: React.FC = () => {
   const [phone, setPhone] = useState<string>('');
