@@ -90,9 +90,12 @@ const DashboardSkeleton: React.FC = () => (
 
 // ─── Main Component ───────────────────────────────────────────
 export const DashboardCommercial: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { user, myProspects, myRelances, commissions, objectifs, paiements, currency, setCurrency } = useAuth();
   const activeCurrency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === currency)?.[0] || 'XOF') as Currency;
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const isEn = i18n.language?.startsWith('en');
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
