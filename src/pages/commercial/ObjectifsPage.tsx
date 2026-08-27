@@ -31,6 +31,28 @@ function getProgressText(pct: number, isEn: boolean): string {
   return 'Overdue';
 }
 
+const TYPE_ICONS: Record<string, string> = {
+  ca: 'FCFA',
+  ventes: 'ventes',
+  prospects: 'prospects',
+  rdv: 'RDV',
+};
+
+const getTypeLabel = (type: string, isEn: boolean) => {
+  if (!isEn) {
+    if (type === 'ca') return "Chiffre d'affaires";
+    if (type === 'ventes') return 'Ventes conclues';
+    if (type === 'prospects') return 'Prospects créés';
+    if (type === 'rdv') return 'RDV réalisés';
+    return type;
+  }
+  if (type === 'ca') return 'Revenue';
+  if (type === 'ventes') return 'Closed deals';
+  if (type === 'prospects') return 'Prospects created';
+  if (type === 'rdv') return 'Meetings done';
+  return type;
+};
+
 export const ObjectifsPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { user, objectifs, currency, setCurrency } = useAuth();
@@ -141,10 +163,10 @@ export const ObjectifsPage: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="text-xs sm:text-sm font-extrabold text-foreground">
-                        {TYPE_LABELS[obj.type] || obj.type}
+                        {getTypeLabel(obj.type, isEn)}
                       </h3>
                       <p className="text-[10px] text-muted-foreground font-semibold">
-                        Période : {obj.periode}
+                        {isEn ? 'Period:' : 'Période :'} {obj.periode}
                       </p>
                     </div>
                   </div>
@@ -155,7 +177,7 @@ export const ObjectifsPage: React.FC = () => {
                     pct >= 50 ? 'bg-amber-500/10 text-amber-600' :
                     'bg-rose-500/10 text-rose-600'
                   }`}>
-                    {getProgressText(pct)}
+                    {getProgressText(pct, isEn)}
                   </span>
                 </div>
 
