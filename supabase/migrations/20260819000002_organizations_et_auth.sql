@@ -1,24 +1,26 @@
--- Migration CRM Faciloop : Tables organizations, user_roles + fonctions auth
-
 -- ============================================
+-- Migration 2 : Tables organizations, user_roles + fonctions auth + RLS
+-- ============================================
+
 -- 1. TABLE organizations
--- ============================================
-
 CREATE TABLE organizations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   nom TEXT NOT NULL,
   logo_url TEXT,
   devise_defaut TEXT DEFAULT 'XOF',
   statut statut_organization DEFAULT 'actif',
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
 
--- ============================================
--- 2. TABLE user_roles
--- ============================================
+CREATE TRIGGER set_organizations_updated_at
+  BEFORE UPDATE ON organizations
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
 
+-- 2. TABLE user_roles
 CREATE TABLE user_roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -31,10 +33,7 @@ CREATE TABLE user_roles (
 
 ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
 
--- ============================================
 -- 3. FONCTION is_super_admin
--- ============================================
-
 CREATE OR REPLACE FUNCTION is_super_admin(_user_id UUID)
 RETURNS BOOLEAN
 LANGUAGE sql
@@ -48,10 +47,7 @@ AS $$
   );
 $$;
 
--- ============================================
 -- 4. FONCTION has_role
--- ============================================
-
 CREATE OR REPLACE FUNCTION has_role(_user_id UUID, _role role_crm)
 RETURNS BOOLEAN
 LANGUAGE sql
@@ -65,10 +61,7 @@ AS $$
   );
 $$;
 
--- ============================================
 -- 5. FONCTION get_user_organization_id
--- ============================================
-
 CREATE OR REPLACE FUNCTION get_user_organization_id(_user_id UUID)
 RETURNS UUID
 LANGUAGE sql
@@ -81,10 +74,7 @@ AS $$
   LIMIT 1;
 $$;
 
--- ============================================
--- 6. RLS POLICIES sur organizations
--- ============================================
-
+-- 6. RLS sur organizations
 CREATE POLICY "Super admin full access"
   ON organizations FOR ALL TO authenticated
   USING (is_super_admin(auth.uid()))
@@ -94,10 +84,18 @@ CREATE POLICY "Admin org can view own org"
   ON organizations FOR SELECT TO authenticated
   USING (id = get_user_organization_id(auth.uid()));
 
--- ============================================
--- 7. RLS POLICIES sur user_roles
--- ============================================
+CREATE POLICY "Admin org can update own org"
+  ON organizations FOR UPDATE TO authenticated
+  USING (
+    id = get_user_organization_id(auth.uid())
+    AND has_role(auth.uid(), 'admin_org')
+  )
+  WITH CHECK (
+    id = get_user_organization_id(auth.uid())
+    AND has_role(auth.uid(), 'admin_org')
+  );
 
+-- 7. RLS sur user_roles
 CREATE POLICY "Super admin full access"
   ON user_roles FOR ALL TO authenticated
   USING (is_super_admin(auth.uid()))

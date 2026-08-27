@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { UserRole, Organization, Commercial, Prospect, Relance, Interaction, NotificationItem, ClientFaciloop, Paiement, ActionLog, ActionLogType } from '../types/crm';
+import { UserRole, Organization, Commercial, Prospect, Relance, Interaction, NotificationItem, ClientFaciloop, Paiement, ActionLog, ActionLogType, ModePaiement } from '../types/crm';
 import { mockOrganizations, mockCommerciaux, mockProspects, mockRelances, mockInteractions, mockNotifications, mockClients, mockPaiements, mockActionLogs } from '../lib/mockData';
 import { formatPhoneNumber } from '../lib/phoneUtils';
 import { OrgOffer, mockOrgOffers, ObjectifCommercialAdmin, mockObjectifsAdmin, CommissionEntry, mockCommissions } from '../lib/mockAdminOrg';
@@ -49,7 +49,7 @@ interface AuthContextType {
   
   addInteraction: (i: Omit<Interaction, 'id' | 'created_at' | 'organization_id'>) => void;
   markNotificationAsRead: (id: string) => void;
-  convertProspectToClient: (prospectId: string, formule: string, options?: { frequence?: string; montant?: number; modePaiement?: string }) => void;
+  convertProspectToClient: (prospectId: string, formule: string, options?: { frequence?: string; montant?: number; modePaiement?: ModePaiement }) => void;
 
   // Org-specific offers (Admin Org → ses propres offres pour ses clients)
   orgOffers: OrgOffer[];
@@ -563,7 +563,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const convertProspectToClient = (prospectId: string, formule: string, options?: { frequence?: string; montant?: number; modePaiement?: string }) => {
+  const convertProspectToClient = (prospectId: string, formule: string, options?: { frequence?: string; montant?: number; modePaiement?: ModePaiement }) => {
     const p = prospects.find(item => item.id === prospectId);
     if (!p) return;
 

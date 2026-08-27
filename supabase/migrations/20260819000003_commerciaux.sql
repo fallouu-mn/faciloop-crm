@@ -1,7 +1,5 @@
--- Migration CRM Faciloop : Table commerciaux
-
 -- ============================================
--- 1. TABLE commerciaux
+-- Migration 3 : Table commerciaux
 -- ============================================
 
 CREATE TABLE commerciaux (
@@ -20,19 +18,12 @@ CREATE TABLE commerciaux (
 
 ALTER TABLE commerciaux ENABLE ROW LEVEL SECURITY;
 
--- ============================================
--- 2. TRIGGER set_commerciaux_updated_at
--- ============================================
-
 CREATE TRIGGER set_commerciaux_updated_at
   BEFORE UPDATE ON commerciaux
   FOR EACH ROW
   EXECUTE FUNCTION set_updated_at();
 
--- ============================================
--- 3. RLS POLICIES
--- ============================================
-
+-- RLS
 CREATE POLICY "Super admin full access"
   ON commerciaux FOR ALL TO authenticated
   USING (is_super_admin(auth.uid()))

@@ -1,25 +1,24 @@
--- Migration CRM Faciloop : Table prospects
-
 -- ============================================
--- 1. TABLE prospects
+-- Migration 4 : Table prospects
 -- ============================================
 
 CREATE TABLE prospects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   commercial_id UUID NOT NULL REFERENCES commerciaux(id),
+  commercial_nom TEXT,
   nom TEXT NOT NULL,
   prenom TEXT,
-  entreprise TEXT,
+  entreprise TEXT NOT NULL,
   telephone TEXT NOT NULL,
   whatsapp TEXT,
   email TEXT,
-  pays TEXT NOT NULL,
+  pays TEXT,
   ville TEXT,
   adresse TEXT,
   secteur_activite TEXT,
-  source source_prospect NOT NULL,
-  statut_pipeline etape_pipeline DEFAULT 'nouveau_prospect',
+  source source_prospect NOT NULL DEFAULT 'autre',
+  statut_pipeline etape_pipeline DEFAULT 'nouveau',
   formule_envisagee TEXT,
   budget_estime INTEGER,
   commentaire TEXT,
@@ -33,19 +32,12 @@ CREATE TABLE prospects (
 
 ALTER TABLE prospects ENABLE ROW LEVEL SECURITY;
 
--- ============================================
--- 2. TRIGGER set_prospects_updated_at
--- ============================================
-
 CREATE TRIGGER set_prospects_updated_at
   BEFORE UPDATE ON prospects
   FOR EACH ROW
   EXECUTE FUNCTION set_updated_at();
 
--- ============================================
--- 3. RLS POLICIES
--- ============================================
-
+-- RLS
 CREATE POLICY "Super admin full access"
   ON prospects FOR ALL TO authenticated
   USING (is_super_admin(auth.uid()))

@@ -1,6 +1,7 @@
 -- ============================================
 -- Migration 1 : Enums + Fonction utilitaire
 -- Faciloop CRM Multi-Tenant
+-- Aligné sur les types TypeScript du front
 -- ============================================
 
 -- 1. Rôles CRM
@@ -9,192 +10,124 @@ CREATE TYPE role_crm AS ENUM ('super_admin', 'admin_org', 'commercial');
 -- 2. Statut organisation
 CREATE TYPE statut_organization AS ENUM ('actif', 'inactif', 'suspendu');
 
--- 3. Pipeline 12 étapes
+-- 3. Pipeline 12 étapes (aligné sur PipelineStepId du front)
 CREATE TYPE etape_pipeline AS ENUM (
-  'nouveau_prospect',
+  'nouveau',
   'a_contacter',
   'contacte',
   'interesse',
   'rdv_programme',
   'demo_realisee',
   'essai_en_cours',
-  'proposition_envoyee',
-  'paiement_en_attente',
-  'client_gagne',
-  'a_relancer_plus_tard',
-  'prospect_perdu'
+  'proposition',
+  'paiement_att',
+  'gagne',
+  'a_relancer',
+  'perdu'
 );
 
--- 4. Source prospect
+-- 4. Source prospect (aligné sur ProspectSource du front)
 CREATE TYPE source_prospect AS ENUM (
-  'prospection_terrain',
-  'appel_entrant',
-  'whatsapp',
-  'facebook',
-  'instagram',
-  'tiktok',
-  'site_internet',
+  'site_web',
+  'prospection_directe',
   'recommandation',
-  'partenaire',
+  'reseaux_sociaux',
+  'whatsapp',
   'evenement',
-  'programme_accompagnement',
-  'campagne_marketing',
   'autre'
 );
 
--- 5. Type action
-CREATE TYPE type_action AS ENUM (
-  'appel_effectue',
-  'appel_sans_reponse',
-  'message_whatsapp',
+-- 5. Type interaction (aligné sur InteractionType du front)
+CREATE TYPE type_interaction AS ENUM (
+  'appel',
+  'whatsapp',
   'email',
-  'visite_terrain',
+  'visite',
   'rdv',
   'demonstration',
-  'proposition_commerciale',
-  'relance',
-  'paiement_recu',
   'autre'
 );
 
--- 6. Motif perte
+-- 6. Motif perte (aligné sur MotifPerte du front)
 CREATE TYPE motif_perte AS ENUM (
   'prix_trop_eleve',
-  'absence_budget',
-  'pas_interesse',
-  'solution_non_adaptee',
-  'projet_reporte',
-  'impossible_a_joindre',
-  'concurrent_choisi',
-  'probleme_technique',
-  'decisionnaire_non_convaincu',
+  'concurrent',
+  'pas_de_besoin_actuel',
+  'injoignable',
+  'mauvais_timing',
   'autre'
 );
 
--- 7. Statut compte
-CREATE TYPE statut_compte AS ENUM (
-  'compte_a_creer',
-  'configuration_en_cours',
-  'actif',
-  'suspendu',
-  'inactif',
-  'resilie',
-  'compte_test'
-);
+-- 7. Statut compte client
+CREATE TYPE statut_compte AS ENUM ('actif', 'suspendu', 'inactif');
 
--- 8. Statut abonnement
-CREATE TYPE statut_abonnement_commercial AS ENUM (
-  'essai',
-  'en_attente_paiement',
-  'actif',
-  'paiement_partiel',
-  'paiement_en_retard',
-  'expire',
-  'suspendu',
-  'resilie'
-);
+-- 8. Statut abonnement (aligné sur AbonnementStatut du front)
+CREATE TYPE statut_abonnement AS ENUM ('actif', 'en_attente', 'expire', 'suspendu');
 
--- 9. Mode paiement
-CREATE TYPE mode_paiement_commercial AS ENUM (
+-- 9. Mode paiement (aligné sur ModePaiement du front)
+CREATE TYPE mode_paiement AS ENUM (
   'wave',
   'orange_money',
   'paytech',
   'stripe',
   'virement',
-  'especes',
-  'cheque',
-  'autre'
+  'espece'
 );
 
--- 10. Statut paiement
-CREATE TYPE statut_paiement_commercial AS ENUM (
-  'en_attente',
-  'paye',
-  'partiellement_paye',
-  'echoue',
-  'rembourse',
-  'annule'
-);
+-- 10. Statut paiement (aligné sur PaiementStatut du front)
+CREATE TYPE statut_paiement AS ENUM ('valide', 'en_attente', 'echoue', 'rembourse');
 
--- 11. Type action journal
+-- 11. Type action journal (aligné sur ActionLogType du front)
 CREATE TYPE type_action_journal AS ENUM (
-  'creation_utilisateur',
-  'modification_role',
-  'attribution_prospect',
-  'changement_commercial',
-  'modification_abonnement',
-  'activation_compte',
-  'desactivation_compte',
-  'suspension_compte',
-  'modification_paiement',
-  'suppression_fiche',
-  'archivage_fiche',
-  'export_donnees',
-  'conversion_client',
-  'changement_statut_pipeline',
-  'creation_prospect',
-  'modification_objectif'
+  'prospect_created',
+  'prospect_updated',
+  'prospect_pipeline_move',
+  'prospect_converted',
+  'prospect_lost',
+  'client_created',
+  'client_updated',
+  'offer_created',
+  'offer_updated',
+  'offer_deleted',
+  'subscription_created',
+  'subscription_updated',
+  'objectif_created',
+  'objectif_updated',
+  'payment_received',
+  'payment_updated',
+  'org_settings_updated',
+  'commercial_added',
+  'commercial_removed',
+  'prospect_reassigned',
+  'other'
 );
 
--- 12. Canal relance
+-- 12. Canal relance (aligné sur RelanceCanal du front)
 CREATE TYPE canal_relance AS ENUM ('appel', 'whatsapp', 'email', 'visite', 'autre');
 
--- 13. Type notification admin
-CREATE TYPE type_notification_admin_commercial AS ENUM (
-  'baisse_activite',
-  'prospect_non_traite',
-  'paiement_en_retard',
-  'abonnement_expire',
-  'client_inactif',
-  'compte_suspendu',
-  'objectif_non_atteint',
-  'prospects_perdus_anormal'
-);
+-- 13. Statut interaction (aligné sur InteractionStatut du front)
+CREATE TYPE statut_interaction AS ENUM ('planifiee', 'realisee', 'annulee');
 
--- 14. Type notification commercial
-CREATE TYPE type_notification_commercial AS ENUM (
-  'nouveau_prospect_attribue',
-  'relance_du_jour',
-  'relance_en_retard',
-  'rdv_a_venir',
-  'prospect_sans_activite',
-  'essai_bientot_termine',
-  'paiement_en_attente',
-  'renouvellement_a_venir'
-);
-
--- 15. Période objectif
-CREATE TYPE periode_objectif AS ENUM ('hebdomadaire', 'mensuel', 'trimestriel', 'annuel');
-
--- 16. Type objectif
-CREATE TYPE type_objectif AS ENUM (
-  'prospects_a_contacter',
-  'rdv',
-  'demonstrations',
-  'nouveaux_clients',
-  'ca_signe',
-  'ca_encaisse',
-  'renouvellements',
-  'taux_conversion'
-);
-
--- 17. Statut interaction
-CREATE TYPE statut_interaction AS ENUM ('prevue', 'realisee', 'annulee', 'en_retard');
-
--- 18. Statut relance
+-- 14. Statut relance (aligné sur RelanceStatut du front)
 CREATE TYPE statut_relance AS ENUM ('prevue', 'realisee', 'annulee', 'en_retard');
 
--- 19. Statut objectif
+-- 15. Période objectif (aligné sur ObjectifPeriode du front)
+CREATE TYPE periode_objectif AS ENUM ('mensuel', 'trimestriel', 'annuel');
+
+-- 16. Type objectif (aligné sur ObjectifType du front)
+CREATE TYPE type_objectif AS ENUM ('prospects', 'rdv', 'ventes', 'ca');
+
+-- 17. Statut objectif
 CREATE TYPE statut_objectif AS ENUM ('en_cours', 'atteint', 'non_atteint', 'depasse');
 
--- 20. Statut commercial
+-- 18. Statut commercial
 CREATE TYPE statut_commercial AS ENUM ('actif', 'inactif');
 
--- 21. Devise
-CREATE TYPE devise_commercial AS ENUM ('XOF', 'EUR', 'USD');
-
--- 22. Périodicité abonnement
+-- 19. Périodicité abonnement
 CREATE TYPE periodicite_abonnement AS ENUM ('mensuel', 'trimestriel', 'annuel');
+
+-- 20. Statut commission
+CREATE TYPE statut_commission AS ENUM ('a_verser', 'verse', 'annule');
 
 -- ============================================
 -- Fonction utilitaire : set_updated_at()
