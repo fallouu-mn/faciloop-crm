@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Prospect, MotifPerte, PipelineStepId } from '../../types/crm';
+import { Prospect, MotifPerte, PipelineStepId, ModePaiement } from '../../types/crm';
 import {
   DndContext,
   DragOverlay,
@@ -379,7 +379,7 @@ export const ProspectKanban: React.FC = () => {
   const [convMontant, setConvMontant] = useState<string>('');
   const [convDebut, setConvDebut] = useState<string>(new Date().toISOString().split('T')[0]);
   const [convFin, setConvFin] = useState<string>('');
-  const [convPaiement, setConvPaiement] = useState<string>('wave');
+  const [convPaiement, setConvPaiement] = useState<ModePaiement>('wave');
 
   // Auto-calculate montant from org offer tarifs
   const selectedOrgOffer = activeOrgOffers.find(o => o.nom === convOffre);
@@ -791,7 +791,7 @@ export const ProspectKanban: React.FC = () => {
                   <label className="block text-xs font-bold text-foreground mb-1">Mode de paiement</label>
                   <select
                     value={convPaiement}
-                    onChange={(e) => setConvPaiement(e.target.value)}
+                    onChange={(e) => setConvPaiement(e.target.value as ModePaiement)}
                     className="w-full p-3 rounded-xl border border-input bg-background text-xs font-bold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   >
                     <option value="wave">Wave</option>
