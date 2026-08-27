@@ -34,10 +34,12 @@ export const LandingPage: React.FC = () => {
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', currency), currency);
 
+  const isEn = i18n.language?.startsWith('en');
+
   const periodLabels: Record<Periodicite, string> = {
-    mensuel: '/mois',
-    trimestriel: '/3 mois',
-    annuel: '/an',
+    mensuel: isEn ? '/month' : '/mois',
+    trimestriel: isEn ? '/3 months' : '/3 mois',
+    annuel: isEn ? '/year' : '/an',
   };
 
   const getPrice = (f: typeof FORMULES[0]) => {
@@ -59,7 +61,14 @@ export const LandingPage: React.FC = () => {
   };
 
   const offerFeatures: Record<string, string[]> = {
-    Pro: [
+    Pro: isEn ? [
+      "Up to 3 sales reps",
+      "12-stage Kanban pipeline",
+      "Automated follow-ups",
+      "Anti-duplicate detection",
+      "CSV Export",
+      "Standard support",
+    ] : [
       "Jusqu'à 3 commerciaux",
       'Pipeline Kanban 12 étapes',
       'Relances automatiques',
@@ -67,7 +76,15 @@ export const LandingPage: React.FC = () => {
       'Export CSV',
       'Support standard',
     ],
-    Business: [
+    Business: isEn ? [
+      "Up to 10 sales reps",
+      "All Pro features",
+      "Team objectives",
+      "Action audit log",
+      "CSV Import & deduplication",
+      "Advanced analytics dashboard",
+      "24/7 priority support",
+    ] : [
       "Jusqu'à 10 commerciaux",
       'Toutes les fonctionnalités Pro',
       'Objectifs d\'équipe',
@@ -76,7 +93,15 @@ export const LandingPage: React.FC = () => {
       'Dashboard statistiques avancées',
       'Support prioritaire 24/7',
     ],
-    Premium: [
+    Premium: isEn ? [
+      "Unlimited sales reps",
+      "All Business features",
+      "API & integrations",
+      "White label",
+      "Dedicated account manager",
+      "Multi-organization (Super-Admin)",
+      "Onboarding & Training",
+    ] : [
       'Commerciaux illimités',
       'Toutes les fonctionnalités Business',
       'API & intégrations',
@@ -96,70 +121,92 @@ export const LandingPage: React.FC = () => {
   const features = [
     {
       icon: Kanban,
-      title: 'Pipeline Kanban 12 Étapes',
-      desc: 'Visualisez vos opportunités avec le glisser-déposer et les modales de motif de perte et conversion.',
+      title: isEn ? '12-Stage Kanban Pipeline' : 'Pipeline Kanban 12 Étapes',
+      desc: isEn
+        ? 'Visualize your opportunities with drag-and-drop, loss reason modals, and client conversion.'
+        : 'Visualisez vos opportunités avec le glisser-déposer et les modales de motif de perte et conversion.',
     },
     {
       icon: MessageSquare,
-      title: 'Déclencheur WhatsApp Direct',
-      desc: 'Lancez des conversations WhatsApp pré-remplies en 1 clic depuis la fiche prospect.',
+      title: isEn ? 'Direct WhatsApp Trigger' : 'Déclencheur WhatsApp Direct',
+      desc: isEn
+        ? 'Launch pre-filled WhatsApp conversations in 1 click right from the prospect card.'
+        : 'Lancez des conversations WhatsApp pré-remplies en 1 clic depuis la fiche prospect.',
     },
     {
       icon: CalendarClock,
-      title: 'Relances Quotidiennes',
-      desc: 'Gardez le contrôle sur les RDV du jour et éliminez les relances en retard.',
+      title: isEn ? 'Daily Follow-ups' : 'Relances Quotidiennes',
+      desc: isEn
+        ? 'Stay in control of today\'s meetings and eliminate overdue follow-ups.'
+        : 'Gardez le contrôle sur les RDV du jour et éliminez les relances en retard.',
     },
     {
       icon: ShieldCheck,
-      title: 'Isolation Multi-Tenant',
-      desc: 'Isolation stricte des portefeuilles par commercial avec vue globale Admin.',
+      title: isEn ? 'Multi-Tenant Isolation' : 'Isolation Multi-Tenant',
+      desc: isEn
+        ? 'Strict portfolio isolation per sales representative with global Admin view.'
+        : 'Isolation stricte des portefeuilles par commercial avec vue globale Admin.',
     },
     {
       icon: BarChart3,
-      title: 'Dashboard & Analytics',
-      desc: 'Suivez le CA, les conversions et comparez vos équipes avec des graphiques dynamiques.',
+      title: isEn ? 'Dashboard & Analytics' : 'Dashboard & Analytics',
+      desc: isEn
+        ? 'Track revenue, conversions, and compare sales team performance with dynamic charts.'
+        : 'Suivez le CA, les conversions et comparez vos équipes avec des graphiques dynamiques.',
     },
     {
       icon: Building2,
-      title: 'Import CSV & Réattribution',
-      desc: 'Importez des listes CSV avec détection des doublons et attribution en masse.',
+      title: isEn ? 'CSV Import & Reassignment' : 'Import CSV & Réattribution',
+      desc: isEn
+        ? 'Import CSV lists with duplicate detection and bulk assignment.'
+        : 'Importez des listes CSV avec détection des doublons et attribution en masse.',
     },
   ];
 
-  const pipelineSteps = [
+  const pipelineSteps = isEn ? [
+    'New', 'To Contact', 'Contacted', 'Interested', 'Meeting Set', 'Demo Done',
+    'Trial Ongoing', 'Proposal', 'Payment Pending', 'Won Client', 'To Follow-up', 'Lost',
+  ] : [
     'Nouveau', 'À contacter', 'Contacté', 'Intéressé', 'RDV programmé', 'Démo réalisée',
     'Essai en cours', 'Proposition', 'Paiement att.', 'Client gagné', 'À relancer', 'Perdu',
   ];
 
-  const stepDescriptions = [
+  const stepDescriptions = isEn ? [
+    "New Prospect: Automatic import with phone cleaning (E.164 +221) and anti-duplicate check.",
+    "To Contact: Prospect is ready for first contact by the sales representative.",
+    "Contacted: First exchange completed, qualifying interest.",
+    "Interested: Prospect confirmed interest in the Faciloop solution.",
+    "Meeting Set: Meeting date scheduled with automatic notification.",
+    "Demo Done: Product demonstration completed, awaiting feedback.",
+    "Trial Ongoing: Prospect is testing the platform.",
+    "Proposal: Quotation sent, pending agreement.",
+    "Payment Pending: Invoice sent, awaiting payment.",
+    "Won Client: Deal closed! Converted into an active client.",
+    "To Follow-up: Prospect on hold for scheduled later follow-up.",
+    "Lost Prospect: Mandatory loss reason for continuous improvement.",
+  ] : [
     "Nouveau Prospect : Import automatique avec nettoyage téléphone (E.164 +221) et anti-doublon.",
     "À Contacter : Le prospect est prêt pour la première prise de contact par le commercial.",
     "Contacté : Premier échange effectué, le commercial qualifie l'intérêt.",
     "Intéressé : Le prospect a confirmé son intérêt pour la solution Faciloop.",
     "RDV Programmé : Date de rendez-vous fixée avec notification automatique.",
     "Démo Réalisée : Démonstration produit effectuée, en attente de retour.",
-    "Essai en Cours : Le prospect teste actuellement la plateforme Faciloop.",
-    "Proposition Envoyée : Devis commercial transmis avec suivi du budget estimé.",
-    "Paiement en Attente : Facture transmise, en attente de règlement client.",
-    "Client Gagné ! Le prospect bascule en Client Faciloop avec génération d'accès.",
+    "Essai en Cours : Le prospect teste actuellement la plateforme.",
+    "Proposition : Devis envoyé, en attente de validation.",
+    "Paiement en Attente : Facture transmise, en attente de règlement.",
+    "Client Gagné : Vente conclue ! Conversion en client actif.",
     "À Relancer Plus Tard : Prospect mis en veille pour relance ultérieure programmée.",
     "Prospect Perdu : Motif de perte obligatoire pour l'amélioration continue.",
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-14 max-w-6xl mx-auto">
           <Link to="/" className="flex items-center">
             <FaciloopBrand className="h-8 sm:h-10" />
           </Link>
-
-          {/* <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
-            <a href="#demo" className="hover:text-foreground transition-colors">Démo</a>
-            <a href="#features" className="hover:text-foreground transition-colors">Fonctionnalités</a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">Tarifs</a>
-          </nav> */}
 
           <div className="flex items-center gap-2">
             {/* Theme toggle */}
@@ -169,7 +216,7 @@ export const LandingPage: React.FC = () => {
                 className={`p-1.5 rounded-full transition-all ${
                   !isDarkMode ? 'bg-amber-500 text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 }`}
-                title="Mode Clair"
+                title={isEn ? "Light Mode" : "Mode Clair"}
               >
                 <Sun className="w-3.5 h-3.5" />
               </button>
@@ -178,7 +225,7 @@ export const LandingPage: React.FC = () => {
                 className={`p-1.5 rounded-full transition-all ${
                   isDarkMode ? 'bg-gradient-faciloop text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 }`}
-                title="Mode Sombre"
+                title={isEn ? "Dark Mode" : "Mode Sombre"}
               >
                 <Moon className="w-3.5 h-3.5" />
               </button>
@@ -186,18 +233,11 @@ export const LandingPage: React.FC = () => {
 
             <Link
               to="/login"
-              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
             >
               <LockKeyhole className="h-4 w-4" />
-              <span>Connexion</span>
+              <span>{isEn ? 'Log in' : 'Connexion'}</span>
             </Link>
-            {/* <Link
-              to="/login"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-faciloop text-white text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity"
-            >
-              <span>Essai gratuit</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link> */}
           </div>
         </div>
       </header>
@@ -208,16 +248,27 @@ export const LandingPage: React.FC = () => {
           <FadeInOnScroll>
             <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-5">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>CRM B2B Multi-Entreprises 2.0</span>
+              <span>{isEn ? '#1 B2B Multi-Tenant CRM Solution' : 'CRM B2B Multi-Entreprises 2.0'}</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight max-w-4xl mx-auto">
-              Le CRM commercial B2B conçu pour accélérer vos ventes et{' '}
-              <span className="text-gradient-faciloop">convertir vos prospects</span>
+              {isEn ? (
+                <>
+                  The B2B sales CRM designed to accelerate your sales and{' '}
+                  <span className="text-gradient-faciloop">convert your prospects</span>
+                </>
+              ) : (
+                <>
+                  Le CRM commercial B2B conçu pour accélérer vos ventes et{' '}
+                  <span className="text-gradient-faciloop">convertir vos prospects</span>
+                </>
+              )}
             </h1>
 
-            <p className="mt-4 sm:mt-6 text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Suivi de portefeuille par commercial, pipeline Kanban 12 étapes, relances quotidiennes et déclencheur WhatsApp direct en 1 clic.
+            <p className="mt-4 sm:mt-6 text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto font-medium">
+              {isEn
+                ? 'Portfolio tracking per sales rep, 12-stage Kanban pipeline, daily follow-ups, and 1-click direct WhatsApp trigger.'
+                : 'Suivi de portefeuille par commercial, pipeline Kanban 12 étapes, relances quotidiennes et déclencheur WhatsApp direct en 1 clic.'}
             </p>
 
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -225,15 +276,15 @@ export const LandingPage: React.FC = () => {
                 to="/login"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
               >
-                <span>Accéder à la plateforme</span>
+                <span>{isEn ? 'Access Platform' : 'Accéder à la plateforme'}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
-                href="admin/dashboard"
+                href="/login"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 rounded-full border border-border text-foreground font-medium text-sm hover:bg-muted transition-colors"
               >
                 <Play className="w-4 h-4 text-primary fill-primary" />
-                <span>Voir la démo</span>
+                <span>{isEn ? 'View Demo' : 'Voir la démo'}</span>
               </a>
             </div>
           </FadeInOnScroll>
@@ -242,14 +293,14 @@ export const LandingPage: React.FC = () => {
           <FadeInOnScroll delay={200}>
             <div className="mt-12 sm:mt-16 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto">
               {[
-                { val: '+120%', label: 'Taux de relance' },
-                { val: '100%', label: 'Isolation RLS' },
-                { val: '0 Doublon', label: 'Anti-doublon' },
-                { val: '< 30 sec', label: 'Prise en main' },
+                { val: '+120%', label: isEn ? 'Follow-up rate' : 'Taux de relance' },
+                { val: '100%', label: isEn ? 'RLS Isolation' : 'Isolation RLS' },
+                { val: isEn ? '0 Duplicate' : '0 Doublon', label: isEn ? 'Anti-duplicate' : 'Anti-doublon' },
+                { val: '< 30 sec', label: isEn ? 'Onboarding time' : 'Prise en main' },
               ].map((stat, idx) => (
                 <div key={idx} className="p-4 rounded-xl border border-border bg-card text-center">
                   <div className="text-lg sm:text-2xl font-bold text-primary">{stat.val}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
+                  <div className="text-xs text-muted-foreground mt-1 font-semibold">{stat.label}</div>
                 </div>
               ))}
             </div>

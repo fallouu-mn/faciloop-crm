@@ -5,14 +5,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaciloopBrand } from '../common/FaciloopBrand';
 
+import { useTranslation } from 'react-i18next';
+
 interface NavbarProps {
   onOpenMobileMenu: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
+
+  const isEn = i18n.language?.startsWith('en');
 
   const confirmLogout = () => {
     logout();
@@ -21,9 +26,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
   };
 
   const getRoleTitle = () => {
-    if (user?.role === 'super_admin') return 'Administration Faciloop';
-    if (user?.role === 'admin_org') return 'Direction Faciloop';
-    return 'Commercial Faciloop';
+    if (user?.role === 'super_admin') return isEn ? 'Faciloop Admin' : 'Administration Faciloop';
+    if (user?.role === 'admin_org') return isEn ? 'Faciloop Management' : 'Direction Faciloop';
+    return isEn ? 'Faciloop Sales' : 'Commercial Faciloop';
   };
 
   return (

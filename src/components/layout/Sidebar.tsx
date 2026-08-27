@@ -27,70 +27,74 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaciloopBrand } from '../common/FaciloopBrand';
 
+import { useTranslation } from 'react-i18next';
+
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const { t, i18n } = useTranslation();
   const { user, currentOrg } = useAuth();
   const role = user?.role || 'commercial';
+  const isEn = i18n.language?.startsWith('en');
 
   // Navigation Items per Role
   const commercialLinks = [
-    { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/app/prospects', label: 'Mes Prospects', icon: Users },
-    { to: '/app/pipeline', label: 'Pipeline Kanban', icon: Kanban },
-    { to: '/app/gains', label: 'Mes Gains', icon: DollarSign },
-    { to: '/app/objectifs', label: 'Mes Objectifs', icon: Goal },
-    { to: '/app/relances', label: 'Relances', icon: CalendarClock },
-    { to: '/app/notifications', label: 'Notifications', icon: Bell },
-    { to: '/app/profil', label: 'Mon Profil', icon: UserCircle },
+    { to: '/app/dashboard', label: isEn ? 'Dashboard' : 'Dashboard', icon: LayoutDashboard },
+    { to: '/app/prospects', label: isEn ? 'My Prospects' : 'Mes Prospects', icon: Users },
+    { to: '/app/pipeline', label: isEn ? 'Kanban Pipeline' : 'Pipeline Kanban', icon: Kanban },
+    { to: '/app/gains', label: isEn ? 'My Earnings' : 'Mes Gains', icon: DollarSign },
+    { to: '/app/objectifs', label: isEn ? 'My Objectives' : 'Mes Objectifs', icon: Goal },
+    { to: '/app/relances', label: isEn ? 'Follow-ups' : 'Relances', icon: CalendarClock },
+    { to: '/app/notifications', label: isEn ? 'Notifications' : 'Notifications', icon: Bell },
+    { to: '/app/profil', label: isEn ? 'My Profile' : 'Mon Profil', icon: UserCircle },
   ];
 
   const adminOrgSections = [
     {
-      title: 'Pilotage',
+      title: isEn ? 'Overview' : 'Pilotage',
       links: [
-        { to: '/admin/dashboard', label: 'Dashboard', icon: BarChart3 },
+        { to: '/admin/dashboard', label: isEn ? 'Dashboard' : 'Dashboard', icon: BarChart3 },
       ],
     },
     {
-      title: 'Équipe',
+      title: isEn ? 'Team' : 'Équipe',
       links: [
-        { to: '/admin/equipe', label: 'Équipe commerciale', icon: Users },
-        { to: '/admin/objectifs', label: 'Objectifs commerciaux', icon: Goal },
+        { to: '/admin/equipe', label: isEn ? 'Sales Team' : 'Équipe commerciale', icon: Users },
+        { to: '/admin/objectifs', label: isEn ? 'Sales Objectives' : 'Objectifs commerciaux', icon: Goal },
       ],
     },
     {
-      title: 'Gestion commerciale',
+      title: isEn ? 'Sales Management' : 'Gestion commerciale',
       links: [
-        { to: '/admin/prospects', label: 'Prospects', icon: UserPlus },
-        { to: '/admin/pipeline', label: 'Pipeline Kanban', icon: Kanban },
-        { to: '/admin/relances', label: 'Relances', icon: CalendarClock },
-        { to: '/admin/clients', label: 'Comptes Clients', icon: Building2 },
+        { to: '/admin/prospects', label: isEn ? 'Prospects' : 'Prospects', icon: UserPlus },
+        { to: '/admin/pipeline', label: isEn ? 'Kanban Pipeline' : 'Pipeline Kanban', icon: Kanban },
+        { to: '/admin/relances', label: isEn ? 'Follow-ups' : 'Relances', icon: CalendarClock },
+        { to: '/admin/clients', label: isEn ? 'Client Accounts' : 'Comptes Clients', icon: Building2 },
       ],
     },
     {
-      title: 'Revenus',
+      title: isEn ? 'Revenue' : 'Revenus',
       links: [
-        { to: '/admin/abonnements', label: 'Abonnements', icon: Crown },
-        { to: '/admin/paiements', label: 'Paiements', icon: CreditCard },
-        { to: '/admin/commissions', label: 'Commissions', icon: Wallet },
+        { to: '/admin/abonnements', label: isEn ? 'Subscriptions' : 'Abonnements', icon: Crown },
+        { to: '/admin/paiements', label: isEn ? 'Payments' : 'Paiements', icon: CreditCard },
+        { to: '/admin/commissions', label: isEn ? 'Commissions' : 'Commissions', icon: Wallet },
       ],
     },
     {
-      title: 'Administration',
+      title: isEn ? 'Administration' : 'Administration',
       links: [
-        { to: '/admin/journal', label: 'Journal', icon: ScrollText },
-        { to: '/admin/import-export', label: 'Import / Export', icon: FileSpreadsheet },
-        { to: '/admin/parametres', label: 'Paramètres', icon: Settings },
+        { to: '/admin/journal', label: isEn ? 'Action Log' : 'Journal', icon: ScrollText },
+        { to: '/admin/import-export', label: isEn ? 'Import / Export' : 'Import / Export', icon: FileSpreadsheet },
+        { to: '/admin/parametres', label: isEn ? 'Settings' : 'Paramètres', icon: Settings },
       ],
     },
     {
-      title: 'Alertes',
+      title: isEn ? 'Alerts' : 'Alertes',
       links: [
-        { to: '/admin/notifications', label: 'Notifications', icon: Bell },
+        { to: '/admin/notifications', label: isEn ? 'Notifications' : 'Notifications', icon: Bell },
       ],
     },
   ];
@@ -98,11 +102,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const adminOrgLinks = adminOrgSections.flatMap(s => s.links);
 
   const superAdminLinks = [
-    { to: '/super-admin/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
-    { to: '/super-admin/organisations', label: 'Entreprises', icon: Building2 },
-    { to: '/super-admin/abonnements', label: 'Abonnements', icon: Crown },
-    { to: '/super-admin/facturation', label: 'Facturation', icon: CreditCard },
-    { to: '/super-admin/statistiques', label: 'Statistiques', icon: BarChart3 }
+    { to: '/super-admin/dashboard', label: isEn ? 'Dashboard' : 'Tableau de bord', icon: LayoutDashboard },
+    { to: '/super-admin/organisations', label: isEn ? 'Companies' : 'Entreprises', icon: Building2 },
+    { to: '/super-admin/abonnements', label: isEn ? 'Subscriptions' : 'Abonnements', icon: Crown },
+    { to: '/super-admin/facturation', label: isEn ? 'Billing' : 'Facturation', icon: CreditCard },
+    { to: '/super-admin/statistiques', label: isEn ? 'Analytics' : 'Statistiques', icon: BarChart3 }
   ];
 
   const currentLinks = 
