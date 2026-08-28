@@ -6,6 +6,7 @@ import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { PinInput } from '../../components/common/PinInput';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
+import { FaciloopToast } from '../../components/common/FaciloopToast';
 import { useTranslation } from 'react-i18next';
 
 export const LoginPage: React.FC = () => {
@@ -148,13 +149,6 @@ export const LoginPage: React.FC = () => {
             </label>
           </div>
 
-          {/* Error */}
-          {errorMsg && (
-            <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-sm text-destructive">
-              {errorMsg}
-            </div>
-          )}
-
           {/* Submit */}
           <button
             type="submit"
@@ -178,39 +172,12 @@ export const LoginPage: React.FC = () => {
             </Link>
           </p>
         </div>
-
-        {/* Quick Demo */}
-        {/* <div className="border-t border-border mx-6 px-0 pb-6 pt-4">
-          <p className="text-xs font-medium text-muted-foreground text-center mb-2">
-            Accès Rapide Démo
-          </p>
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <button
-              type="button"
-              onClick={() => handleQuickPreset('221771234567', '123456')}
-              className="px-2 py-2 rounded-full border border-border font-medium hover:bg-muted text-foreground transition-colors"
-            >
-              Commercial
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPreset('221789998877', '111111')}
-              className="px-2 py-2 rounded-full border border-border font-medium hover:bg-muted text-foreground transition-colors"
-            >
-              Admin Org
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickPreset('221770000000', '000000')}
-              className="px-2 py-2 rounded-full border border-border font-medium hover:bg-muted text-foreground transition-colors"
-            >
-              Super-Admin
-            </button>
-          </div>
-        </div> */}
       </div>
 
-      {/* Floating Language Switcher Pill (Matching Screenshot Bottom Right) */}
+      {/* Faciloop Dev Style Bottom Floating Toast Notification */}
+      <FaciloopToast message={errorMsg} onClose={() => setErrorMsg(null)} />
+
+      {/* Floating Language Switcher Pill */}
       <div className="fixed bottom-4 right-4 z-50">
         <LanguageToggle />
       </div>

@@ -5,6 +5,7 @@ import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { PinInput } from '../../components/common/PinInput';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
+import { FaciloopToast } from '../../components/common/FaciloopToast';
 import { useTranslation } from 'react-i18next';
 
 export const RegisterPage: React.FC = () => {
@@ -334,13 +335,6 @@ export const RegisterPage: React.FC = () => {
             </label>
           </div>
 
-          {/* Error */}
-          {errorMsg && (
-            <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-sm text-destructive">
-              {errorMsg}
-            </div>
-          )}
-
           {/* Submit */}
           <button
             type="submit"
@@ -368,6 +362,9 @@ export const RegisterPage: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Faciloop Dev Style Bottom Floating Toast Notification */}
+      <FaciloopToast message={errorMsg} onClose={() => setErrorMsg(null)} />
 
       {/* Floating Language Switcher Pill */}
       <div className="fixed bottom-4 right-4 z-50">

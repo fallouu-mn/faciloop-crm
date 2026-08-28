@@ -6,6 +6,7 @@ import { PhoneInput } from '../../components/common/PhoneInput';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../../components/ui/input-otp';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useTranslation } from 'react-i18next';
+import { FaciloopToast } from '../../components/common/FaciloopToast';
 
 type Step = 'phone' | 'otp' | 'success';
 
@@ -295,6 +296,9 @@ export const ForgotPinPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Faciloop Dev Style Bottom Floating Toast Notification */}
+      <FaciloopToast message={error} onClose={() => setError('')} />
     </div>
   );
 };
