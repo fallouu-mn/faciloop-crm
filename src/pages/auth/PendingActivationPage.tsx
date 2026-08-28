@@ -6,17 +6,20 @@ import { motion } from 'framer-motion';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
 
 export const PendingActivationPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation('auth');
+  const isEn = i18n.language?.startsWith('en');
   const location = useLocation();
   const navigate = useNavigate();
   const regData = location.state || JSON.parse(localStorage.getItem('faciloop_pending_registration') || '{}');
 
-  const companyName = regData.entreprise || 'Votre Entreprise';
+  const companyName = regData.entreprise || (isEn ? 'Your Company' : 'Votre Entreprise');
   const superAdminPhone = '221711387878';
 
   const handleWhatsAppContact = () => {
     const message = encodeURIComponent(
-      `Bonjour, je viens de créer le compte de mon entreprise "${companyName}" sur Faciloop CRM. Pouvez-vous procéder à l'activation de mon accès ? Merci.`
+      isEn
+        ? `Hello, I just created my company account "${companyName}" on Faciloop CRM. Could you please activate my access? Thank you.`
+        : `Bonjour, je viens de créer le compte de mon entreprise "${companyName}" sur Faciloop CRM. Pouvez-vous procéder à l'activation de mon accès ? Merci.`
     );
     window.open(`https://wa.me/${superAdminPhone}?text=${message}`, '_blank');
   };
@@ -46,16 +49,16 @@ export const PendingActivationPage: React.FC = () => {
         {/* Status Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-black">
           <Clock className="w-4 h-4 animate-spin-slow shrink-0" />
-          <span>{t('auth.pendingTitle')}</span>
+          <span>{t('pendingTitle')}</span>
         </div>
 
         {/* Main Title & Explanation */}
         <div className="space-y-2">
           <h1 className="text-xl sm:text-2xl font-black text-foreground">
-            {t('auth.pendingTitle')}
+            {t('pendingTitle')}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold leading-relaxed max-w-md mx-auto">
-            {t('auth.pendingDescription')}
+            {t('pendingDescription')}
           </p>
         </div>
 
@@ -66,8 +69,10 @@ export const PendingActivationPage: React.FC = () => {
               <MessageSquare className="w-5 h-5" />
             </div>
             <div>
-              <div>{t('auth.contactWhatsApp')}</div>
-              <div className="text-[11px] font-semibold text-muted-foreground">Activation rapide par message direct</div>
+              <div>{t('contactWhatsApp')}</div>
+              <div className="text-[11px] font-semibold text-muted-foreground">
+                {isEn ? 'Fast activation via direct message' : 'Activation rapide par message direct'}
+              </div>
             </div>
           </div>
 
@@ -76,7 +81,7 @@ export const PendingActivationPage: React.FC = () => {
             className="w-full py-3.5 px-4 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-emerald-500/25 hover:bg-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <MessageSquare className="w-4.5 h-4.5 fill-white" />
-            <span>{t('auth.contactWhatsApp')} (+221 71 138 78 78)</span>
+            <span>{t('contactWhatsApp')} (+221 71 138 78 78)</span>
           </button>
         </div>
 
@@ -86,7 +91,7 @@ export const PendingActivationPage: React.FC = () => {
             to="/login"
             className="w-full py-3.5 rounded-2xl border border-input text-xs sm:text-sm font-extrabold text-foreground hover:bg-muted active:scale-95 transition-all flex items-center justify-center gap-2"
           >
-            <span>{t('auth.goToLogin')}</span>
+            <span>{t('goToLogin')}</span>
             <ArrowRight className="w-4 h-4 text-primary" />
           </Link>
         </div>
