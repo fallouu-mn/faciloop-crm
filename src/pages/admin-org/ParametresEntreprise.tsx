@@ -5,15 +5,15 @@ import { useTranslation } from 'react-i18next';
 
 export const ParametresEntreprise: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { currentOrg, currency, setCurrency, updateOrganization } = useAuth();
-  const [nom, setNom] = useState(currentOrg?.nom || "Teranga Logistique SA");
-  const [pays, setPays] = useState('Sénégal');
-  const [ville, setVille] = useState('Dakar');
-  const [adresse, setAdresse] = useState('Km 4.5, Route de Rufisque');
-  const [telephone, setTelephone] = useState('+221 33 800 00 00');
-  const [email, setEmail] = useState('contact@teranga-logistique.sn');
-  const [siteWeb, setSiteWeb] = useState('https://teranga-logistique.sn');
-  const [secteur, setSecteur] = useState('Logistique / Transport');
+  const { user, currentOrg, currency, setCurrency, updateOrganization } = useAuth();
+  const [nom, setNom] = useState(currentOrg?.nom || '');
+  const [pays, setPays] = useState(currentOrg?.pays || '');
+  const [ville, setVille] = useState(currentOrg?.ville || '');
+  const [adresse, setAdresse] = useState(currentOrg?.adresse || '');
+  const [telephone, setTelephone] = useState(currentOrg?.telephone || user?.telephone || '');
+  const [email, setEmail] = useState(currentOrg?.email || '');
+  const [siteWeb, setSiteWeb] = useState(currentOrg?.site_web || '');
+  const [secteur, setSecteur] = useState(currentOrg?.secteur || '');
   const [logoPreview, setLogoPreview] = useState<string | null>(currentOrg?.logo_url || null);
   const [saved, setSaved] = useState(false);
 
@@ -30,7 +30,7 @@ export const ParametresEntreprise: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    updateOrganization({ nom, pays, ville, adresse, telephone, email, site_web: siteWeb, secteur, logo_url: logoPreview || undefined, devise: currency });
+    updateOrganization({ nom, pays, ville, adresse, telephone, email, site_web: siteWeb, secteur, logo_url: logoPreview || undefined, devise_defaut: currency });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -100,6 +100,7 @@ export const ParametresEntreprise: React.FC = () => {
                 onChange={(e) => setSecteur(e.target.value)}
                 className="w-full p-3 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               >
+                <option value="">{isEn ? 'Select' : 'Sélectionner'}</option>
                 <option value="Commerce / Distribution">Commerce / Distribution</option>
                 <option value="Télécommunications">Télécommunications</option>
                 <option value="Services">Services</option>

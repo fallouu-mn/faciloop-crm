@@ -10,7 +10,7 @@ import { supabase } from '../../lib/supabase';
 interface TenantRow {
   id: string;
   nom: string;
-  statut: 'actif' | 'suspendu' | 'inactif';
+  statut: 'en_attente' | 'actif' | 'suspendu' | 'inactif';
   created_at: string;
 }
 

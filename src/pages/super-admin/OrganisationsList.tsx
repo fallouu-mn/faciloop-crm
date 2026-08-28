@@ -16,7 +16,7 @@ const PERIODICITES = [
 interface OrgRow {
   id: string;
   nom: string;
-  statut: 'actif' | 'suspendu' | 'inactif';
+  statut: 'en_attente' | 'actif' | 'suspendu' | 'inactif';
   devise_defaut: string;
   created_at: string;
 }
@@ -30,7 +30,7 @@ export const OrganisationsList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [filterStatut, setFilterStatut] = useState<'tous' | 'actif' | 'suspendu'>(initialStatut);
+  const [filterStatut, setFilterStatut] = useState<'tous' | 'en_attente' | 'actif' | 'suspendu'>(initialStatut as any);
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
 
   const [nomOrg, setNomOrg] = useState('');
@@ -59,10 +59,7 @@ export const OrganisationsList: React.FC = () => {
   })();
   const fmtPrice = (amount: number) => formatAmount(amount, 'XOF');
 
-  const toggleStatus = async (id: string) => {
-    const target = tenants.find(t => t.id === id);
-    if (!target) return;
-    const newStatut = target.statut === 'actif' ? 'suspendu' : 'actif';
+  const changeStatus = async (id: string, newStatut: 'actif' | 'suspendu') => {
     const { error } = await supabase
       .from('organizations')
       .update({ statut: newStatut })
@@ -70,6 +67,13 @@ export const OrganisationsList: React.FC = () => {
     if (!error) {
       setTenants(prev => prev.map(t => t.id === id ? { ...t, statut: newStatut } : t));
     }
+  };
+
+  const toggleStatus = async (id: string) => {
+    const target = tenants.find(t => t.id === id);
+    if (!target) return;
+    const newStatut = target.statut === 'actif' ? 'suspendu' : 'actif';
+    await changeStatus(id, newStatut);
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -137,7 +141,7 @@ export const OrganisationsList: React.FC = () => {
           />
         </div>
         <div className="inline-flex items-center rounded-full bg-muted p-1 border border-border text-sm">
-          {(['tous', 'actif', 'suspendu'] as const).map((s) => (
+          {(['tous', 'en_attente', 'actif', 'suspendu'] as const).map((s) => (
             <button
               key={s}
               onClick={() => setFilterStatut(s)}
@@ -147,7 +151,7 @@ export const OrganisationsList: React.FC = () => {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {s === 'tous' ? 'Tous' : s === 'actif' ? 'Actifs' : 'Suspendus'}
+              {s === 'tous' ? 'Tous' : s === 'en_attente' ? 'En attente' : s === 'actif' ? 'Actifs' : 'Suspendus'}
             </button>
           ))}
         </div>
@@ -180,22 +184,33 @@ export const OrganisationsList: React.FC = () => {
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     t.statut === 'actif'
                       ? 'bg-emerald-500/10 text-emerald-600'
-                      : 'bg-destructive/10 text-destructive'
+                      : t.statut === 'en_attente'
+                        ? 'bg-amber-500/10 text-amber-600'
+                        : 'bg-destructive/10 text-destructive'
                   }`}>
-                    {t.statut === 'actif' ? 'Actif' : 'Suspendu'}
+                    {t.statut === 'actif' ? 'Actif' : t.statut === 'en_attente' ? 'En attente' : 'Suspendu'}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => toggleStatus(t.id)}
-                    className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
-                      t.statut === 'actif'
-                        ? 'border-destructive/30 text-destructive hover:bg-destructive/10'
-                        : 'border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10'
-                    }`}
-                  >
-                    {t.statut === 'actif' ? 'Suspendre' : 'Activer'}
-                  </button>
+                  {t.statut === 'en_attente' ? (
+                    <button
+                      onClick={() => changeStatus(t.id, 'actif')}
+                      className="px-3 py-1.5 rounded-full border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 text-xs font-medium transition-colors"
+                    >
+                      Activer
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => toggleStatus(t.id)}
+                      className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
+                        t.statut === 'actif'
+                          ? 'border-destructive/30 text-destructive hover:bg-destructive/10'
+                          : 'border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10'
+                      }`}
+                    >
+                      {t.statut === 'actif' ? 'Suspendre' : 'Activer'}
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -228,23 +243,35 @@ export const OrganisationsList: React.FC = () => {
               <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${
                 t.statut === 'actif'
                   ? 'bg-emerald-500/10 text-emerald-600'
-                  : 'bg-destructive/10 text-destructive'
+                  : t.statut === 'en_attente'
+                    ? 'bg-amber-500/10 text-amber-600'
+                    : 'bg-destructive/10 text-destructive'
               }`}>
-                {t.statut === 'actif' ? 'Actif' : 'Suspendu'}
+                {t.statut === 'actif' ? 'Actif' : t.statut === 'en_attente' ? 'En attente' : 'Suspendu'}
               </span>
             </div>
             <div className="pt-3 border-t border-border flex items-center justify-end">
-              <button
-                onClick={() => toggleStatus(t.id)}
-                className={`px-3 py-1.5 rounded-full border text-xs font-medium flex items-center gap-1.5 transition-colors ${
-                  t.statut === 'actif'
-                    ? 'border-destructive/30 text-destructive hover:bg-destructive/10'
-                    : 'border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10'
-                }`}
-              >
-                <Power className="w-3.5 h-3.5" />
-                <span>{t.statut === 'actif' ? 'Suspendre' : 'Activer'}</span>
-              </button>
+              {t.statut === 'en_attente' ? (
+                <button
+                  onClick={() => changeStatus(t.id, 'actif')}
+                  className="px-3 py-1.5 rounded-full border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 text-xs font-medium flex items-center gap-1.5 transition-colors"
+                >
+                  <Power className="w-3.5 h-3.5" />
+                  <span>Activer</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => toggleStatus(t.id)}
+                  className={`px-3 py-1.5 rounded-full border text-xs font-medium flex items-center gap-1.5 transition-colors ${
+                    t.statut === 'actif'
+                      ? 'border-destructive/30 text-destructive hover:bg-destructive/10'
+                      : 'border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10'
+                  }`}
+                >
+                  <Power className="w-3.5 h-3.5" />
+                  <span>{t.statut === 'actif' ? 'Suspendre' : 'Activer'}</span>
+                </button>
+              )}
             </div>
           </div>
         ))}

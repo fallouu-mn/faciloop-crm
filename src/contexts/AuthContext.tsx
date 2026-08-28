@@ -26,6 +26,7 @@ export interface UserSession {
   email: string;
   role: UserRole;
   organizationId: string; // vide '' pour super_admin sans org
+  orgStatut?: string; // 'actif' | 'en_attente' | 'suspendu' | 'inactif'
 }
 
 interface AuthContextType {
@@ -96,7 +97,7 @@ function phoneToEmail(phone: string): string {
 async function fetchUserProfile(authUserId: string): Promise<{
   role: UserRole;
   organizationId: string | null;
-  commercial?: { id: string; nom: string; prenom: string; email: string; telephone: string };
+  profile?: { id: string; nom: string; prenom: string; email: string; telephone: string };
 } | null> {
   const { data: roleData, error: roleError } = await supabase
     .from('user_roles')
@@ -107,9 +108,9 @@ async function fetchUserProfile(authUserId: string): Promise<{
 
   if (roleError || !roleData) return null;
 
-  let commercial: { id: string; nom: string; prenom: string; email: string; telephone: string } | undefined;
+  let profile: { id: string; nom: string; prenom: string; email: string; telephone: string } | undefined;
 
-  if (roleData.role === 'commercial' || roleData.role === 'admin_org') {
+  if (roleData.role === 'commercial') {
     const { data: commData } = await supabase
       .from('commerciaux')
       .select('id, nom, prenom, email, telephone')
@@ -117,14 +118,28 @@ async function fetchUserProfile(authUserId: string): Promise<{
       .single();
 
     if (commData) {
-      commercial = commData;
+      profile = commData;
+    }
+  } else if (roleData.role === 'admin_org') {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      const meta = authUser.user_metadata || {};
+      const authEmail = authUser.email || '';
+      const phoneFromEmail = authEmail.replace('@faciloop.app', '');
+      profile = {
+        id: authUserId,
+        nom: meta.last_name || '',
+        prenom: meta.first_name || '',
+        email: authEmail,
+        telephone: phoneFromEmail,
+      };
     }
   }
 
   return {
     role: roleData.role as UserRole,
     organizationId: roleData.organization_id || null,
-    commercial,
+    profile,
   };
 }
 
@@ -269,21 +284,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!profile) return;
 
     const sess: UserSession = {
-      id: profile.commercial?.id || authId,
+      id: profile.profile?.id || authId,
       authId,
-      commercialId: profile.commercial?.id,
-      nom: profile.commercial?.nom || 'Admin',
-      prenom: profile.commercial?.prenom || 'Super',
-      telephone: profile.commercial?.telephone || '',
-      email: profile.commercial?.email || email,
+      commercialId: profile.role === 'commercial' ? profile.profile?.id : undefined,
+      nom: profile.profile?.nom || 'Admin',
+      prenom: profile.profile?.prenom || 'Super',
+      telephone: profile.profile?.telephone || '',
+      email: profile.profile?.email || email,
       role: profile.role,
       organizationId: profile.organizationId || '',
     };
 
-    setUser(sess);
-
     // Super admin sans org → pas de fetch org ni data
     if (!profile.organizationId) {
+      setUser(sess);
       setCurrentOrg(null);
       return;
     }
@@ -295,16 +309,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .single();
 
     if (orgData) {
+      sess.orgStatut = orgData.statut;
+
+      // Si org pas active → déconnecter (ne doit pas avoir de session persistante)
+      if (orgData.statut !== 'actif') {
+        await supabase.auth.signOut();
+        setUser(null);
+        return;
+      }
+
       setCurrentOrg({
         id: orgData.id,
         nom: orgData.nom,
         logo_url: orgData.logo_url,
         devise_defaut: orgData.devise_defaut,
         statut: orgData.statut,
+        pays: orgData.pays,
+        ville: orgData.ville,
+        adresse: orgData.adresse,
+        telephone: orgData.telephone,
+        email: orgData.email,
+        site_web: orgData.site_web,
+        secteur: orgData.secteur,
         created_at: orgData.created_at,
       });
     }
 
+    setUser(sess);
     await fetchAllData(profile.organizationId);
   };
 
@@ -368,18 +399,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!profile) return null;
 
       const sess: UserSession = {
-        id: profile.commercial?.id || data.user.id,
+        id: profile.profile?.id || data.user.id,
         authId: data.user.id,
-        commercialId: profile.commercial?.id,
-        nom: profile.commercial?.nom || 'Admin',
-        prenom: profile.commercial?.prenom || 'Super',
-        telephone: profile.commercial?.telephone || '',
-        email: profile.commercial?.email || email,
+        commercialId: profile.role === 'commercial' ? profile.profile?.id : undefined,
+        nom: profile.profile?.nom || 'Admin',
+        prenom: profile.profile?.prenom || 'Super',
+        telephone: profile.profile?.telephone || '',
+        email: profile.profile?.email || email,
         role: profile.role,
         organizationId: profile.organizationId || '',
       };
-
-      setUser(sess);
 
       if (profile.organizationId) {
         const { data: orgData } = await supabase
@@ -389,17 +418,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .single();
 
         if (orgData) {
+          sess.orgStatut = orgData.statut;
+
+          // Si org en attente ou suspendue → ne pas charger les données
+          if (orgData.statut !== 'actif') {
+            setUser(sess);
+            await supabase.auth.signOut();
+            return sess;
+          }
+
           setCurrentOrg({
             id: orgData.id,
             nom: orgData.nom,
             logo_url: orgData.logo_url,
             devise_defaut: orgData.devise_defaut,
             statut: orgData.statut,
+            pays: orgData.pays,
+            ville: orgData.ville,
+            adresse: orgData.adresse,
+            telephone: orgData.telephone,
+            email: orgData.email,
+            site_web: orgData.site_web,
+            secteur: orgData.secteur,
             created_at: orgData.created_at,
           });
         }
 
+        setUser(sess);
         await fetchAllData(profile.organizationId);
+      } else {
+        setUser(sess);
       }
 
       return sess;

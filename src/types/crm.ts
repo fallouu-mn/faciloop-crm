@@ -55,6 +55,13 @@ export interface Organization {
   logo_url?: string;
   devise_defaut: string;
   statut: TenantStatut;
+  pays?: string;
+  ville?: string;
+  adresse?: string;
+  telephone?: string;
+  email?: string;
+  site_web?: string;
+  secteur?: string;
   created_at: string;
 }
 
