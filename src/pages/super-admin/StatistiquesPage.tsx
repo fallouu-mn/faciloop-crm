@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { TrendingUp, FileText, Building2, BarChart3, ArrowUpRight } from 'lucide-react';
 import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
@@ -31,6 +32,8 @@ const mockTenants: TenantData[] = [];
 const mockFactures: FactureData[] = [];
 
 export const StatistiquesPage: React.FC = () => {
+  const { i18n } = useTranslation();
+  const isEn = Boolean(i18n.language?.startsWith('en'));
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
