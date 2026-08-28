@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Crown, Check, Pencil, X, Save, Plus, Loader2 } from 'lucide-react';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DeviseCode, convertAmount, formatAmount, getDeviseSymbol } from '../../lib/currency';
@@ -17,6 +18,8 @@ const PERIODICITES = [
 ];
 
 export const AbonnementsPageSuperAdmin: React.FC = () => {
+  const { i18n } = useTranslation();
+  const isEn = Boolean(i18n.language?.startsWith('en'));
   const [devise, setDevise] = useState<DeviseCode>('XOF');
   const [formules, setFormules] = useState<FormuleConfig[]>([]);
   const [loading, setLoading] = useState(true);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Plus, X, Clock, Power, Search } from 'lucide-react';
 import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { DateRange, isInDateRange, searchParamsToDateRange } from '../../lib/dateFilter';
@@ -22,6 +23,8 @@ interface OrgRow {
 }
 
 export const OrganisationsList: React.FC = () => {
+  const { i18n } = useTranslation();
+  const isEn = Boolean(i18n.language?.startsWith('en'));
   const [searchParams] = useSearchParams();
   const initialStatut = (searchParams.get('statut') as 'actif' | 'suspendu') || 'tous';
 
