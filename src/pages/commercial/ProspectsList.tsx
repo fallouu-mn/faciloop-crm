@@ -537,7 +537,9 @@ export const ProspectsList: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto font-sans">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-foreground">Nouveau Prospect</h2>
+              <h2 className="text-base font-bold text-foreground">
+                {isEn ? 'New Prospect' : 'Nouveau Prospect'}
+              </h2>
               <button onClick={() => { setIsNewModalOpen(false); resetNewForm(); }} className="p-1 hover:bg-muted rounded-lg">
                 <X className="w-5 h-5" />
               </button>
@@ -546,28 +548,30 @@ export const ProspectsList: React.FC = () => {
             {duplicateAlert && (
               <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-bold flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>Attention : Ce numéro existe déjà dans l'organisation !</span>
+                <span>{isEn ? 'Warning: This phone number already exists in the organization!' : "Attention : Ce numéro existe déjà dans l'organisation !"}</span>
               </div>
             )}
 
             <form onSubmit={handleCreate} className="space-y-4 text-xs">
               {/* Section: Identité */}
               <div className="space-y-2">
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Identité</h3>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  {isEn ? 'IDENTITY' : 'Identité'}
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">Nom *</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'Last Name *' : 'Nom *'}</label>
                     <input type="text" value={newNom} onChange={(e) => setNewNom(e.target.value)}
                       placeholder="Diop" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">Prénom</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'First Name' : 'Prénom'}</label>
                     <input type="text" value={newPrenom} onChange={(e) => setNewPrenom(e.target.value)}
                       placeholder="Moussa" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Entreprise *</label>
+                  <label className="block font-semibold mb-1">{isEn ? 'Company *' : 'Entreprise *'}</label>
                   <input type="text" value={newEntreprise} onChange={(e) => setNewEntreprise(e.target.value)}
                     placeholder="Dakar Tech Ltd" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
@@ -575,10 +579,12 @@ export const ProspectsList: React.FC = () => {
 
               {/* Section: Contact */}
               <div className="space-y-2">
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Contact</h3>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  {isEn ? 'CONTACT' : 'Contact'}
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">Téléphone *</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'Phone *' : 'Téléphone *'}</label>
                     <input type="tel" value={newPhone} onChange={(e) => handlePhoneChange(e.target.value)}
                       placeholder="+221 77 123 45 67" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
@@ -597,63 +603,67 @@ export const ProspectsList: React.FC = () => {
 
               {/* Section: Localisation */}
               <div className="space-y-2">
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Localisation</h3>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  {isEn ? 'LOCATION' : 'Localisation'}
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">Pays *</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'Country *' : 'Pays *'}</label>
                     <select value={newPays} onChange={(e) => setNewPays(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                       {PAYS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">Ville</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'City' : 'Ville'}</label>
                     <input type="text" value={newVille} onChange={(e) => setNewVille(e.target.value)}
                       placeholder="Dakar" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">Adresse</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'Address' : 'Adresse'}</label>
                     <input type="text" value={newAdresse} onChange={(e) => setNewAdresse(e.target.value)}
-                      placeholder="Quartier, rue..." className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                      placeholder={isEn ? "Neighborhood, street..." : "Quartier, rue..."} className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
               </div>
 
               {/* Section: Qualification */}
               <div className="space-y-2">
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Qualification</h3>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  {isEn ? 'QUALIFICATION' : 'Qualification'}
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">Secteur d'activité</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'Industry / Sector' : "Secteur d'activité"}</label>
                     <select value={newSecteur} onChange={(e) => setNewSecteur(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                      <option value="">— Sélectionner —</option>
+                      <option value="">{isEn ? '— Select —' : '— Sélectionner —'}</option>
                       {SECTEURS.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">Source</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'Source' : 'Source'}</label>
                     <select value={newSource} onChange={(e) => setNewSource(e.target.value as ProspectSource)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                      <option value="prospection_directe">Prospection directe</option>
-                      <option value="site_web">Site web</option>
-                      <option value="recommandation">Recommandation</option>
-                      <option value="reseaux_sociaux">Réseaux sociaux</option>
+                      <option value="prospection_directe">{isEn ? 'Direct Outreach' : 'Prospection directe'}</option>
+                      <option value="site_web">{isEn ? 'Website' : 'Site web'}</option>
+                      <option value="recommandation">{isEn ? 'Referral' : 'Recommandation'}</option>
+                      <option value="reseaux_sociaux">{isEn ? 'Social Media' : 'Réseaux sociaux'}</option>
                       <option value="whatsapp">WhatsApp</option>
-                      <option value="evenement">Événement</option>
-                      <option value="autre">Autre</option>
+                      <option value="evenement">{isEn ? 'Event' : 'Événement'}</option>
+                      <option value="autre">{isEn ? 'Other' : 'Autre'}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">Formule envisagée</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'Target Plan' : 'Formule envisagée'}</label>
                     <select value={newFormule} onChange={(e) => setNewFormule(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                      <option value="">— Aucune —</option>
+                      <option value="">{isEn ? '— None —' : '— Aucune —'}</option>
                       {activeOrgOffers.map(o => <option key={o.id} value={o.nom}>{o.nom}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">Budget estimé (FCFA)</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'Estimated Budget (FCFA)' : 'Budget estimé (FCFA)'}</label>
                     <input type="number" value={newBudget} onChange={(e) => setNewBudget(e.target.value)}
                       placeholder="500000" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
@@ -662,15 +672,17 @@ export const ProspectsList: React.FC = () => {
 
               {/* Section: Notes & Relance */}
               <div className="space-y-2">
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Notes & Relance</h3>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  {isEn ? 'NOTES & FOLLOW-UP' : 'Notes & Relance'}
+                </h3>
                 <div>
-                  <label className="block font-semibold mb-1">Commentaire</label>
+                  <label className="block font-semibold mb-1">{isEn ? 'Comment' : 'Commentaire'}</label>
                   <textarea value={newCommentaire} onChange={(e) => setNewCommentaire(e.target.value)}
-                    rows={2} placeholder="Notes internes..."
+                    rows={2} placeholder={isEn ? "Internal notes..." : "Notes internes..."}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Date prochaine relance</label>
+                  <label className="block font-semibold mb-1">{isEn ? 'Next Follow-up Date' : 'Date prochaine relance'}</label>
                   <input type="date" value={newRelance} onChange={(e) => setNewRelance(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
@@ -679,7 +691,7 @@ export const ProspectsList: React.FC = () => {
               <button type="submit"
                 disabled={(!newNom && !newEntreprise) || !newPhone || !newPays}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                Créer le prospect
+                {isEn ? 'Create Prospect' : 'Créer le prospect'}
               </button>
             </form>
           </div>

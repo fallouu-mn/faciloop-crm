@@ -204,8 +204,9 @@ export const ObjectifsPage: React.FC = () => {
       <div className="rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/40 p-3 flex items-start gap-2">
         <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
         <p className="text-xs text-blue-700 dark:text-blue-300">
-          Les objectifs sont définis et mis à jour par votre administrateur d'organisation.
-          Votre progression est calculée automatiquement à partir de vos ventes et activités.
+          {isEn
+            ? 'Objectives are set and updated by your organization administrator. Your progress is calculated automatically from your sales and activities.'
+            : "Les objectifs sont définis et mis à jour par votre administrateur d'organisation. Votre progression est calculée automatiquement à partir de vos ventes et activités."}
         </p>
       </div>
     </div>
