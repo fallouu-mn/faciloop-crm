@@ -233,7 +233,7 @@ export const DashboardSuperAdmin: React.FC = () => {
             onClick={() => navigate('/super-admin/organisations')}
             className="text-xs text-primary hover:underline"
           >
-            Voir tout
+            {isEn ? 'View all' : 'Voir tout'}
           </button>
         </div>
         <div className="divide-y divide-border">

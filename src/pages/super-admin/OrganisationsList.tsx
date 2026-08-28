@@ -124,9 +124,9 @@ export const OrganisationsList: React.FC = () => {
             <tr className="text-xs font-medium text-muted-foreground">
               <th className="px-4 py-3">{isEn ? 'Company' : 'Entreprise'}</th>
               <th className="px-4 py-3">{isEn ? 'Plan' : 'Formule'}</th>
-              <th className="px-4 py-3">Créée le</th>
-              <th className="px-4 py-3">Statut</th>
-              <th className="px-4 py-3 text-right">Action</th>
+              <th className="px-4 py-3">{isEn ? 'Created Date' : 'Créée le'}</th>
+              <th className="px-4 py-3">{isEn ? 'Status' : 'Statut'}</th>
+              <th className="px-4 py-3 text-right">{isEn ? 'Action' : 'Action'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -152,7 +152,7 @@ export const OrganisationsList: React.FC = () => {
                       ? 'bg-emerald-500/10 text-emerald-600'
                       : 'bg-destructive/10 text-destructive'
                   }`}>
-                    {t.statut === 'actif' ? 'Actif' : 'Suspendu'}
+                    {t.statut === 'actif' ? (isEn ? 'Active' : 'Actif') : (isEn ? 'Suspended' : 'Suspendu')}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -164,7 +164,7 @@ export const OrganisationsList: React.FC = () => {
                         : 'border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10'
                     }`}
                   >
-                    {t.statut === 'actif' ? 'Suspendre' : 'Activer'}
+                    {t.statut === 'actif' ? (isEn ? 'Suspend' : 'Suspendre') : (isEn ? 'Activate' : 'Activer')}
                   </button>
                 </td>
               </tr>
@@ -172,7 +172,7 @@ export const OrganisationsList: React.FC = () => {
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">Aucune organisation trouvée</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{isEn ? 'No organization found' : 'Aucune organisation trouvée'}</div>
         )}
       </div>
 
@@ -202,7 +202,7 @@ export const OrganisationsList: React.FC = () => {
                   ? 'bg-emerald-500/10 text-emerald-600'
                   : 'bg-destructive/10 text-destructive'
               }`}>
-                {t.statut === 'actif' ? 'Actif' : 'Suspendu'}
+                {t.statut === 'actif' ? (isEn ? 'Active' : 'Actif') : (isEn ? 'Suspended' : 'Suspendu')}
               </span>
             </div>
             <div className="pt-3 border-t border-border flex items-center justify-end">
@@ -215,40 +215,42 @@ export const OrganisationsList: React.FC = () => {
                 }`}
               >
                 <Power className="w-3.5 h-3.5" />
-                <span>{t.statut === 'actif' ? 'Suspendre' : 'Activer'}</span>
+                <span>{t.statut === 'actif' ? (isEn ? 'Suspend' : 'Suspendre') : (isEn ? 'Activate' : 'Activer')}</span>
               </button>
             </div>
           </div>
         ))}
         {filtered.length === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">Aucune organisation trouvée</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{isEn ? 'No organization found' : 'Aucune organisation trouvée'}</div>
         )}
       </div>
 
       {/* Modal Create */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg space-y-4">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg space-y-4 font-sans">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">Nouvelle Entreprise</h2>
+              <h2 className="text-lg font-semibold text-foreground">
+                {isEn ? 'New Organization' : 'Nouvelle Entreprise'}
+              </h2>
               <button onClick={() => setIsModalOpen(false)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">Nom *</label>
+                <label className="text-sm font-medium text-foreground">{isEn ? 'Name *' : 'Nom *'}</label>
                 <input
                   type="text"
                   required
                   value={nomOrg}
                   onChange={(e) => setNomOrg(e.target.value)}
-                  placeholder="Ex: Sénégal Distribution SA"
+                  placeholder={isEn ? "Ex: Senegal Logistics Ltd" : "Ex: Sénégal Distribution SA"}
                   className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">Formule</label>
+                <label className="text-sm font-medium text-foreground">{isEn ? 'Plan' : 'Formule'}</label>
                 <select
                   value={formule}
                   onChange={(e) => setFormule(e.target.value as FormuleAbonnement)}
@@ -260,36 +262,36 @@ export const OrganisationsList: React.FC = () => {
                 </select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">Période</label>
+                <label className="text-sm font-medium text-foreground">{isEn ? 'Period' : 'Période'}</label>
                 <select
                   value={periodicite}
                   onChange={(e) => setPeriodicite(e.target.value as Periodicite)}
                   className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                 >
                   {PERIODICITES.map(p => (
-                    <option key={p.code} value={p.code}>{p.label}</option>
+                    <option key={p.code} value={p.code}>{isEn && p.code === 'mensuel' ? 'Monthly' : isEn && p.code === 'trimestriel' ? 'Quarterly' : isEn && p.code === 'annuel' ? 'Annual' : p.label}</option>
                   ))}
                 </select>
               </div>
               {/* Prix auto-calculé */}
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">Prix calculé automatiquement</span>
+                  <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Auto-calculated Price' : 'Prix calculé automatiquement'}</span>
                   <div className="flex items-center gap-2">
                     {isPremierMois && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-bold">
-                        Prix 1er mois
+                        {isEn ? '1st month price' : 'Prix 1er mois'}
                       </span>
                     )}
                     <span className="text-sm font-bold text-primary">{fmtPrice(prixAuto)}</span>
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-1">
-                  Tarif issu de la configuration Abonnements ({formule} / {PERIODICITES.find(p => p.code === periodicite)?.label})
+                  {isEn ? `Rate from Subscriptions config (${formule} / ${periodicite})` : `Tarif issu de la configuration Abonnements (${formule} / ${PERIODICITES.find(p => p.code === periodicite)?.label})`}
                 </p>
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">Email Admin *</label>
+                <label className="text-sm font-medium text-foreground">{isEn ? 'Admin Email *' : 'Email Admin *'}</label>
                 <input
                   type="email"
                   required
@@ -305,13 +307,13 @@ export const OrganisationsList: React.FC = () => {
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 h-10 rounded-full border border-border text-sm font-medium hover:bg-muted text-foreground transition-colors"
                 >
-                  Annuler
+                  {isEn ? 'Cancel' : 'Annuler'}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 h-10 rounded-full bg-gradient-faciloop text-white text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity"
                 >
-                  Créer
+                  {isEn ? 'Create' : 'Créer'}
                 </button>
               </div>
             </form>

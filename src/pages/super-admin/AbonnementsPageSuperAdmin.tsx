@@ -402,7 +402,7 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                 <div className="rounded-lg bg-muted/50 p-3 space-y-2">
                   <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Inclus</span>
                   <div className="space-y-1.5">
-                    {getFeatures(f.code).map((feat, idx) => (
+                    {getFeatures(f.code, isEn).map((feat, idx) => (
                       <div key={idx} className="flex items-center gap-2">
                         <Check className={`h-3.5 w-3.5 ${color.text} shrink-0`} />
                         <span className="text-xs text-foreground">{feat}</span>
@@ -416,24 +416,28 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
         })}
       </div>
 
-      {/* Pricing Summary Table */}
+              {/* Pricing Summary Table */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">Grille Tarifaire Complète</h2>
-          <span className="text-[10px] text-muted-foreground">Montants en {devise}</span>
+          <h2 className="text-sm font-semibold text-foreground">
+            {isEn ? 'Full Pricing Matrix' : 'Grille Tarifaire Complète'}
+          </h2>
+          <span className="text-[10px] text-muted-foreground">
+            {isEn ? `Amounts in ${devise}` : `Montants en ${devise}`}
+          </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border bg-muted/50">
               <tr className="text-xs font-medium text-muted-foreground">
-                <th className="px-4 py-3">Formule</th>
-                <th className="px-4 py-3">Mensuel</th>
-                <th className="px-4 py-3">1er mois</th>
-                <th className="px-4 py-3">Trimestriel</th>
-                <th className="px-4 py-3">Remise Trim.</th>
-                <th className="px-4 py-3">Annuel</th>
-                <th className="px-4 py-3">Remise Ann.</th>
-                <th className="px-4 py-3">Statut</th>
+                <th className="px-4 py-3">{isEn ? 'Plan' : 'Formule'}</th>
+                <th className="px-4 py-3">{isEn ? 'Monthly' : 'Mensuel'}</th>
+                <th className="px-4 py-3">{isEn ? '1st month' : '1er mois'}</th>
+                <th className="px-4 py-3">{isEn ? 'Quarterly' : 'Trimestriel'}</th>
+                <th className="px-4 py-3">{isEn ? 'Qtr. Discount' : 'Remise Trim.'}</th>
+                <th className="px-4 py-3">{isEn ? 'Annual' : 'Annuel'}</th>
+                <th className="px-4 py-3">{isEn ? 'Annual Discount' : 'Remise Ann.'}</th>
+                <th className="px-4 py-3">{isEn ? 'Status' : 'Statut'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -469,7 +473,7 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                           ? 'bg-emerald-500/10 text-emerald-600'
                           : 'bg-muted text-muted-foreground'
                       }`}>
-                        {f.isActive ? 'Actif' : 'Inactif'}
+                        {f.isActive ? (isEn ? 'Active' : 'Actif') : (isEn ? 'Inactive' : 'Inactif')}
                       </span>
                     </td>
                   </tr>
@@ -483,16 +487,18 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
       {/* Modal Ajouter une offre */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg space-y-4 max-h-[90vh] overflow-y-auto font-sans">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">Nouvelle Offre</h2>
+              <h2 className="text-lg font-semibold text-foreground">
+                {isEn ? 'New Offer' : 'Nouvelle Offre'}
+              </h2>
               <button onClick={() => setIsAddModalOpen(false)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleCreateOffer} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">Nom de l'offre *</label>
+                <label className="text-sm font-medium text-foreground">{isEn ? 'Offer Name *' : "Nom de l'offre *"}</label>
                 <input
                   type="text"
                   required
@@ -508,18 +514,18 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                   type="text"
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder="Ex: Pour les grandes entreprises"
+                  placeholder={isEn ? "Ex: For large enterprises" : "Ex: Pour les grandes entreprises"}
                   className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
                 />
               </div>
 
               <div className="border-t border-border pt-4">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                  Tarification ({symbol})
+                  {isEn ? `Pricing (${symbol})` : `Tarification (${symbol})`}
                 </p>
                 <div className="space-y-3">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-foreground">Prix mensuel *</label>
+                    <label className="text-xs font-medium text-foreground">{isEn ? 'Monthly Price *' : 'Prix mensuel *'}</label>
                     <input
                       type="number"
                       required
@@ -531,17 +537,17 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-foreground">Prix 1er mois (optionnel)</label>
+                    <label className="text-xs font-medium text-foreground">{isEn ? '1st Month Price (optional)' : 'Prix 1er mois (optionnel)'}</label>
                     <input
                       type="number"
                       value={newPremierMois || ''}
                       onChange={(e) => setNewPremierMois(Number(e.target.value))}
-                      placeholder="Laisser vide si pas de promo"
+                      placeholder={isEn ? "Leave empty if no promo" : "Laisser vide si pas de promo"}
                       className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-foreground">Forfait trimestriel *</label>
+                    <label className="text-xs font-medium text-foreground">{isEn ? 'Quarterly Package *' : 'Forfait trimestriel *'}</label>
                     <input
                       type="number"
                       required
@@ -553,12 +559,12 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                     />
                     {newMensuel > 0 && newTrimestriel > 0 && (
                       <p className="text-[10px] text-emerald-600 font-medium">
-                        Remise auto: -{Math.round((1 - toXof(newTrimestriel) / (toXof(newMensuel) * 3)) * 100)}%
+                        {isEn ? 'Auto discount' : 'Remise auto'}: -{Math.round((1 - toXof(newTrimestriel) / (toXof(newMensuel) * 3)) * 100)}%
                       </p>
                     )}
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-foreground">Forfait annuel *</label>
+                    <label className="text-xs font-medium text-foreground">{isEn ? 'Annual Package *' : 'Forfait annuel *'}</label>
                     <input
                       type="number"
                       required
@@ -570,7 +576,7 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                     />
                     {newMensuel > 0 && newAnnuel > 0 && (
                       <p className="text-[10px] text-emerald-600 font-medium">
-                        Remise auto: -{Math.round((1 - toXof(newAnnuel) / (toXof(newMensuel) * 12)) * 100)}%
+                        {isEn ? 'Auto discount' : 'Remise auto'}: -{Math.round((1 - toXof(newAnnuel) / (toXof(newMensuel) * 12)) * 100)}%
                       </p>
                     )}
                   </div>
@@ -583,13 +589,13 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                   onClick={() => setIsAddModalOpen(false)}
                   className="flex-1 h-10 rounded-full border border-border text-sm font-medium hover:bg-muted text-foreground transition-colors"
                 >
-                  Annuler
+                  {isEn ? 'Cancel' : 'Annuler'}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 h-10 rounded-full bg-gradient-faciloop text-white text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity"
                 >
-                  Créer l'offre
+                  {isEn ? 'Create Offer' : "Créer l'offre"}
                 </button>
               </div>
             </form>
@@ -600,7 +606,36 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
   );
 };
 
-function getFeatures(code: string): string[] {
+function getFeatures(code: string, isEn = false): string[] {
+  if (isEn) {
+    switch (code) {
+      case 'Pro':
+        return [
+          'Up to 3 sales reps',
+          'Kanban Pipeline',
+          'Automatic follow-ups',
+          'CSV Export',
+        ];
+      case 'Business':
+        return [
+          'Up to 10 sales reps',
+          'All Pro features',
+          'Team Objectives',
+          'Action Audit Log',
+          'Priority Support',
+        ];
+      case 'Premium':
+        return [
+          'Unlimited sales reps',
+          'All Business features',
+          'API & Integrations',
+          'White label',
+          'Dedicated Account Manager',
+        ];
+      default:
+        return [];
+    }
+  }
   switch (code) {
     case 'Pro':
       return [

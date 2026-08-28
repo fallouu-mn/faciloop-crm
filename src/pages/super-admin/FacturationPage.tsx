@@ -152,7 +152,7 @@ export const FacturationPage: React.FC = () => {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Rechercher une entreprise..."
+            placeholder={isEn ? "Search a company..." : "Rechercher une entreprise..."}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-10 pl-9 pr-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
@@ -169,7 +169,7 @@ export const FacturationPage: React.FC = () => {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {s === 'tous' ? 'Tous' : statutLabel(s)}
+              {s === 'tous' ? (isEn ? 'All' : 'Tous') : statutLabel(s)}
             </button>
           ))}
         </div>
@@ -180,12 +180,12 @@ export const FacturationPage: React.FC = () => {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border bg-muted/50">
             <tr className="text-xs font-medium text-muted-foreground">
-              <th className="px-4 py-3">Entreprise</th>
-              <th className="px-4 py-3">Formule</th>
-              <th className="px-4 py-3">Montant</th>
-              <th className="px-4 py-3">Émission</th>
-              <th className="px-4 py-3">Échéance</th>
-              <th className="px-4 py-3">Statut</th>
+              <th className="px-4 py-3">{isEn ? 'Company' : 'Entreprise'}</th>
+              <th className="px-4 py-3">{isEn ? 'Plan' : 'Formule'}</th>
+              <th className="px-4 py-3">{isEn ? 'Amount' : 'Montant'}</th>
+              <th className="px-4 py-3">{isEn ? 'Issued' : 'Émission'}</th>
+              <th className="px-4 py-3">{isEn ? 'Due Date' : 'Échéance'}</th>
+              <th className="px-4 py-3">{isEn ? 'Status' : 'Statut'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -217,7 +217,7 @@ export const FacturationPage: React.FC = () => {
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">Aucune facture trouvée</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{isEn ? 'No invoice found' : 'Aucune facture trouvée'}</div>
         )}
       </div>
 
@@ -243,12 +243,12 @@ export const FacturationPage: React.FC = () => {
             </div>
             <div className="flex items-center justify-between pt-3 border-t border-border text-sm">
               <span className="font-bold text-foreground">{fmt(f.montant_xof)}</span>
-              <span className="text-xs text-muted-foreground">Éch. {f.date_echeance}</span>
+              <span className="text-xs text-muted-foreground">{isEn ? 'Due ' : 'Éch. '}{f.date_echeance}</span>
             </div>
           </div>
         ))}
         {filtered.length === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">Aucune facture trouvée</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{isEn ? 'No invoice found' : 'Aucune facture trouvée'}</div>
         )}
       </div>
     </div>
