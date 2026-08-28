@@ -25,8 +25,12 @@ import {
 } from 'lucide-react';
 import { WhatsAppActionModal } from '../../components/common/WhatsAppActionModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export const ProspectDetail: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en');
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, prospects, interactions, relances, addInteraction, convertProspectToClient, orgOffers } = useAuth();
@@ -54,7 +58,9 @@ export const ProspectDetail: React.FC = () => {
   const handleWhatsAppClick = () => {
     window.open(
       `https://wa.me/${prospect?.telephone.replace(/\s+/g, '')}?text=${encodeURIComponent(
-        `Bonjour ${prospect?.prenom || prospect?.nom}, je suis Moussa de Faciloop CRM.`
+        isEn
+          ? `Hello ${prospect?.prenom || prospect?.nom}, I am Moussa from Faciloop CRM.`
+          : `Bonjour ${prospect?.prenom || prospect?.nom}, je suis Moussa de Faciloop CRM.`
       )}`,
       '_blank'
     );
@@ -64,9 +70,9 @@ export const ProspectDetail: React.FC = () => {
   if (!prospect) {
     return (
       <div className="p-8 text-center space-y-4 font-sans">
-        <p className="text-sm font-extrabold text-muted-foreground">Prospect introuvable.</p>
+        <p className="text-sm font-extrabold text-muted-foreground">{isEn ? 'Prospect not found.' : 'Prospect introuvable.'}</p>
         <Link to={prospectsListPath} className="text-xs font-extrabold text-primary hover:underline">
-          ← Retour à la liste des prospects
+          {isEn ? '← Back to prospects list' : '← Retour à la liste des prospects'}
         </Link>
       </div>
     );
@@ -100,6 +106,25 @@ export const ProspectDetail: React.FC = () => {
     navigate(clientsPath);
   };
 
+  const getStageTitle = (st: string) => {
+    if (!isEn) return st.replace('_', ' ');
+    const map: Record<string, string> = {
+      nouveau: 'New',
+      a_contacter: 'To Contact',
+      contacte: 'Contacted',
+      interesse: 'Interested',
+      rdv_programme: 'Meeting Set',
+      demo_realisee: 'Demo Done',
+      essai_en_cours: 'Trial Ongoing',
+      proposition: 'Proposal',
+      paiement_att: 'Payment Pending',
+      gagne: 'Won Client',
+      a_relancer: 'To Follow-up',
+      perdu: 'Lost',
+    };
+    return map[st] || st;
+  };
+
   return (
     <div className="space-y-0 font-sans">
       {/* Full-page detail panel */}
@@ -109,7 +134,7 @@ export const ProspectDetail: React.FC = () => {
         <div className="border-b border-border/60 bg-muted/30 px-4 sm:px-6 py-2.5">
           <Link to={prospectsListPath} className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
             <ArrowLeft className="w-3.5 h-3.5" />
-            Retour à la liste des prospects
+            {isEn ? 'Back to prospects list' : 'Retour à la liste des prospects'}
           </Link>
         </div>
 
@@ -125,7 +150,7 @@ export const ProspectDetail: React.FC = () => {
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <h1 className="text-lg sm:text-xl font-black text-foreground">{prospect.prenom} {prospect.nom}</h1>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-primary/10 text-primary">
-                  {prospect.statut_pipeline.replace('_', ' ')}
+                  {getStageTitle(prospect.statut_pipeline)}
                 </span>
               </div>
               <p className="text-xs font-bold text-muted-foreground flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -134,7 +159,7 @@ export const ProspectDetail: React.FC = () => {
                   {prospect.entreprise}
                 </span>
                 <span>•</span>
-                <span>{prospect.secteur_activite || 'Général'}</span>
+                <span>{prospect.secteur_activite || (isEn ? 'General' : 'Général')}</span>
               </p>
             </div>
           </div>
@@ -143,7 +168,7 @@ export const ProspectDetail: React.FC = () => {
           <Link
             to={prospectsListPath}
             className="w-10 h-10 rounded-xl border border-input text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center transition-all shrink-0 active:scale-95"
-            title="Retour à la liste"
+            title={isEn ? "Back to list" : "Retour à la liste"}
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
@@ -164,7 +189,7 @@ export const ProspectDetail: React.FC = () => {
             <a
               href={`tel:${prospect.telephone}`}
               className="p-3 rounded-2xl border border-input bg-card text-foreground hover:bg-muted text-xs font-extrabold transition-all active:scale-95"
-              title="Appeler"
+              title={isEn ? "Call" : "Appeler"}
             >
               <Phone className="w-4 h-4 text-primary" />
             </a>
@@ -172,7 +197,7 @@ export const ProspectDetail: React.FC = () => {
             <a
               href={`mailto:${prospect.email || ''}`}
               className="p-3 rounded-2xl border border-input bg-card text-foreground hover:bg-muted text-xs font-extrabold transition-all active:scale-95"
-              title="Envoyer un e-mail"
+              title={isEn ? "Send email" : "Envoyer un e-mail"}
             >
               <Mail className="w-4 h-4 text-primary" />
             </a>
@@ -184,8 +209,8 @@ export const ProspectDetail: React.FC = () => {
               className="px-4 py-2.5 sm:px-4 sm:py-3 rounded-2xl bg-gradient-faciloop text-white text-xs font-extrabold shadow-lg shadow-primary/25 hover:opacity-95 flex items-center gap-1.5 transition-all ml-auto sm:ml-0 active:scale-95"
             >
               <UserCheck className="w-4 h-4" />
-              <span className="hidden sm:inline">Convertir en Client</span>
-              <span className="sm:hidden">Convertir</span>
+              <span className="hidden sm:inline">{isEn ? 'Convert to Client' : 'Convertir en Client'}</span>
+              <span className="sm:hidden">{isEn ? 'Convert' : 'Convertir'}</span>
             </button>
           )}
         </div>
@@ -194,9 +219,9 @@ export const ProspectDetail: React.FC = () => {
         <div className="px-3 sm:px-6 pt-3 border-b border-border/80 bg-card overflow-x-auto">
           <div className="relative flex gap-1 sm:gap-2 text-xs font-extrabold min-w-max">
             {[
-              { id: 'timeline', label: `Historique (${prospectInteractions.length})` },
-              { id: 'relances', label: `Relances (${prospectRelances.length})` },
-              { id: 'infos', label: 'Informations' }
+              { id: 'timeline', label: `${isEn ? 'History' : 'Historique'} (${prospectInteractions.length})` },
+              { id: 'relances', label: `${isEn ? 'Follow-ups' : 'Relances'} (${prospectRelances.length})` },
+              { id: 'infos', label: isEn ? 'Information' : 'Informations' }
             ].map((t) => (
               <button
                 key={t.id}
@@ -225,22 +250,28 @@ export const ProspectDetail: React.FC = () => {
             <div className="space-y-4 sm:space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                  Frise Chronologique des Échanges
+                  {isEn ? 'TIMELINE OF EXCHANGES' : 'Frise Chronologique des Échanges'}
                 </h3>
                 <button
                   onClick={() => setIsInterModalOpen(true)}
                   className="px-3 py-2 rounded-xl bg-primary text-white font-extrabold text-xs shadow-md shadow-primary/20 hover:opacity-95 flex items-center gap-1 active:scale-95 transition-all"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Consigner un échange</span>
+                  <span>{isEn ? 'Log an interaction' : 'Consigner un échange'}</span>
                 </button>
               </div>
 
               {prospectInteractions.length === 0 ? (
                 <div className="p-6 sm:p-8 rounded-3xl border-2 border-dashed border-border text-center space-y-2">
                   <History className="w-8 h-8 text-muted-foreground mx-auto" />
-                  <p className="text-xs font-black text-foreground">Aucune interaction consignée pour le moment.</p>
-                  <p className="text-xs text-muted-foreground font-semibold">Enregistrez vos appels, démos ou échanges WhatsApp pour conserver un historique fluide.</p>
+                  <p className="text-xs font-black text-foreground">
+                    {isEn ? 'No interaction logged yet.' : 'Aucune interaction consignée pour le moment.'}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-semibold">
+                    {isEn 
+                      ? 'Record your calls, demos or WhatsApp exchanges to maintain a smooth history.' 
+                      : 'Enregistrez vos appels, démos ou échanges WhatsApp pour conserver un historique fluide.'}
+                  </p>
                 </div>
               ) : (
                 <div className="relative pl-5 sm:pl-6 space-y-4 sm:space-y-6 before:absolute before:left-2 before:top-3 before:bottom-3 before:w-0.5 before:bg-border">
@@ -262,11 +293,11 @@ export const ProspectDetail: React.FC = () => {
                         <div className="flex-1 p-3.5 sm:p-4 rounded-2xl border border-border/80 bg-card shadow-sm hover:shadow-md transition-all space-y-1.5 sm:space-y-2">
                           <div className="flex flex-wrap items-center justify-between text-xs gap-1">
                             <span className="font-black text-foreground capitalize flex items-center gap-1.5">
-                              {inter.type}
+                              {isEn && inter.type === 'appel' ? 'Phone Call' : isEn && inter.type === 'demonstration' ? 'Demonstration' : isEn && inter.type === 'visite' ? 'Client Visit' : inter.type}
                             </span>
                             <span className="text-xs font-bold text-muted-foreground flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              {inter.date} à {inter.heure}
+                              {inter.date} {isEn ? 'at' : 'à'} {inter.heure}
                             </span>
                           </div>
 
@@ -275,7 +306,7 @@ export const ProspectDetail: React.FC = () => {
                           {inter.prochaine_action && (
                             <div className="pt-2 border-t border-border/50 text-xs font-extrabold text-amber-500 flex items-center gap-1.5">
                               <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                              <span>Prochaine action : {inter.prochaine_action}</span>
+                              <span>{isEn ? 'Next action' : 'Prochaine action'} : {inter.prochaine_action}</span>
                             </div>
                           )}
                         </div>
@@ -291,27 +322,27 @@ export const ProspectDetail: React.FC = () => {
           {activeTab === 'relances' && (
             <div className="space-y-3 sm:space-y-4">
               <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                Relances Commerciales Programmées
+                {isEn ? 'Scheduled Commercial Follow-ups' : 'Relances Commerciales Programmées'}
               </h3>
 
               {prospectRelances.length === 0 ? (
                 <div className="p-6 sm:p-8 rounded-3xl border-2 border-dashed border-border text-center text-xs font-semibold text-muted-foreground">
-                  Aucune relance programmée pour ce prospect.
+                  {isEn ? 'No follow-up scheduled for this prospect.' : 'Aucune relance programmée pour ce prospect.'}
                 </div>
               ) : (
                 prospectRelances.map((rel) => (
                   <div key={rel.id} className="p-3.5 sm:p-4 rounded-2xl border border-border bg-card flex justify-between items-center text-xs shadow-sm">
                     <div className="space-y-1">
-                      <div className="font-extrabold text-foreground">{rel.motif || 'Relance suivi commercial'}</div>
+                      <div className="font-extrabold text-foreground">{rel.motif || (isEn ? 'Commercial follow-up' : 'Relance suivi commercial')}</div>
                       <div className="text-xs font-bold text-muted-foreground flex items-center gap-1">
                         <Clock className="w-3 h-3 text-primary" />
-                        {rel.date} à {rel.heure}
+                        {rel.date} {isEn ? 'at' : 'à'} {rel.heure}
                       </div>
                     </div>
                     <span className={`px-2.5 py-0.5 rounded-full font-black uppercase text-xs ${
                       rel.statut === 'en_retard' ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'
                     }`}>
-                      {rel.statut.replace('_', ' ')}
+                      {isEn && rel.statut === 'en_retard' ? 'Overdue' : isEn && rel.statut === 'en_cours' ? 'Pending' : rel.statut.replace('_', ' ')}
                     </span>
                   </div>
                 ))
@@ -323,42 +354,42 @@ export const ProspectDetail: React.FC = () => {
           {activeTab === 'infos' && (
             <div className="space-y-3 sm:space-y-4">
               <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                Fiche d'Identité Commerciale
+                {isEn ? 'Commercial Profile Summary' : "Fiche d'Identité Commerciale"}
               </h3>
 
               <div className="p-4 sm:p-5 rounded-3xl border border-border bg-card space-y-4 shadow-sm text-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <span className="block text-muted-foreground font-extrabold">Téléphone Principal</span>
+                    <span className="block text-muted-foreground font-extrabold">{isEn ? 'Primary Phone' : 'Téléphone Principal'}</span>
                     <span className="font-black text-foreground text-sm">{prospect.telephone}</span>
                   </div>
                   <div>
-                    <span className="block text-muted-foreground font-extrabold">Adresse Email</span>
-                    <span className="font-black text-foreground">{prospect.email || 'Non renseigné'}</span>
+                    <span className="block text-muted-foreground font-extrabold">{isEn ? 'Email Address' : 'Adresse Email'}</span>
+                    <span className="font-black text-foreground">{prospect.email || (isEn ? 'Not provided' : 'Non renseigné')}</span>
                   </div>
                   <div>
-                    <span className="block text-muted-foreground font-extrabold">Entreprise</span>
+                    <span className="block text-muted-foreground font-extrabold">{isEn ? 'Company' : 'Entreprise'}</span>
                     <span className="font-black text-foreground">{prospect.entreprise}</span>
                   </div>
                   <div>
-                    <span className="block text-muted-foreground font-extrabold">Secteur d'Activité</span>
-                    <span className="font-black text-foreground">{prospect.secteur_activite || 'Général'}</span>
+                    <span className="block text-muted-foreground font-extrabold">{isEn ? 'Industry / Sector' : "Secteur d'Activité"}</span>
+                    <span className="font-black text-foreground">{prospect.secteur_activite || (isEn ? 'General' : 'Général')}</span>
                   </div>
                   <div>
-                    <span className="block text-muted-foreground font-extrabold">Source d'Acquisition</span>
+                    <span className="block text-muted-foreground font-extrabold">{isEn ? 'Acquisition Source' : "Source d'Acquisition"}</span>
                     <span className="font-black text-foreground capitalize">{prospect.source.replace('_', ' ')}</span>
                   </div>
                   <div>
-                    <span className="block text-muted-foreground font-extrabold">Budget Estimé</span>
+                    <span className="block text-muted-foreground font-extrabold">{isEn ? 'Estimated Budget' : 'Budget Estimé'}</span>
                     <span className="font-black text-emerald-500 text-sm">
-                      {prospect.budget_estime ? `${prospect.budget_estime.toLocaleString()} FCFA` : 'Non défini'}
+                      {prospect.budget_estime ? `${prospect.budget_estime.toLocaleString()} FCFA` : (isEn ? 'Not defined' : 'Non défini')}
                     </span>
                   </div>
                 </div>
 
                 <div className="pt-3 border-t border-border">
-                  <span className="block text-muted-foreground font-extrabold mb-0.5">Commercial Responsable</span>
-                  <span className="font-black text-primary text-sm">{prospect.commercial_nom || 'Attribué à moi'}</span>
+                  <span className="block text-muted-foreground font-extrabold mb-0.5">{isEn ? 'Assigned Sales Rep' : 'Commercial Responsable'}</span>
+                  <span className="font-black text-primary text-sm">{prospect.commercial_nom || (isEn ? 'Assigned to me' : 'Attribué à moi')}</span>
                 </div>
               </div>
             </div>
@@ -380,7 +411,9 @@ export const ProspectDetail: React.FC = () => {
               <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto sm:hidden mb-1" />
 
               <div className="flex items-center justify-between">
-                <h2 className="text-base sm:text-lg font-extrabold text-foreground">Consigner une Interaction</h2>
+                <h2 className="text-base sm:text-lg font-extrabold text-foreground">
+                  {isEn ? 'Log an Interaction' : 'Consigner une Interaction'}
+                </h2>
                 <button onClick={() => setIsInterModalOpen(false)} className="p-1 rounded-lg hover:bg-muted">
                   <X className="w-5 h-5" />
                 </button>
@@ -388,39 +421,39 @@ export const ProspectDetail: React.FC = () => {
 
               <form onSubmit={handleAddInteraction} className="space-y-3 text-xs">
                 <div>
-                  <label className="block font-bold mb-1 text-foreground">Type d'interaction</label>
+                  <label className="block font-bold mb-1 text-foreground">{isEn ? 'Interaction type' : "Type d'interaction"}</label>
                   <select
                     value={interType}
                     onChange={(e) => setInterType(e.target.value)}
                     className="w-full p-3 rounded-2xl border border-input bg-background font-bold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   >
-                    <option value="appel">Appel Téléphonique</option>
-                    <option value="whatsapp">Message WhatsApp</option>
+                    <option value="appel">{isEn ? 'Phone Call' : 'Appel Téléphonique'}</option>
+                    <option value="whatsapp">WhatsApp</option>
                     <option value="email">Email</option>
-                    <option value="demonstration">Démonstration</option>
-                    <option value="visite">Visite Client</option>
+                    <option value="demonstration">{isEn ? 'Demonstration' : 'Démonstration'}</option>
+                    <option value="visite">{isEn ? 'Client Visit' : 'Visite Client'}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-bold mb-1 text-foreground">Compte-rendu / Commentaire</label>
+                  <label className="block font-bold mb-1 text-foreground">{isEn ? 'Report / Comment' : 'Compte-rendu / Commentaire'}</label>
                   <textarea
                     required
                     rows={3}
                     value={interComment}
                     onChange={(e) => setInterComment(e.target.value)}
-                    placeholder="Points clés abordés lors de l'échange..."
+                    placeholder={isEn ? "Key points discussed during exchange..." : "Points clés abordés lors de l'échange..."}
                     className="w-full p-3 rounded-2xl border border-input bg-background font-semibold text-foreground"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold mb-1 text-foreground">Prochaine Action</label>
+                  <label className="block font-bold mb-1 text-foreground">{isEn ? 'Next Action' : 'Prochaine Action'}</label>
                   <input
                     type="text"
                     value={interNextAction}
                     onChange={(e) => setInterNextAction(e.target.value)}
-                    placeholder="Ex: Envoyer la proposition commerciale"
+                    placeholder={isEn ? "Ex: Send proposal" : "Ex: Envoyer la proposition commerciale"}
                     className="w-full p-3 rounded-2xl border border-input bg-background font-semibold text-foreground"
                   />
                 </div>
@@ -431,13 +464,13 @@ export const ProspectDetail: React.FC = () => {
                     onClick={() => setIsInterModalOpen(false)}
                     className="w-full sm:w-1/3 py-3 rounded-2xl border border-input font-bold hover:bg-muted text-foreground"
                   >
-                    Annuler
+                    {isEn ? 'Cancel' : 'Annuler'}
                   </button>
                   <button
                     type="submit"
                     className="w-full sm:w-2/3 py-3 rounded-2xl bg-gradient-faciloop text-white font-extrabold shadow-md hover:opacity-95"
                   >
-                    Enregistrer l'interaction
+                    {isEn ? 'Save interaction' : "Enregistrer l'interaction"}
                   </button>
                 </div>
               </form>
@@ -460,22 +493,26 @@ export const ProspectDetail: React.FC = () => {
               <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto sm:hidden mb-1" />
 
               <div className="flex items-center justify-between">
-                <h2 className="text-base sm:text-lg font-extrabold text-foreground">Conversion en Client Faciloop</h2>
+                <h2 className="text-base sm:text-lg font-extrabold text-foreground">
+                  {isEn ? 'Convert to Client' : 'Conversion en Client Faciloop'}
+                </h2>
                 <button onClick={() => setIsConvertModalOpen(false)} className="p-1 rounded-lg hover:bg-muted">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <p className="text-xs text-muted-foreground font-semibold">
-                Vous allez convertir <strong className="text-foreground font-extrabold">{prospect.entreprise}</strong> en Client officiel Faciloop CRM.
+                {isEn 
+                  ? `You are converting ${prospect.entreprise} into an official Faciloop CRM client.` 
+                  : `Vous allez convertir ${prospect.entreprise} en Client officiel Faciloop CRM.`}
               </p>
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="block font-bold text-foreground mb-1">Offre d'abonnement</label>
+                  <label className="block font-bold text-foreground mb-1">{isEn ? 'Subscription plan' : "Offre d'abonnement"}</label>
                   {activeOrgOffers.length === 0 ? (
                     <p className="text-xs text-amber-600 p-3 rounded-xl border border-amber-500/30 bg-amber-500/5">
-                      Aucune offre configurée. Créez vos offres dans Abonnements.
+                      {isEn ? 'No offer configured. Create offers in Subscriptions.' : 'Aucune offre configurée. Créez vos offres dans Abonnements.'}
                     </p>
                   ) : (
                     <select
@@ -485,7 +522,7 @@ export const ProspectDetail: React.FC = () => {
                     >
                       {activeOrgOffers.map(offer => (
                         <option key={offer.id} value={offer.nom}>
-                          {offer.nom} ({offer.tarifs.mensuel.toLocaleString('fr-FR')} FCFA/mois)
+                          {offer.nom} ({offer.tarifs.mensuel.toLocaleString('fr-FR')} FCFA/{isEn ? 'mo' : 'mois'})
                         </option>
                       ))}
                     </select>
@@ -498,13 +535,13 @@ export const ProspectDetail: React.FC = () => {
                   onClick={() => setIsConvertModalOpen(false)}
                   className="w-full sm:w-1/2 py-3 rounded-2xl border border-input text-xs font-bold hover:bg-muted text-foreground"
                 >
-                  Annuler
+                  {isEn ? 'Cancel' : 'Annuler'}
                 </button>
                 <button
                   onClick={handleConvert}
                   className="w-full sm:w-1/2 py-3 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs hover:bg-emerald-600 shadow-md shadow-emerald-500/25"
                 >
-                  Confirmer la vente
+                  {isEn ? 'Confirm sale' : 'Confirmer la vente'}
                 </button>
               </div>
             </motion.div>

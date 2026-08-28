@@ -140,14 +140,20 @@ export function ProfilPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm rounded-2xl border border-border bg-background p-6 space-y-5 shadow-2xl">
             <div className="text-center">
-              <h3 className="text-base font-bold text-foreground">Changer le code secret</h3>
-              <p className="text-xs text-muted-foreground mt-1">Entrez votre nouveau code PIN (6 chiffres)</p>
+              <h3 className="text-base font-bold text-foreground">
+                {isEn ? 'Change secret PIN code' : 'Changer le code secret'}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                {isEn ? 'Enter your new PIN code (6 digits)' : 'Entrez votre nouveau code PIN (6 chiffres)'}
+              </p>
             </div>
 
             <div className="space-y-4">
               {/* Nouveau code */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-foreground">Nouveau code secret</label>
+                <label className="text-xs font-semibold text-foreground">
+                  {isEn ? 'New secret PIN code' : 'Nouveau code secret'}
+                </label>
                 <div className="flex items-center justify-center gap-2">
                   <InputOTP
                     maxLength={6}
@@ -177,7 +183,9 @@ export function ProfilPage() {
 
               {/* Confirmation */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-foreground">Confirmer le code secret</label>
+                <label className="text-xs font-semibold text-foreground">
+                  {isEn ? 'Confirm secret PIN code' : 'Confirmer le code secret'}
+                </label>
                 <div className="flex items-center justify-center gap-2">
                   <InputOTP
                     maxLength={6}
@@ -210,7 +218,7 @@ export function ProfilPage() {
                 onClick={handleClose}
                 className="flex-1 py-2.5 rounded-xl border border-border text-xs font-bold text-muted-foreground hover:bg-muted transition-all"
               >
-                Annuler
+                {isEn ? 'Cancel' : 'Annuler'}
               </button>
               <button
                 type="button"
@@ -218,7 +226,7 @@ export function ProfilPage() {
                 disabled={isPending || nouveau.length !== 6 || confirmation.length !== 6}
                 className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold shadow-md hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isPending ? 'Enregistrement…' : 'Confirmer'}
+                {isPending ? (isEn ? 'Saving…' : 'Enregistrement…') : (isEn ? 'Confirm' : 'Confirmer')}
               </button>
             </div>
           </div>
