@@ -41,7 +41,7 @@ const TYPE_ICONS: Record<string, string> = {
 
 export const ObjectifsPage: React.FC = () => {
   const { i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en');
+  const isEn = Boolean(i18n.language?.startsWith('en'));
   const { user, objectifs, currency, setCurrency } = useAuth();
   const activeCurrency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === currency)?.[0] || 'XOF') as Currency;
 
