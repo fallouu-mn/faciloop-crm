@@ -26,14 +26,14 @@ export const PendingActivationPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 sm:p-6 relative overflow-hidden font-sans selection:bg-primary/20 selection:text-primary">
-      {/* Background Decorative Blur Gradients */}
+      {/* Background Decorative Ambient Blur Gradients */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-80 sm:w-[500px] h-80 sm:h-[500px] bg-primary/20 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-70 sm:w-[400px] h-70 sm:h-[400px] bg-emerald-500/15 rounded-full blur-[140px] pointer-events-none" />
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        initial={{ opacity: 0, scale: 0.96, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
         className="w-full max-w-lg bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-2xl z-10 text-center space-y-6 relative"
       >
         {/* Faciloop Header Logo */}
@@ -47,49 +47,76 @@ export const PendingActivationPage: React.FC = () => {
         </div>
 
         {/* Status Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-black">
-          <Clock className="w-4 h-4 animate-spin-slow shrink-0" />
-          <span>{t('pendingTitle')}</span>
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-extrabold">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+          <span>{isEn ? 'Status: Pending Validation' : 'Statut : Validation en cours'}</span>
         </div>
 
         {/* Main Title & Explanation */}
         <div className="space-y-2">
           <h1 className="text-xl sm:text-2xl font-black text-foreground">
-            {t('pendingTitle')}
+            {isEn ? 'Registration Submitted!' : 'Inscription enregistrée !'}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold leading-relaxed max-w-md mx-auto">
-            {t('pendingDescription')}
+            {isEn ? (
+              <>Your company account for <strong className="text-foreground">{companyName}</strong> has been created. Our team will validate your access within <strong>24 hours</strong>.</>
+            ) : (
+              <>Le compte d'entreprise pour <strong className="text-foreground">{companyName}</strong> a été créé. Notre équipe valide votre accès sous <strong>24h</strong>.</>
+            )}
           </p>
         </div>
 
-        {/* WhatsApp Direct Activation Trigger */}
-        <div className="p-4 sm:p-5 rounded-3xl border border-emerald-500/30 bg-emerald-500/5 space-y-3 text-left">
-          <div className="flex items-center gap-2.5 text-emerald-600 font-extrabold text-xs">
-            <div className="p-2 rounded-xl bg-emerald-500/10">
-              <MessageSquare className="w-5 h-5" />
+        {/* Professional 3-Step Progress Tracker */}
+        <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 text-left space-y-3">
+          <div className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+            {isEn ? 'Activation Process' : "Processus d'activation"}
+          </div>
+          <div className="space-y-2.5 text-xs font-bold">
+            <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{isEn ? '1. Account Creation (Completed)' : '1. Création du compte (Effectuée)'}</span>
             </div>
-            <div>
-              <div>{t('contactWhatsApp')}</div>
-              <div className="text-[11px] font-semibold text-muted-foreground">
-                {isEn ? 'Fast activation via direct message' : 'Activation rapide par message direct'}
+            <div className="flex items-center gap-3 text-amber-500">
+              <Clock className="w-4 h-4 shrink-0 animate-spin-slow" />
+              <span>{isEn ? '2. Admin Verification (In progress - max 24h)' : '2. Vérification administrateur (En cours - max 24h)'}</span>
+            </div>
+            <div className="flex items-center gap-3 text-muted-foreground opacity-60">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>{isEn ? '3. Access Activation & Notification' : '3. Activation des accès & Notification'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* WhatsApp Direct Activation Express Card */}
+        <div className="p-4 sm:p-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-3 text-left">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs">
+              <div className="p-2 rounded-xl bg-emerald-500/10 shrink-0">
+                <MessageSquare className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <div className="font-extrabold text-sm">{isEn ? 'Instant WhatsApp Activation' : 'Activation Instantanée WhatsApp'}</div>
+                <div className="text-[11px] font-medium text-muted-foreground mt-0.5">
+                  {isEn ? 'Get access unlocked in less than 15 minutes' : 'Débloquez votre accès en moins de 15 minutes'}
+                </div>
               </div>
             </div>
           </div>
 
           <button
             onClick={handleWhatsAppContact}
-            className="w-full py-3.5 px-4 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-emerald-500/25 hover:bg-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-emerald-500/25 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <MessageSquare className="w-4.5 h-4.5 fill-white" />
-            <span>{t('contactWhatsApp')} (+221 71 138 78 78)</span>
+            <span>{isEn ? 'Contact Support (+221 71 138 78 78)' : 'Contacter le Support (+221 71 138 78 78)'}</span>
           </button>
         </div>
 
-        {/* Action Options */}
-        <div className="pt-2">
+        {/* Go to Login Button */}
+        <div className="pt-1">
           <Link
             to="/login"
-            className="w-full py-3.5 rounded-2xl border border-input text-xs sm:text-sm font-extrabold text-foreground hover:bg-muted active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-xl border border-input text-xs sm:text-sm font-extrabold text-foreground hover:bg-muted active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <span>{t('goToLogin')}</span>
             <ArrowRight className="w-4 h-4 text-primary" />
