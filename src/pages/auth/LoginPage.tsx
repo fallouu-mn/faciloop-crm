@@ -51,7 +51,13 @@ export const LoginPage: React.FC = () => {
     try {
       const session = await login(phone, pin);
       if (session) {
-        redirectByRole(session.role);
+        if (session.orgStatut === 'en_attente') {
+          navigate('/pending-activation');
+        } else if (session.orgStatut === 'suspendu') {
+          setErrorMsg(isEn ? 'Your organization has been suspended. Contact support.' : 'Votre organisation a été suspendue. Contactez le support.');
+        } else {
+          redirectByRole(session.role);
+        }
       } else {
         setErrorMsg(isEn ? 'Incorrect phone number or PIN code' : 'Numéro de téléphone ou code secret incorrect');
       }
@@ -69,7 +75,13 @@ export const LoginPage: React.FC = () => {
     try {
       const session = await login(phoneVal, pin);
       if (session) {
-        redirectByRole(session.role);
+        if (session.orgStatut === 'en_attente') {
+          navigate('/pending-activation');
+        } else if (session.orgStatut === 'suspendu') {
+          setErrorMsg('Organisation suspendue.');
+        } else {
+          redirectByRole(session.role);
+        }
       }
     } finally {
       setLoading(false);

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import { Loader2, Gift, ChevronDown, ChevronUp, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { PhoneInput } from '../../components/common/PhoneInput';
@@ -11,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 export const RegisterPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const isEn = i18n.language?.startsWith('en');
 
@@ -36,7 +34,7 @@ export const RegisterPage: React.FC = () => {
   const pinsMatch = pin.length === 6 && confirmPin.length === 6 && pin === confirmPin;
   const pinsMismatch = pin.length === 6 && confirmPin.length === 6 && pin !== confirmPin;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
@@ -72,22 +70,57 @@ export const RegisterPage: React.FC = () => {
 
     setLoading(true);
 
-    const registrationData = {
-      prenom,
-      nom,
-      entreprise,
-      telephone: phone,
-      codeSecret: pin,
-      questionSecrete,
-      codeParrainage,
-      registeredAt: new Date().toISOString(),
-    };
-    localStorage.setItem('faciloop_pending_registration', JSON.stringify(registrationData));
+    try {
+      const cleanPhone = phone.replace(/\s+/g, '');
 
-    setTimeout(() => {
-      setLoading(false);
+      // Appeler l'Edge Function register-user (utilise admin.createUser pour bypass email validation)
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/register-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': anonKey,
+        },
+        body: JSON.stringify({
+          telephone: cleanPhone,
+          pin,
+          nom_org: entreprise.trim(),
+          prenom: prenom.trim(),
+          nom: nom.trim(),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 409) {
+          setErrorMsg(isEn ? 'This phone number is already registered' : 'Ce numéro de téléphone est déjà enregistré');
+        } else {
+          setErrorMsg(result.error || (isEn ? 'Registration failed. Please try again.' : "L'inscription a échoué. Veuillez réessayer."));
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Sauvegarder pour la page pending-activation
+      const registrationData = {
+        prenom,
+        nom,
+        entreprise,
+        telephone: phone,
+        registeredAt: new Date().toISOString(),
+      };
+      localStorage.setItem('faciloop_pending_registration', JSON.stringify(registrationData));
+
       navigate('/pending-activation', { state: registrationData });
-    }, 600);
+    } catch (err) {
+      console.error('Registration error:', err);
+      setErrorMsg(isEn ? 'An unexpected error occurred' : 'Une erreur inattendue est survenue');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -173,7 +206,7 @@ export const RegisterPage: React.FC = () => {
           </div>
 
           {/* Code parrainage */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <button
               type="button"
               onClick={() => setShowParrainage(!showParrainage)}
@@ -194,7 +227,7 @@ export const RegisterPage: React.FC = () => {
                 className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm uppercase focus:outline-none focus:ring-2 focus:ring-ring text-foreground disabled:opacity-50"
               />
             )}
-          </div>
+          </div> */}
 
           {/* Code secret */}
           <PinInput

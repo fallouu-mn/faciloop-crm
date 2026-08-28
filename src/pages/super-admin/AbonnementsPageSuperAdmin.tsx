@@ -1,18 +1,26 @@
-import React, { useState } from 'react';
-import { Crown, Check, Pencil, X, Save, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Crown, Check, Pencil, X, Save, Plus, Loader2 } from 'lucide-react';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DeviseCode, convertAmount, formatAmount, getDeviseSymbol } from '../../lib/currency';
-import { FORMULES, PERIODICITES, FormuleConfig, FormuleAbonnement, Periodicite, OfferPricing } from '../../lib/mockSuperAdmin';
+import {
+  FormuleConfig,
+  getFormules,
+  createFormule,
+  updateFormule,
+  toggleFormuleActive,
+} from '../../services/formulesSaas';
 
-import { useTranslation } from 'react-i18next';
+const PERIODICITES = [
+  { code: 'mensuel', label: 'Mensuel' },
+  { code: 'trimestriel', label: 'Trimestriel' },
+  { code: 'annuel', label: 'Annuel' },
+];
 
 export const AbonnementsPageSuperAdmin: React.FC = () => {
-  const { t, i18n } = useTranslation();
   const [devise, setDevise] = useState<DeviseCode>('XOF');
-  const [formules, setFormules] = useState<FormuleConfig[]>(FORMULES);
+  const [formules, setFormules] = useState<FormuleConfig[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingFormule, setEditingFormule] = useState<string | null>(null);
-
-  const isEn = i18n.language?.startsWith('en');
   const [editPricing, setEditPricing] = useState<FormuleConfig['pricing'] | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newLabel, setNewLabel] = useState('');
@@ -21,6 +29,20 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
   const [newPremierMois, setNewPremierMois] = useState(0);
   const [newTrimestriel, setNewTrimestriel] = useState(0);
   const [newAnnuel, setNewAnnuel] = useState(0);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await getFormules();
+        setFormules(data);
+      } catch (err) {
+        console.error('Erreur chargement formules:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
   const symbol = getDeviseSymbol(devise);
@@ -41,21 +63,31 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
     setEditPricing(null);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editingFormule || !editPricing) return;
-    setFormules(prev => prev.map(f =>
-      f.code === editingFormule
-        ? { ...f, pricing: editPricing, prix_xof: editPricing.mensuel }
-        : f
-    ));
+    try {
+      const updated = await updateFormule(editingFormule, {
+        pricing: editPricing,
+        prix_xof: editPricing.mensuel,
+      });
+      setFormules(prev => prev.map(f => f.code === editingFormule ? updated : f));
+    } catch (err) {
+      console.error('Erreur sauvegarde:', err);
+    }
     setEditingFormule(null);
     setEditPricing(null);
   };
 
-  const toggleActive = (code: string) => {
-    setFormules(prev => prev.map(f =>
-      f.code === code ? { ...f, isActive: !f.isActive } : f
-    ));
+  const handleToggleActive = async (code: string) => {
+    const f = formules.find(fo => fo.code === code);
+    if (!f) return;
+    const newActive = !f.isActive;
+    try {
+      await toggleFormuleActive(code, newActive);
+      setFormules(prev => prev.map(fo => fo.code === code ? { ...fo, isActive: newActive } : fo));
+    } catch (err) {
+      console.error('Erreur toggle:', err);
+    }
   };
 
   const handleAddOffer = () => {
@@ -68,7 +100,7 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
     setIsAddModalOpen(true);
   };
 
-  const handleCreateOffer = (e: React.FormEvent) => {
+  const handleCreateOffer = async (e: React.FormEvent) => {
     e.preventDefault();
     const mensuelXof = toXof(newMensuel);
     const premierMoisXof = newPremierMois ? toXof(newPremierMois) : null;
@@ -78,7 +110,7 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
     const annuelNormal = mensuelXof * 12;
 
     const newFormule: FormuleConfig = {
-      code: newLabel as FormuleAbonnement,
+      code: newLabel,
       label: newLabel,
       prix_xof: mensuelXof,
       isActive: true,
@@ -94,11 +126,17 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
         annuel_remise: annuelNormal > 0 ? Math.round((1 - annuelXof / annuelNormal) * 100) : 0,
       },
     };
-    setFormules(prev => [...prev, newFormule]);
-    setIsAddModalOpen(false);
+
+    try {
+      const created = await createFormule(newFormule);
+      setFormules(prev => [...prev, created]);
+      setIsAddModalOpen(false);
+    } catch (err) {
+      console.error('Erreur création formule:', err);
+    }
   };
 
-  const getPeriodLabel = (periodicite: Periodicite): string => {
+  const getPeriodLabel = (periodicite: string): string => {
     return PERIODICITES.find(p => p.code === periodicite)?.label || periodicite;
   };
 
@@ -128,21 +166,27 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
     Premium: { bg: 'bg-emerald-500/10', text: 'text-emerald-600', border: 'border-emerald-500/20', gradient: 'from-emerald-500 to-emerald-600' },
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-              {isEn ? 'Subscriptions' : 'Abonnements'}
-            </h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Abonnements</h1>
             <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-              {isEn ? 'Reference Source' : 'Source de référence'}
+              Source de référence
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {isEn ? 'Offer and pricing configuration — 3 plans × 3 billing periods' : 'Configuration des offres et tarifs — 3 formules × 3 périodes'}
+            Configuration des offres et tarifs — {formules.length} formule{formules.length > 1 ? 's' : ''}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -152,271 +196,291 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
             className="inline-flex items-center gap-2 rounded-full bg-gradient-faciloop px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity"
           >
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">{isEn ? '+ Add Offer' : 'Ajouter une offre'}</span>
-            <span className="sm:hidden">{isEn ? 'Offer' : 'Offre'}</span>
+            <span className="hidden sm:inline">Ajouter une offre</span>
+            <span className="sm:hidden">Offre</span>
           </button>
         </div>
       </div>
 
+      {/* Empty State */}
+      {formules.length === 0 && (
+        <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center space-y-3">
+          <Crown className="h-10 w-10 text-muted-foreground mx-auto" />
+          <h2 className="text-lg font-semibold text-foreground">Aucune formule configurée</h2>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Créez votre première offre d'abonnement pour commencer à facturer vos clients.
+          </p>
+          <button
+            onClick={handleAddOffer}
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-faciloop px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity mt-2"
+          >
+            <Plus className="h-4 w-4" />
+            Créer une offre
+          </button>
+        </div>
+      )}
+
       {/* Offers Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {formules.map((f) => {
-          const color = colors[f.code] || defaultColor;
-          const isEditing = editingFormule === f.code;
+      {formules.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {formules.map((f) => {
+            const color = colors[f.code] || defaultColor;
+            const isEditing = editingFormule === f.code;
 
-          return (
-            <div
-              key={f.code}
-              className={`rounded-xl border bg-card overflow-hidden transition-all ${
-                f.isActive ? `${color.border} border` : 'border-border opacity-60'
-              }`}
-            >
-              {/* Card Header */}
-              <div className={`px-5 py-4 bg-gradient-to-r ${color.gradient} text-white`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Crown className="h-5 w-5" />
-                    <span className="text-lg font-bold">{f.label}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => toggleActive(f.code)}
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors ${
-                        f.isActive
-                          ? 'bg-white/20 text-white'
-                          : 'bg-black/20 text-white/70'
-                      }`}
-                    >
-                      {f.isActive ? 'Actif' : 'Inactif'}
-                    </button>
-                    {!isEditing && (
+            return (
+              <div
+                key={f.code}
+                className={`rounded-xl border bg-card overflow-hidden transition-all ${
+                  f.isActive ? `${color.border} border` : 'border-border opacity-60'
+                }`}
+              >
+                {/* Card Header */}
+                <div className={`px-5 py-4 bg-gradient-to-r ${color.gradient} text-white`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Crown className="h-5 w-5" />
+                      <span className="text-lg font-bold">{f.label}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <button
-                        onClick={() => startEdit(f.code)}
-                        className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                        onClick={() => handleToggleActive(f.code)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors ${
+                          f.isActive
+                            ? 'bg-white/20 text-white'
+                            : 'bg-black/20 text-white/70'
+                        }`}
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        {f.isActive ? 'Actif' : 'Inactif'}
                       </button>
-                    )}
-                  </div>
-                </div>
-                <p className="text-xs text-white/80 mt-1">{f.description}</p>
-              </div>
-
-              {/* Pricing Table */}
-              <div className="p-4 space-y-3">
-                {/* Mensuel */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {getPeriodLabel('mensuel')}
-                    </span>
-                    {f.pricing.mensuel_premier_mois && !isEditing && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-bold">
-                        1er mois: {fmt(f.pricing.mensuel_premier_mois)}
-                      </span>
-                    )}
-                  </div>
-                  {isEditing && editPricing ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <label className="text-[10px] text-muted-foreground w-16 shrink-0">Prix/mois</label>
-                        <div className="flex-1 relative">
-                          <input
-                            type="number"
-                            value={toDisplay(editPricing.mensuel)}
-                            onChange={e => updateEditField('mensuel', Number(e.target.value))}
-                            className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
-                          />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <label className="text-[10px] text-muted-foreground w-16 shrink-0">1er mois</label>
-                        <div className="flex-1 relative">
-                          <input
-                            type="number"
-                            value={editPricing.mensuel_premier_mois ? toDisplay(editPricing.mensuel_premier_mois) : ''}
-                            onChange={e => setEditPricing({ ...editPricing, mensuel_premier_mois: e.target.value ? toXof(Number(e.target.value)) : null })}
-                            placeholder="Optionnel"
-                            className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
-                          />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
-                        </div>
-                      </div>
+                      {!isEditing && (
+                        <button
+                          onClick={() => startEdit(f.code)}
+                          className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
-                  ) : (
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-bold text-foreground">{fmt(f.pricing.mensuel)}</span>
-                      <span className="text-xs text-muted-foreground">/mois</span>
-                    </div>
-                  )}
+                  </div>
+                  <p className="text-xs text-white/80 mt-1">{f.description}</p>
                 </div>
 
-                <div className="border-t border-border" />
-
-                {/* Trimestriel */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {getPeriodLabel('trimestriel')}
-                    </span>
-                    {f.pricing.trimestriel_remise > 0 && !isEditing && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold">
-                        -{f.pricing.trimestriel_remise}%
+                {/* Pricing Table */}
+                <div className="p-4 space-y-3">
+                  {/* Mensuel */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {getPeriodLabel('mensuel')}
                       </span>
-                    )}
-                  </div>
-                  {isEditing && editPricing ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <label className="text-[10px] text-muted-foreground w-16 shrink-0">Forfait</label>
-                        <div className="flex-1 relative">
-                          <input
-                            type="number"
-                            value={toDisplay(editPricing.trimestriel)}
-                            onChange={e => updateEditField('trimestriel', Number(e.target.value))}
-                            className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
-                          />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <label className="text-[10px] text-muted-foreground w-16 shrink-0">Normal</label>
-                        <div className="flex-1 relative">
-                          <input
-                            type="number"
-                            value={toDisplay(editPricing.trimestriel_normal)}
-                            onChange={e => updateEditField('trimestriel_normal', Number(e.target.value))}
-                            className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
-                          />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <label className="text-[10px] text-muted-foreground w-16 shrink-0">Remise</label>
-                        <div className="flex-1 h-8 px-2 rounded-md border border-input bg-muted/50 text-xs flex items-center text-muted-foreground font-medium">
-                          -{editPricing.trimestriel_remise}% <span className="ml-1 text-[10px]">(auto)</span>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-xl font-bold text-foreground">{fmt(f.pricing.trimestriel)}</span>
-                        <span className="text-xs text-muted-foreground">/3 mois</span>
-                      </div>
-                      {f.pricing.trimestriel_normal > f.pricing.trimestriel && (
-                        <span className="text-xs text-muted-foreground line-through">
-                          {fmt(f.pricing.trimestriel_normal)}
+                      {f.pricing.mensuel_premier_mois && !isEditing && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-bold">
+                          1er mois: {fmt(f.pricing.mensuel_premier_mois)}
                         </span>
                       )}
                     </div>
-                  )}
-                </div>
-
-                <div className="border-t border-border" />
-
-                {/* Annuel */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {getPeriodLabel('annuel')}
-                    </span>
-                    {f.pricing.annuel_remise > 0 && !isEditing && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold">
-                        -{f.pricing.annuel_remise}%
-                      </span>
+                    {isEditing && editPricing ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <label className="text-[10px] text-muted-foreground w-16 shrink-0">Prix/mois</label>
+                          <div className="flex-1 relative">
+                            <input
+                              type="number"
+                              value={toDisplay(editPricing.mensuel)}
+                              onChange={e => updateEditField('mensuel', Number(e.target.value))}
+                              className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-[10px] text-muted-foreground w-16 shrink-0">1er mois</label>
+                          <div className="flex-1 relative">
+                            <input
+                              type="number"
+                              value={editPricing.mensuel_premier_mois ? toDisplay(editPricing.mensuel_premier_mois) : ''}
+                              onChange={e => setEditPricing({ ...editPricing, mensuel_premier_mois: e.target.value ? toXof(Number(e.target.value)) : null })}
+                              placeholder="Optionnel"
+                              className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xl font-bold text-foreground">{fmt(f.pricing.mensuel)}</span>
+                        <span className="text-xs text-muted-foreground">/mois</span>
+                      </div>
                     )}
                   </div>
-                  {isEditing && editPricing ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <label className="text-[10px] text-muted-foreground w-16 shrink-0">Forfait</label>
-                        <div className="flex-1 relative">
-                          <input
-                            type="number"
-                            value={toDisplay(editPricing.annuel)}
-                            onChange={e => updateEditField('annuel', Number(e.target.value))}
-                            className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
-                          />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <label className="text-[10px] text-muted-foreground w-16 shrink-0">Normal</label>
-                        <div className="flex-1 relative">
-                          <input
-                            type="number"
-                            value={toDisplay(editPricing.annuel_normal)}
-                            onChange={e => updateEditField('annuel_normal', Number(e.target.value))}
-                            className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
-                          />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <label className="text-[10px] text-muted-foreground w-16 shrink-0">Remise</label>
-                        <div className="flex-1 h-8 px-2 rounded-md border border-input bg-muted/50 text-xs flex items-center text-muted-foreground font-medium">
-                          -{editPricing.annuel_remise}% <span className="ml-1 text-[10px]">(auto)</span>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-xl font-bold text-foreground">{fmt(f.pricing.annuel)}</span>
-                        <span className="text-xs text-muted-foreground">/an</span>
-                      </div>
-                      {f.pricing.annuel_normal > f.pricing.annuel && (
-                        <span className="text-xs text-muted-foreground line-through">
-                          {fmt(f.pricing.annuel_normal)}
+
+                  <div className="border-t border-border" />
+
+                  {/* Trimestriel */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {getPeriodLabel('trimestriel')}
+                      </span>
+                      {f.pricing.trimestriel_remise > 0 && !isEditing && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold">
+                          -{f.pricing.trimestriel_remise}%
                         </span>
                       )}
                     </div>
+                    {isEditing && editPricing ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <label className="text-[10px] text-muted-foreground w-16 shrink-0">Forfait</label>
+                          <div className="flex-1 relative">
+                            <input
+                              type="number"
+                              value={toDisplay(editPricing.trimestriel)}
+                              onChange={e => updateEditField('trimestriel', Number(e.target.value))}
+                              className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-[10px] text-muted-foreground w-16 shrink-0">Normal</label>
+                          <div className="flex-1 relative">
+                            <input
+                              type="number"
+                              value={toDisplay(editPricing.trimestriel_normal)}
+                              onChange={e => updateEditField('trimestriel_normal', Number(e.target.value))}
+                              className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-[10px] text-muted-foreground w-16 shrink-0">Remise</label>
+                          <div className="flex-1 h-8 px-2 rounded-md border border-input bg-muted/50 text-xs flex items-center text-muted-foreground font-medium">
+                            -{editPricing.trimestriel_remise}% <span className="ml-1 text-[10px]">(auto)</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xl font-bold text-foreground">{fmt(f.pricing.trimestriel)}</span>
+                          <span className="text-xs text-muted-foreground">/3 mois</span>
+                        </div>
+                        {f.pricing.trimestriel_normal > f.pricing.trimestriel && (
+                          <span className="text-xs text-muted-foreground line-through">
+                            {fmt(f.pricing.trimestriel_normal)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-t border-border" />
+
+                  {/* Annuel */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {getPeriodLabel('annuel')}
+                      </span>
+                      {f.pricing.annuel_remise > 0 && !isEditing && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold">
+                          -{f.pricing.annuel_remise}%
+                        </span>
+                      )}
+                    </div>
+                    {isEditing && editPricing ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <label className="text-[10px] text-muted-foreground w-16 shrink-0">Forfait</label>
+                          <div className="flex-1 relative">
+                            <input
+                              type="number"
+                              value={toDisplay(editPricing.annuel)}
+                              onChange={e => updateEditField('annuel', Number(e.target.value))}
+                              className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-[10px] text-muted-foreground w-16 shrink-0">Normal</label>
+                          <div className="flex-1 relative">
+                            <input
+                              type="number"
+                              value={toDisplay(editPricing.annuel_normal)}
+                              onChange={e => updateEditField('annuel_normal', Number(e.target.value))}
+                              className="w-full h-8 px-2 pr-14 rounded-md border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium">{symbol}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-[10px] text-muted-foreground w-16 shrink-0">Remise</label>
+                          <div className="flex-1 h-8 px-2 rounded-md border border-input bg-muted/50 text-xs flex items-center text-muted-foreground font-medium">
+                            -{editPricing.annuel_remise}% <span className="ml-1 text-[10px]">(auto)</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xl font-bold text-foreground">{fmt(f.pricing.annuel)}</span>
+                          <span className="text-xs text-muted-foreground">/an</span>
+                        </div>
+                        {f.pricing.annuel_normal > f.pricing.annuel && (
+                          <span className="text-xs text-muted-foreground line-through">
+                            {fmt(f.pricing.annuel_normal)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Edit Actions */}
+                  {isEditing && (
+                    <div className="flex gap-2 pt-3 border-t border-border">
+                      <button
+                        onClick={cancelEdit}
+                        className="flex-1 h-9 rounded-full border border-border text-xs font-medium hover:bg-muted text-foreground transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                        Annuler
+                      </button>
+                      <button
+                        onClick={saveEdit}
+                        className="flex-1 h-9 rounded-full bg-gradient-faciloop text-white text-xs font-semibold shadow-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+                      >
+                        <Save className="h-3.5 w-3.5" />
+                        Enregistrer
+                      </button>
+                    </div>
                   )}
                 </div>
 
-                {/* Edit Actions */}
-                {isEditing && (
-                  <div className="flex gap-2 pt-3 border-t border-border">
-                    <button
-                      onClick={cancelEdit}
-                      className="flex-1 h-9 rounded-full border border-border text-xs font-medium hover:bg-muted text-foreground transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                      Annuler
-                    </button>
-                    <button
-                      onClick={saveEdit}
-                      className="flex-1 h-9 rounded-full bg-gradient-faciloop text-white text-xs font-semibold shadow-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
-                    >
-                      <Save className="h-3.5 w-3.5" />
-                      Enregistrer
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Features */}
-              <div className="px-4 pb-4">
-                <div className="rounded-lg bg-muted/50 p-3 space-y-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Inclus</span>
-                  <div className="space-y-1.5">
-                    {getFeatures(f.code, isEn).map((feat, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <Check className={`h-3.5 w-3.5 ${color.text} shrink-0`} />
-                        <span className="text-xs text-foreground">{feat}</span>
-                      </div>
-                    ))}
+                {/* Features */}
+                <div className="px-4 pb-4">
+                  <div className="rounded-lg bg-muted/50 p-3 space-y-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Inclus</span>
+                    <div className="space-y-1.5">
+                      {getFeatures(f.code, isEn).map((feat, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <Check className={`h-3.5 w-3.5 ${color.text} shrink-0`} />
+                          <span className="text-xs text-foreground">{feat}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-              {/* Pricing Summary Table */}
+      {/* Pricing Summary Table */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <h2 className="text-sm font-semibold text-foreground">
@@ -504,7 +568,7 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                   required
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
-                  placeholder="Ex: Starter, Enterprise..."
+                  placeholder="Ex: Starter, Pro, Enterprise..."
                   className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
                 />
               </div>

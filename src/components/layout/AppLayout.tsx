@@ -9,7 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Sun, Moon } from 'lucide-react';
 
 export const AppLayout: React.FC = () => {
-  const { user, isDarkMode, toggleDarkMode } = useAuth();
+  const { user, isLoading, isDarkMode, toggleDarkMode } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const location = useLocation();
   const mainRef = useRef<HTMLElement>(null);
@@ -18,7 +18,14 @@ export const AppLayout: React.FC = () => {
     mainRef.current?.scrollTo(0, 0);
   }, [location.pathname]);
 
-  // Security Protection: Unauthenticated users are immediately redirected to login
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }

@@ -15,19 +15,29 @@ export const EquipeCommerciale: React.FC = () => {
   const [prenom, setPrenom] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [telephone, setTelephone] = useState<string>('');
+  const [addLoading, setAddLoading] = useState<boolean>(false);
+  const [addError, setAddError] = useState<string | null>(null);
 
   const toggleStatus = (id: string) => {
     toggleCommercialStatus(id);
   };
 
-  const handleAdd = (e: React.FormEvent) => {
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    addCommercial({ nom, prenom, email, telephone, statut: 'actif' });
-    setIsModalOpen(false);
-    setNom('');
-    setPrenom('');
-    setEmail('');
-    setTelephone('');
+    setAddError(null);
+    setAddLoading(true);
+    try {
+      await addCommercial({ nom, prenom, email, telephone, statut: 'actif' });
+      setIsModalOpen(false);
+      setNom('');
+      setPrenom('');
+      setEmail('');
+      setTelephone('');
+    } catch (err: any) {
+      setAddError(err.message || (isEn ? 'Failed to create sales rep' : 'Erreur lors de la création du commercial'));
+    } finally {
+      setAddLoading(false);
+    }
   };
 
   return (
@@ -218,11 +228,22 @@ export const EquipeCommerciale: React.FC = () => {
                 />
               </div>
 
+              {addError && (
+                <div className="p-2.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive font-medium">
+                  {addError}
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95"
+                disabled={addLoading}
+                className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Créer l'accès commercial
+                {addLoading ? (
+                  <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+                ) : (
+                  isEn ? 'Create sales rep access' : "Créer l'accès commercial"
+                )}
               </button>
             </form>
           </div>

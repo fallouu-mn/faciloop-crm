@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource } from '../../types/crm';
-import { mockCommerciaux } from '../../lib/mockData';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
 import {
   Users,
@@ -24,14 +23,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 const PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
-import { useTranslation } from 'react-i18next';
-
 export const ProspectsList: React.FC = () => {
-  const { t, i18n } = useTranslation();
-  const { user, myProspects, prospects, addProspect, reassignProspects, orgOffers } = useAuth();
+  const { user, myProspects, prospects, addProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
   const [searchParams] = useSearchParams();
-
-  const isEn = i18n.language?.startsWith('en');
 
   const [search, setSearch] = useState<string>('');
   const [filterStep, setFilterStep] = useState<string>(searchParams.get('statut') || 'all');
@@ -43,7 +37,7 @@ export const ProspectsList: React.FC = () => {
   // Modals State
   const [isNewModalOpen, setIsNewModalOpen] = useState<boolean>(false);
   const [isReassignModalOpen, setIsReassignModalOpen] = useState<boolean>(false);
-  const [targetCommercialId, setTargetCommercialId] = useState<string>(mockCommerciaux[0].id);
+  const [targetCommercialId, setTargetCommercialId] = useState<string>('');
 
   const activeOrgOffers = orgOffers.filter((o: any) => o.actif !== false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -93,11 +87,11 @@ export const ProspectsList: React.FC = () => {
     setDuplicateAlert(false);
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!newNom && !newEntreprise) || !newPhone || !newPays) return;
 
-    const res = addProspect({
+    const res = await addProspect({
       nom: newNom || newEntreprise,
       prenom: newPrenom || undefined,
       entreprise: newEntreprise || newNom,
@@ -151,7 +145,7 @@ export const ProspectsList: React.FC = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const content = event.target?.result as string;
       if (!content) return;
 
@@ -180,7 +174,7 @@ export const ProspectsList: React.FC = () => {
 
         if (!telephone) { skipped++; continue; }
 
-        const res = addProspect({
+        const res = await addProspect({
           nom: nom || entreprise,
           prenom: prenom || undefined,
           entreprise: entreprise || nom,
@@ -228,7 +222,8 @@ export const ProspectsList: React.FC = () => {
   };
 
   const handleConfirmReassign = () => {
-    const targetComm = mockCommerciaux.find(c => c.id === targetCommercialId) || mockCommerciaux[0];
+    const targetComm = commerciaux.find(c => c.id === targetCommercialId) || commerciaux[0];
+    if (!targetComm) return;
     const commNom = `${targetComm.prenom} ${targetComm.nom}`;
 
     reassignProspects(selectedIds, targetComm.id, commNom);
@@ -246,20 +241,20 @@ export const ProspectsList: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-              {isEn ? 'Prospects List' : 'Liste des Prospects'} ({filtered.length})
+              Liste des Prospects ({filtered.length})
             </h1>
             {user?.role === 'commercial' ? (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold flex items-center gap-1">
-                <Lock className="w-3 h-3" /> {isEn ? 'Personal Portfolio' : 'Portefeuille Personnel'}
+                <Lock className="w-3 h-3" /> Portefeuille Personnel
               </span>
             ) : (
               <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-bold flex items-center gap-1">
-                <UserCheck className="w-3 h-3" /> {isEn ? 'Global Admin View' : 'Vue globale Admin'}
+                <UserCheck className="w-3 h-3" /> Vue globale Admin
               </span>
             )}
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            {isEn ? 'Manage, search, and reassign company sales opportunities' : "Gérez, recherchez et réattribuez les opportunités de l'entreprise"}
+            Gérez, recherchez et réattribuez les opportunités de l'entreprise
           </p>
         </div>
 
@@ -271,7 +266,7 @@ export const ProspectsList: React.FC = () => {
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 text-white px-4 py-2.5 text-xs font-extrabold shadow-lg shadow-amber-500/25 hover:bg-amber-600 transition-all animate-pulse"
             >
               <ArrowRightLeft className="h-4 w-4 shrink-0" />
-              <span>{isEn ? 'Reassign selection' : 'Réattribuer la sélection'} ({selectedIds.length})</span>
+              <span>Réattribuer la sélection ({selectedIds.length})</span>
             </button>
           )}
 
@@ -280,14 +275,14 @@ export const ProspectsList: React.FC = () => {
             <button
               onClick={handleExportCSV}
               className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-input bg-card px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition-all"
-              title={isEn ? "Export prospects to CSV" : "Exporter mes prospects en CSV"}
+              title="Exporter mes prospects en CSV"
             >
               <Download className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Export</span>
             </button>
             <label
               className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-input bg-card px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition-all cursor-pointer"
-              title={isEn ? "Import prospects from CSV" : "Importer des prospects depuis un fichier CSV"}
+              title="Importer des prospects depuis un fichier CSV"
             >
               <Upload className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Import</span>
@@ -306,7 +301,7 @@ export const ProspectsList: React.FC = () => {
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
           >
             <Plus className="h-4 w-4 shrink-0" />
-            <span>{isEn ? '+ New Prospect' : 'Nouveau Prospect'}</span>
+            <span>Nouveau Prospect</span>
           </button>
         </div>
       </div>
@@ -327,7 +322,7 @@ export const ProspectsList: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={isEn ? "Search by name, company, or phone..." : "Rechercher par nom, entreprise ou téléphone..."}
+            placeholder="Rechercher par nom, entreprise ou téléphone..."
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-input bg-card text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
           />
         </div>
@@ -338,19 +333,19 @@ export const ProspectsList: React.FC = () => {
             onChange={(e) => setFilterStep(e.target.value)}
             className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
           >
-            <option value="all">{isEn ? 'All stages' : 'Toutes les étapes'}</option>
-            <option value="nouveau">{isEn ? 'New' : 'Nouveau'}</option>
-            <option value="a_contacter">{isEn ? 'To Contact' : 'À contacter'}</option>
-            <option value="contacte">{isEn ? 'Contacted' : 'Contacté'}</option>
-            <option value="interesse">{isEn ? 'Interested' : 'Intéressé'}</option>
-            <option value="rdv_programme">{isEn ? 'Meeting Set' : 'RDV programmé'}</option>
-            <option value="demo_realisee">{isEn ? 'Demo Done' : 'Démo réalisée'}</option>
-            <option value="essai_en_cours">{isEn ? 'Trial Ongoing' : 'Essai en cours'}</option>
-            <option value="proposition">{isEn ? 'Proposal' : 'Proposition'}</option>
-            <option value="paiement_att">{isEn ? 'Payment Pending' : 'Paiement att.'}</option>
-            <option value="gagne">{isEn ? 'Won Client' : 'Client gagné'}</option>
-            <option value="a_relancer">{isEn ? 'To Follow-up' : 'À relancer'}</option>
-            <option value="perdu">{isEn ? 'Lost' : 'Perdu'}</option>
+            <option value="all">Toutes les étapes</option>
+            <option value="nouveau">Nouveau</option>
+            <option value="a_contacter">À contacter</option>
+            <option value="contacte">Contacté</option>
+            <option value="interesse">Intéressé</option>
+            <option value="rdv_programme">RDV programmé</option>
+            <option value="demo_realisee">Démo réalisée</option>
+            <option value="essai_en_cours">Essai en cours</option>
+            <option value="proposition">Proposition</option>
+            <option value="paiement_att">Paiement att.</option>
+            <option value="gagne">Client gagné</option>
+            <option value="a_relancer">À relancer</option>
+            <option value="perdu">Perdu</option>
           </select>
 
           <select
@@ -358,14 +353,14 @@ export const ProspectsList: React.FC = () => {
             onChange={(e) => setFilterSource(e.target.value)}
             className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
           >
-            <option value="all">{isEn ? 'All sources' : 'Toutes les sources'}</option>
-            <option value="site_web">{isEn ? 'Website' : 'Site Web'}</option>
-            <option value="prospection_directe">{isEn ? 'Direct Outreach' : 'Prospection Directe'}</option>
-            <option value="recommandation">{isEn ? 'Referral' : 'Recommandation'}</option>
-            <option value="reseaux_sociaux">{isEn ? 'Social Media' : 'Réseaux Sociaux'}</option>
+            <option value="all">Toutes les sources</option>
+            <option value="site_web">Site Web</option>
+            <option value="prospection_directe">Prospection Directe</option>
+            <option value="recommandation">Recommandation</option>
+            <option value="reseaux_sociaux">Réseaux Sociaux</option>
             <option value="whatsapp">WhatsApp</option>
-            <option value="evenement">{isEn ? 'Event' : 'Événement'}</option>
-            <option value="autre">{isEn ? 'Other' : 'Autre'}</option>
+            <option value="evenement">Événement</option>
+            <option value="autre">Autre</option>
           </select>
         </div>
       </div>
@@ -383,12 +378,12 @@ export const ProspectsList: React.FC = () => {
                   className="w-4 h-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
                 />
               </th>
-              <th className="p-4">{isEn ? 'Prospect / Company' : 'Prospect / Entreprise'}</th>
-              <th className="p-4">{isEn ? 'Phone' : 'Téléphone'}</th>
-              <th className="p-4">{isEn ? 'Pipeline Stage' : 'Étape Pipeline'}</th>
-              <th className="p-4">{isEn ? 'Source' : 'Source'}</th>
-              <th className="p-4">{isEn ? 'Assigned Sales Rep' : 'Commercial Attribué'}</th>
-              <th className="p-4 text-right">{isEn ? 'Actions' : 'Actions'}</th>
+              <th className="p-4">Prospect / Entreprise</th>
+              <th className="p-4">Téléphone</th>
+              <th className="p-4">Étape Pipeline</th>
+              <th className="p-4">Source</th>
+              <th className="p-4">Commercial Attribué</th>
+              <th className="p-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -419,14 +414,14 @@ export const ProspectsList: React.FC = () => {
                     </span>
                   </td>
                   <td className="p-4 capitalize text-muted-foreground">{p.source.replace('_', ' ')}</td>
-                  <td className="p-4 font-semibold text-primary">{p.commercial_nom || (isEn ? 'Unassigned' : 'Non attribué')}</td>
+                  <td className="p-4 font-semibold text-primary">{p.commercial_nom || 'Non attribué'}</td>
                   <td className="p-4 text-right">
                     <Link
                       to={`/app/prospects/${p.id}`}
                       className="inline-flex items-center gap-1 rounded-lg border border-input bg-card px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted"
                     >
                       <Eye className="w-3.5 h-3.5" />
-                      <span>{isEn ? 'View' : 'Fiche'}</span>
+                      <span>Fiche</span>
                     </Link>
                   </td>
                 </tr>
@@ -512,7 +507,7 @@ export const ProspectsList: React.FC = () => {
                 onChange={(e) => setTargetCommercialId(e.target.value)}
                 className="w-full p-3 rounded-xl border border-input bg-background font-bold text-xs text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               >
-                {mockCommerciaux.map((c) => (
+                {commerciaux.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.prenom} {c.nom} ({c.email})
                   </option>
