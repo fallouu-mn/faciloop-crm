@@ -530,25 +530,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addCommercial = async (c: Omit<Commercial, 'id' | 'organization_id' | 'created_at'>) => {
     if (!user) return;
     try {
-      const created = await commerciauxService.createCommercial({
-        ...c,
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Session expirée');
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-commercial`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          nom: c.nom,
+          prenom: c.prenom,
+          email: c.email,
+          telephone: c.telephone,
+          statut: c.statut || 'actif',
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Erreur création commercial');
+
+      const created: Commercial = {
+        id: result.commercial.id,
         organization_id: user.organizationId,
-      });
+        user_id: result.commercial.user_id,
+        nom: result.commercial.nom,
+        prenom: result.commercial.prenom,
+        email: result.commercial.email,
+        telephone: result.commercial.telephone,
+        statut: result.commercial.statut,
+        created_at: new Date().toISOString(),
+      };
       setCommerciaux(prev => [created, ...prev]);
-      addActionLog({
-        utilisateur_id: user.id,
-        utilisateur_nom: `${user.prenom} ${user.nom}`,
-        action_type: 'commercial_added',
-        action: 'Ajout d\'un commercial',
-        entite_type: 'commercial',
-        entite_id: created.id,
-        cible: `${c.prenom} ${c.nom}`,
-        nouvelle_valeur: c.email,
-        date: new Date().toISOString().split('T')[0],
-        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-      });
     } catch (e) {
       console.error('Erreur ajout commercial:', e);
+      throw e;
     }
   };
 

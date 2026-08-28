@@ -156,8 +156,12 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: `Erreur création fiche : ${commError.message}` }, 500);
     }
 
-    // ── Envoyer email identifiants ─────────────────────────────────
-    await sendCredentialsEmail({ to: email, prenom, nom, telephone, pin });
+    // ── Envoyer email identifiants (non-bloquant) ───────────────────
+    try {
+      await sendCredentialsEmail({ to: email, prenom, nom, telephone, pin });
+    } catch (emailErr) {
+      console.warn('[create-commercial] Email non envoyé:', emailErr instanceof Error ? emailErr.message : emailErr);
+    }
 
     // ── Logger l'action ────────────────────────────────────────────
     await supabase.from('journal_actions_commercial').insert({
@@ -259,6 +263,7 @@ async function sendCredentialsEmail(opts: {
     port: SMTP_PORT,
     secure: SMTP_PORT === 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
+    tls: { servername: 'node18-ca.n0c.com', rejectUnauthorized: false },
   });
 
   await transporter.sendMail({
