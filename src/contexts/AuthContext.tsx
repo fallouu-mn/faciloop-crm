@@ -533,24 +533,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Session expirée');
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-commercial`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({
-          nom: c.nom,
-          prenom: c.prenom,
-          email: c.email,
-          telephone: c.telephone,
-          statut: c.statut || 'actif',
-        }),
-      });
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (supabaseUrl && !supabaseUrl.includes('placeholder') && !supabaseUrl.includes('faciloop-crm.supabase.co')) {
+        const response = await fetch(`${supabaseUrl}/functions/v1/create-commercial`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+          },
+          body: JSON.stringify({
+            nom: c.nom,
+            prenom: c.prenom,
+            email: c.email,
+            telephone: c.telephone,
+            statut: c.statut || 'actif',
+          }),
+        });
 
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Erreur création commercial');
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Erreur création commercial');
+      }
 
       const created: Commercial = {
         id: result.commercial.id,
