@@ -306,46 +306,58 @@ export function MesGainsPage() {
             <div className="rounded-xl border border-border p-3 space-y-1.5 hover:border-emerald-500/40 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 font-bold">
-                  Mensuel (5%)
+                  {isEn ? 'Monthly (5%)' : 'Mensuel (5%)'}
                 </span>
-                <span className="text-[10px] text-muted-foreground font-semibold">{stats.countMensuel} abo</span>
+                <span className="text-[10px] text-muted-foreground font-semibold">{stats.countMensuel} {isEn ? 'sub' : 'abo'}</span>
               </div>
               <p className="text-base font-extrabold text-foreground tabular-nums">{formatMoney(stats.gainMensuel, currency)}</p>
-              <p className="text-[10px] text-muted-foreground">CA: {formatMoney(stats.caMensuel, currency)}</p>
+              <p className="text-[10px] text-muted-foreground">{isEn ? 'Rev: ' : 'CA: '}{formatMoney(stats.caMensuel, currency)}</p>
             </div>
 
             <div className="rounded-xl border border-border p-3 space-y-1.5 hover:border-cyan-500/40 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-400 border border-cyan-200 font-bold">
-                  Trimestriel (8%)
+                  {isEn ? 'Quarterly (8%)' : 'Trimestriel (8%)'}
                 </span>
-                <span className="text-[10px] text-muted-foreground font-semibold">{stats.countTrimestriel} abo</span>
+                <span className="text-[10px] text-muted-foreground font-semibold">{stats.countTrimestriel} {isEn ? 'sub' : 'abo'}</span>
               </div>
               <p className="text-base font-extrabold text-foreground tabular-nums">{formatMoney(stats.gainTrimestriel, currency)}</p>
-              <p className="text-[10px] text-muted-foreground">CA: {formatMoney(stats.caTrimestriel, currency)}</p>
+              <p className="text-[10px] text-muted-foreground">{isEn ? 'Rev: ' : 'CA: '}{formatMoney(stats.caTrimestriel, currency)}</p>
             </div>
 
             <div className="rounded-xl border border-border p-3 space-y-1.5 hover:border-amber-500/40 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200 font-bold">
-                  Annuel (10%)
+                  {isEn ? 'Annual (10%)' : 'Annuel (10%)'}
                 </span>
-                <span className="text-[10px] text-muted-foreground font-semibold">{stats.countAnnuel} abo</span>
+                <span className="text-[10px] text-muted-foreground font-semibold">{stats.countAnnuel} {isEn ? 'sub' : 'abo'}</span>
               </div>
               <p className="text-base font-extrabold text-foreground tabular-nums">{formatMoney(stats.gainAnnuel, currency)}</p>
-              <p className="text-[10px] text-muted-foreground">CA: {formatMoney(stats.caAnnuel, currency)}</p>
+              <p className="text-[10px] text-muted-foreground">{isEn ? 'Rev: ' : 'CA: '}{formatMoney(stats.caAnnuel, currency)}</p>
             </div>
           </div>
 
           {/* Tips */}
           <div className="rounded-xl border border-border p-3.5 space-y-2">
             <h4 className="text-xs font-bold flex items-center gap-1.5 text-foreground">
-              <Info className="h-3.5 w-3.5 text-primary" /> Comment maximiser vos gains ?
+              <Info className="h-3.5 w-3.5 text-primary" /> {isEn ? 'How to maximize your earnings?' : 'Comment maximiser vos gains ?'}
             </h4>
             <ul className="text-xs text-muted-foreground space-y-1 pl-4 list-disc">
-              <li>Privilégiez les <strong>abonnements annuels (10%)</strong> pour maximiser votre commission immédiate.</li>
-              <li>Un abonnement trimestriel vous rapporte <strong>8%</strong> sur un montant 3× plus élevé qu'un mois unique.</li>
-              <li>Assurez le suivi du renouvellement de vos clients pour pérenniser vos commissions.</li>
+              <li>
+                {isEn 
+                  ? <>Focus on <strong>annual subscriptions (10%)</strong> to maximize your immediate commission.</>
+                  : <>Privilégiez les <strong>abonnements annuels (10%)</strong> pour maximiser votre commission immédiate.</>}
+              </li>
+              <li>
+                {isEn 
+                  ? <>A quarterly subscription gives you <strong>8%</strong> on an amount 3× higher than a single month.</>
+                  : <>Un abonnement trimestriel vous rapporte <strong>8%</strong> sur un montant 3× plus élevé qu'un mois unique.</>}
+              </li>
+              <li>
+                {isEn 
+                  ? <>Follow up on your clients renewals to maintain recurring commissions.</>
+                  : <>Assurez le suivi du renouvellement de vos clients pour pérenniser vos commissions.</>}
+              </li>
             </ul>
           </div>
         </div>
@@ -358,30 +370,32 @@ export function MesGainsPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Calculator className="h-4 w-4 text-primary" />
-                <span className="text-sm font-bold">Simulateur de commission</span>
+                <span className="text-sm font-bold">{isEn ? 'Commission simulator' : 'Simulateur de commission'}</span>
               </div>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/5 border border-primary/20 text-primary font-bold">
-                Offres en temps réel
+                {isEn ? 'Real-time offers' : 'Offres en temps réel'}
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Calculez vos gains selon les prix réels des formules d'abonnements disponibles.
+              {isEn 
+                ? 'Calculate your earnings based on real pricing of available subscription plans.'
+                : "Calculez vos gains selon les prix réels des formules d'abonnements disponibles."}
             </p>
 
             {/* Unit price breakdown */}
             <div className="grid grid-cols-3 gap-2">
               <div className="rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 p-2 text-center space-y-0.5">
-                <span className="text-[9px] font-bold uppercase text-emerald-700 dark:text-emerald-400 block">Mensuel (5%)</span>
+                <span className="text-[9px] font-bold uppercase text-emerald-700 dark:text-emerald-400 block">{isEn ? 'Monthly (5%)' : 'Mensuel (5%)'}</span>
                 <span className="text-xs font-extrabold block tabular-nums text-foreground">{formatMoney(simPrices.mensuel, currency)}</span>
                 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block tabular-nums">+{formatMoney(Math.round(simPrices.mensuel * 0.05), currency)}/unit</span>
               </div>
               <div className="rounded-xl bg-cyan-50/50 dark:bg-cyan-950/20 border border-cyan-200 dark:border-cyan-800/40 p-2 text-center space-y-0.5">
-                <span className="text-[9px] font-bold uppercase text-cyan-700 dark:text-cyan-400 block">Trimestriel (8%)</span>
+                <span className="text-[9px] font-bold uppercase text-cyan-700 dark:text-cyan-400 block">{isEn ? 'Quarterly (8%)' : 'Trimestriel (8%)'}</span>
                 <span className="text-xs font-extrabold block tabular-nums text-foreground">{formatMoney(simPrices.trimestriel, currency)}</span>
                 <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 block tabular-nums">+{formatMoney(Math.round(simPrices.trimestriel * 0.08), currency)}/unit</span>
               </div>
               <div className="rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 p-2 text-center space-y-0.5">
-                <span className="text-[9px] font-bold uppercase text-amber-700 dark:text-amber-400 block">Annuel (10%)</span>
+                <span className="text-[9px] font-bold uppercase text-amber-700 dark:text-amber-400 block">{isEn ? 'Annual (10%)' : 'Annuel (10%)'}</span>
                 <span className="text-xs font-extrabold block tabular-nums text-foreground">{formatMoney(simPrices.annuel, currency)}</span>
                 <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 block tabular-nums">+{formatMoney(Math.round(simPrices.annuel * 0.10), currency)}/unit</span>
               </div>
@@ -391,7 +405,7 @@ export function MesGainsPage() {
             <div className="space-y-3 pt-1">
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium">Ventes d'abonnements Mensuels</span>
+                  <span className="font-medium">{isEn ? 'Monthly subscription sales' : "Ventes d'abonnements Mensuels"}</span>
                   <span className="font-bold text-emerald-600 dark:text-emerald-400">{simCountMensuel} × 5%</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -404,9 +418,9 @@ export function MesGainsPage() {
                     className="h-8 w-20 text-xs font-bold text-center rounded-lg border border-border bg-background px-2"
                   />
                   <div className="text-[11px] text-muted-foreground flex-1 flex justify-between">
-                    <span>CA: {formatMoney(simResults.caSimMensuel, currency)}</span>
+                    <span>{isEn ? 'Rev: ' : 'CA: '}{formatMoney(simResults.caSimMensuel, currency)}</span>
                     <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                      Gain: +{formatMoney(simResults.gainSimMensuel, currency)}
+                      {isEn ? 'Gain: +' : 'Gain: +'}{formatMoney(simResults.gainSimMensuel, currency)}
                     </span>
                   </div>
                 </div>
@@ -414,7 +428,7 @@ export function MesGainsPage() {
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium">Ventes d'abonnements Trimestriels</span>
+                  <span className="font-medium">{isEn ? 'Quarterly subscription sales' : "Ventes d'abonnements Trimestriels"}</span>
                   <span className="font-bold text-cyan-600 dark:text-cyan-400">{simCountTrimestriel} × 8%</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -427,9 +441,9 @@ export function MesGainsPage() {
                     className="h-8 w-20 text-xs font-bold text-center rounded-lg border border-border bg-background px-2"
                   />
                   <div className="text-[11px] text-muted-foreground flex-1 flex justify-between">
-                    <span>CA: {formatMoney(simResults.caSimTrimestriel, currency)}</span>
+                    <span>{isEn ? 'Rev: ' : 'CA: '}{formatMoney(simResults.caSimTrimestriel, currency)}</span>
                     <span className="font-bold text-cyan-600 dark:text-cyan-400">
-                      Gain: +{formatMoney(simResults.gainSimTrimestriel, currency)}
+                      {isEn ? 'Gain: +' : 'Gain: +'}{formatMoney(simResults.gainSimTrimestriel, currency)}
                     </span>
                   </div>
                 </div>
@@ -437,7 +451,7 @@ export function MesGainsPage() {
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium">Ventes d'abonnements Annuels</span>
+                  <span className="font-medium">{isEn ? 'Annual subscription sales' : "Ventes d'abonnements Annuels"}</span>
                   <span className="font-bold text-amber-600 dark:text-amber-400">{simCountAnnuel} × 10%</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -450,9 +464,9 @@ export function MesGainsPage() {
                     className="h-8 w-20 text-xs font-bold text-center rounded-lg border border-border bg-background px-2"
                   />
                   <div className="text-[11px] text-muted-foreground flex-1 flex justify-between">
-                    <span>CA: {formatMoney(simResults.caSimAnnuel, currency)}</span>
+                    <span>{isEn ? 'Rev: ' : 'CA: '}{formatMoney(simResults.caSimAnnuel, currency)}</span>
                     <span className="font-bold text-amber-600 dark:text-amber-400">
-                      Gain: +{formatMoney(simResults.gainSimAnnuel, currency)}
+                      {isEn ? 'Gain: +' : 'Gain: +'}{formatMoney(simResults.gainSimAnnuel, currency)}
                     </span>
                   </div>
                 </div>
@@ -461,12 +475,16 @@ export function MesGainsPage() {
 
             {/* Simulation result */}
             <div className="rounded-xl bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/30 p-3.5 space-y-1 text-center">
-              <p className="text-xs text-muted-foreground font-medium">Gain estimé total ({simResults.countTotal} ventes)</p>
+              <p className="text-xs text-muted-foreground font-medium">
+                {isEn ? `Total estimated earnings (${simResults.countTotal} sales)` : `Gain estimé total (${simResults.countTotal} ventes)`}
+              </p>
               <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
                 +{formatMoney(simResults.gainSimTotal, currency)}
               </p>
               <p className="text-[10px] text-muted-foreground">
-                Pour un chiffre d'affaires total généré de {formatMoney(simResults.caSimTotal, currency)}
+                {isEn 
+                  ? `For a total revenue generated of ${formatMoney(simResults.caSimTotal, currency)}`
+                  : `Pour un chiffre d'affaires total généré de ${formatMoney(simResults.caSimTotal, currency)}`}
               </p>
             </div>
 
@@ -474,14 +492,14 @@ export function MesGainsPage() {
             {orgOffers.length > 0 && (
               <div className="space-y-2 pt-2">
                 <h4 className="text-xs font-bold text-foreground">
-                  Grille comparative des gains par formule
+                  {isEn ? 'Earnings comparison matrix by plan' : 'Grille comparative des gains par formule'}
                 </h4>
                 <div className="rounded-xl border border-border overflow-hidden text-xs">
                   <div className="grid grid-cols-4 bg-muted/60 p-2 font-bold text-[10px] text-muted-foreground">
-                    <div>Formule</div>
-                    <div className="text-center">Mensuel (5%)</div>
-                    <div className="text-center">Trimestriel (8%)</div>
-                    <div className="text-center">Annuel (10%)</div>
+                    <div>{isEn ? 'Plan' : 'Formule'}</div>
+                    <div className="text-center">{isEn ? 'Monthly (5%)' : 'Mensuel (5%)'}</div>
+                    <div className="text-center">{isEn ? 'Quarterly (8%)' : 'Trimestriel (8%)'}</div>
+                    <div className="text-center">{isEn ? 'Annual (10%)' : 'Annuel (10%)'}</div>
                   </div>
                   {orgOffers.filter(o => o.actif).map(off => (
                     <div key={off.id} className="grid grid-cols-4 p-2 border-t border-border/40 items-center">
@@ -513,9 +531,11 @@ export function MesGainsPage() {
           {myCommissions.length === 0 ? (
             <div className="rounded-2xl border border-border p-8 text-center space-y-2">
               <Wallet className="h-10 w-10 text-muted-foreground mx-auto" />
-              <h4 className="text-sm font-bold text-foreground">Aucune commission enregistrée</h4>
+              <h4 className="text-sm font-bold text-foreground">{isEn ? 'No commission recorded' : 'Aucune commission enregistrée'}</h4>
               <p className="text-xs text-muted-foreground">
-                Vos abonnements vendus et vos commissions calculées s'afficheront ici.
+                {isEn 
+                  ? 'Your sold subscriptions and calculated commissions will appear here.'
+                  : "Vos abonnements vendus et vos commissions calculées s'afficheront ici."}
               </p>
             </div>
           ) : (
@@ -526,7 +546,7 @@ export function MesGainsPage() {
                     <Calendar className="h-3.5 w-3.5 text-primary" />
                     <span className="text-xs font-bold text-foreground capitalize">{month.label}</span>
                     <span className="text-[9px] px-1.5 py-0 rounded-full bg-muted border border-border text-muted-foreground font-bold">
-                      {month.count} vente{month.count > 1 ? 's' : ''}
+                      {month.count} {isEn ? `sale${month.count > 1 ? 's' : ''}` : `vente${month.count > 1 ? 's' : ''}`}
                     </span>
                   </div>
                   <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
@@ -545,11 +565,11 @@ export function MesGainsPage() {
                           c.periodicite === 'trimestriel' && 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 border-cyan-200',
                           c.periodicite === 'mensuel' && 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200',
                         )}>
-                          {c.periodicite} ({c.tauxCommission}%)
+                          {isEn && c.periodicite === 'annuel' ? 'Annual' : isEn && c.periodicite === 'trimestriel' ? 'Quarterly' : isEn && c.periodicite === 'mensuel' ? 'Monthly' : c.periodicite} ({c.tauxCommission}%)
                         </span>
                       </div>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                        Formule {c.formule} • {formatMoney(c.montantVente, currency)} • {formatDate(c.dateVente)}
+                        {isEn ? 'Plan ' : 'Formule '}{c.formule} • {formatMoney(c.montantVente, currency)} • {formatDate(c.dateVente)}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
