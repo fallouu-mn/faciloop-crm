@@ -58,7 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
           <button
             onClick={() => setShowLogoutModal(true)}
             className="rounded-xl p-2.5 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all active:scale-95 flex items-center justify-center"
-            title="Se déconnecter"
+            title={isEn ? "Log out" : "Se déconnecter"}
           >
             <LogOut className="h-5 w-5" />
           </button>
@@ -82,11 +82,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
                 <div className="p-2.5 rounded-2xl bg-rose-500/10">
                   <LogOut className="w-6 h-6 text-rose-500" />
                 </div>
-                <span>Déconnexion</span>
+                <span>{isEn ? 'Log Out' : 'Déconnexion'}</span>
               </div>
 
               <p className="text-xs sm:text-sm text-muted-foreground font-semibold leading-relaxed">
-                Voulez-vous vraiment vous déconnecter de votre espace Faciloop CRM ?
+                {isEn ? 'Do you really want to log out of your Faciloop CRM workspace?' : 'Voulez-vous vraiment vous déconnecter de votre espace Faciloop CRM ?'}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-2 pt-2">
@@ -94,13 +94,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
                   onClick={() => setShowLogoutModal(false)}
                   className="w-full sm:w-1/2 py-3 rounded-2xl border border-input text-xs font-bold text-foreground hover:bg-muted transition-all active:scale-95"
                 >
-                  Annuler
+                  {isEn ? 'Cancel' : 'Annuler'}
                 </button>
                 <button
                   onClick={confirmLogout}
                   className="w-full sm:w-1/2 py-3 rounded-2xl bg-rose-500 text-white text-xs font-extrabold hover:bg-rose-600 shadow-lg shadow-rose-500/25 transition-all active:scale-95"
                 >
-                  Se déconnecter
+                  {isEn ? 'Log Out' : 'Se déconnecter'}
                 </button>
               </div>
             </motion.div>

@@ -472,7 +472,7 @@ export const ProspectsList: React.FC = () => {
                   to={`/app/prospects/${p.id}`}
                   className="w-full py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all"
                 >
-                  <span>Ouvrir Fiche Prospect</span>
+                  <span>{isEn ? 'Open Prospect Card' : 'Ouvrir Fiche Prospect'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -490,17 +490,23 @@ export const ProspectsList: React.FC = () => {
                 <ArrowRightLeft className="w-6 h-6 text-amber-500" />
               </div>
               <div>
-                <h3 className="font-extrabold text-base text-foreground">Réattribution en Masse</h3>
-                <p className="text-xs text-muted-foreground">Admin Organisation</p>
+                <h3 className="font-extrabold text-base text-foreground">
+                  {isEn ? 'Bulk Reassignment' : 'Réattribution en Masse'}
+                </h3>
+                <p className="text-xs text-muted-foreground">{isEn ? 'Organization Admin' : 'Admin Organisation'}</p>
               </div>
             </div>
 
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Vous allez réattribuer <strong>{selectedIds.length} prospect(s)</strong> sélectionné(s) au commercial de votre choix :
+              {isEn 
+                ? <>You are about to reassign <strong>{selectedIds.length} prospect(s)</strong> selected to the sales rep of your choice:</>
+                : <>Vous allez réattribuer <strong>{selectedIds.length} prospect(s)</strong> sélectionné(s) au commercial de votre choix :</>}
             </p>
 
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-foreground">Sélectionnez le nouveau commercial :</label>
+              <label className="block text-xs font-bold text-foreground">
+                {isEn ? 'Select the new sales rep:' : 'Sélectionnez le nouveau commercial :'}
+              </label>
               <select
                 value={targetCommercialId}
                 onChange={(e) => setTargetCommercialId(e.target.value)}
@@ -519,13 +525,13 @@ export const ProspectsList: React.FC = () => {
                 onClick={() => setIsReassignModalOpen(false)}
                 className="w-full sm:w-1/2 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground transition-all"
               >
-                Annuler
+                {isEn ? 'Cancel' : 'Annuler'}
               </button>
               <button
                 onClick={handleConfirmReassign}
                 className="w-full sm:w-1/2 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 shadow-md shadow-amber-500/20 transition-all"
               >
-                Confirmer la réattribution
+                {isEn ? 'Confirm Reassignment' : 'Confirmer la réattribution'}
               </button>
             </div>
           </div>

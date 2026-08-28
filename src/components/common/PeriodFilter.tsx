@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { DateRange, DatePreset, DATE_PRESETS, DATE_RANGE_ALL, presetToRange } from '../../lib/dateFilter';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   value: DateRange;
@@ -8,6 +9,9 @@ interface Props {
 }
 
 export const PeriodFilter: React.FC<Props> = ({ value, onChange }) => {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en');
+
   const [customFrom, setCustomFrom] = useState(
     value.preset === 'custom' && value.from ? value.from.toISOString().split('T')[0] : ''
   );
@@ -36,6 +40,20 @@ export const PeriodFilter: React.FC<Props> = ({ value, onChange }) => {
     onChange(DATE_RANGE_ALL);
   }
 
+  const getPresetLabel = (p: DatePreset, originalLabel: string) => {
+    if (!isEn) return originalLabel;
+    const map: Record<DatePreset, string> = {
+      all: 'All',
+      today: 'Today',
+      '7d': '7d',
+      '30d': '30d',
+      '3m': '3 mo.',
+      '12m': '12 mo.',
+      custom: 'Custom',
+    };
+    return map[p] || originalLabel;
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
@@ -50,14 +68,14 @@ export const PeriodFilter: React.FC<Props> = ({ value, onChange }) => {
                 : 'bg-card text-muted-foreground border-border hover:border-foreground/30'
             }`}
           >
-            {p.label}
+            {getPresetLabel(p.value, p.label)}
           </button>
         ))}
         {value.preset !== 'all' && (
           <button
             type="button"
             onClick={reset}
-            aria-label="Réinitialiser"
+            aria-label={isEn ? "Reset" : "Réinitialiser"}
             className="shrink-0 h-7 w-7 rounded-full flex items-center justify-center bg-muted/60 text-muted-foreground hover:text-foreground transition-colors ml-1"
           >
             <X className="h-3 w-3" />

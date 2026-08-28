@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Search, Check, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export interface SelectOption {
   value: string;
@@ -23,12 +24,17 @@ export const SelectCustom: React.FC<SelectCustomProps> = ({
   options,
   value,
   onChange,
-  placeholder = 'Sélectionner...',
+  placeholder,
   label,
   searchable = false,
   disabled = false,
   className = '',
 }) => {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en');
+  const defaultPlaceholder = isEn ? 'Select...' : 'Sélectionner...';
+  const activePlaceholder = placeholder || defaultPlaceholder;
+
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -87,7 +93,7 @@ export const SelectCustom: React.FC<SelectCustomProps> = ({
         <span className="flex items-center gap-2 min-w-0 truncate">
           {selected?.icon && <span className="shrink-0">{selected.icon}</span>}
           <span className={selected ? 'text-foreground' : 'text-muted-foreground'}>
-            {selected ? selected.label : placeholder}
+            {selected ? selected.label : activePlaceholder}
           </span>
         </span>
         <ChevronDown className={`w-4 h-4 shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
@@ -104,7 +110,7 @@ export const SelectCustom: React.FC<SelectCustomProps> = ({
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Rechercher..."
+                  placeholder={isEn ? "Search..." : "Rechercher..."}
                   className="w-full pl-8 pr-8 py-2 rounded-lg border border-input bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                 />
                 {search && (
@@ -122,7 +128,7 @@ export const SelectCustom: React.FC<SelectCustomProps> = ({
           <div className="max-h-56 overflow-y-auto overscroll-contain py-1">
             {filtered.length === 0 ? (
               <div className="px-4 py-3 text-xs text-muted-foreground text-center">
-                Aucun résultat
+                {isEn ? 'No results found' : 'Aucun résultat'}
               </div>
             ) : (
               filtered.map((option) => {

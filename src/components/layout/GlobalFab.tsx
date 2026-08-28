@@ -13,8 +13,12 @@ import {
   Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export const GlobalFab: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en');
+
   const { user, prospects, addProspect, addInteraction } = useAuth();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -46,11 +50,11 @@ export const GlobalFab: React.FC = () => {
 
     const res = addProspect({
       nom: nom,
-      entreprise: entreprise || 'Entreprise Individuelle',
+      entreprise: entreprise || (isEn ? 'Individual Company' : 'Entreprise Individuelle'),
       telephone: formattedPhone,
       source: 'prospection_directe',
       statut_pipeline: 'nouveau',
-      commentaire: noteRapide || 'Saisie rapide via Floating Action Button'
+      commentaire: noteRapide || (isEn ? 'Quick entry via Floating Action Button' : 'Saisie rapide via Floating Action Button')
     });
 
     if (res.duplicate) {
@@ -67,11 +71,11 @@ export const GlobalFab: React.FC = () => {
           date: new Date().toISOString().split('T')[0],
           heure: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           commentaire: noteRapide,
-          prochaine_action: 'Premier suivi commercial'
+          prochaine_action: isEn ? 'First sales follow-up' : 'Premier suivi commercial'
         });
       }
 
-      setSuccessToast('Prospect et note rapide ajoutés avec succès !');
+      setSuccessToast(isEn ? 'Prospect and quick note added successfully!' : 'Prospect et note rapide ajoutés avec succès !');
       setTimeout(() => setSuccessToast(null), 3500);
 
       // Reset
@@ -100,20 +104,6 @@ export const GlobalFab: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Floating Action Button (FAB) */}
-      {/* <motion.button
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.92 }}
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 p-4 rounded-full bg-gradient-faciloop text-white shadow-2xl shadow-primary/40 flex items-center gap-2.5 font-extrabold text-xs group ring-4 ring-primary/20"
-        title="Saisie Express Prospect"
-      >
-        <div className="p-1 rounded-full bg-white/20">
-          <Zap className="w-5 h-5 animate-pulse" />
-        </div>
-        <span className="hidden sm:inline pr-1">Saisie Express</span>
-      </motion.button> */}
-
       {/* Express Creation Bottom Sheet Modal on Mobile, Centered on PC */}
       <AnimatePresence>
         {isOpen && (
@@ -133,8 +123,12 @@ export const GlobalFab: React.FC = () => {
                     <Zap className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-base font-extrabold text-foreground">Saisie Express 5 Secondes</h2>
-                    <p className="text-xs font-semibold text-muted-foreground">Création rapide sur le terrain</p>
+                    <h2 className="text-base font-extrabold text-foreground">
+                      {isEn ? '5-Second Express Entry' : 'Saisie Express 5 Secondes'}
+                    </h2>
+                    <p className="text-xs font-semibold text-muted-foreground">
+                      {isEn ? 'Quick field entry' : 'Création rapide sur le terrain'}
+                    </p>
                   </div>
                 </div>
                 <button
@@ -148,13 +142,13 @@ export const GlobalFab: React.FC = () => {
               {duplicateAlert && (
                 <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-bold flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>Ce numéro de téléphone existe déjà dans l'entreprise !</span>
+                  <span>{isEn ? 'This phone number already exists in the company!' : "Ce numéro de téléphone existe déjà dans l'entreprise !"}</span>
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-3 text-xs">
                 <div>
-                  <label className="block font-bold text-foreground mb-1">Nom / Contact *</label>
+                  <label className="block font-bold text-foreground mb-1">{isEn ? 'Name / Contact *' : 'Nom / Contact *'}</label>
                   <input
                     type="text"
                     required
@@ -166,19 +160,19 @@ export const GlobalFab: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-foreground mb-1">Téléphone Principal *</label>
+                  <label className="block font-bold text-foreground mb-1">{isEn ? 'Primary Phone *' : 'Téléphone Principal *'}</label>
                   <input
                     type="tel"
                     required
                     value={telephone}
                     onChange={(e) => handlePhoneChange(e.target.value)}
-                    placeholder="77 123 45 67 ou +221..."
+                    placeholder={isEn ? "77 123 45 67 or +221..." : "77 123 45 67 ou +221..."}
                     className="w-full p-3 rounded-2xl border border-input bg-background font-semibold focus:ring-2 focus:ring-primary/50 text-foreground"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-foreground mb-1">Entreprise / Société (Optionnel)</label>
+                  <label className="block font-bold text-foreground mb-1">{isEn ? 'Company / Business (Optional)' : 'Entreprise / Société (Optionnel)'}</label>
                   <input
                     type="text"
                     value={entreprise}
@@ -189,12 +183,12 @@ export const GlobalFab: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-foreground mb-1">Note Rapide / Compte-rendu (Optionnel)</label>
+                  <label className="block font-bold text-foreground mb-1">{isEn ? 'Quick Note / Report (Optional)' : 'Note Rapide / Compte-rendu (Optionnel)'}</label>
                   <textarea
                     rows={2}
                     value={noteRapide}
                     onChange={(e) => setNoteRapide(e.target.value)}
-                    placeholder="Ex: Intéressé par la formule Pro, rappeler demain à 14h..."
+                    placeholder={isEn ? "E.g. Interested in Pro plan, call back tomorrow at 2pm..." : "Ex: Intéressé par la formule Pro, rappeler demain à 14h..."}
                     className="w-full p-3 rounded-2xl border border-input bg-background font-semibold focus:ring-2 focus:ring-primary/50 text-foreground"
                   />
                 </div>
@@ -205,14 +199,14 @@ export const GlobalFab: React.FC = () => {
                     onClick={() => setIsOpen(false)}
                     className="w-full sm:w-1/3 py-3 rounded-2xl border border-input font-bold hover:bg-muted text-foreground"
                   >
-                    Annuler
+                    {isEn ? 'Cancel' : 'Annuler'}
                   </button>
                   <button
                     type="submit"
                     className="w-full sm:w-2/3 py-3 rounded-2xl bg-gradient-faciloop text-white font-extrabold shadow-lg shadow-primary/25 hover:opacity-95 flex items-center justify-center gap-1.5"
                   >
                     <Sparkles className="w-4 h-4" />
-                    <span>Créer et enregistrer</span>
+                    <span>{isEn ? 'Create and save' : 'Créer et enregistrer'}</span>
                   </button>
                 </div>
               </form>
