@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe, Phone, Mail, Save, Loader2, Check } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { invalidatePlatformSettings } from '../../hooks/usePlatformSettings';
 
 interface PlatformSettings {
   nom_plateforme: string;
@@ -25,8 +26,6 @@ const DEVISES = [
   { code: 'EUR', label: 'EUR — Euro' },
   { code: 'USD', label: 'USD — Dollar US' },
 ];
-
-const STORAGE_KEY = 'faciloop_platform_settings';
 
 export const ParametresSuperAdmin: React.FC = () => {
   const { t } = useTranslation('superAdmin');
@@ -52,15 +51,6 @@ export const ParametresSuperAdmin: React.FC = () => {
         };
         setForm(loaded);
         setInitial(loaded);
-      } else {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            setForm({ ...DEFAULTS, ...parsed });
-            setInitial({ ...DEFAULTS, ...parsed });
-          } catch { /* ignore */ }
-        }
       }
     };
     load();
@@ -76,14 +66,11 @@ export const ParametresSuperAdmin: React.FC = () => {
   const handleSave = async () => {
     setSaving(true);
 
-    const { error } = await supabase
+    await supabase
       .from('platform_settings')
       .upsert({ id: 1, ...form }, { onConflict: 'id' });
 
-    if (error) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
-    }
-
+    invalidatePlatformSettings();
     setInitial({ ...form });
     setSaving(false);
     setSaveSuccess(true);

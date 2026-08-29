@@ -17,8 +17,6 @@ const DEFAULTS: PlatformSettings = {
   message_maintenance: '',
 };
 
-const STORAGE_KEY = 'faciloop_platform_settings';
-
 let cached: PlatformSettings | null = null;
 const listeners: Array<(s: PlatformSettings) => void> = [];
 
@@ -27,18 +25,16 @@ function notify(s: PlatformSettings) {
   listeners.forEach(fn => fn(s));
 }
 
+export function invalidatePlatformSettings() {
+  cached = null;
+}
+
 export function usePlatformSettings(): PlatformSettings {
-  const [settings, setSettings] = useState<PlatformSettings>(() => {
-    if (cached) return cached;
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try { return { ...DEFAULTS, ...JSON.parse(stored) }; } catch { /* */ }
-    }
-    return DEFAULTS;
-  });
+  const [settings, setSettings] = useState<PlatformSettings>(cached ?? DEFAULTS);
 
   useEffect(() => {
     listeners.push(setSettings);
+
     if (!cached) {
       supabase
         .from('platform_settings')
@@ -46,21 +42,21 @@ export function usePlatformSettings(): PlatformSettings {
         .limit(1)
         .single()
         .then(({ data }) => {
-          if (data) {
-            const loaded: PlatformSettings = {
-              nom_plateforme: data.nom_plateforme || DEFAULTS.nom_plateforme,
-              email_support: data.email_support || '',
-              whatsapp_support: data.whatsapp_support || '',
-              devise_defaut: data.devise_defaut || 'XOF',
-              message_maintenance: data.message_maintenance || '',
-            };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(loaded));
-            notify(loaded);
-          }
+          const loaded: PlatformSettings = data
+            ? {
+                nom_plateforme: data.nom_plateforme || DEFAULTS.nom_plateforme,
+                email_support: data.email_support || '',
+                whatsapp_support: data.whatsapp_support || '',
+                devise_defaut: data.devise_defaut || 'XOF',
+                message_maintenance: data.message_maintenance || '',
+              }
+            : DEFAULTS;
+          notify(loaded);
         });
     } else {
       setSettings(cached);
     }
+
     return () => {
       const idx = listeners.indexOf(setSettings);
       if (idx !== -1) listeners.splice(idx, 1);
