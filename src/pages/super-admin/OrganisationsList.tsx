@@ -114,9 +114,9 @@ export const OrganisationsList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Organisations</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">{isEn ? 'Organizations' : 'Organisations'}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Gérez toutes les entreprises clientes ({filtered.length} résultat{filtered.length > 1 ? 's' : ''})
+            {isEn ? `Manage all client companies (${filtered.length} result${filtered.length > 1 ? 's' : ''})` : `Gérez toutes les entreprises clientes (${filtered.length} résultat${filtered.length > 1 ? 's' : ''})`}
           </p>
         </div>
         <button
@@ -124,7 +124,7 @@ export const OrganisationsList: React.FC = () => {
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-gradient-faciloop px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity"
         >
           <Plus className="h-4 w-4" />
-          <span>Nouvelle Entreprise</span>
+          <span>{isEn ? 'New Company' : 'Nouvelle Entreprise'}</span>
         </button>
       </div>
 
@@ -137,7 +137,7 @@ export const OrganisationsList: React.FC = () => {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Rechercher une organisation..."
+            placeholder={isEn ? 'Search an organization...' : 'Rechercher une organisation...'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-10 pl-9 pr-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
@@ -154,7 +154,7 @@ export const OrganisationsList: React.FC = () => {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {s === 'tous' ? 'Tous' : s === 'en_attente' ? 'En attente' : s === 'actif' ? 'Actifs' : 'Suspendus'}
+              {s === 'tous' ? (isEn ? 'All' : 'Tous') : s === 'en_attente' ? (isEn ? 'Pending' : 'En attente') : s === 'actif' ? (isEn ? 'Active' : 'Actifs') : (isEn ? 'Suspended' : 'Suspendus')}
             </button>
           ))}
         </div>

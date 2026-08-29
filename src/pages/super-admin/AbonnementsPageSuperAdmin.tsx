@@ -183,13 +183,13 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Abonnements</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">{isEn ? 'Subscriptions' : 'Abonnements'}</h1>
             <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-              Source de référence
+              {isEn ? 'Reference Source' : 'Source de référence'}
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Configuration des offres et tarifs — {formules.length} formule{formules.length > 1 ? 's' : ''}
+            {isEn ? `Offers and pricing configuration — ${formules.length} plan${formules.length > 1 ? 's' : ''}` : `Configuration des offres et tarifs — ${formules.length} formule${formules.length > 1 ? 's' : ''}`}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -199,8 +199,8 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
             className="inline-flex items-center gap-2 rounded-full bg-gradient-faciloop px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity"
           >
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Ajouter une offre</span>
-            <span className="sm:hidden">Offre</span>
+            <span className="hidden sm:inline">{isEn ? 'Add a plan' : 'Ajouter une offre'}</span>
+            <span className="sm:hidden">{isEn ? 'Plan' : 'Offre'}</span>
           </button>
         </div>
       </div>
@@ -209,16 +209,16 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
       {formules.length === 0 && (
         <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center space-y-3">
           <Crown className="h-10 w-10 text-muted-foreground mx-auto" />
-          <h2 className="text-lg font-semibold text-foreground">Aucune formule configurée</h2>
+          <h2 className="text-lg font-semibold text-foreground">{isEn ? 'No plan configured' : 'Aucune formule configurée'}</h2>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Créez votre première offre d'abonnement pour commencer à facturer vos clients.
+            {isEn ? 'Create your first subscription plan to start billing your clients.' : "Créez votre première offre d'abonnement pour commencer à facturer vos clients."}
           </p>
           <button
             onClick={handleAddOffer}
             className="inline-flex items-center gap-2 rounded-full bg-gradient-faciloop px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity mt-2"
           >
             <Plus className="h-4 w-4" />
-            Créer une offre
+            {isEn ? 'Create a plan' : 'Créer une offre'}
           </button>
         </div>
       )}
@@ -450,14 +450,14 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                         className="flex-1 h-9 rounded-full border border-border text-xs font-medium hover:bg-muted text-foreground transition-colors flex items-center justify-center gap-1.5"
                       >
                         <X className="h-3.5 w-3.5" />
-                        Annuler
+                        {isEn ? 'Cancel' : 'Annuler'}
                       </button>
                       <button
                         onClick={saveEdit}
                         className="flex-1 h-9 rounded-full bg-gradient-faciloop text-white text-xs font-semibold shadow-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
                       >
                         <Save className="h-3.5 w-3.5" />
-                        Enregistrer
+                        {isEn ? 'Save' : 'Enregistrer'}
                       </button>
                     </div>
                   )}
@@ -466,7 +466,7 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                 {/* Features */}
                 <div className="px-4 pb-4">
                   <div className="rounded-lg bg-muted/50 p-3 space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Inclus</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{isEn ? 'Included' : 'Inclus'}</span>
                     <div className="space-y-1.5">
                       {getFeatures(f.code, isEn).map((feat, idx) => (
                         <div key={idx} className="flex items-center gap-2">
