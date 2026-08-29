@@ -40,9 +40,10 @@ import { NotificationsAdminPage } from './pages/admin-org/NotificationsAdminPage
 // Super Admin Pages
 import { DashboardSuperAdmin } from './pages/super-admin/DashboardSuperAdmin';
 import { OrganisationsList } from './pages/super-admin/OrganisationsList';
+import { OrganisationDetail } from './pages/super-admin/OrganisationDetail';
 import { AbonnementsPageSuperAdmin } from './pages/super-admin/AbonnementsPageSuperAdmin';
 import { FacturationPage } from './pages/super-admin/FacturationPage';
-import { StatistiquesPage } from './pages/super-admin/StatistiquesPage';
+import { ParametresSuperAdmin } from './pages/super-admin/ParametresSuperAdmin';
 
 function App() {
   return (
@@ -98,9 +99,10 @@ function App() {
             <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardSuperAdmin />} />
             <Route path="organisations" element={<OrganisationsList />} />
+            <Route path="organisations/:id" element={<OrganisationDetail />} />
             <Route path="abonnements" element={<AbonnementsPageSuperAdmin />} />
             <Route path="facturation" element={<FacturationPage />} />
-            <Route path="statistiques" element={<StatistiquesPage />} />
+            <Route path="parametres" element={<ParametresSuperAdmin />} />
             <Route path="*" element={<Navigate to="/super-admin/dashboard" replace />} />
           </Route>
 

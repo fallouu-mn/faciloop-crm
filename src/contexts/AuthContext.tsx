@@ -331,6 +331,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: orgData.email,
         site_web: orgData.site_web,
         secteur: orgData.secteur,
+        formule_code: orgData.formule_code,
+        periodicite: orgData.periodicite,
+        prix_abonnement: orgData.prix_abonnement,
+        date_debut_abonnement: orgData.date_debut_abonnement,
+        date_fin_abonnement: orgData.date_fin_abonnement,
+        statut_abonnement: orgData.statut_abonnement,
+        responsable_nom: orgData.responsable_nom,
+        responsable_prenom: orgData.responsable_prenom,
         created_at: orgData.created_at,
       });
     }
@@ -440,6 +448,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: orgData.email,
             site_web: orgData.site_web,
             secteur: orgData.secteur,
+            formule_code: orgData.formule_code,
+            periodicite: orgData.periodicite,
+            prix_abonnement: orgData.prix_abonnement,
+            date_debut_abonnement: orgData.date_debut_abonnement,
+            date_fin_abonnement: orgData.date_fin_abonnement,
+            statut_abonnement: orgData.statut_abonnement,
+            responsable_nom: orgData.responsable_nom,
+            responsable_prenom: orgData.responsable_prenom,
             created_at: orgData.created_at,
           });
         }

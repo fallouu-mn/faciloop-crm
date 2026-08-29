@@ -62,6 +62,14 @@ export interface Organization {
   email?: string;
   site_web?: string;
   secteur?: string;
+  formule_code?: string;
+  periodicite?: string;
+  prix_abonnement?: number;
+  date_debut_abonnement?: string;
+  date_fin_abonnement?: string;
+  statut_abonnement?: string;
+  responsable_nom?: string;
+  responsable_prenom?: string;
   created_at: string;
 }
 

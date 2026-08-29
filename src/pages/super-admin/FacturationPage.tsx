@@ -1,98 +1,137 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, TrendingUp, AlertTriangle, CheckCircle2, Search, Download } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { CreditCard, TrendingUp, Search, Download, Clock, Crown } from 'lucide-react';
 import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
-import { DateRange, isInDateRange, searchParamsToDateRange, buildFilteredUrl } from '../../lib/dateFilter';
+import { DateRange, isInDateRange, searchParamsToDateRange } from '../../lib/dateFilter';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { downloadCsv } from '../../lib/exportCsv';
+import { supabase } from '../../lib/supabase';
 
-interface FactureData {
+interface OrgPaiement {
   id: string;
-  tenant_id: string;
-  tenant_nom: string;
-  formule: string;
-  montant_xof: number;
-  statut: 'payee' | 'en_attente' | 'impayee';
-  date_emission: string;
-  date_echeance: string;
+  nom: string;
+  formule_code: string | null;
+  periodicite: string | null;
+  prix_abonnement: number | null;
+  date_debut_abonnement: string | null;
+  date_fin_abonnement: string | null;
+  statut_abonnement: string | null;
+  statut: string;
+  created_at: string;
 }
 
-const mockFactures: FactureData[] = [];
-import { downloadCsv } from '../../lib/exportCsv';
-import { useTranslation } from 'react-i18next';
+type FilterStatut = 'tous' | 'actif' | 'expire' | 'suspendu' | 'inactif';
 
 export const FacturationPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation('superAdmin');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
   const [devise, setDevise] = useState<DeviseCode>('XOF');
   const [search, setSearch] = useState('');
-  const [filterStatut, setFilterStatut] = useState<'tous' | 'payee' | 'en_attente' | 'impayee'>('tous');
+  const [filterStatut, setFilterStatut] = useState<FilterStatut>('tous');
+  const [orgs, setOrgs] = useState<OrgPaiement[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const isEn = i18n.language?.startsWith('en');
+  useEffect(() => {
+    const fetchOrgs = async () => {
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('id, nom, formule_code, periodicite, prix_abonnement, date_debut_abonnement, date_fin_abonnement, statut_abonnement, statut, created_at')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        const today = new Date();
+        const expiredIds: string[] = [];
+        const updated = data.map(o => {
+          if (o.statut_abonnement === 'actif' && o.date_fin_abonnement && new Date(o.date_fin_abonnement) < today) {
+            expiredIds.push(o.id);
+            return { ...o, statut_abonnement: 'expire' };
+          }
+          return o;
+        });
+        if (expiredIds.length > 0) {
+          supabase.from('organizations').update({ statut_abonnement: 'expire' }).in('id', expiredIds).then(() => {});
+        }
+        setOrgs(updated);
+      }
+      setLoading(false);
+    };
+    fetchOrgs();
+  }, []);
+
+  const withAbonnement = useMemo(() => orgs.filter(o => o.prix_abonnement && o.prix_abonnement > 0), [orgs]);
 
   const filtered = useMemo(() =>
-    mockFactures.filter(f => {
-      const matchSearch = f.tenant_nom.toLowerCase().includes(search.toLowerCase());
-      const matchStatut = filterStatut === 'tous' || f.statut === filterStatut;
-      const matchDate = isInDateRange(f.date_emission, period);
+    withAbonnement.filter(o => {
+      const matchSearch = o.nom.toLowerCase().includes(search.toLowerCase());
+      const matchStatut = filterStatut === 'tous' || o.statut_abonnement === filterStatut;
+      const matchDate = isInDateRange(o.date_debut_abonnement || o.created_at, period);
       return matchSearch && matchStatut && matchDate;
     }),
-    [search, filterStatut, period]
+    [withAbonnement, search, filterStatut, period]
   );
 
-  const totalRevenu = filtered.filter(f => f.statut === 'payee').reduce((s, f) => s + f.montant_xof, 0);
-  const payeesCount = filtered.filter(f => f.statut === 'payee').length;
-  const enAttenteCount = filtered.filter(f => f.statut === 'en_attente').length;
-  const impayeesCount = filtered.filter(f => f.statut === 'impayee').length;
-
+  const caTotal = filtered.reduce((s, o) => s + (o.prix_abonnement || 0), 0);
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
 
-  const statutLabel = (s: FactureData['statut']) => {
-    if (!isEn) {
-      if (s === 'payee') return 'Payée';
-      if (s === 'en_attente') return 'En attente';
-      return 'Impayée';
-    }
-    if (s === 'payee') return 'Paid';
-    if (s === 'en_attente') return 'Pending';
-    return 'Unpaid';
+  const statutLabel = (s: string | null) => {
+    if (s === 'actif') return t('facturation.statusActif');
+    if (s === 'expire') return t('facturation.statusExpire');
+    if (s === 'suspendu') return t('facturation.statusSuspendu');
+    return t('facturation.statusInactif');
   };
 
-  const statutClass = (s: FactureData['statut']) => {
-    if (s === 'payee') return 'bg-emerald-500/10 text-emerald-600';
-    if (s === 'en_attente') return 'bg-amber-500/10 text-amber-600';
-    return 'bg-destructive/10 text-destructive';
+  const statutClass = (s: string | null) => {
+    if (s === 'actif') return 'bg-emerald-500/10 text-emerald-600';
+    if (s === 'expire') return 'bg-destructive/10 text-destructive';
+    if (s === 'suspendu') return 'bg-amber-500/10 text-amber-600';
+    return 'bg-muted text-muted-foreground';
   };
 
   const handleExportCsv = () => {
-    const headers = isEn
-      ? ['Company', 'Plan', 'Amount', 'Currency', 'Issued', 'Due Date', 'Status']
-      : ['Entreprise', 'Formule', 'Montant', 'Devise', 'Émission', 'Échéance', 'Statut'];
-    const rows = filtered.map(f => [
-      f.tenant_nom,
-      f.formule,
-      String(convertAmount(f.montant_xof, 'XOF', devise)),
-      devise,
-      f.date_emission,
-      f.date_echeance,
-      statutLabel(f.statut),
+    const headers = [
+      t('facturation.csvCompany'),
+      t('facturation.csvFormula'),
+      t('facturation.csvPeriod'),
+      t('facturation.csvAmount', { devise }),
+      t('facturation.csvStart'),
+      t('facturation.csvEnd'),
+      t('facturation.csvStatus'),
+    ];
+    const rows = filtered.map(o => [
+      o.nom,
+      o.formule_code || '-',
+      o.periodicite || '-',
+      String(convertAmount(o.prix_abonnement || 0, 'XOF', devise)),
+      o.date_debut_abonnement || '-',
+      o.date_fin_abonnement || '-',
+      statutLabel(o.statut_abonnement),
     ]);
-    const date = new Date().toISOString().split('T')[0];
-    downloadCsv(`facturation_${date}.csv`, headers, rows);
+    downloadCsv(`paiements_abonnements_${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-8 bg-muted/60 rounded-xl w-1/3" />
+        <div className="grid grid-cols-2 gap-3">
+          {[1, 2].map(i => <div key={i} className="h-24 bg-muted/40 rounded-xl" />)}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-            {isEn ? 'Billing & Invoices' : 'Facturation'}
-          </h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">{t('facturation.title')}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {isEn ? `Subscriptions and payments tracking (${filtered.length} invoices)` : `Suivi des abonnements et paiements (${filtered.length} facture${filtered.length > 1 ? 's' : ''})`}
+            {t('facturation.subtitle')} ({t('facturation.subscriptions', { count: filtered.length })})
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
@@ -102,60 +141,33 @@ export const FacturationPage: React.FC = () => {
             className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
             <Download className="h-4 w-4" />
-            <span>Export CSV</span>
+            <span>{t('facturation.exportCsv')}</span>
           </button>
         </div>
       </div>
 
-      {/* Period Filter */}
       <PeriodFilter value={period} onChange={setPeriod} />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* KPIs */}
+      <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Revenue' : 'Revenus'}</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('facturation.kpiRevenue')}</span>
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
           </div>
-          <div>
-            <span className="text-lg font-bold text-foreground">{fmt(totalRevenu)}</span>
-          </div>
+          <span className="text-lg font-bold text-foreground">{fmt(caTotal)}</span>
         </div>
-
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Paid' : 'Payées'}</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('facturation.kpiTransactions')}</span>
             <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <CreditCard className="h-4 w-4 text-emerald-500" />
             </div>
           </div>
-          <span className="text-xl font-bold text-emerald-500">{payeesCount}</span>
+          <span className="text-lg font-bold text-foreground">{filtered.length}</span>
         </div>
-
-        <div className="rounded-xl border border-border bg-card p-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Pending' : 'En attente'}</span>
-            <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
-              <CreditCard className="h-4 w-4 text-amber-500" />
-            </div>
-          </div>
-          <span className="text-xl font-bold text-amber-500">{enAttenteCount}</span>
-        </div>
-
-        <button
-          onClick={() => navigate(buildFilteredUrl('/super-admin/organisations', period, { statut: 'suspendu' }))}
-          className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-2 text-left hover:border-destructive/40 transition-colors"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-destructive">{isEn ? 'Unpaid' : 'Impayées'}</span>
-            <div className="h-8 w-8 rounded-full bg-destructive/10 flex items-center justify-center">
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-            </div>
-          </div>
-          <span className="text-xl font-bold text-destructive">{impayeesCount}</span>
-        </button>
       </div>
 
       {/* Filters */}
@@ -164,24 +176,22 @@ export const FacturationPage: React.FC = () => {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Rechercher une entreprise..."
+            placeholder={t('facturation.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-9 pr-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+            className="w-full h-10 pl-9 pr-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground transition-all"
           />
         </div>
         <div className="inline-flex items-center rounded-full bg-muted p-1 border border-border text-sm">
-          {(['tous', 'payee', 'en_attente', 'impayee'] as const).map((s) => (
+          {(['tous', 'actif', 'expire', 'suspendu'] as const).map((s) => (
             <button
               key={s}
               onClick={() => setFilterStatut(s)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                filterStatut === s
-                  ? 'bg-card shadow-sm text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                filterStatut === s ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {s === 'tous' ? 'Tous' : statutLabel(s)}
+              {s === 'tous' ? t('facturation.filterAll') : statutLabel(s)}
             </button>
           ))}
         </div>
@@ -192,75 +202,110 @@ export const FacturationPage: React.FC = () => {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border bg-muted/50">
             <tr className="text-xs font-medium text-muted-foreground">
-              <th className="px-4 py-3">Entreprise</th>
-              <th className="px-4 py-3">Formule</th>
-              <th className="px-4 py-3">Montant</th>
-              <th className="px-4 py-3">Émission</th>
-              <th className="px-4 py-3">Échéance</th>
-              <th className="px-4 py-3">Statut</th>
+              <th className="px-4 py-3">{t('facturation.colCompany')}</th>
+              <th className="px-4 py-3">{t('facturation.colFormula')}</th>
+              <th className="px-4 py-3">{t('facturation.colPeriod')}</th>
+              <th className="px-4 py-3">{t('facturation.colAmount')}</th>
+              <th className="px-4 py-3">{t('facturation.colStart')}</th>
+              <th className="px-4 py-3">{t('facturation.colEnd')}</th>
+              <th className="px-4 py-3">{t('facturation.colStatus')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {filtered.map((f) => (
-              <tr key={f.id} className="hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-faciloop text-white flex items-center justify-center font-bold text-xs shrink-0">
-                      {f.tenant_nom[0]}
+            {filtered.map((o) => {
+              const isExpiringSoon = o.statut_abonnement === 'actif' &&
+                o.date_fin_abonnement &&
+                new Date(o.date_fin_abonnement).getTime() - Date.now() < 30 * 86400000;
+              return (
+                <tr
+                  key={o.id}
+                  onClick={() => navigate(`/super-admin/organisations/${o.id}`)}
+                  className="hover:bg-muted/30 transition-colors cursor-pointer"
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-faciloop text-white flex items-center justify-center font-bold text-xs shrink-0">
+                        {o.nom[0]}
+                      </div>
+                      <span className="font-medium text-foreground">{o.nom}</span>
                     </div>
-                    <span className="font-medium text-foreground">{f.tenant_nom}</span>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                    {f.formule}
-                  </span>
-                </td>
-                <td className="px-4 py-3 font-medium text-foreground">{fmt(f.montant_xof)}</td>
-                <td className="px-4 py-3 text-muted-foreground">{f.date_emission}</td>
-                <td className="px-4 py-3 text-muted-foreground">{f.date_echeance}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${statutClass(f.statut)}`}>
-                    {statutLabel(f.statut)}
-                  </span>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center gap-1 w-fit">
+                      <Crown className="h-3 w-3" />
+                      {o.formule_code || '-'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs capitalize">{o.periodicite || '-'}</td>
+                  <td className="px-4 py-3 font-semibold text-foreground">{fmt(o.prix_abonnement || 0)}</td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs">
+                    {o.date_debut_abonnement ? new Date(o.date_debut_abonnement).toLocaleDateString() : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-xs">
+                    <span className={`flex items-center gap-1 ${isExpiringSoon ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                      {isExpiringSoon && <Clock className="h-3 w-3" />}
+                      {o.date_fin_abonnement ? new Date(o.date_fin_abonnement).toLocaleDateString() : '-'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statutClass(o.statut_abonnement)}`}>
+                      {statutLabel(o.statut_abonnement)}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">Aucune facture trouvée</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{t('facturation.noResults')}</div>
         )}
       </div>
 
       {/* Mobile Cards */}
       <div className="grid grid-cols-1 gap-3 md:hidden">
-        {filtered.map((f) => (
-          <div key={f.id} className="p-4 rounded-xl border border-border bg-card space-y-3">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-faciloop text-white flex items-center justify-center font-bold text-sm shrink-0">
-                  {f.tenant_nom[0]}
+        {filtered.map((o) => {
+          const isExpiringSoon = o.statut_abonnement === 'actif' &&
+            o.date_fin_abonnement &&
+            new Date(o.date_fin_abonnement).getTime() - Date.now() < 30 * 86400000;
+          return (
+            <div
+              key={o.id}
+              onClick={() => navigate(`/super-admin/organisations/${o.id}`)}
+              className="p-4 rounded-xl border border-border bg-card space-y-3 cursor-pointer hover:border-primary/40 transition-colors"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-faciloop text-white flex items-center justify-center font-bold text-sm shrink-0">
+                    {o.nom[0]}
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-sm text-foreground">{o.nom}</h3>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                      <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium text-[10px] flex items-center gap-0.5">
+                        <Crown className="h-2.5 w-2.5" />
+                        {o.formule_code || '-'}
+                      </span>
+                      <span className="capitalize">{o.periodicite || '-'}</span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-medium text-sm text-foreground">{f.tenant_nom}</h3>
-                  <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium">
-                    {f.formule}
-                  </span>
-                </div>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${statutClass(o.statut_abonnement)}`}>
+                  {statutLabel(o.statut_abonnement)}
+                </span>
               </div>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${statutClass(f.statut)}`}>
-                {statutLabel(f.statut)}
-              </span>
+              <div className="flex items-center justify-between pt-3 border-t border-border text-sm">
+                <span className="font-bold text-foreground">{fmt(o.prix_abonnement || 0)}</span>
+                <span className={`text-xs flex items-center gap-1 ${isExpiringSoon ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                  {isExpiringSoon && <Clock className="h-3 w-3" />}
+                  {t('facturation.mobileEnd')} {o.date_fin_abonnement ? new Date(o.date_fin_abonnement).toLocaleDateString() : '-'}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center justify-between pt-3 border-t border-border text-sm">
-              <span className="font-bold text-foreground">{fmt(f.montant_xof)}</span>
-              <span className="text-xs text-muted-foreground">Éch. {f.date_echeance}</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
         {filtered.length === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">Aucune facture trouvée</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{t('facturation.noResults')}</div>
         )}
       </div>
     </div>

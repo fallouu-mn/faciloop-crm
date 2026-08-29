@@ -26,8 +26,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaciloopBrand } from '../common/FaciloopBrand';
-
 import { useTranslation } from 'react-i18next';
+import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -36,9 +36,11 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { t, i18n } = useTranslation();
+  const { t: tSA } = useTranslation('superAdmin');
   const { user, currentOrg } = useAuth();
   const role = user?.role || 'commercial';
   const isEn = i18n.language?.startsWith('en');
+  const platformSettings = usePlatformSettings();
 
   // Navigation Items per Role
   const commercialLinks = [
@@ -102,11 +104,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const adminOrgLinks = adminOrgSections.flatMap(s => s.links);
 
   const superAdminLinks = [
-    { to: '/super-admin/dashboard', label: isEn ? 'Dashboard' : 'Tableau de bord', icon: LayoutDashboard },
-    { to: '/super-admin/organisations', label: isEn ? 'Companies' : 'Entreprises', icon: Building2 },
-    { to: '/super-admin/abonnements', label: isEn ? 'Subscriptions' : 'Abonnements', icon: Crown },
-    { to: '/super-admin/facturation', label: isEn ? 'Billing' : 'Facturation', icon: CreditCard },
-    { to: '/super-admin/statistiques', label: isEn ? 'Analytics' : 'Statistiques', icon: BarChart3 }
+    { to: '/super-admin/dashboard', label: tSA('nav.dashboard'), icon: LayoutDashboard },
+    { to: '/super-admin/organisations', label: tSA('nav.organisations'), icon: Building2 },
+    { to: '/super-admin/abonnements', label: tSA('nav.abonnements'), icon: Crown },
+    { to: '/super-admin/facturation', label: tSA('nav.facturation'), icon: CreditCard },
+    { to: '/super-admin/parametres', label: tSA('nav.parametres'), icon: Settings },
   ];
 
   const currentLinks = 
@@ -155,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <Building2 className="w-3 h-3 text-primary" /> Espace de travail
             </div>
             <div className="text-xs font-black text-foreground truncate">
-              {currentOrg?.nom || 'Teranga Logistique SA'}
+              {currentOrg?.nom || (role === 'super_admin' ? platformSettings.nom_plateforme : 'Mon Entreprise')}
             </div>
             <div className="text-[10px] font-bold text-primary capitalize flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-emerald-500" />

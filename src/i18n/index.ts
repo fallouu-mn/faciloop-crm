@@ -9,6 +9,7 @@ import frLanding from './locales/fr/landing.json';
 import frSales from './locales/fr/sales.json';
 import frAdmin from './locales/fr/admin.json';
 import frClients from './locales/fr/clients.json';
+import frSuperAdmin from './locales/fr/superAdmin.json';
 
 // English Locales
 import enCommon from './locales/en/common.json';
@@ -18,6 +19,7 @@ import enLanding from './locales/en/landing.json';
 import enSales from './locales/en/sales.json';
 import enAdmin from './locales/en/admin.json';
 import enClients from './locales/en/clients.json';
+import enSuperAdmin from './locales/en/superAdmin.json';
 
 export const NAMESPACES = [
   'common',
@@ -27,6 +29,7 @@ export const NAMESPACES = [
   'sales',
   'admin',
   'clients',
+  'superAdmin',
 ] as const;
 
 const resources = {
@@ -38,6 +41,7 @@ const resources = {
     sales: frSales,
     admin: frAdmin,
     clients: frClients,
+    superAdmin: frSuperAdmin,
   },
   en: {
     common: enCommon,
@@ -47,6 +51,7 @@ const resources = {
     sales: enSales,
     admin: enAdmin,
     clients: enClients,
+    superAdmin: enSuperAdmin,
   },
 };
 

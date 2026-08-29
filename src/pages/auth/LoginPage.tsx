@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
@@ -19,8 +20,12 @@ export const LoginPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
+  const platformSettings = usePlatformSettings();
 
   const isEn = i18n.language?.startsWith('en');
+
+  const supportContact = platformSettings.whatsapp_support || platformSettings.email_support || '';
+  const supportMsg = supportContact ? ` — ${supportContact}` : '';
 
   const redirectByRole = (role: string) => {
     if (role === 'super_admin') {
@@ -54,7 +59,9 @@ export const LoginPage: React.FC = () => {
         if (session.orgStatut === 'en_attente') {
           navigate('/pending-activation');
         } else if (session.orgStatut === 'suspendu') {
-          setErrorMsg(isEn ? 'Your organization has been suspended. Contact support.' : 'Votre organisation a été suspendue. Contactez le support.');
+          setErrorMsg(isEn ? `Your organization has been suspended. Contact support${supportMsg}.` : `Votre organisation a été suspendue. Contactez le support${supportMsg}.`);
+        } else if (session.orgStatut === 'inactif') {
+          setErrorMsg(isEn ? `Your organization account has been deactivated. Contact support${supportMsg}.` : `Le compte de votre organisation a été désactivé. Contactez le support${supportMsg}.`);
         } else {
           redirectByRole(session.role);
         }
@@ -78,7 +85,9 @@ export const LoginPage: React.FC = () => {
         if (session.orgStatut === 'en_attente') {
           navigate('/pending-activation');
         } else if (session.orgStatut === 'suspendu') {
-          setErrorMsg('Organisation suspendue.');
+          setErrorMsg(`Organisation suspendue${supportMsg}.`);
+        } else if (session.orgStatut === 'inactif') {
+          setErrorMsg(`Compte organisation désactivé${supportMsg}.`);
         } else {
           redirectByRole(session.role);
         }
