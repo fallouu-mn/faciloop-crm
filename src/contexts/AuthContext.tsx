@@ -29,7 +29,7 @@ export interface UserSession {
   orgStatut?: string; // 'actif' | 'en_attente' | 'suspendu' | 'inactif'
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   user: UserSession | null;
   isLoading: boolean;
   currentOrg: Organization | null;
@@ -87,7 +87,7 @@ interface AuthContextType {
   updateOrganization: (updates: Partial<Omit<Organization, 'id'>>) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function phoneToEmail(phone: string): string {
   const digits = phone.replace(/[^0-9]/g, '');
@@ -266,14 +266,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     restoreSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === 'SIGNED_OUT') {
         setUser(null);
         setCurrentOrg(null);
       }
-      if (event === 'SIGNED_IN' && session?.user) {
-        await buildUserSession(session.user.id, session.user.email || '');
-      }
+      // SIGNED_IN is handled directly by login() to avoid race condition
+      // (buildUserSession running concurrently would sign out before login() finishes)
     });
 
     return () => subscription.unsubscribe();

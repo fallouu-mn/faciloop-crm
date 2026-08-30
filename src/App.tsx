@@ -9,6 +9,8 @@ import { LandingPage } from './pages/public/LandingPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { PendingActivationPage } from './pages/auth/PendingActivationPage';
+import { SuspendedPage } from './pages/auth/SuspendedPage';
+import { DemoAuthProvider } from './contexts/DemoAuthProvider';
 import { WelcomeOnboardingPage } from './pages/auth/WelcomeOnboardingPage';
 import { ForgotPinPage } from './pages/auth/ForgotPinPage';
 
@@ -56,6 +58,7 @@ function App() {
           <Route path="/forgot-pin" element={<ForgotPinPage />} />
           <Route path="/signup" element={<RegisterPage />} />
           <Route path="/pending-activation" element={<PendingActivationPage />} />
+          <Route path="/suspended" element={<SuspendedPage />} />
           <Route path="/welcome" element={<WelcomeOnboardingPage />} />
 
           {/* Commercial Espace */}
@@ -104,6 +107,31 @@ function App() {
             <Route path="facturation" element={<FacturationPage />} />
             <Route path="parametres" element={<ParametresSuperAdmin />} />
             <Route path="*" element={<Navigate to="/super-admin/dashboard" replace />} />
+          </Route>
+
+          {/* Demo Mode — public, no auth required, mock data */}
+          <Route path="/demo" element={
+            <DemoAuthProvider>
+              <AppLayout />
+            </DemoAuthProvider>
+          }>
+            <Route index element={<Navigate to="/demo/dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardAdminOrg />} />
+            <Route path="prospects" element={<ProspectsListAdmin />} />
+            <Route path="prospects/:id" element={<ProspectDetail />} />
+            <Route path="clients" element={<ClientsListAdmin />} />
+            <Route path="pipeline" element={<ProspectKanban />} />
+            <Route path="equipe" element={<EquipeCommerciale />} />
+            <Route path="objectifs" element={<ObjectifsAdminPage />} />
+            <Route path="relances" element={<RelancesPage />} />
+            <Route path="abonnements" element={<AbonnementsPage />} />
+            <Route path="paiements" element={<PaiementsPage />} />
+            <Route path="commissions" element={<CommissionsPage />} />
+            <Route path="import-export" element={<ImportExportPage />} />
+            <Route path="journal" element={<JournalActionsPage />} />
+            <Route path="parametres" element={<ParametresEntreprise />} />
+            <Route path="notifications" element={<NotificationsAdminPage />} />
+            <Route path="*" element={<Navigate to="/demo/dashboard" replace />} />
           </Route>
 
           {/* Fallback 404 Route */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   LayoutDashboard,
@@ -38,9 +38,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { t, i18n } = useTranslation();
   const { t: tSA } = useTranslation('superAdmin');
   const { user, currentOrg } = useAuth();
+  const location = useLocation();
   const role = user?.role || 'commercial';
   const isEn = i18n.language?.startsWith('en');
   const platformSettings = usePlatformSettings();
+  const adminBase = location.pathname.startsWith('/demo') ? '/demo' : '/admin';
 
   // Navigation Items per Role
   const commercialLinks = [
@@ -58,45 +60,45 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     {
       title: isEn ? 'Overview' : 'Pilotage',
       links: [
-        { to: '/admin/dashboard', label: isEn ? 'Dashboard' : 'Dashboard', icon: BarChart3 },
+        { to: `${adminBase}/dashboard`, label: isEn ? 'Dashboard' : 'Dashboard', icon: BarChart3 },
       ],
     },
     {
       title: isEn ? 'Team' : 'Équipe',
       links: [
-        { to: '/admin/equipe', label: isEn ? 'Sales Team' : 'Équipe commerciale', icon: Users },
-        { to: '/admin/objectifs', label: isEn ? 'Sales Objectives' : 'Objectifs commerciaux', icon: Goal },
+        { to: `${adminBase}/equipe`, label: isEn ? 'Sales Team' : 'Équipe commerciale', icon: Users },
+        { to: `${adminBase}/objectifs`, label: isEn ? 'Sales Objectives' : 'Objectifs commerciaux', icon: Goal },
       ],
     },
     {
       title: isEn ? 'Sales Management' : 'Gestion commerciale',
       links: [
-        { to: '/admin/prospects', label: isEn ? 'Prospects' : 'Prospects', icon: UserPlus },
-        { to: '/admin/pipeline', label: isEn ? 'Kanban Pipeline' : 'Pipeline Kanban', icon: Kanban },
-        { to: '/admin/relances', label: isEn ? 'Follow-ups' : 'Relances', icon: CalendarClock },
-        { to: '/admin/clients', label: isEn ? 'Client Accounts' : 'Comptes Clients', icon: Building2 },
+        { to: `${adminBase}/prospects`, label: isEn ? 'Prospects' : 'Prospects', icon: UserPlus },
+        { to: `${adminBase}/pipeline`, label: isEn ? 'Kanban Pipeline' : 'Pipeline Kanban', icon: Kanban },
+        { to: `${adminBase}/relances`, label: isEn ? 'Follow-ups' : 'Relances', icon: CalendarClock },
+        { to: `${adminBase}/clients`, label: isEn ? 'Client Accounts' : 'Comptes Clients', icon: Building2 },
       ],
     },
     {
       title: isEn ? 'Revenue' : 'Revenus',
       links: [
-        { to: '/admin/abonnements', label: isEn ? 'Subscriptions' : 'Abonnements', icon: Crown },
-        { to: '/admin/paiements', label: isEn ? 'Payments' : 'Paiements', icon: CreditCard },
-        { to: '/admin/commissions', label: isEn ? 'Commissions' : 'Commissions', icon: Wallet },
+        { to: `${adminBase}/abonnements`, label: isEn ? 'Subscriptions' : 'Abonnements', icon: Crown },
+        { to: `${adminBase}/paiements`, label: isEn ? 'Payments' : 'Paiements', icon: CreditCard },
+        { to: `${adminBase}/commissions`, label: isEn ? 'Commissions' : 'Commissions', icon: Wallet },
       ],
     },
     {
       title: isEn ? 'Administration' : 'Administration',
       links: [
-        { to: '/admin/journal', label: isEn ? 'Action Log' : 'Journal', icon: ScrollText },
-        { to: '/admin/import-export', label: isEn ? 'Import / Export' : 'Import / Export', icon: FileSpreadsheet },
-        { to: '/admin/parametres', label: isEn ? 'Settings' : 'Paramètres', icon: Settings },
+        { to: `${adminBase}/journal`, label: isEn ? 'Action Log' : 'Journal', icon: ScrollText },
+        { to: `${adminBase}/import-export`, label: isEn ? 'Import / Export' : 'Import / Export', icon: FileSpreadsheet },
+        { to: `${adminBase}/parametres`, label: isEn ? 'Settings' : 'Paramètres', icon: Settings },
       ],
     },
     {
       title: isEn ? 'Alerts' : 'Alertes',
       links: [
-        { to: '/admin/notifications', label: isEn ? 'Notifications' : 'Notifications', icon: Bell },
+        { to: `${adminBase}/notifications`, label: isEn ? 'Notifications' : 'Notifications', icon: Bell },
       ],
     },
   ];

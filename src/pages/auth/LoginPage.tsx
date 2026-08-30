@@ -58,10 +58,8 @@ export const LoginPage: React.FC = () => {
       if (session) {
         if (session.orgStatut === 'en_attente') {
           navigate('/pending-activation');
-        } else if (session.orgStatut === 'suspendu') {
-          setErrorMsg(isEn ? `Your organization has been suspended. Contact support${supportMsg}.` : `Votre organisation a été suspendue. Contactez le support${supportMsg}.`);
-        } else if (session.orgStatut === 'inactif') {
-          setErrorMsg(isEn ? `Your organization account has been deactivated. Contact support${supportMsg}.` : `Le compte de votre organisation a été désactivé. Contactez le support${supportMsg}.`);
+        } else if (session.orgStatut === 'suspendu' || session.orgStatut === 'inactif') {
+          navigate('/suspended');
         } else {
           redirectByRole(session.role);
         }
@@ -84,10 +82,8 @@ export const LoginPage: React.FC = () => {
       if (session) {
         if (session.orgStatut === 'en_attente') {
           navigate('/pending-activation');
-        } else if (session.orgStatut === 'suspendu') {
-          setErrorMsg(`Organisation suspendue${supportMsg}.`);
-        } else if (session.orgStatut === 'inactif') {
-          setErrorMsg(`Compte organisation désactivé${supportMsg}.`);
+        } else if (session.orgStatut === 'suspendu' || session.orgStatut === 'inactif') {
+          navigate('/suspended');
         } else {
           redirectByRole(session.role);
         }

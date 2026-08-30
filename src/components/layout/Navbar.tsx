@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { LogOut, Menu } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { LogOut, Menu, UserPlus } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaciloopBrand } from '../common/FaciloopBrand';
 
@@ -15,6 +15,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isDemoMode = location.pathname.startsWith('/demo');
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
 
   const isEn = i18n.language?.startsWith('en');
@@ -53,15 +55,25 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
           </Link>
         </div>
 
-        {/* Right: Only Clean Logout Button matching screenshot model */}
+        {/* Right: Logout or Demo CTA */}
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => setShowLogoutModal(true)}
-            className="rounded-xl p-2.5 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all active:scale-95 flex items-center justify-center"
-            title="Se déconnecter"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
+          {isDemoMode ? (
+            <Link
+              to="/signup"
+              className="rounded-xl px-3 py-2 text-xs font-extrabold text-primary border border-primary/30 hover:bg-primary/10 transition-all active:scale-95 flex items-center gap-1.5"
+            >
+              <UserPlus className="h-4 w-4" />
+              <span className="hidden sm:inline">Créer mon compte</span>
+            </Link>
+          ) : (
+            <button
+              onClick={() => setShowLogoutModal(true)}
+              className="rounded-xl p-2.5 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all active:scale-95 flex items-center justify-center"
+              title="Se déconnecter"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </header>
 

@@ -291,7 +291,7 @@ export const LandingPage: React.FC = () => {
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
-                href="/login"
+                href="/demo/dashboard"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 rounded-full border border-border text-foreground font-medium text-sm hover:bg-muted transition-colors"
               >
                 <Play className="w-4 h-4 text-primary fill-primary" />
