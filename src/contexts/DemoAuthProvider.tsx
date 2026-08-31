@@ -55,6 +55,10 @@ export const DemoAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setRelances(prev => prev.map(r => r.id === id ? { ...r, statut: 'realisee' as const } : r));
   };
 
+  const cancelRelance = (id: string) => {
+    setRelances(prev => prev.map(r => r.id === id ? { ...r, statut: 'annulee' as const } : r));
+  };
+
   const addInteraction = (newI: any) => {
     const created = { ...newI, id: `demo-i-${Date.now()}`, created_at: new Date().toISOString(), organization_id: DEMO_ORG_ID };
     setInteractions(prev => [created, ...prev]);
@@ -135,7 +139,7 @@ export const DemoAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     prospects, relances, interactions, notifications, clients, paiements,
     myProspects, myRelances, myInteractions,
     addProspect, updateProspectStatus, reassignProspects, deleteProspect,
-    addRelance, completeRelance, addInteraction, markNotificationAsRead, convertProspectToClient,
+    addRelance, completeRelance, cancelRelance, addInteraction, markNotificationAsRead, convertProspectToClient,
     orgOffers, addOrgOffer, updateOrgOffer, deleteOrgOffer,
     commerciaux, addCommercial, updateCommercial, toggleCommercialStatus,
     objectifs, addObjectif, updateObjectif, deleteObjectif,

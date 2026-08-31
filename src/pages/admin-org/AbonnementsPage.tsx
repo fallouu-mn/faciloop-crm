@@ -150,7 +150,7 @@ export const AbonnementsPage: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {orgOffers.map((offer, idx) => {
+          {[...orgOffers].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((offer, idx) => {
             const colorClass = OFFER_COLORS[idx % OFFER_COLORS.length];
             return (
               <div key={offer.id} className={`rounded-2xl border bg-card overflow-hidden transition-all hover:shadow-md ${!offer.actif ? 'opacity-60' : 'border-border'}`}>

@@ -1,31 +1,122 @@
 import React, { useState } from 'react';
-import { Plus, Check, X, Users, TrendingUp, CalendarDays, Goal } from 'lucide-react';
+import { Plus, Check, X, Users, TrendingUp, CalendarDays, Goal, Trash2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 import { ObjectifCommercialAdmin } from '../../lib/mockAdminOrg';
 
+function getMonthRange(): { start: string; end: string } {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const start = `${y}-${String(m + 1).padStart(2, '0')}-01`;
+  const lastDay = new Date(y, m + 1, 0).getDate();
+  const end = `${y}-${String(m + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  return { start, end };
+}
+
+const PERIODE_LABELS: Record<string, string> = {
+  hebdomadaire: 'Hebdomadaire',
+  mensuel: 'Mensuel',
+  trimestriel: 'Trimestriel',
+  annuel: 'Annuel',
+};
+
 export const ObjectifsAdminPage: React.FC = () => {
-  const { objectifs, addObjectif, commerciaux } = useAuth();
+  const { objectifs, addObjectif, deleteObjectif, commerciaux, paiements, clients, prospects } = useAuth();
   const [devise, setDevise] = useState<DeviseCode>('XOF');
   const [isDefineOpen, setIsDefineOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Form state
+  const { start: defaultStart, end: defaultEnd } = getMonthRange();
+
   const [formCommercialId, setFormCommercialId] = useState(commerciaux[0]?.id || '');
   const [formType, setFormType] = useState<'ca' | 'ventes' | 'prospects'>('ca');
   const [formObjectif, setFormObjectif] = useState('');
   const [formPeriodeType, setFormPeriodeType] = useState<'hebdomadaire' | 'mensuel' | 'trimestriel' | 'annuel'>('mensuel');
-  const [formDebut, setFormDebut] = useState('2026-08-01');
-  const [formFin, setFormFin] = useState('2026-08-31');
-
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [formDebut, setFormDebut] = useState(defaultStart);
+  const [formFin, setFormFin] = useState(defaultEnd);
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
 
+  function autoFillDates(type: 'hebdomadaire' | 'mensuel' | 'trimestriel' | 'annuel') {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    if (type === 'hebdomadaire') {
+      const day = now.getDay();
+      const mondayOffset = day === 0 ? -6 : 1 - day;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + mondayOffset);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      setFormDebut(monday.toISOString().split('T')[0]);
+      setFormFin(sunday.toISOString().split('T')[0]);
+    } else if (type === 'mensuel') {
+      setFormDebut(`${y}-${String(m + 1).padStart(2, '0')}-01`);
+      setFormFin(`${y}-${String(m + 1).padStart(2, '0')}-${String(new Date(y, m + 1, 0).getDate()).padStart(2, '0')}`);
+    } else if (type === 'trimestriel') {
+      const qStart = Math.floor(m / 3) * 3;
+      const qEnd = qStart + 2;
+      setFormDebut(`${y}-${String(qStart + 1).padStart(2, '0')}-01`);
+      setFormFin(`${y}-${String(qEnd + 1).padStart(2, '0')}-${String(new Date(y, qEnd + 1, 0).getDate()).padStart(2, '0')}`);
+    } else if (type === 'annuel') {
+      setFormDebut(`${y}-01-01`);
+      setFormFin(`${y}-12-31`);
+    }
+  }
+
+  function computeRealise(
+    type: 'ca' | 'ventes' | 'prospects',
+    commercialId: string,
+    dateDebut: string,
+    dateFin: string,
+  ): number {
+    if (!dateDebut || !dateFin) return 0;
+    // Normalize timestamps to YYYY-MM-DD before comparing
+    const norm = (d: string) => (d || '').split('T')[0];
+    const inRange = (d: string) => norm(d) >= dateDebut && norm(d) <= dateFin;
+    if (type === 'ca') {
+      return paiements
+        .filter(
+          (p) =>
+            p.commercial_id === commercialId &&
+            p.statut === 'valide' &&
+            inRange(p.date_paiement),
+        )
+        .reduce((sum, p) => sum + (p.montant_paye || 0), 0);
+    }
+    if (type === 'ventes') {
+      return clients.filter(
+        (c) => c.commercial_id === commercialId && inRange(c.created_at),
+      ).length;
+    }
+    if (type === 'prospects') {
+      return prospects.filter(
+        (p) => p.commercial_id === commercialId && inRange(p.created_at || ''),
+      ).length;
+    }
+    return 0;
+  }
+
+  function progressColor(pct: number) {
+    if (pct >= 100) return 'bg-emerald-500';
+    if (pct >= 80) return 'bg-blue-500';
+    if (pct >= 50) return 'bg-amber-500';
+    return 'bg-red-500';
+  }
+
+  function progressTextColor(pct: number) {
+    if (pct >= 100) return 'text-emerald-600';
+    if (pct >= 80) return 'text-blue-600';
+    if (pct >= 50) return 'text-amber-600';
+    return 'text-red-600';
+  }
+
   const handleDefine = () => {
     if (!formObjectif || !formDebut || !formFin) return;
-    const commercial = commerciaux.find(p => p.id === formCommercialId);
+    const commercial = commerciaux.find((p) => p.id === formCommercialId);
     const periodeLabel = `${formDebut} → ${formFin}`;
     addObjectif({
       commercialId: formCommercialId,
@@ -34,6 +125,8 @@ export const ObjectifsAdminPage: React.FC = () => {
       objectif: Number(formObjectif),
       realise: 0,
       periode: periodeLabel,
+      date_debut: formDebut,
+      date_fin: formFin,
     });
     setIsDefineOpen(false);
     setFormObjectif('');
@@ -41,11 +134,24 @@ export const ObjectifsAdminPage: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const groupedByCommercial = objectifs.reduce((acc, obj) => {
-    if (!acc[obj.commercialId]) acc[obj.commercialId] = [];
-    acc[obj.commercialId].push(obj);
-    return acc;
-  }, {} as Record<string, ObjectifCommercialAdmin[]>);
+  const groupedByCommercial = objectifs.reduce(
+    (acc, obj) => {
+      if (!acc[obj.commercialId]) acc[obj.commercialId] = [];
+      acc[obj.commercialId].push(obj);
+      return acc;
+    },
+    {} as Record<string, ObjectifCommercialAdmin[]>,
+  );
+
+  const avgAtteinte =
+    objectifs.length > 0
+      ? Math.round(
+          objectifs.reduce((s, o) => {
+            const realise = computeRealise(o.type, o.commercialId, o.date_debut || '', o.date_fin || '');
+            return s + (o.objectif > 0 ? (realise / o.objectif) * 100 : 0);
+          }, 0) / objectifs.length,
+        )
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -96,19 +202,23 @@ export const ObjectifsAdminPage: React.FC = () => {
             <span className="text-xs font-medium text-muted-foreground">Taux atteinte moyen</span>
             <TrendingUp className="h-4 w-4 text-emerald-500" />
           </div>
-          <span className="text-lg font-bold text-emerald-600">
-            {objectifs.length > 0
-              ? Math.round(objectifs.reduce((s, o) => s + Math.min(100, (o.realise / o.objectif) * 100), 0) / objectifs.length)
-              : 0}%
-          </span>
+          <span className="text-lg font-bold text-emerald-600">{avgAtteinte}%</span>
         </div>
       </div>
 
       {/* Per Commercial */}
       <div className="space-y-4">
         {Object.entries(groupedByCommercial).map(([commId, objs]) => {
-          const comm = commerciaux.find(p => p.id === commId);
-          const initials = objs[0]?.commercialNom.split(' ').map(n => n[0]).join('') || '?';
+          const comm = commerciaux.find((p) => p.id === commId);
+          const initials = objs[0]?.commercialNom.split(' ').map((n) => n[0]).join('') || '?';
+
+          // Summary: total CA and total ventes for this commercial across all their objectifs
+          const totalCAComm = objs
+            .filter((o) => o.type === 'ca')
+            .reduce((sum, o) => sum + computeRealise('ca', commId, o.date_debut || '', o.date_fin || ''), 0);
+          const totalVentesComm = objs
+            .filter((o) => o.type === 'ventes')
+            .reduce((sum, o) => sum + computeRealise('ventes', commId, o.date_debut || '', o.date_fin || ''), 0);
 
           return (
             <div key={commId} className="rounded-xl border border-border bg-card overflow-hidden">
@@ -120,37 +230,75 @@ export const ObjectifsAdminPage: React.FC = () => {
                   <p className="text-sm font-bold text-foreground">{objs[0]?.commercialNom}</p>
                   {comm && (
                     <p className="text-xs text-muted-foreground">
-                      {comm.email} • {comm.telephone}
+                      {comm.email} · {comm.telephone}
                     </p>
+                  )}
+                </div>
+                {/* Per-commercial summary */}
+                <div className="hidden sm:flex items-center gap-4 text-xs">
+                  {objs.some((o) => o.type === 'ca') && (
+                    <div className="text-right">
+                      <p className="text-muted-foreground font-medium">CA encaissé</p>
+                      <p className="font-extrabold text-emerald-600">{fmt(totalCAComm)}</p>
+                    </div>
+                  )}
+                  {objs.some((o) => o.type === 'ventes') && (
+                    <div className="text-right">
+                      <p className="text-muted-foreground font-medium">Ventes</p>
+                      <p className="font-extrabold text-foreground">{totalVentesComm}</p>
+                    </div>
                   )}
                 </div>
               </div>
 
               <div className="p-4 space-y-3">
                 {objs.map((obj) => {
-                  const percent = Math.min(100, Math.round((obj.realise / obj.objectif) * 100));
+                  const realise = computeRealise(obj.type, obj.commercialId, obj.date_debut || '', obj.date_fin || '');
+                  // displayPercent = real ratio (can exceed 100 when objective is surpassed)
+                  const displayPercent = obj.objectif > 0 ? Math.round((realise / obj.objectif) * 100) : 0;
+                  // barPercent = capped at 100 so the bar never overflows
+                  const barPercent = Math.min(100, displayPercent);
                   const isCA = obj.type === 'ca';
+                  const periodeLabel = obj.date_debut && obj.date_fin
+                    ? `${obj.date_debut} → ${obj.date_fin}`
+                    : obj.periode;
 
                   return (
                     <div key={obj.id} className="space-y-2">
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-medium text-foreground capitalize">
-                          {obj.type === 'ca' ? 'Chiffre d\'affaires' : obj.type === 'ventes' ? 'Nombre de ventes' : 'Prospects créés'}
+                          {obj.type === 'ca'
+                            ? "Chiffre d'affaires"
+                            : obj.type === 'ventes'
+                            ? 'Nombre de ventes'
+                            : 'Prospects créés'}
                         </span>
-                        <span className="text-muted-foreground">{obj.periode}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">{periodeLabel}</span>
+                          <button
+                            onClick={() => deleteObjectif(obj.id)}
+                            className="p-1 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
+                            title="Supprimer l'objectif"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-muted-foreground">
-                          {isCA ? fmt(obj.realise) : obj.realise} / {isCA ? fmt(obj.objectif) : obj.objectif}
+                          {isCA ? fmt(realise) : realise} / {isCA ? fmt(obj.objectif) : obj.objectif}
                         </span>
-                        <span className={`font-bold ${percent >= 100 ? 'text-emerald-600' : percent >= 70 ? 'text-foreground' : 'text-amber-600'}`}>
-                          {percent}%
+                        <span className={`font-bold ${progressTextColor(displayPercent)}`}>
+                          {displayPercent}%
+                          {displayPercent >= 100 && (
+                            <span className="ml-1 text-[10px] text-emerald-500">✓</span>
+                          )}
                         </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
                         <div
-                          className={`h-2 rounded-full transition-all ${percent >= 100 ? 'bg-emerald-500' : percent >= 70 ? 'bg-gradient-faciloop' : 'bg-amber-500'}`}
-                          style={{ width: `${percent}%` }}
+                          className={`h-2 rounded-full transition-all duration-500 ${progressColor(displayPercent)}`}
+                          style={{ width: `${barPercent}%` }}
                         />
                       </div>
                     </div>
@@ -160,9 +308,15 @@ export const ObjectifsAdminPage: React.FC = () => {
             </div>
           );
         })}
+
+        {objectifs.length === 0 && (
+          <div className="p-8 text-center rounded-xl border border-dashed border-border text-muted-foreground text-sm">
+            Aucun objectif défini. Cliquez sur "Définir un objectif" pour commencer.
+          </div>
+        )}
       </div>
 
-      {/* Définir un objectif Modal */}
+      {/* Modal */}
       {isDefineOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-md bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4">
@@ -181,7 +335,7 @@ export const ObjectifsAdminPage: React.FC = () => {
                 value={formCommercialId}
                 onChange={setFormCommercialId}
                 searchable={true}
-                options={commerciaux.map(c => ({ value: c.id, label: `${c.prenom} ${c.nom}` }))}
+                options={commerciaux.map((c) => ({ value: c.id, label: `${c.prenom} ${c.nom}` }))}
               />
 
               <SelectCustom
@@ -215,13 +369,16 @@ export const ObjectifsAdminPage: React.FC = () => {
                 </label>
                 <select
                   value={formPeriodeType}
-                  onChange={(e) => setFormPeriodeType(e.target.value as any)}
+                  onChange={(e) => {
+                    const val = e.target.value as any;
+                    setFormPeriodeType(val);
+                    autoFillDates(val);
+                  }}
                   className="w-full p-3 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
                 >
-                  <option value="hebdomadaire">Hebdomadaire</option>
-                  <option value="mensuel">Mensuel</option>
-                  <option value="trimestriel">Trimestriel</option>
-                  <option value="annuel">Annuel</option>
+                  {Object.entries(PERIODE_LABELS).map(([v, l]) => (
+                    <option key={v} value={v}>{l}</option>
+                  ))}
                 </select>
               </div>
 

@@ -59,6 +59,7 @@ export interface AuthContextType {
 
   addRelance: (r: Omit<Relance, 'id' | 'created_at' | 'organization_id'>) => void;
   completeRelance: (id: string) => void;
+  cancelRelance: (id: string) => void;
 
   addInteraction: (i: Omit<Interaction, 'id' | 'created_at' | 'organization_id'>) => void;
   markNotificationAsRead: (id: string) => void;
@@ -166,9 +167,11 @@ function mapObjectifToAdmin(o: ObjectifCommercial): ObjectifCommercialAdmin {
     commercialId: o.commercial_id,
     commercialNom: o.commercial_nom || '',
     type: o.type as 'ca' | 'ventes' | 'prospects',
-    objectif: o.valeur_cible,
-    realise: o.valeur_actuelle,
+    objectif: o.objectif,
+    realise: o.realise,
     periode: o.date_debut?.slice(0, 7) || '',
+    date_debut: o.date_debut,
+    date_fin: o.date_fin,
   };
 }
 
@@ -178,7 +181,7 @@ function mapOffreToOrgOffer(o: Offre): OrgOffer {
     organization_id: o.organization_id,
     nom: o.nom,
     description: o.description || '',
-    tarifs: o.tarifs || { mensuel: o.prix_mensuel || 0, trimestriel: (o.prix_mensuel || 0) * 3, annuel: o.prix_annuel || 0 },
+    tarifs: { mensuel: o.tarif_mensuel || 0, trimestriel: o.tarif_trimestriel || 0, annuel: o.tarif_annuel || 0 },
     actif: o.actif,
     created_at: o.created_at,
   };
@@ -631,10 +634,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         commercial_nom: o.commercialNom,
         type: o.type as any,
         periode: 'mensuel',
-        date_debut: `${o.periode}-01`,
-        date_fin: `${o.periode}-28`,
-        valeur_cible: o.objectif,
-        valeur_actuelle: o.realise,
+        date_debut: o.date_debut || `${o.periode}-01`,
+        date_fin: o.date_fin || `${o.periode}-28`,
+        objectif: o.objectif,
+        realise: 0,
         statut: 'en_cours',
       });
       setObjectifsRaw(prev => [...prev, created]);
@@ -658,8 +661,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateObjectif = async (id: string, updates: Partial<Omit<ObjectifCommercialAdmin, 'id'>>) => {
     try {
       const dbUpdates: Partial<ObjectifCommercial> = {};
-      if (updates.objectif !== undefined) dbUpdates.valeur_cible = updates.objectif;
-      if (updates.realise !== undefined) dbUpdates.valeur_actuelle = updates.realise;
+      if (updates.objectif !== undefined) dbUpdates.objectif = updates.objectif;
+      if (updates.realise !== undefined) dbUpdates.realise = updates.realise;
       if (updates.commercialNom !== undefined) dbUpdates.commercial_nom = updates.commercialNom;
       if (updates.type !== undefined) dbUpdates.type = updates.type as any;
 
@@ -858,6 +861,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const cancelRelance = async (id: string) => {
+    try {
+      const updated = await relancesService.updateRelance(id, { statut: 'annulee' });
+      setRelances(prev => prev.map(r => r.id === id ? updated : r));
+    } catch (e) {
+      console.error('Erreur annulation relance:', e);
+    }
+  };
+
   const addInteraction = async (newI: Omit<Interaction, 'id' | 'created_at' | 'organization_id'>) => {
     if (!user) return;
     try {
@@ -891,7 +903,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         organization_id: user.organizationId,
         nom: offer.nom,
         description: offer.description,
-        tarifs: offer.tarifs,
+        tarif_mensuel: offer.tarifs?.mensuel || 0,
+        tarif_trimestriel: offer.tarifs?.trimestriel || 0,
+        tarif_annuel: offer.tarifs?.annuel || 0,
         actif: offer.actif,
       });
       setOffres(prev => [created, ...prev]);
@@ -917,7 +931,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const dbUpdates: Partial<Offre> = {};
       if (updates.nom !== undefined) dbUpdates.nom = updates.nom;
       if (updates.description !== undefined) dbUpdates.description = updates.description;
-      if (updates.tarifs !== undefined) dbUpdates.tarifs = updates.tarifs;
+      if (updates.tarifs !== undefined) {
+        dbUpdates.tarif_mensuel = updates.tarifs.mensuel;
+        dbUpdates.tarif_trimestriel = updates.tarifs.trimestriel;
+        dbUpdates.tarif_annuel = updates.tarifs.annuel;
+      }
       if (updates.actif !== undefined) dbUpdates.actif = updates.actif;
 
       const updated = await offresService.updateOffre(id, dbUpdates);
@@ -969,8 +987,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const freq = (options?.frequence || 'mensuel') as 'mensuel' | 'trimestriel' | 'annuel';
     const offer = offres.find(o => o.nom === formule);
-    const tarifs = offer?.tarifs;
-    const montant = options?.montant || (tarifs ? tarifs[freq] : null) || p.budget_estime || 500000;
+    const offerTarifByFreq = offer
+      ? { mensuel: offer.tarif_mensuel, trimestriel: offer.tarif_trimestriel, annuel: offer.tarif_annuel }[freq]
+      : null;
+    const montant = options?.montant || offerTarifByFreq || p.budget_estime || 500000;
     const modePaiement = options?.modePaiement || 'wave';
 
     try {
@@ -1059,6 +1079,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         deleteProspect,
         addRelance,
         completeRelance,
+        cancelRelance,
         addInteraction,
         markNotificationAsRead,
         convertProspectToClient,

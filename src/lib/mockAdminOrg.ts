@@ -87,6 +87,8 @@ export interface ObjectifCommercialAdmin {
   objectif: number;
   realise: number;
   periode: string;
+  date_debut?: string;
+  date_fin?: string;
 }
 
 export interface DashboardAdminOrgStats {
@@ -138,12 +140,12 @@ export const mockCommissions: CommissionEntry[] = [
 ];
 
 export const mockObjectifsAdmin: ObjectifCommercialAdmin[] = [
-  { id: 'obj-1', commercialId: 'comm-1', commercialNom: 'Moussa Diop', type: 'ca', objectif: 6000000, realise: 4500000, periode: '2026-08' },
-  { id: 'obj-2', commercialId: 'comm-1', commercialNom: 'Moussa Diop', type: 'ventes', objectif: 8, realise: 6, periode: '2026-08' },
-  { id: 'obj-3', commercialId: 'comm-2', commercialNom: 'Awa Sow', type: 'ca', objectif: 7000000, realise: 6200000, periode: '2026-08' },
-  { id: 'obj-4', commercialId: 'comm-2', commercialNom: 'Awa Sow', type: 'ventes', objectif: 10, realise: 8, periode: '2026-08' },
-  { id: 'obj-5', commercialId: 'comm-3', commercialNom: 'Ibrahima Ndiaye', type: 'ca', objectif: 5000000, realise: 3000000, periode: '2026-08' },
-  { id: 'obj-6', commercialId: 'comm-3', commercialNom: 'Ibrahima Ndiaye', type: 'ventes', objectif: 6, realise: 4, periode: '2026-08' },
+  { id: 'obj-1', commercialId: 'comm-1', commercialNom: 'Moussa Diop', type: 'ca', objectif: 6000000, realise: 4500000, periode: '2026-08', date_debut: '2026-08-01', date_fin: '2026-08-31' },
+  { id: 'obj-2', commercialId: 'comm-1', commercialNom: 'Moussa Diop', type: 'ventes', objectif: 8, realise: 6, periode: '2026-08', date_debut: '2026-08-01', date_fin: '2026-08-31' },
+  { id: 'obj-3', commercialId: 'comm-2', commercialNom: 'Awa Sow', type: 'ca', objectif: 7000000, realise: 6200000, periode: '2026-08', date_debut: '2026-08-01', date_fin: '2026-08-31' },
+  { id: 'obj-4', commercialId: 'comm-2', commercialNom: 'Awa Sow', type: 'ventes', objectif: 10, realise: 8, periode: '2026-08', date_debut: '2026-08-01', date_fin: '2026-08-31' },
+  { id: 'obj-5', commercialId: 'comm-3', commercialNom: 'Ibrahima Ndiaye', type: 'ca', objectif: 5000000, realise: 3000000, periode: '2026-08', date_debut: '2026-08-01', date_fin: '2026-08-31' },
+  { id: 'obj-6', commercialId: 'comm-3', commercialNom: 'Ibrahima Ndiaye', type: 'ventes', objectif: 6, realise: 4, periode: '2026-08', date_debut: '2026-08-01', date_fin: '2026-08-31' },
 ];
 
 export const mockDashboardStats: DashboardAdminOrgStats = {

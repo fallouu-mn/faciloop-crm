@@ -214,11 +214,15 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; a
 
         {/* Badges & Financial Info */}
         <div className="flex items-center justify-between gap-2 pt-1 text-xs">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-black">
-            {prospect.budget_estime ? formatMoney(prospect.budget_estime, activeCurrency) : 'Prospect Qualifié'}
-          </span>
+          {prospect.budget_estime ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-black">
+              ≈ {formatMoney(prospect.budget_estime, activeCurrency)}
+            </span>
+          ) : (
+            <span className="text-[10px] font-bold text-muted-foreground">Budget non renseigné</span>
+          )}
 
-          <span className="text-xs font-bold text-muted-foreground capitalize flex items-center gap-1">
+          <span className="text-xs font-bold text-muted-foreground capitalize flex items-center gap-1 shrink-0">
             <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
             {prospect.source.replace('_', ' ')}
           </span>
@@ -413,13 +417,23 @@ function formatMoney(amount: number, curr: Currency): string {
 
 export const ProspectKanban: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { user, myProspects, updateProspectStatus, convertProspectToClient, orgOffers, currency, setCurrency } = useAuth();
+  const { user, prospects, myProspects, commerciaux, updateProspectStatus, convertProspectToClient, orgOffers, currency, setCurrency } = useAuth();
   const { prospects: apiProspects, updatePipeline: apiUpdatePipeline } = useProspects();
-  const effectiveProspects = apiProspects.length > 0 ? apiProspects : myProspects;
   const navigate = useNavigate();
 
   const isEn = i18n.language?.startsWith('en');
   const isAdmin = user?.role === 'admin_org' || user?.role === 'super_admin';
+
+  // Admin sees all org prospects; commercial sees only their own
+  const baseProspects = isAdmin
+    ? (apiProspects.length > 0 ? apiProspects : prospects)
+    : (apiProspects.length > 0 ? apiProspects : myProspects);
+
+  // Commercial filter (admin only)
+  const [filterCommercial, setFilterCommercial] = useState('');
+  const effectiveProspects = (isAdmin && filterCommercial)
+    ? baseProspects.filter(p => p.commercial_id === filterCommercial)
+    : baseProspects;
   const prospectBasePath = isAdmin ? '/admin/prospects' : '/app/prospects';
   const activeCurrency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === currency)?.[0] || 'XOF') as Currency;
 
@@ -473,7 +487,7 @@ export const ProspectKanban: React.FC = () => {
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    const found = myProspects.find(p => p.id === active.id);
+    const found = effectiveProspects.find(p => p.id === active.id);
     if (found) setActiveProspect(found);
   };
 
@@ -493,12 +507,12 @@ export const ProspectKanban: React.FC = () => {
     if (isColumnId) {
       targetStep = overId as PipelineStepId;
     } else {
-      const targetProspect = myProspects.find(p => p.id === overId);
+      const targetProspect = effectiveProspects.find(p => p.id === overId);
       if (!targetProspect) return;
       targetStep = targetProspect.statut_pipeline;
     }
 
-    const currentProspect = myProspects.find(p => p.id === prospectId);
+    const currentProspect = effectiveProspects.find(p => p.id === prospectId);
     if (!currentProspect || currentProspect.statut_pipeline === targetStep) return;
 
     // CDC 3.4 Business Rules on Drag Drop
@@ -547,7 +561,18 @@ export const ProspectKanban: React.FC = () => {
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
               {isEn ? 'Sales Kanban Pipeline' : 'Pipeline Commercial Kanban'}
             </h1>
-            {user?.role === 'commercial' && (
+            {isAdmin ? (
+              <select
+                value={filterCommercial}
+                onChange={e => setFilterCommercial(e.target.value)}
+                className="h-7 px-2 rounded-xl border border-input bg-card text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                <option value="">Tous les commerciaux</option>
+                {commerciaux.filter(c => c.statut === 'actif').map(c => (
+                  <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
+                ))}
+              </select>
+            ) : (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-black flex items-center gap-1">
                 <Lock className="w-3 h-3" /> {isEn ? 'Personal Portfolio' : 'Portefeuille Personnel'}
               </span>
@@ -622,7 +647,7 @@ export const ProspectKanban: React.FC = () => {
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="space-y-4">
             {columns.map((col) => {
-              const colProspects = myProspects.filter(p => p.statut_pipeline === col.id);
+              const colProspects = effectiveProspects.filter(p => p.statut_pipeline === col.id);
               const totalBudget = colProspects.reduce((sum, p) => sum + (p.budget_estime || 0), 0);
               const isExpanded = expandedStages[col.id] ?? true;
 
@@ -640,14 +665,8 @@ export const ProspectKanban: React.FC = () => {
 
                       <div>
                         <h3 className="font-extrabold text-sm sm:text-base text-foreground">{getColumnTitle(col.id, isEn)}</h3>
-                        <div className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
+                        <div className="text-xs font-semibold text-muted-foreground">
                           <span>{colProspects.length} prospect(s)</span>
-                          {totalBudget > 0 && (
-                            <>
-                              <span>•</span>
-                              <span className="text-emerald-500 font-extrabold">{formatMoney(totalBudget, activeCurrency)}</span>
-                            </>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -704,7 +723,7 @@ export const ProspectKanban: React.FC = () => {
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
             {columns.map((col) => {
-              const colProspects = myProspects.filter(p => p.statut_pipeline === col.id);
+              const colProspects = effectiveProspects.filter(p => p.statut_pipeline === col.id);
               return <DroppableColumn key={col.id} col={col} prospects={colProspects} basePath={prospectBasePath} activeCurrency={activeCurrency} isEn={isEn} />;
             })}
           </div>
@@ -804,7 +823,7 @@ export const ProspectKanban: React.FC = () => {
 
               {/* Prospect info */}
               {pendingProspectId && (() => {
-                const prospect = myProspects.find(p => p.id === pendingProspectId);
+                const prospect = effectiveProspects.find(p => p.id === pendingProspectId);
                 return prospect ? (
                   <div className="p-3 rounded-xl bg-muted/40 border border-border space-y-1">
                     <p className="text-xs font-bold text-foreground">{prospect.entreprise || `${prospect.prenom} ${prospect.nom}`}</p>

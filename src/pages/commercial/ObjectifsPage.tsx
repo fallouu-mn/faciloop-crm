@@ -56,8 +56,8 @@ export const ObjectifsPage: React.FC = () => {
         commercialNom: o.commercial_nom || 'Moi',
         periode: o.periode,
         type: o.type,
-        objectif: o.valeur_cible,
-        realise: o.valeur_actuelle,
+        objectif: o.objectif,
+        realise: o.realise,
         statut: o.statut,
         description: `Objectif ${o.periode} ${o.type}`
       }));
