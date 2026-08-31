@@ -22,6 +22,14 @@ export const NotificationsPage: React.FC = () => {
     myNotifications.filter(n => !n.lue).forEach(n => markNotificationAsRead(n.id));
   };
 
+  const translateNotifTitle = (titre: string, isEn: boolean) => {
+    if (!isEn) return titre;
+    if (titre === 'Relance en retard') return 'Overdue Follow-up';
+    if (titre === 'Nouveau prospect attribué') return 'New prospect assigned';
+    if (titre === 'Relance aujourd\'hui') return 'Follow-up today';
+    return titre;
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto font-sans">
       {/* Header */}
@@ -81,16 +89,18 @@ export const NotificationsPage: React.FC = () => {
                 </div>
                 <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-extrabold text-xs text-foreground">{notif.titre}</h3>
+                    <h3 className="font-extrabold text-xs text-foreground">
+                      {translateNotifTitle(notif.titre, isEn)}
+                    </h3>
                     {!notif.lue && (
                       <span className="px-2 py-0.5 rounded-full bg-primary text-white text-[9px] font-black shrink-0">
-                        Nouvelle
+                        {isEn ? 'New' : 'Nouvelle'}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">{notif.message}</p>
                   <span className="text-[10px] text-muted-foreground font-semibold">
-                    {new Date(notif.created_at).toLocaleDateString('fr-FR', {
+                    {new Date(notif.created_at).toLocaleDateString(isEn ? 'en-US' : 'fr-FR', {
                       day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
                     })}
                   </span>
@@ -103,7 +113,7 @@ export const NotificationsPage: React.FC = () => {
                   onClick={(e) => e.stopPropagation()}
                   className="px-3 py-1.5 rounded-xl border border-input text-xs font-bold hover:bg-muted shrink-0 transition-all"
                 >
-                  Ouvrir
+                  {isEn ? 'Open' : 'Ouvrir'}
                 </Link>
               )}
             </div>

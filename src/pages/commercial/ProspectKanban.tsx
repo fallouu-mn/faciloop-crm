@@ -233,8 +233,81 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; a
   );
 };
 
+const getColumnTitle = (id: PipelineStepId, isEn: boolean): string => {
+  if (!isEn) {
+    const map: Record<PipelineStepId, string> = {
+      nouveau: '1. Nouveau',
+      a_contacter: '2. À contacter',
+      contacte: '3. Contacté',
+      interesse: '4. Intéressé',
+      rdv_programme: '5. RDV programmé',
+      demo_realisee: '6. Démo réalisée',
+      essai_en_cours: '7. Essai en cours',
+      proposition: '8. Proposition',
+      paiement_att: '9. Paiement att.',
+      gagne: '10. Client gagné',
+      a_relancer: '11. À relancer',
+      perdu: '12. Perdu',
+    };
+    return map[id] || id;
+  }
+  const mapEn: Record<PipelineStepId, string> = {
+    nouveau: '1. New',
+    a_contacter: '2. To Contact',
+    contacte: '3. Contacted',
+    interesse: '4. Interested',
+    rdv_programme: '5. Meeting Set',
+    demo_realisee: '6. Demo Done',
+    essai_en_cours: '7. Trial Ongoing',
+    proposition: '8. Proposal',
+    paiement_att: '9. Payment Pending',
+    gagne: '10. Won Client',
+    a_relancer: '11. To Follow-up',
+    perdu: '12. Lost',
+  };
+  return mapEn[id] || id;
+};
+
+const getColumnEmptyText = (col: ColumnDef, isEn: boolean): string => {
+  if (!isEn) return col.emptyText;
+  const map: Record<PipelineStepId, string> = {
+    nouveau: 'No new prospect',
+    a_contacter: 'No prospect to contact',
+    contacte: 'No contacted prospect',
+    interesse: 'No interested prospect',
+    rdv_programme: 'No meeting scheduled',
+    demo_realisee: 'No demo completed',
+    essai_en_cours: 'No active trial',
+    proposition: 'No proposal sent',
+    paiement_att: 'No pending payment',
+    gagne: 'No signed contract yet',
+    a_relancer: 'No follow-up pending',
+    perdu: 'No lost prospect',
+  };
+  return map[col.id] || col.emptyText;
+};
+
+const getColumnEmptyHint = (col: ColumnDef, isEn: boolean): string => {
+  if (!isEn) return col.emptyHint;
+  const map: Record<PipelineStepId, string> = {
+    nouveau: 'Add a new target or import a CSV file',
+    a_contacter: 'Prospects ready for initial outreach',
+    contacte: 'First exchange or call completed',
+    interesse: 'Prospect confirmed interest in Faciloop',
+    rdv_programme: 'Drop prospects here once a meeting is booked',
+    demo_realisee: 'Product demonstration completed',
+    essai_en_cours: 'Prospect currently testing the platform',
+    proposition: 'Quotation or price proposal sent',
+    paiement_att: 'Invoice sent, awaiting settlement',
+    gagne: 'Drop here to convert into a Client',
+    a_relancer: 'On hold for scheduled follow-up',
+    perdu: 'Mandatory loss reason required for learning',
+  };
+  return map[col.id] || col.emptyHint;
+};
+
 // Vertical Droppable Zone (wraps each stage in vertical view for DnD)
-const VerticalDropZone: React.FC<{ col: ColumnDef; isExpanded: boolean; children: React.ReactNode }> = ({ col, isExpanded, children }) => {
+const VerticalDropZone: React.FC<{ col: ColumnDef; isExpanded: boolean; isEn: boolean; children: React.ReactNode }> = ({ col, isExpanded, isEn, children }) => {
   const { setNodeRef, isOver } = useDroppable({ id: col.id });
 
   return (
@@ -247,7 +320,7 @@ const VerticalDropZone: React.FC<{ col: ColumnDef; isExpanded: boolean; children
       {isOver && !isExpanded && (
         <div className="p-3 bg-primary/10 text-center text-xs font-bold text-primary animate-pulse flex items-center justify-center gap-2">
           <Sparkles className="w-4 h-4" />
-          Déposer ici pour déplacer vers « {col.title} »
+          {isEn ? `Drop here to move to "${getColumnTitle(col.id, isEn)}"` : `Déposer ici pour déplacer vers « ${getColumnTitle(col.id, isEn)} »`}
         </div>
       )}
       {children}
@@ -256,7 +329,7 @@ const VerticalDropZone: React.FC<{ col: ColumnDef; isExpanded: boolean; children
 };
 
 // Onboarding Empty State Component per Column
-const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string }> = ({ col, prospectsPath = '/app/prospects' }) => {
+const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string; isEn?: boolean }> = ({ col, prospectsPath = '/app/prospects', isEn = false }) => {
   const IconComponent = col.icon;
   return (
     <div className="h-40 sm:h-44 rounded-2xl border-2 border-dashed border-border/70 bg-card/30 flex flex-col items-center justify-center p-4 text-center space-y-2 group hover:border-primary/40 transition-colors">
@@ -264,9 +337,9 @@ const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string }> = (
         <IconComponent className="w-5 h-5" />
       </div>
       <div className="space-y-0.5">
-        <h4 className="text-xs font-extrabold text-foreground">{col.emptyText}</h4>
+        <h4 className="text-xs font-extrabold text-foreground">{getColumnEmptyText(col, isEn)}</h4>
         <p className="text-xs text-muted-foreground font-semibold leading-tight max-w-[180px] mx-auto">
-          {col.emptyHint}
+          {getColumnEmptyHint(col, isEn)}
         </p>
       </div>
 
@@ -276,7 +349,7 @@ const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string }> = (
           className="mt-1 inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary/10 text-primary text-xs font-black hover:bg-primary/20 transition-all"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Créer un prospect</span>
+          <span>{isEn ? 'Create prospect' : 'Créer un prospect'}</span>
         </Link>
       )}
     </div>
@@ -284,7 +357,7 @@ const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string }> = (
 };
 
 // Droppable Column Component for Horizontal View
-const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePath?: string; activeCurrency?: Currency }> = ({ col, prospects, basePath = '/app/prospects', activeCurrency = 'XOF' }) => {
+const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePath?: string; activeCurrency?: Currency; isEn?: boolean }> = ({ col, prospects, basePath = '/app/prospects', activeCurrency = 'XOF', isEn = false }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: col.id
   });
@@ -302,7 +375,7 @@ const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePat
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <col.icon className="w-4 h-4 text-muted-foreground" />
-          <span className="text-xs sm:text-sm font-extrabold text-foreground truncate">{col.title}</span>
+          <span className="text-xs sm:text-sm font-extrabold text-foreground truncate">{getColumnTitle(col.id, isEn)}</span>
         </div>
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-black ${col.badgeBg}`}>
           {prospects.length}
@@ -314,12 +387,12 @@ const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePat
         {isOver && (
           <div className="absolute inset-0 z-20 rounded-2xl border-2 border-dashed border-primary bg-primary/10 backdrop-blur-sm flex flex-col items-center justify-center text-primary font-bold text-xs gap-2 animate-pulse">
             <Sparkles className="w-6 h-6 animate-spin-slow" />
-            <span>Déposer ici pour mettre à jour l'étape ✨</span>
+            <span>{isEn ? 'Drop here to update stage ✨' : "Déposer ici pour mettre à jour l'étape ✨"}</span>
           </div>
         )}
 
         {prospects.length === 0 ? (
-          <KanbanEmptyState col={col} prospectsPath={basePath} />
+          <KanbanEmptyState col={col} prospectsPath={basePath} isEn={isEn} />
         ) : (
           prospects.map((p) => <DraggableProspectCard key={p.id} prospect={p} basePath={basePath} activeCurrency={activeCurrency} />)
         )}
@@ -511,10 +584,10 @@ export const ProspectKanban: React.FC = () => {
                   ? 'bg-gradient-faciloop text-white shadow-md'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
-              title="Vue Étape par Étape Verticale (Idéale sur Mobile)"
+              title={isEn ? "Vertical Stage-by-Stage View (Ideal on Mobile)" : "Vue Étape par Étape Verticale (Idéale sur Mobile)"}
             >
               <List className="w-4 h-4" />
-              <span>Verticale</span>
+              <span>{isEn ? 'Vertical' : 'Verticale'}</span>
             </button>
 
             <button
@@ -524,10 +597,10 @@ export const ProspectKanban: React.FC = () => {
                   ? 'bg-gradient-faciloop text-white shadow-md'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
-              title="Vue Tableau Horizontale Multi-Colonnes"
+              title={isEn ? "Horizontal Multi-Column Board View" : "Vue Tableau Horizontale Multi-Colonnes"}
             >
               <Columns className="w-4 h-4" />
-              <span className="hidden sm:inline">Horizontale</span>
+              <span className="hidden sm:inline">{isEn ? 'Horizontal' : 'Horizontale'}</span>
             </button>
           </div>
 
@@ -551,7 +624,7 @@ export const ProspectKanban: React.FC = () => {
               const isExpanded = expandedStages[col.id] ?? true;
 
               return (
-                <VerticalDropZone key={col.id} col={col} isExpanded={isExpanded}>
+                <VerticalDropZone key={col.id} col={col} isExpanded={isExpanded} isEn={isEn}>
                   {/* Stage Header Banner */}
                   <button
                     onClick={() => toggleStageExpand(col.id)}
@@ -563,7 +636,7 @@ export const ProspectKanban: React.FC = () => {
                       </div>
 
                       <div>
-                        <h3 className="font-extrabold text-sm sm:text-base text-foreground">{col.title}</h3>
+                        <h3 className="font-extrabold text-sm sm:text-base text-foreground">{getColumnTitle(col.id, isEn)}</h3>
                         <div className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
                           <span>{colProspects.length} prospect(s)</span>
                           {totalBudget > 0 && (
@@ -598,7 +671,7 @@ export const ProspectKanban: React.FC = () => {
                         className="border-t border-border/60 p-4 sm:p-5 bg-muted/20"
                       >
                         {colProspects.length === 0 ? (
-                          <KanbanEmptyState col={col} prospectsPath={prospectBasePath} />
+                          <KanbanEmptyState col={col} prospectsPath={prospectBasePath} isEn={isEn} />
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                             {colProspects.map((prospect) => (
@@ -629,7 +702,7 @@ export const ProspectKanban: React.FC = () => {
           <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
             {columns.map((col) => {
               const colProspects = myProspects.filter(p => p.statut_pipeline === col.id);
-              return <DroppableColumn key={col.id} col={col} prospects={colProspects} basePath={prospectBasePath} activeCurrency={activeCurrency} />;
+              return <DroppableColumn key={col.id} col={col} prospects={colProspects} basePath={prospectBasePath} activeCurrency={activeCurrency} isEn={isEn} />;
             })}
           </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { TrendingUp, FileText, Building2, BarChart3, ArrowUpRight } from 'lucide-react';
 import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
@@ -31,6 +32,8 @@ const mockTenants: TenantData[] = [];
 const mockFactures: FactureData[] = [];
 
 export const StatistiquesPage: React.FC = () => {
+  const { i18n } = useTranslation();
+  const isEn = Boolean(i18n.language?.startsWith('en'));
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
@@ -168,7 +171,7 @@ export const StatistiquesPage: React.FC = () => {
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Taux Impayé</span>
+            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Unpaid Rate' : 'Taux Impayé'}</span>
             <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
               <BarChart3 className="h-4 w-4 text-amber-500" />
             </div>
@@ -181,12 +184,14 @@ export const StatistiquesPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 rounded-xl border border-border bg-card">
           <div className="px-4 py-3 border-b border-border">
-            <h2 className="text-sm font-semibold text-foreground">Évolution des Revenus</h2>
+            <h2 className="text-sm font-semibold text-foreground">
+              {isEn ? 'Revenue Trend' : 'Évolution des Revenus'}
+            </h2>
           </div>
           <div className="p-4">
             {revenueByMonth.length === 0 ? (
               <div className="h-40 flex items-center justify-center text-sm text-muted-foreground">
-                Aucune donnée sur cette période
+                {isEn ? 'No data during this period' : 'Aucune donnée sur cette période'}
               </div>
             ) : (
               <div className="flex items-end justify-between gap-2 h-40">
@@ -216,12 +221,12 @@ export const StatistiquesPage: React.FC = () => {
               onClick={() => navigate(buildFilteredUrl('/super-admin/organisations', period))}
               className="text-xs text-primary hover:underline"
             >
-              Voir tout
+              {isEn ? 'View all' : 'Voir tout'}
             </button>
           </div>
           <div className="divide-y divide-border">
             {topTenants.length === 0 ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">Aucune donnée</div>
+              <div className="p-6 text-center text-sm text-muted-foreground">{isEn ? 'No data' : 'Aucune donnée'}</div>
             ) : (
               topTenants.map((t, idx) => (
                 <div key={t.nom} className="px-4 py-3 flex items-center gap-3">
@@ -244,7 +249,9 @@ export const StatistiquesPage: React.FC = () => {
       {/* Répartition par Formule */}
       <div className="rounded-xl border border-border bg-card">
         <div className="px-4 py-3 border-b border-border">
-          <h2 className="text-sm font-semibold text-foreground">Répartition par Formule</h2>
+          <h2 className="text-sm font-semibold text-foreground">
+            {isEn ? 'Distribution by Plan' : 'Répartition par Formule'}
+          </h2>
         </div>
         <div className="p-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -262,7 +269,7 @@ export const StatistiquesPage: React.FC = () => {
                       <div className={`w-3 h-3 rounded-full ${color}`} />
                       <span className="text-sm font-semibold text-foreground">{f.label}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{fmt(f.prix_xof)}/mois</span>
+                    <span className="text-xs text-muted-foreground">{fmt(f.prix_xof)}{isEn ? '/mo' : '/mois'}</span>
                   </div>
                   <div className="flex items-baseline justify-between">
                     <div>

@@ -156,14 +156,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="p-3 sm:p-4">
           <div className="rounded-2xl border border-border/80 bg-muted/40 p-3 space-y-1 shadow-sm">
             <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-              <Building2 className="w-3 h-3 text-primary" /> Espace de travail
+              <Building2 className="w-3 h-3 text-primary" /> {isEn ? 'Workspace' : 'Espace de travail'}
             </div>
             <div className="text-xs font-black text-foreground truncate">
               {currentOrg?.nom || (role === 'super_admin' ? platformSettings.nom_plateforme : 'Mon Entreprise')}
             </div>
             <div className="text-[10px] font-bold text-primary capitalize flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-emerald-500" />
-              {role === 'super_admin' ? 'Super Admin' : role === 'admin_org' ? 'Console Direction' : 'Commercial'}
+              {role === 'super_admin' ? 'Super Admin' : role === 'admin_org' ? (isEn ? 'Management Console' : 'Console Direction') : (isEn ? 'Sales Rep' : 'Commercial')}
             </div>
           </div>
         </div>
@@ -205,7 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           ) : (
             <>
               <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-3 mb-2">
-                Menu Navigation
+                {isEn ? 'Navigation Menu' : 'Menu Navigation'}
               </div>
               {currentLinks.map((link) => {
                 const Icon = link.icon;

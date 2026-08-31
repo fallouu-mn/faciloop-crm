@@ -105,8 +105,15 @@ export const RelancesPage: React.FC = () => {
               </div>
               <p className="text-muted-foreground font-medium">{relance.commentaire || relance.motif}</p>
               <div className="flex items-center gap-4 text-[10px] font-semibold text-muted-foreground">
-                <span>Date: {relance.date} {isEn ? 'at' : 'à'} {relance.heure}</span>
-                <span className="capitalize">Channel: {relance.canal}</span>
+                <span>{isEn ? 'Date' : 'Date'}: {relance.date} {isEn ? 'at' : 'à'} {relance.heure}</span>
+                <span>
+                  {isEn ? 'Channel' : 'Canal'}: {
+                    relance.canal === 'appel' ? (isEn ? 'Phone Call' : 'Appel') :
+                    relance.canal === 'visite' ? (isEn ? 'Visit' : 'Visite') :
+                    relance.canal === 'whatsapp' ? 'WhatsApp' :
+                    relance.canal
+                  }
+                </span>
               </div>
             </div>
 

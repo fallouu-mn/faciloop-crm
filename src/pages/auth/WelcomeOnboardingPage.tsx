@@ -16,8 +16,12 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export const WelcomeOnboardingPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en');
+
   const navigate = useNavigate();
   const { user } = useAuth();
   const [step, setStep] = useState<'welcome_choice' | 'onboarding_details'>('welcome_choice');
@@ -31,7 +35,7 @@ export const WelcomeOnboardingPage: React.FC = () => {
       <div className="absolute bottom-10 right-10 w-70 sm:w-[400px] h-70 sm:h-[400px] bg-amber-500/15 rounded-full blur-[160px] pointer-events-none" />
 
       <AnimatePresence mode="wait">
-        {/* Step 1: Welcome Choice (Matching Screenshot 2) */}
+        {/* Step 1: Welcome Choice */}
         {step === 'welcome_choice' && (
           <motion.div
             key="welcome_choice"
@@ -52,11 +56,15 @@ export const WelcomeOnboardingPage: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <h1 className="text-2xl sm:text-3xl font-black text-foreground">Bienvenue sur Faciloop !</h1>
-              <p className="text-xs sm:text-sm text-muted-foreground font-semibold">Comment souhaitez-vous démarrer ?</p>
+              <h1 className="text-2xl sm:text-3xl font-black text-foreground">
+                {isEn ? 'Welcome to Faciloop!' : 'Bienvenue sur Faciloop !'}
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
+                {isEn ? 'How would you like to get started?' : 'Comment souhaitez-vous démarrer ?'}
+              </p>
             </div>
 
-            {/* Option Cards (Matching Screenshot 2) */}
+            {/* Option Cards */}
             <div className="space-y-3 pt-2 text-left">
               {/* Option 1: Choisir un abonnement */}
               <button
@@ -69,10 +77,10 @@ export const WelcomeOnboardingPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-sm text-foreground group-hover:text-amber-500 transition-colors">
-                      Choisir un abonnement
+                      {isEn ? 'Choose a plan' : 'Choisir un abonnement'}
                     </h3>
                     <p className="text-xs text-muted-foreground font-semibold">
-                      Accédez à toutes les fonctionnalités dès maintenant
+                      {isEn ? 'Access all features right now' : 'Accédez à toutes les fonctionnalités dès maintenant'}
                     </p>
                   </div>
                 </div>
@@ -90,10 +98,10 @@ export const WelcomeOnboardingPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-sm text-foreground group-hover:text-primary transition-colors">
-                      Commencer l'essai gratuit
+                      {isEn ? 'Start free trial' : "Commencer l'essai gratuit"}
                     </h3>
                     <p className="text-xs text-muted-foreground font-semibold">
-                      Testez l'application sans engagement
+                      {isEn ? 'Test the app with no commitment' : "Testez l'application sans engagement"}
                     </p>
                   </div>
                 </div>
@@ -103,7 +111,7 @@ export const WelcomeOnboardingPage: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Step 2: Onboarding Details (Matching Screenshot 3) */}
+        {/* Step 2: Onboarding Details */}
         {step === 'onboarding_details' && (
           <motion.div
             key="onboarding_details"
@@ -124,80 +132,92 @@ export const WelcomeOnboardingPage: React.FC = () => {
 
               <div className="inline-flex items-center gap-1.5 text-xs font-black text-amber-500">
                 <Sparkles className="w-4 h-4" />
-                <span>Découvrez Faciloop</span>
+                <span>{isEn ? 'Discover Faciloop' : 'Découvrez Faciloop'}</span>
               </div>
 
               <h1 className="text-2xl sm:text-3xl font-black text-foreground">
-                Bienvenue {firstName} !
+                {isEn ? `Welcome ${firstName}!` : `Bienvenue ${firstName} !`}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
-                L'outil qui protège votre business au quotidien
+                {isEn ? 'The tool that protects your business daily' : "L'outil qui protège votre business au quotidien"}
               </p>
             </div>
 
-            {/* 4 Feature Value Highlight Cards (Matching Screenshot 3) */}
+            {/* 4 Feature Value Highlight Cards */}
             <div className="space-y-2.5 text-left text-xs font-extrabold">
               <div className="p-3.5 rounded-2xl border border-border/80 bg-muted/30 flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 shrink-0">
                   <ShoppingBag className="w-5 h-5" />
                 </div>
-                <span className="text-foreground">Gérez vos ventes et suivez votre chiffre d'affaires</span>
+                <span className="text-foreground">
+                  {isEn ? 'Manage your sales and track your revenue' : "Gérez vos ventes et suivez votre chiffre d'affaires"}
+                </span>
               </div>
 
               <div className="p-3.5 rounded-2xl border border-border/80 bg-muted/30 flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0">
                   <Wallet className="w-5 h-5" />
                 </div>
-                <span className="text-foreground">Suivez vos crédits et relancez par WhatsApp</span>
+                <span className="text-foreground">
+                  {isEn ? 'Track your credits and follow up via WhatsApp' : 'Suivez vos crédits et relancez par WhatsApp'}
+                </span>
               </div>
 
               <div className="p-3.5 rounded-2xl border border-border/80 bg-muted/30 flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500 shrink-0">
                   <CreditCard className="w-5 h-5" />
                 </div>
-                <span className="text-foreground">Gardez le contrôle sur vos acomptes</span>
+                <span className="text-foreground">
+                  {isEn ? 'Stay in control of your down payments' : 'Gardez le contrôle sur vos acomptes'}
+                </span>
               </div>
 
               <div className="p-3.5 rounded-2xl border border-border/80 bg-muted/30 flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500 shrink-0">
                   <Calendar className="w-5 h-5" />
                 </div>
-                <span className="text-foreground">Planifiez vos rendez-vous clients</span>
+                <span className="text-foreground">
+                  {isEn ? 'Schedule your client meetings' : 'Planifiez vos rendez-vous clients'}
+                </span>
               </div>
             </div>
 
-            {/* Trial Offer Box (Matching Screenshot 3) */}
+            {/* Trial Offer Box */}
             <div className="p-4 sm:p-5 rounded-3xl border border-amber-500/30 bg-amber-500/5 text-left space-y-2">
               <div className="flex items-center gap-2 text-amber-500 font-black text-xs">
                 <Gift className="w-4 h-4" />
-                <span>Votre période d'essai</span>
+                <span>{isEn ? 'Your trial period' : "Votre période d'essai"}</span>
               </div>
-              <div className="text-xl font-black text-amber-500">30 jours offerts</div>
+              <div className="text-xl font-black text-amber-500">
+                {isEn ? '30 days free' : '30 jours offerts'}
+              </div>
               
-              <div className="text-xs text-muted-foreground font-semibold pt-1">Inclus dans votre essai :</div>
+              <div className="text-xs text-muted-foreground font-semibold pt-1">
+                {isEn ? 'Included in your trial:' : 'Inclus dans votre essai :'}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-xs font-bold text-foreground pt-1">
                 <div className="flex items-center gap-1.5">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Ventes directes</span>
+                  <span>{isEn ? 'Direct sales' : 'Ventes directes'}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Crédits clients</span>
+                  <span>{isEn ? 'Client credits' : 'Crédits clients'}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Acomptes</span>
+                  <span>{isEn ? 'Down payments' : 'Acomptes'}</span>
                 </div>
               </div>
             </div>
 
-            {/* Main CTA Button & Link (Matching Screenshot 3) */}
+            {/* Main CTA Button & Link */}
             <div className="space-y-3 pt-2">
               <button
                 onClick={() => navigate('/admin/dashboard')}
                 className="w-full py-4 rounded-2xl bg-gradient-faciloop text-white font-black text-sm shadow-xl shadow-primary/30 hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                <span>Démarrer l'aventure !</span>
+                <span>{isEn ? 'Start the adventure!' : "Démarrer l'aventure !"}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -205,7 +225,7 @@ export const WelcomeOnboardingPage: React.FC = () => {
                 to="/admin/parametres"
                 className="block text-xs font-extrabold text-amber-500 hover:underline"
               >
-                Compléter les infos de mon entreprise
+                {isEn ? 'Complete my company details' : 'Compléter les infos de mon entreprise'}
               </Link>
             </div>
           </motion.div>

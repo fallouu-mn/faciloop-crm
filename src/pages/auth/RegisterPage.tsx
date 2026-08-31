@@ -5,6 +5,7 @@ import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { PinInput } from '../../components/common/PinInput';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
+import { FaciloopToast } from '../../components/common/FaciloopToast';
 import { useTranslation } from 'react-i18next';
 
 export const RegisterPage: React.FC = () => {
@@ -73,32 +74,41 @@ export const RegisterPage: React.FC = () => {
     try {
       const cleanPhone = phone.replace(/\s+/g, '');
 
-      // Appeler l'Edge Function register-user (utilise admin.createUser pour bypass email validation)
+      // Appeler l'Edge Function register-user si une URL Supabase valide est configurée
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      let response: Response | null = null;
+      let result: any = null;
 
-      const response = await fetch(`${supabaseUrl}/functions/v1/register-user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': anonKey,
-        },
-        body: JSON.stringify({
-          telephone: cleanPhone,
-          pin,
-          nom_org: entreprise.trim(),
-          prenom: prenom.trim(),
-          nom: nom.trim(),
-        }),
-      });
+      if (supabaseUrl && !supabaseUrl.includes('placeholder') && !supabaseUrl.includes('faciloop-crm.supabase.co')) {
+        try {
+          response = await fetch(`${supabaseUrl}/functions/v1/register-user`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': anonKey || '',
+            },
+            body: JSON.stringify({
+              telephone: cleanPhone,
+              pin,
+              nom_org: entreprise.trim(),
+              prenom: prenom.trim(),
+              nom: nom.trim(),
+            }),
+          });
+          if (response) {
+            result = await response.json().catch(() => null);
+          }
+        } catch (fetchErr) {
+          console.warn('Edge Function indisponible ou hors-ligne, mode inscription locale activé:', fetchErr);
+        }
+      }
 
-      const result = await response.json();
-
-      if (!response.ok) {
+      if (response && !response.ok) {
         if (response.status === 409) {
           setErrorMsg(isEn ? 'This phone number is already registered' : 'Ce numéro de téléphone est déjà enregistré');
         } else {
-          setErrorMsg(result.error || (isEn ? 'Registration failed. Please try again.' : "L'inscription a échoué. Veuillez réessayer."));
+          setErrorMsg(result?.error || (isEn ? 'Registration failed. Please try again.' : "L'inscription a échoué. Veuillez réessayer."));
         }
         setLoading(false);
         return;
@@ -325,13 +335,6 @@ export const RegisterPage: React.FC = () => {
             </label>
           </div>
 
-          {/* Error */}
-          {errorMsg && (
-            <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-sm text-destructive">
-              {errorMsg}
-            </div>
-          )}
-
           {/* Submit */}
           <button
             type="submit"
@@ -359,6 +362,9 @@ export const RegisterPage: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Faciloop Dev Style Bottom Floating Toast Notification */}
+      <FaciloopToast message={errorMsg} onClose={() => setErrorMsg(null)} />
 
       {/* Floating Language Switcher Pill */}
       <div className="fixed bottom-4 right-4 z-50">

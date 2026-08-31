@@ -268,11 +268,15 @@ export const DashboardCommercial: React.FC = () => {
         {/* Chart */}
         <div className="p-5 sm:p-6 rounded-3xl border border-border/80 bg-card shadow-md space-y-4 flex flex-col justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">CA Ventes Hebdomadaire</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              {isEn ? 'WEEKLY SALES REVENUE' : 'CA Ventes Hebdomadaire'}
+            </span>
             <h3 className="text-2xl font-black text-primary">
               {formatMoney(metrics.caGenere || 3377923, activeCurrency)}
             </h3>
-            <p className="text-xs text-muted-foreground font-semibold">Tendance des ventes conclues sur 7 jours</p>
+            <p className="text-xs text-muted-foreground font-semibold">
+              {isEn ? '7-day closed deals trend' : 'Tendance des ventes conclues sur 7 jours'}
+            </p>
           </div>
 
           <div className="h-44 w-full">

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { Target, TrendingUp, Award, Info, Goal } from 'lucide-react';
 
@@ -17,18 +18,18 @@ function getProgressColor(pct: number): string {
   return 'bg-rose-500';
 }
 
-function getProgressText(pct: number): string {
-  if (pct >= 100) return 'Objectif atteint !';
-  if (pct >= 80) return 'Presque atteint';
-  if (pct >= 50) return 'En bonne voie';
-  return 'En retard';
+function getProgressText(pct: number, isEn: boolean): string {
+  if (pct >= 100) return isEn ? 'Goal reached!' : 'Objectif atteint !';
+  if (pct >= 80) return isEn ? 'Almost reached' : 'Presque atteint';
+  if (pct >= 50) return isEn ? 'On track' : 'En bonne voie';
+  return isEn ? 'Behind schedule' : 'En retard';
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  ca: 'Chiffre d\'affaires',
-  ventes: 'Ventes conclues',
-  prospects: 'Prospects créés',
-  rdv: 'RDV réalisés',
+const TYPE_LABELS: Record<string, Record<string, string>> = {
+  ca: { fr: 'Chiffre d\'affaires', en: 'Turnover / Revenue' },
+  ventes: { fr: 'Ventes conclues', en: 'Closed Deals' },
+  prospects: { fr: 'Prospects créés', en: 'Prospects Created' },
+  rdv: { fr: 'RDV réalisés', en: 'Completed Meetings' },
 };
 
 const TYPE_ICONS: Record<string, string> = {
@@ -39,6 +40,8 @@ const TYPE_ICONS: Record<string, string> = {
 };
 
 export const ObjectifsPage: React.FC = () => {
+  const { i18n } = useTranslation();
+  const isEn = Boolean(i18n.language?.startsWith('en'));
   const { user, objectifs, currency, setCurrency } = useAuth();
   const activeCurrency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === currency)?.[0] || 'XOF') as Currency;
 
@@ -144,10 +147,10 @@ export const ObjectifsPage: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="text-xs sm:text-sm font-extrabold text-foreground">
-                        {TYPE_LABELS[obj.type] || obj.type}
+                        {TYPE_LABELS[obj.type]?.[isEn ? 'en' : 'fr'] || obj.type}
                       </h3>
                       <p className="text-[10px] text-muted-foreground font-semibold">
-                        Période : {obj.periode}
+                        {isEn ? 'Period' : 'Période'} : {obj.periode}
                       </p>
                     </div>
                   </div>
@@ -158,7 +161,7 @@ export const ObjectifsPage: React.FC = () => {
                     pct >= 50 ? 'bg-amber-500/10 text-amber-600' :
                     'bg-rose-500/10 text-rose-600'
                   }`}>
-                    {getProgressText(pct)}
+                    {getProgressText(pct, isEn)}
                   </span>
                 </div>
 
@@ -185,8 +188,9 @@ export const ObjectifsPage: React.FC = () => {
       <div className="rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/40 p-3 flex items-start gap-2">
         <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
         <p className="text-xs text-blue-700 dark:text-blue-300">
-          Les objectifs sont définis et mis à jour par votre administrateur d'organisation.
-          Votre progression est calculée automatiquement à partir de vos ventes et activités.
+          {isEn
+            ? 'Objectives are set and updated by your organization administrator. Your progress is calculated automatically from your sales and activities.'
+            : "Les objectifs sont définis et mis à jour par votre administrateur d'organisation. Votre progression est calculée automatiquement à partir de vos ventes et activités."}
         </p>
       </div>
     </div>

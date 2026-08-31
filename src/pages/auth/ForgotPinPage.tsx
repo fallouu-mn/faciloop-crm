@@ -5,10 +5,15 @@ import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../../components/ui/input-otp';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
+import { useTranslation } from 'react-i18next';
+import { FaciloopToast } from '../../components/common/FaciloopToast';
 
 type Step = 'phone' | 'otp' | 'success';
 
 export const ForgotPinPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en');
+
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('phone');
   const [phone, setPhone] = useState('');
@@ -31,51 +36,48 @@ export const ForgotPinPage: React.FC = () => {
     if (e) e.preventDefault();
     setError('');
     if (!phone || phone.length < 9) {
-      setError('Veuillez entrer un numéro de téléphone valide.');
+      setError(isEn ? 'Please enter a valid phone number.' : 'Veuillez entrer un numéro de téléphone valide.');
       return;
     }
     if (cooldown > 0) return;
 
     setIsLoading(true);
-    // TODO: appel API backend — supabase.functions.invoke('reset-pin', { body: { phone, action: 'send_otp' } })
     setTimeout(() => {
       setIsLoading(false);
       setStep('otp');
       setCooldown(60);
     }, 800);
-  }, [phone, cooldown]);
+  }, [phone, cooldown, isEn]);
 
   const handleVerifyAndReset = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (otp.length !== 4) {
-      setError('Veuillez saisir le code OTP à 4 chiffres.');
+      setError(isEn ? 'Please enter the 4-digit OTP code.' : 'Veuillez saisir le code OTP à 4 chiffres.');
       return;
     }
     if (newPin.length !== 6) {
-      setError('Le nouveau code secret doit contenir 6 chiffres.');
+      setError(isEn ? 'New secret PIN code must contain 6 digits.' : 'Le nouveau code secret doit contenir 6 chiffres.');
       return;
     }
     if (newPin !== confirmPin) {
-      setError('Les codes ne correspondent pas.');
+      setError(isEn ? 'PIN codes do not match.' : 'Les codes ne correspondent pas.');
       return;
     }
 
     setIsLoading(true);
-    // TODO: appel API backend — supabase.functions.invoke('reset-pin', { body: { phone, otp, newPin, action: 'verify_otp' } })
     setTimeout(() => {
       setIsLoading(false);
-      // Simulate OTP validation
       if (otp === '0000') {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
         if (newAttempts >= 3) {
-          setError('Trop de tentatives. Veuillez recommencer.');
+          setError(isEn ? 'Too many attempts. Please try again.' : 'Trop de tentatives. Veuillez recommencer.');
           setTimeout(() => navigate('/login'), 2000);
           return;
         }
-        setError(`Code OTP incorrect. ${3 - newAttempts} tentative(s) restante(s).`);
+        setError(isEn ? `Incorrect OTP code. ${3 - newAttempts} attempt(s) remaining.` : `Code OTP incorrect. ${3 - newAttempts} tentative(s) restante(s).`);
         return;
       }
       setStep('success');
@@ -93,7 +95,7 @@ export const ForgotPinPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 font-sans">
       <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-sm">
         {/* Header */}
         <div className="text-center px-6 pt-6 pb-4">
@@ -103,9 +105,13 @@ export const ForgotPinPage: React.FC = () => {
 
           {step === 'phone' && (
             <>
-              <h1 className="text-xl font-medium text-foreground">Code secret oublié ?</h1>
+              <h1 className="text-xl font-medium text-foreground">
+                {isEn ? 'Forgot secret PIN code?' : 'Code secret oublié ?'}
+              </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Entrez votre numéro de téléphone pour recevoir un code de vérification par SMS/WhatsApp
+                {isEn 
+                  ? 'Enter your phone number to receive a verification code via SMS/WhatsApp'
+                  : 'Entrez votre numéro de téléphone pour recevoir un code de vérification par SMS/WhatsApp'}
               </p>
             </>
           )}
@@ -114,9 +120,9 @@ export const ForgotPinPage: React.FC = () => {
               <div className="flex justify-center mb-2">
                 <Smartphone className="h-10 w-10 text-primary" />
               </div>
-              <h1 className="text-xl font-medium text-foreground">Vérification</h1>
+              <h1 className="text-xl font-medium text-foreground">{isEn ? 'Verification' : 'Vérification'}</h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Saisissez le code reçu puis définissez votre nouveau code secret
+                {isEn ? 'Enter the code received then define your new secret PIN' : 'Saisissez le code reçu puis définissez votre nouveau code secret'}
               </p>
             </>
           )}
@@ -125,9 +131,11 @@ export const ForgotPinPage: React.FC = () => {
               <div className="flex justify-center mb-2">
                 <CheckCircle className="h-12 w-12 text-emerald-500" />
               </div>
-              <h1 className="text-xl font-medium text-emerald-600">Code modifié avec succès !</h1>
+              <h1 className="text-xl font-medium text-emerald-600">
+                {isEn ? 'PIN code changed successfully!' : 'Code modifié avec succès !'}
+              </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Vous pouvez maintenant vous connecter avec votre nouveau code secret.
+                {isEn ? 'You can now log in with your new secret PIN code.' : 'Vous pouvez maintenant vous connecter avec votre nouveau code secret.'}
               </p>
             </>
           )}
@@ -137,7 +145,7 @@ export const ForgotPinPage: React.FC = () => {
         {step === 'phone' && (
           <form onSubmit={handleSendOtp} className="px-6 pb-6 space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Numéro de téléphone</label>
+              <label className="text-sm font-medium text-foreground">{isEn ? 'Phone Number' : 'Numéro de téléphone'}</label>
               <PhoneInput
                 value={phone}
                 onChange={setPhone}
@@ -160,7 +168,7 @@ export const ForgotPinPage: React.FC = () => {
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                'Envoyer le code de vérification'
+                isEn ? 'Send verification code' : 'Envoyer le code de vérification'
               )}
             </button>
 
@@ -169,7 +177,7 @@ export const ForgotPinPage: React.FC = () => {
               className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              Retour à la connexion
+              {isEn ? 'Back to login' : 'Retour à la connexion'}
             </Link>
           </form>
         )}
@@ -179,7 +187,7 @@ export const ForgotPinPage: React.FC = () => {
           <form onSubmit={handleVerifyAndReset} className="px-6 pb-6 space-y-5">
             {/* OTP Input */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Code de vérification (4 chiffres)</label>
+              <label className="text-sm font-medium text-foreground">{isEn ? 'Verification Code (4 digits)' : 'Code de vérification (4 chiffres)'}</label>
               <div className="flex justify-center">
                 <InputOTP maxLength={4} value={otp} onChange={setOtp} disabled={isLoading} pattern={REGEXP_ONLY_DIGITS}>
                   <InputOTPGroup>
@@ -191,7 +199,7 @@ export const ForgotPinPage: React.FC = () => {
                 </InputOTP>
               </div>
               <p className="text-xs text-muted-foreground text-center">
-                Code envoyé au {phone}. Valable 5 minutes.
+                {isEn ? `Code sent to ${phone}. Valid for 5 minutes.` : `Code envoyé au ${phone}. Valable 5 minutes.`}
               </p>
               <div className="text-center">
                 <button
@@ -200,14 +208,14 @@ export const ForgotPinPage: React.FC = () => {
                   disabled={cooldown > 0 || isLoading}
                   className="text-xs text-primary hover:underline disabled:text-muted-foreground disabled:no-underline"
                 >
-                  {cooldown > 0 ? `Renvoyer dans ${cooldown}s` : 'Renvoyer le code'}
+                  {cooldown > 0 ? (isEn ? `Resend in ${cooldown}s` : `Renvoyer dans ${cooldown}s`) : (isEn ? 'Resend code' : 'Renvoyer le code')}
                 </button>
               </div>
             </div>
 
             {/* New PIN */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Nouveau code secret</label>
+              <label className="text-sm font-medium text-foreground">{isEn ? 'New secret PIN code' : 'Nouveau code secret'}</label>
               <div className="flex items-center justify-center gap-2">
                 <InputOTP maxLength={6} value={newPin} onChange={handleNewPinChange} disabled={isLoading} pattern={REGEXP_ONLY_DIGITS}>
                   <InputOTPGroup>
@@ -231,7 +239,7 @@ export const ForgotPinPage: React.FC = () => {
 
             {/* Confirm PIN */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Confirmer le code secret</label>
+              <label className="text-sm font-medium text-foreground">{isEn ? 'Confirm secret PIN code' : 'Confirmer le code secret'}</label>
               <div className="flex items-center justify-center gap-2">
                 <InputOTP maxLength={6} value={confirmPin} onChange={setConfirmPin} disabled={isLoading} pattern={REGEXP_ONLY_DIGITS} data-confirm-pin>
                   <InputOTPGroup>
@@ -261,7 +269,7 @@ export const ForgotPinPage: React.FC = () => {
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                'Réinitialiser mon code secret'
+                isEn ? 'Reset my secret PIN code' : 'Réinitialiser mon code secret'
               )}
             </button>
 
@@ -271,7 +279,7 @@ export const ForgotPinPage: React.FC = () => {
               className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              Changer de numéro
+              {isEn ? 'Change phone number' : 'Changer de numéro'}
             </button>
           </form>
         )}
@@ -283,11 +291,14 @@ export const ForgotPinPage: React.FC = () => {
               onClick={() => navigate('/login')}
               className="w-full h-10 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity flex items-center justify-center"
             >
-              Retourner à la connexion
+              {isEn ? 'Back to login' : 'Retourner à la connexion'}
             </button>
           </div>
         )}
       </div>
+
+      {/* Faciloop Dev Style Bottom Floating Toast Notification */}
+      <FaciloopToast message={error} onClose={() => setError('')} />
     </div>
   );
 };
