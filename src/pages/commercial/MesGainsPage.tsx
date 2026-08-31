@@ -4,9 +4,8 @@ import {
   Calculator, TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCommissions } from '@/hooks/commercial/useCommissions';
 import { cn } from '../../lib/utils';
-import type { CommissionEntry } from '../../lib/mockAdminOrg';
-import { useTranslation } from 'react-i18next';
 
 type Currency = 'XOF' | 'EUR' | 'USD';
 
@@ -55,6 +54,7 @@ function getCommissionRate(periodicite: string): number {
 export function MesGainsPage() {
   const { t, i18n } = useTranslation();
   const { user, commissions, orgOffers, currency: globalCurrency, setCurrency: setGlobalCurrency } = useAuth();
+  const { commissions: apiCommissions } = useCommissions();
   const currency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === globalCurrency)?.[0] || 'XOF') as Currency;
   const setCurrency = (c: Currency) => setGlobalCurrency(CURRENCY_LABELS[c]);
   const [activeTab, setActiveTab] = useState<'apercu' | 'simulateur' | 'historique'>('apercu');
@@ -63,8 +63,23 @@ export function MesGainsPage() {
 
   // Filter commissions for current commercial
   const myCommissions = useMemo(() => {
+    if (apiCommissions.length > 0) {
+      return apiCommissions.map(c => ({
+        id: c.id,
+        commercialId: c.commercial_id,
+        commercialNom: c.commercial_nom || 'Moi',
+        clientNom: c.client_nom || 'Client',
+        formule: c.formule || 'Pro',
+        periodicite: c.periodicite || 'mensuel',
+        montantVente: c.montant_vente,
+        tauxCommission: c.taux_commission,
+        montantCommission: c.montant_commission,
+        dateVente: c.date_vente,
+        statut: c.statut
+      }));
+    }
     return commissions.filter(c => c.commercialId === user?.id || user?.role === 'super_admin');
-  }, [commissions, user]);
+  }, [apiCommissions, commissions, user]);
 
   // Global Stats
   const stats = useMemo(() => {

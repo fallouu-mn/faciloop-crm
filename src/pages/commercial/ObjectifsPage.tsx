@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { useObjectifs } from '@/hooks/commercial/useObjectifs';
 import { Target, TrendingUp, Award, Info, Goal } from 'lucide-react';
 
 type Currency = 'XOF' | 'EUR' | 'USD';
@@ -43,13 +44,27 @@ export const ObjectifsPage: React.FC = () => {
   const { i18n } = useTranslation();
   const isEn = Boolean(i18n.language?.startsWith('en'));
   const { user, objectifs, currency, setCurrency } = useAuth();
+  const { objectifs: apiObjectifs } = useObjectifs();
   const activeCurrency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === currency)?.[0] || 'XOF') as Currency;
 
   // Backend-ready: filter objectifs for current commercial only
   const myObjectifs = useMemo(() => {
+    if (apiObjectifs.length > 0) {
+      return apiObjectifs.map(o => ({
+        id: o.id,
+        commercialId: o.commercial_id,
+        commercialNom: o.commercial_nom || 'Moi',
+        periode: o.periode,
+        type: o.type,
+        objectif: o.valeur_cible,
+        realise: o.valeur_actuelle,
+        statut: o.statut,
+        description: `Objectif ${o.periode} ${o.type}`
+      }));
+    }
     if (!user) return [];
     return objectifs.filter(o => o.commercialId === user.id);
-  }, [objectifs, user]);
+  }, [apiObjectifs, objectifs, user]);
 
   // Summary stats
   const summary = useMemo(() => {

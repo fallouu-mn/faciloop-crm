@@ -40,6 +40,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useProspects } from '@/hooks/commercial/useProspects';
 
 interface ColumnDef {
   id: PipelineStepId;
@@ -413,6 +414,8 @@ function formatMoney(amount: number, curr: Currency): string {
 export const ProspectKanban: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { user, myProspects, updateProspectStatus, convertProspectToClient, orgOffers, currency, setCurrency } = useAuth();
+  const { prospects: apiProspects, updatePipeline: apiUpdatePipeline } = useProspects();
+  const effectiveProspects = apiProspects.length > 0 ? apiProspects : myProspects;
   const navigate = useNavigate();
 
   const isEn = i18n.language?.startsWith('en');

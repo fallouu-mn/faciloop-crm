@@ -3,10 +3,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Plus, CheckCircle2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useRelances } from '@/hooks/commercial/useRelances';
 
 export const RelancesPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { user, myRelances, myProspects, addRelance, completeRelance } = useAuth();
+  const { relances: apiRelances, createRelance: apiCreateRelance, completeRelance: apiCompleteRelance } = useRelances();
+  const effectiveRelances = apiRelances.length > 0 ? apiRelances : myRelances;
   const [filterStatut, setFilterStatut] = useState<string>('all');
 
   const isEn = i18n.language?.startsWith('en');
@@ -19,7 +22,7 @@ export const RelancesPage: React.FC = () => {
   const [motif, setMotif] = useState<string>('Relance de courtoisie');
   const [commentaire, setCommentaire] = useState<string>('');
 
-  const filtered = myRelances.filter(r => filterStatut === 'all' || r.statut === filterStatut);
+  const filtered = effectiveRelances.filter(r => filterStatut === 'all' || r.statut === filterStatut);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();

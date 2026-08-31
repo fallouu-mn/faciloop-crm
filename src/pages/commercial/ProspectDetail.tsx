@@ -26,6 +26,7 @@ import {
 import { WhatsAppActionModal } from '../../components/common/WhatsAppActionModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useProspectDetail, useInteractions, useRelances } from '@/hooks/commercial';
 
 export const ProspectDetail: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -33,12 +34,14 @@ export const ProspectDetail: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, prospects, interactions, relances, addInteraction, convertProspectToClient, orgOffers } = useAuth();
-  const isAdmin = user?.role === 'admin_org' || user?.role === 'super_admin';
-  const prospectsListPath = isAdmin ? '/admin/prospects' : '/app/prospects';
-  const clientsPath = isAdmin ? '/admin/clients' : '/app/prospects';
+  const { user, prospects, interactions: authInteractions, relances: authRelances, addInteraction, convertProspectToClient, orgOffers } = useAuth();
+  const { prospect: dbProspect } = useProspectDetail(id);
+  const { interactions: apiInteractions, createInteraction: apiCreateInteraction } = useInteractions(id);
+  const { relances: apiRelances } = useRelances();
 
-  const prospect = prospects.find(p => p.id === id);
+  const prospect = dbProspect || prospects.find(p => p.id === id);
+  const prospectInteractions = apiInteractions.length > 0 ? apiInteractions : (authInteractions || []).filter((i: any) => i.prospect_id === id);
+  const prospectRelances = apiRelances.length > 0 ? apiRelances.filter(r => r.prospect_id === id) : (authRelances || []).filter((r: any) => r.prospect_id === id);
   const [activeTab, setActiveTab] = useState<'timeline' | 'relances' | 'infos'>('timeline');
 
   // Interaction Modal State
@@ -77,9 +80,6 @@ export const ProspectDetail: React.FC = () => {
       </div>
     );
   }
-
-  const prospectInteractions = interactions.filter(i => i.prospect_id === prospect.id);
-  const prospectRelances = relances.filter(r => r.prospect_id === prospect.id);
 
   // Generate Prospect Initials
   const initials = `${prospect.prenom?.[0] || ''}${prospect.nom?.[0] || ''}`.toUpperCase() || 'P';

@@ -19,12 +19,15 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useProspects } from '@/hooks/commercial/useProspects';
 
 const PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
 export const ProspectsList: React.FC = () => {
   const { user, myProspects, prospects, addProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
+  const { prospects: apiProspects, createProspect: apiCreateProspect, reassignProspects: apiReassignProspects } = useProspects();
+  const effectiveProspects = apiProspects.length > 0 ? apiProspects : myProspects;
   const [searchParams] = useSearchParams();
 
   const [search, setSearch] = useState<string>('');
