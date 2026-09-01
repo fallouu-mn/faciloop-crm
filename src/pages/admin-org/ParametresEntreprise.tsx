@@ -4,7 +4,7 @@ import { Building2, Save, Upload, Check, Globe, Phone, Mail, MapPin, Briefcase }
 import { useTranslation } from 'react-i18next';
 
 export const ParametresEntreprise: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation('admin');
   const { user, currentOrg, currency, setCurrency, updateOrganization } = useAuth();
   const [nom, setNom] = useState(currentOrg?.nom || '');
   const [pays, setPays] = useState(currentOrg?.pays || '');
@@ -16,8 +16,6 @@ export const ParametresEntreprise: React.FC = () => {
   const [secteur, setSecteur] = useState(currentOrg?.secteur || '');
   const [logoPreview, setLogoPreview] = useState<string | null>(currentOrg?.logo_url || null);
   const [saved, setSaved] = useState(false);
-
-  const isEn = i18n.language?.startsWith('en');
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -39,17 +37,17 @@ export const ParametresEntreprise: React.FC = () => {
     <div className="space-y-6 max-w-3xl mx-auto font-sans">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-          {isEn ? 'Company Settings' : "Paramètres de l'Entreprise"}
+          {t('adminOrg.parametres.title')}
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          {isEn ? 'General information, contact details, and organization preferences' : 'Informations générales, coordonnées et préférences de votre organisation'}
+          {t('adminOrg.parametres.subtitle')}
         </p>
       </div>
 
       {saved && (
         <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2">
           <Check className="w-4 h-4" />
-          <span>{isEn ? 'Settings saved successfully!' : 'Paramètres sauvegardés avec succès !'}</span>
+          <span>{t('adminOrg.parametres.saved')}</span>
         </div>
       )}
 
@@ -57,7 +55,7 @@ export const ParametresEntreprise: React.FC = () => {
         {/* Logo Section */}
         <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-primary" /> {isEn ? 'Visual Identity' : 'Identité visuelle'}
+            <Building2 className="w-4 h-4 text-primary" /> {t('adminOrg.parametres.sections.visual')}
           </h2>
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-border bg-muted/40 flex items-center justify-center overflow-hidden">
@@ -70,7 +68,7 @@ export const ParametresEntreprise: React.FC = () => {
             <div className="space-y-2">
               <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-input bg-card hover:bg-muted cursor-pointer text-xs font-bold text-foreground transition-all">
                 <Upload className="w-3.5 h-3.5" />
-                <span>Changer le logo</span>
+                <span>{t('adminOrg.parametres.changeLogo')}</span>
                 <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
               </label>
               <p className="text-[10px] text-muted-foreground">PNG, JPG — max 2 Mo</p>
@@ -81,11 +79,11 @@ export const ParametresEntreprise: React.FC = () => {
         {/* General Info */}
         <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Briefcase className="w-4 h-4 text-primary" /> Informations générales
+            <Briefcase className="w-4 h-4 text-primary" /> {t('adminOrg.parametres.sections.general')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div className="sm:col-span-2">
-              <label className="block font-semibold mb-1">Nom de l'entreprise *</label>
+              <label className="block font-semibold mb-1">{t('adminOrg.parametres.companyName')}</label>
               <input
                 type="text"
                 value={nom}
@@ -94,13 +92,13 @@ export const ParametresEntreprise: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block font-semibold mb-1">Secteur d'activité</label>
+              <label className="block font-semibold mb-1">{t('adminOrg.parametres.sector')}</label>
               <select
                 value={secteur}
                 onChange={(e) => setSecteur(e.target.value)}
                 className="w-full p-3 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               >
-                <option value="">{isEn ? 'Select' : 'Sélectionner'}</option>
+                <option value="">{t('adminOrg.parametres.select')}</option>
                 <option value="Commerce / Distribution">Commerce / Distribution</option>
                 <option value="Télécommunications">Télécommunications</option>
                 <option value="Services">Services</option>
@@ -116,7 +114,7 @@ export const ParametresEntreprise: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block font-semibold mb-1">Devise par défaut</label>
+              <label className="block font-semibold mb-1">{t('adminOrg.parametres.currency')}</label>
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
@@ -133,11 +131,11 @@ export const ParametresEntreprise: React.FC = () => {
         {/* Coordonnées */}
         <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-primary" /> Coordonnées
+            <MapPin className="w-4 h-4 text-primary" /> {t('adminOrg.parametres.sections.contact')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div>
-              <label className="block font-semibold mb-1">Pays</label>
+              <label className="block font-semibold mb-1">{t('adminOrg.parametres.country')}</label>
               <select
                 value={pays}
                 onChange={(e) => setPays(e.target.value)}
@@ -157,7 +155,7 @@ export const ParametresEntreprise: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block font-semibold mb-1">Ville</label>
+              <label className="block font-semibold mb-1">{t('adminOrg.parametres.city')}</label>
               <input
                 type="text"
                 value={ville}
@@ -166,17 +164,17 @@ export const ParametresEntreprise: React.FC = () => {
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="block font-semibold mb-1">Adresse complète</label>
+              <label className="block font-semibold mb-1">{t('adminOrg.parametres.address')}</label>
               <input
                 type="text"
                 value={adresse}
                 onChange={(e) => setAdresse(e.target.value)}
-                placeholder="Numéro, rue, quartier..."
+                placeholder={t('adminOrg.parametres.addressPlaceholder')}
                 className="w-full p-3 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50"
               />
             </div>
             <div>
-              <label className="block font-semibold mb-1">Téléphone</label>
+              <label className="block font-semibold mb-1">{t('adminOrg.parametres.phone')}</label>
               <div className="relative">
                 <Phone className="w-3.5 h-3.5 absolute left-3 top-3.5 text-muted-foreground" />
                 <input
@@ -188,7 +186,7 @@ export const ParametresEntreprise: React.FC = () => {
               </div>
             </div>
             <div>
-              <label className="block font-semibold mb-1">Email professionnel</label>
+              <label className="block font-semibold mb-1">{t('adminOrg.parametres.email')}</label>
               <div className="relative">
                 <Mail className="w-3.5 h-3.5 absolute left-3 top-3.5 text-muted-foreground" />
                 <input
@@ -200,14 +198,14 @@ export const ParametresEntreprise: React.FC = () => {
               </div>
             </div>
             <div className="sm:col-span-2">
-              <label className="block font-semibold mb-1">Site web</label>
+              <label className="block font-semibold mb-1">{t('adminOrg.parametres.website')}</label>
               <div className="relative">
                 <Globe className="w-3.5 h-3.5 absolute left-3 top-3.5 text-muted-foreground" />
                 <input
                   type="url"
                   value={siteWeb}
                   onChange={(e) => setSiteWeb(e.target.value)}
-                  placeholder="https://..."
+                  placeholder={t('adminOrg.parametres.websitePlaceholder')}
                   className="w-full pl-9 pr-3 p-3 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50"
                 />
               </div>
@@ -220,7 +218,7 @@ export const ParametresEntreprise: React.FC = () => {
           className="w-full py-3.5 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 flex items-center justify-center gap-2 text-sm"
         >
           <Save className="w-4 h-4" />
-          <span>Enregistrer les modifications</span>
+          <span>{t('adminOrg.parametres.saveBtn')}</span>
         </button>
       </form>
     </div>

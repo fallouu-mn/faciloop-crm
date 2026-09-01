@@ -5,11 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 export const EquipeCommerciale: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation('admin');
   const { commerciaux: team, addCommercial, toggleCommercialStatus } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
-  const isEn = i18n.language?.startsWith('en');
 
   const [nom, setNom] = useState<string>('');
   const [prenom, setPrenom] = useState<string>('');
@@ -34,7 +32,7 @@ export const EquipeCommerciale: React.FC = () => {
       setEmail('');
       setTelephone('');
     } catch (err: any) {
-      setAddError(err.message || (isEn ? 'Failed to create sales rep' : 'Erreur lors de la création du commercial'));
+      setAddError(err.message || t('adminOrg.equipe.modal.errorDefault'));
     } finally {
       setAddLoading(false);
     }
@@ -46,10 +44,10 @@ export const EquipeCommerciale: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-            {isEn ? 'Sales Team Management' : "Gestion de l'Équipe Commerciale"}
+            {t('adminOrg.equipe.title')}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            {isEn ? 'Manage access for your company sales representatives' : "Gérez l'accès des commerciaux de votre entreprise"}
+            {t('adminOrg.equipe.subtitle')}
           </p>
         </div>
 
@@ -58,7 +56,7 @@ export const EquipeCommerciale: React.FC = () => {
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
         >
           <UserPlus className="h-4 w-4 shrink-0" />
-          <span>{isEn ? '+ Add Sales Rep' : 'Ajouter un commercial'}</span>
+          <span>{t('adminOrg.equipe.addBtn')}</span>
         </button>
       </div>
 
@@ -67,11 +65,11 @@ export const EquipeCommerciale: React.FC = () => {
         <table className="w-full text-left text-xs min-w-[650px]">
           <thead className="border-b border-border/80 bg-muted/60 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
             <tr>
-              <th className="p-4">{isEn ? 'Sales Rep' : 'Commercial'}</th>
+              <th className="p-4">{t('adminOrg.equipe.col.salesRep')}</th>
               <th className="p-4">Email</th>
-              <th className="p-4">{isEn ? 'Phone' : 'Téléphone'}</th>
-              <th className="p-4">{isEn ? 'Status' : 'Statut'}</th>
-              <th className="p-4 text-right">Action</th>
+              <th className="p-4">{t('adminOrg.equipe.col.phone')}</th>
+              <th className="p-4">{t('adminOrg.equipe.col.status')}</th>
+              <th className="p-4 text-right">{t('adminOrg.equipe.col.action')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
@@ -99,7 +97,7 @@ export const EquipeCommerciale: React.FC = () => {
                     onClick={() => toggleStatus(comm.id)}
                     className="px-3 py-1.5 rounded-xl border border-input text-xs font-bold hover:bg-muted transition-all"
                   >
-                    {comm.statut === 'actif' ? 'Désactiver' : 'Activer'}
+                    {comm.statut === 'actif' ? t('adminOrg.equipe.deactivate') : t('adminOrg.equipe.activate')}
                   </button>
                 </td>
               </tr>
@@ -160,7 +158,7 @@ export const EquipeCommerciale: React.FC = () => {
                 }`}
               >
                 <Power className="w-3.5 h-3.5" />
-                <span>{comm.statut === 'actif' ? 'Désactiver' : 'Activer'}</span>
+                <span>{comm.statut === 'actif' ? t('adminOrg.equipe.deactivate') : t('adminOrg.equipe.activate')}</span>
               </button>
             </div>
           </div>
@@ -172,7 +170,7 @@ export const EquipeCommerciale: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-md bg-card border border-border rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 font-sans">
             <div className="flex items-center justify-between">
-              <h2 className="text-base sm:text-lg font-bold text-foreground">Créer un Compte Commercial</h2>
+              <h2 className="text-base sm:text-lg font-bold text-foreground">{t('adminOrg.equipe.modal.title')}</h2>
               <button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg hover:bg-muted">
                 <X className="w-5 h-5" />
               </button>
@@ -181,7 +179,7 @@ export const EquipeCommerciale: React.FC = () => {
             <form onSubmit={handleAdd} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-semibold mb-1">Prénom</label>
+                  <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.firstName')}</label>
                   <input
                     type="text"
                     required
@@ -192,7 +190,7 @@ export const EquipeCommerciale: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Nom</label>
+                  <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.lastName')}</label>
                   <input
                     type="text"
                     required
@@ -205,7 +203,7 @@ export const EquipeCommerciale: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Email Professionnel</label>
+                <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.email')}</label>
                 <input
                   type="email"
                   required
@@ -217,7 +215,7 @@ export const EquipeCommerciale: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Téléphone Mobile</label>
+                <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.phone')}</label>
                 <input
                   type="tel"
                   required
@@ -242,7 +240,7 @@ export const EquipeCommerciale: React.FC = () => {
                 {addLoading ? (
                   <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
                 ) : (
-                  isEn ? 'Create sales rep access' : "Créer l'accès commercial"
+                  t('adminOrg.equipe.modal.createBtn')
                 )}
               </button>
             </form>

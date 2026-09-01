@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
 import { 
@@ -30,6 +31,7 @@ interface ParsedProspectRow {
 }
 
 export const ImportExportPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const { prospects, clients, addProspect, commerciaux } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -223,10 +225,10 @@ export const ImportExportPage: React.FC = () => {
     <div className="space-y-4 sm:space-y-6 max-w-5xl mx-auto font-sans">
       <div>
         <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-          Import / Export de Données (CSV & Excel)
+          {t('adminOrg.importExport.title')}
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-          Importez des listes de prospects, attribuez-les en masse et prévenez les doublons
+          {t('adminOrg.importExport.subtitle')}
         </p>
       </div>
 
@@ -241,11 +243,11 @@ export const ImportExportPage: React.FC = () => {
           >
             <div className="flex items-center gap-2 text-sm sm:text-base">
               <CheckCircle2 className="w-5 h-5 shrink-0" />
-              <span>Importation exécutée avec succès !</span>
+              <span>{t('adminOrg.importExport.import.success')}</span>
             </div>
             <p className="text-xs font-medium text-foreground">
-              <strong>{importResult.imported} prospects</strong> ont été importés et attribués à <strong>{importResult.commercialNom}</strong>.
-              {importResult.skipped > 0 && ` (${importResult.skipped} doublons ignorés).`}
+              <strong>{importResult.imported} {t('adminOrg.importExport.import.importedPrefix')}</strong> <strong>{importResult.commercialNom}</strong>.
+              {importResult.skipped > 0 && ` (${importResult.skipped} ${t('adminOrg.importExport.import.duplicatesIgnored')}).`}
             </p>
           </motion.div>
         )}
@@ -255,7 +257,7 @@ export const ImportExportPage: React.FC = () => {
       <div className="p-4 sm:p-6 rounded-3xl border border-border/80 bg-card space-y-3 sm:space-y-4 shadow-sm">
         <h2 className="text-sm sm:text-base font-extrabold text-foreground flex items-center gap-2">
           <Download className="w-5 h-5 text-primary" />
-          <span>Exporter mes données en CSV</span>
+          <span>{t('adminOrg.importExport.export.title')}</span>
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -265,10 +267,10 @@ export const ImportExportPage: React.FC = () => {
             className="p-4 sm:p-5 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 text-left transition-all space-y-1 shadow-sm hover:shadow-md group"
           >
             <div className="font-extrabold text-xs text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
-              <span>Exporter les Prospects ({prospects.length})</span>
+              <span>{t('adminOrg.importExport.export.prospects')} ({prospects.length})</span>
               <Download className="w-4 h-4" />
             </div>
-            <div className="text-[11px] text-muted-foreground font-medium">Fichier CSV prêt avec toutes les colonnes du CRM</div>
+            <div className="text-[11px] text-muted-foreground font-medium">{t('adminOrg.importExport.export.prospectsSubtitle')}</div>
           </motion.button>
 
           <motion.button
@@ -277,10 +279,10 @@ export const ImportExportPage: React.FC = () => {
             className="p-4 sm:p-5 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 text-left transition-all space-y-1 shadow-sm hover:shadow-md group"
           >
             <div className="font-extrabold text-xs text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
-              <span>Exporter les Clients Faciloop ({clients.length})</span>
+              <span>{t('adminOrg.importExport.export.clients')} ({clients.length})</span>
               <Download className="w-4 h-4" />
             </div>
-            <div className="text-[11px] text-muted-foreground font-medium">Fichier CSV complet avec formules souscrites et montants</div>
+            <div className="text-[11px] text-muted-foreground font-medium">{t('adminOrg.importExport.export.clientsSubtitle')}</div>
           </motion.button>
         </div>
       </div>
@@ -291,10 +293,10 @@ export const ImportExportPage: React.FC = () => {
           <div>
             <h2 className="text-sm sm:text-base font-extrabold text-foreground flex items-center gap-2">
               <Upload className="w-5 h-5 text-emerald-500" />
-              <span>Importer une liste de prospects (Fichier CSV)</span>
+              <span>{t('adminOrg.importExport.import.title')}</span>
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Accepte les séparateurs virgule (,) et point-virgule (;)
+              {t('adminOrg.importExport.import.subtitle')}
             </p>
           </div>
 
@@ -302,7 +304,7 @@ export const ImportExportPage: React.FC = () => {
           <div className="w-full sm:w-auto flex items-center gap-2 bg-muted/60 p-2.5 rounded-2xl border border-border">
             <Users className="w-4 h-4 text-primary shrink-0" />
             <div className="text-xs w-full sm:w-auto">
-              <span className="block text-[10px] font-extrabold text-muted-foreground uppercase">Attribuer la liste à :</span>
+              <span className="block text-[10px] font-extrabold text-muted-foreground uppercase">{t('adminOrg.importExport.import.assignTo')}</span>
               <select
                 value={selectedCommercialId}
                 onChange={(e) => setSelectedCommercialId(e.target.value)}
@@ -349,7 +351,7 @@ export const ImportExportPage: React.FC = () => {
 
           <div className="space-y-1">
             <div className="text-xs sm:text-sm font-extrabold text-foreground">
-              {fileName ? `Fichier chargé : ${fileName}` : 'Glissez-déposez votre fichier CSV ici'}
+              {fileName ? `${t('adminOrg.importExport.import.fileLoaded')} ${fileName}` : t('adminOrg.importExport.import.dropzone')}
             </div>
             <p className="text-[11px] sm:text-xs text-muted-foreground max-w-md mx-auto">
               Ou cliquez ci-dessous pour sélectionner un fichier. Extraction de <strong>Nom</strong>, <strong>Entreprise</strong> et <strong>Téléphone</strong>.
@@ -361,7 +363,7 @@ export const ImportExportPage: React.FC = () => {
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl bg-gradient-faciloop text-white text-xs font-extrabold shadow-lg shadow-primary/25 hover:opacity-95 cursor-pointer transition-all active:scale-95"
           >
             <Sparkles className="w-4 h-4" />
-            <span>{fileName ? 'Changer de fichier CSV' : 'Parcourir mes fichiers'}</span>
+            <span>{fileName ? t('adminOrg.importExport.import.changeBtn') : t('adminOrg.importExport.import.browseBtn')}</span>
           </label>
         </motion.div>
 
@@ -369,7 +371,7 @@ export const ImportExportPage: React.FC = () => {
         {isParsing && (
           <div className="p-4 sm:p-6 rounded-2xl bg-primary/5 border border-primary/20 flex items-center justify-center gap-2.5 text-xs font-bold text-primary animate-pulse">
             <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-            <span>Analyse du fichier CSV & scanner anti-doublon en cours...</span>
+            <span>{t('adminOrg.importExport.import.parsing')}</span>
           </div>
         )}
 
@@ -380,18 +382,18 @@ export const ImportExportPage: React.FC = () => {
               <div className="space-y-1 text-xs">
                 <div className="font-extrabold text-foreground text-xs sm:text-sm flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-primary" />
-                  <span>Résumé de la prévisualisation avant validation :</span>
+                  <span>{t('adminOrg.importExport.import.preview')}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-muted-foreground pt-1">
                   <span className="text-emerald-500 font-extrabold bg-emerald-500/10 px-2 py-0.5 rounded-full text-[11px]">
-                    ✓ {validRows.length} prêts
+                    ✓ {validRows.length} {t('adminOrg.importExport.import.ready')}
                   </span>
                   {duplicateRows.length > 0 && (
                     <span className="text-rose-500 font-extrabold bg-rose-500/10 px-2 py-0.5 rounded-full text-[11px] animate-pulse">
-                      ⚠️ {duplicateRows.length} doublons ignorés
+                      ⚠️ {duplicateRows.length} {t('adminOrg.importExport.import.duplicatesIgnored')}
                     </span>
                   )}
-                  <span className="text-[11px]">Attribution : <strong>{selectedComm?.prenom} {selectedComm?.nom}</strong></span>
+                  <span className="text-[11px]">{t('adminOrg.importExport.import.attribution')} <strong>{selectedComm?.prenom} {selectedComm?.nom}</strong></span>
                 </div>
               </div>
 
@@ -410,11 +412,11 @@ export const ImportExportPage: React.FC = () => {
                 {isImportSuccess ? (
                   <>
                     <Check className="w-4 h-4 animate-bounce" />
-                    <span>Prospects importés !</span>
+                    <span>{t('adminOrg.importExport.import.successBtn')}</span>
                   </>
                 ) : (
                   <>
-                    <span>Valider l'importation ({validRows.length})</span>
+                    <span>{t('adminOrg.importExport.import.validateBtn')} ({validRows.length})</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -426,11 +428,11 @@ export const ImportExportPage: React.FC = () => {
               <table className="w-full text-left text-xs min-w-[600px]">
                 <thead className="border-b border-border/80 bg-muted/60 text-[11px] font-extrabold uppercase text-muted-foreground">
                   <tr>
-                    <th className="p-3.5 sm:p-4">Nom / Contact</th>
-                    <th className="p-3.5 sm:p-4">Entreprise</th>
-                    <th className="p-3.5 sm:p-4">Téléphone</th>
-                    <th className="p-3.5 sm:p-4">Source</th>
-                    <th className="p-3.5 sm:p-4">Statut Anti-Doublon</th>
+                    <th className="p-3.5 sm:p-4">{t('adminOrg.importExport.col.name')}</th>
+                    <th className="p-3.5 sm:p-4">{t('adminOrg.importExport.col.company')}</th>
+                    <th className="p-3.5 sm:p-4">{t('adminOrg.importExport.col.phone')}</th>
+                    <th className="p-3.5 sm:p-4">{t('adminOrg.importExport.col.source')}</th>
+                    <th className="p-3.5 sm:p-4">{t('adminOrg.importExport.col.dupStatus')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60 text-[11px]">
@@ -444,12 +446,12 @@ export const ImportExportPage: React.FC = () => {
                         {r.isDuplicate ? (
                           <span className="px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-500 font-extrabold text-[10px] inline-flex items-center gap-1">
                             <ShieldAlert className="w-3 h-3" />
-                            <span>⚠️ Doublon (Ignoré)</span>
+                            <span>{t('adminOrg.importExport.status.duplicate')}</span>
                           </span>
                         ) : (
                           <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-extrabold text-[10px] inline-flex items-center gap-1">
                             <Check className="w-3 h-3" />
-                            <span>✓ Prêt</span>
+                            <span>{t('adminOrg.importExport.status.ready')}</span>
                           </span>
                         )}
                       </td>

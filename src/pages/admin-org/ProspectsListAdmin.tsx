@@ -50,9 +50,8 @@ const PAYS_DEFAUT = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Gui
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
 export const ProspectsListAdmin: React.FC = () => {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation('admin');
   const { prospects, addProspect, deleteProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
-  const isEn = i18n.language?.startsWith('en');
   const activeOrgOffers = orgOffers.filter(o => o.actif);
 
   const [search, setSearch] = useState('');
@@ -137,7 +136,7 @@ export const ProspectsListAdmin: React.FC = () => {
     });
     if (res.duplicate) { setDuplicateAlert(true); return; }
     if (res.success) {
-      showToast('Prospect créé avec succès !');
+      showToast(t('adminOrg.prospects.toast.created'));
       setIsNewModalOpen(false);
       resetForm();
     }
@@ -153,7 +152,7 @@ export const ProspectsListAdmin: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Supprimer ce prospect définitivement ?')) {
+    if (window.confirm(t('adminOrg.prospects.deleteConfirm'))) {
       deleteProspect(id);
       setSelectedIds(prev => prev.filter(i => i !== id));
     }
@@ -195,7 +194,7 @@ export const ProspectsListAdmin: React.FC = () => {
     const target = commerciaux.find(c => c.id === targetCommercialId) || commerciaux[0];
     if (!target) return;
     reassignProspects(selectedIds, target.id, `${target.prenom} ${target.nom}`);
-    showToast(`${selectedIds.length} prospects réattribués !`);
+    showToast(`${selectedIds.length} ${t('adminOrg.prospects.toast.reassigned')}`);
     setSelectedIds([]);
     setIsReassignModalOpen(false);
   };
@@ -210,11 +209,11 @@ export const ProspectsListAdmin: React.FC = () => {
               Prospects ({filtered.length}{filtered.length !== prospects.length ? `/${prospects.length}` : ''})
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-bold flex items-center gap-1">
-              <UserCheck className="w-3 h-3" /> Vue Admin
+              <UserCheck className="w-3 h-3" /> {t('adminOrg.prospects.adminView')}
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Gestion complète des prospects de l'organisation
+            {t('adminOrg.prospects.subtitle')}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -224,7 +223,7 @@ export const ProspectsListAdmin: React.FC = () => {
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 text-white px-4 py-2.5 text-xs font-bold shadow-lg animate-pulse"
             >
               <ArrowRightLeft className="h-4 w-4" />
-              <span>Réattribuer ({selectedIds.length})</span>
+              <span>{t('adminOrg.prospects.reassignBtn')} ({selectedIds.length})</span>
             </button>
           )}
           <button
@@ -232,7 +231,7 @@ export const ProspectsListAdmin: React.FC = () => {
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-bold text-white shadow-lg hover:opacity-95"
           >
             <Plus className="h-4 w-4" />
-            <span>Nouveau Prospect</span>
+            <span>{t('adminOrg.prospects.newBtn')}</span>
           </button>
         </div>
       </div>
@@ -252,7 +251,7 @@ export const ProspectsListAdmin: React.FC = () => {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher par nom, entreprise ou téléphone..."
+              placeholder={t('adminOrg.prospects.search')}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-input bg-card text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
             />
           </div>
@@ -261,7 +260,7 @@ export const ProspectsListAdmin: React.FC = () => {
               onClick={resetFilters}
               className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-1.5 shrink-0"
             >
-              <X className="w-3.5 h-3.5" /> Réinitialiser
+              <X className="w-3.5 h-3.5" /> {t('adminOrg.prospects.resetFilters')}
             </button>
           )}
         </div>
@@ -269,22 +268,22 @@ export const ProspectsListAdmin: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <select value={filterStep} onChange={(e) => setFilterStep(e.target.value)}
             className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground">
-            <option value="all">Toutes étapes</option>
+            <option value="all">{t('adminOrg.prospects.filterAll.stages')}</option>
             {ETAPES.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
           </select>
           <select value={filterSource} onChange={(e) => setFilterSource(e.target.value)}
             className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground">
-            <option value="all">Toutes sources</option>
+            <option value="all">{t('adminOrg.prospects.filterAll.sources')}</option>
             {SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
           <select value={filterCommercial} onChange={(e) => setFilterCommercial(e.target.value)}
             className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground">
-            <option value="all">Tous commerciaux</option>
+            <option value="all">{t('adminOrg.prospects.filterAll.commercials')}</option>
             {commerciaux.map(c => <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>)}
           </select>
           <select value={filterPays} onChange={(e) => setFilterPays(e.target.value)}
             className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground">
-            <option value="all">Tous pays</option>
+            <option value="all">{t('adminOrg.prospects.filterAll.countries')}</option>
             {paysOptions.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
@@ -298,7 +297,7 @@ export const ProspectsListAdmin: React.FC = () => {
             className="w-4 h-4 rounded accent-primary cursor-pointer"
           />
           <Filter className="w-3.5 h-3.5" />
-          Masquer les prospects gagnés / perdus
+          {t('adminOrg.prospects.hideClosedToggle')}
         </label>
       </div>
 
@@ -311,20 +310,20 @@ export const ProspectsListAdmin: React.FC = () => {
                 <input type="checkbox" checked={filtered.length > 0 && selectedIds.length === filtered.length}
                   onChange={handleSelectAll} className="w-4 h-4 rounded accent-primary cursor-pointer" />
               </th>
-              <th className="p-4">Prospect / Entreprise</th>
-              <th className="p-4">Téléphone</th>
-              <th className="p-4">Étape</th>
-              <th className="p-4">Source</th>
-              <th className="p-4">Commercial</th>
-              <th className="p-4">Prochaine relance</th>
-              <th className="p-4 text-right">Actions</th>
+              <th className="p-4">{t('adminOrg.prospects.col.prospect')}</th>
+              <th className="p-4">{t('adminOrg.prospects.col.phone')}</th>
+              <th className="p-4">{t('adminOrg.prospects.col.stage')}</th>
+              <th className="p-4">{t('adminOrg.prospects.col.source')}</th>
+              <th className="p-4">{t('adminOrg.prospects.col.commercial')}</th>
+              <th className="p-4">{t('adminOrg.prospects.col.followUp')}</th>
+              <th className="p-4 text-right">{t('adminOrg.prospects.col.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={8} className="p-8 text-center text-muted-foreground text-xs">
-                  Aucun prospect trouvé pour ces filtres.
+                  {t('adminOrg.prospects.empty')}
                 </td>
               </tr>
             ) : filtered.map((p) => (
@@ -348,7 +347,7 @@ export const ProspectsListAdmin: React.FC = () => {
                   </span>
                 </td>
                 <td className="p-4 capitalize text-muted-foreground">{p.source.replace(/_/g, ' ')}</td>
-                <td className="p-4 font-semibold text-primary">{p.commercial_nom || 'Non attribué'}</td>
+                <td className="p-4 font-semibold text-primary">{p.commercial_nom || t('adminOrg.prospects.unassigned')}</td>
                 <td className={`p-4 text-[11px] ${relanceDateColor(p.date_prochaine_relance)}`}>
                   {p.date_prochaine_relance || '—'}
                 </td>
@@ -356,7 +355,7 @@ export const ProspectsListAdmin: React.FC = () => {
                   <div className="flex items-center justify-end gap-1.5">
                     <Link to={`/admin/prospects/${p.id}`}
                       className="inline-flex items-center gap-1 rounded-lg border border-input px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted">
-                      <Eye className="w-3.5 h-3.5" /> Fiche
+                      <Eye className="w-3.5 h-3.5" /> {t('adminOrg.prospects.openFile')}
                     </Link>
                     <button
                       onClick={() => handleDelete(p.id)}
@@ -376,7 +375,7 @@ export const ProspectsListAdmin: React.FC = () => {
       {/* Mobile Cards */}
       <div className="grid grid-cols-1 gap-3 md:hidden">
         {filtered.length === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">Aucun prospect trouvé.</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{t('adminOrg.prospects.emptyMobile')}</div>
         )}
         {filtered.map((p) => (
           <div key={p.id} className={`p-3.5 rounded-2xl border bg-card space-y-2.5 shadow-sm ${selectedIds.includes(p.id) ? 'border-primary bg-primary/5' : 'border-border'}`}>
@@ -403,13 +402,13 @@ export const ProspectsListAdmin: React.FC = () => {
             </div>
             {p.date_prochaine_relance && (
               <div className={`text-[11px] pl-8 ${relanceDateColor(p.date_prochaine_relance)}`}>
-                Relance : {p.date_prochaine_relance}
+                {t('adminOrg.prospects.relanceLabel')} {p.date_prochaine_relance}
               </div>
             )}
             <div className="pt-2 border-t border-border/60 flex items-center justify-between gap-2 pl-8">
               <Link to={`/admin/prospects/${p.id}`}
                 className="flex-1 py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5">
-                Ouvrir Fiche <ArrowRight className="w-3.5 h-3.5" />
+                {t('adminOrg.prospects.openFile')} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <button
                 onClick={() => handleDelete(p.id)}
@@ -428,7 +427,7 @@ export const ProspectsListAdmin: React.FC = () => {
           <div className="w-full max-w-sm bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-amber-500">
               <ArrowRightLeft className="w-6 h-6" />
-              <h3 className="font-bold text-base text-foreground">Réattribution ({selectedIds.length})</h3>
+              <h3 className="font-bold text-base text-foreground">{t('adminOrg.prospects.reassignModal.title')} ({selectedIds.length})</h3>
             </div>
             <select value={targetCommercialId} onChange={(e) => setTargetCommercialId(e.target.value)}
               className="w-full p-3 rounded-xl border border-input bg-background font-bold text-xs text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
@@ -436,9 +435,9 @@ export const ProspectsListAdmin: React.FC = () => {
             </select>
             <div className="flex gap-2">
               <button onClick={() => setIsReassignModalOpen(false)}
-                className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted">Annuler</button>
+                className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted">{t('adminOrg.prospects.reassignModal.cancel')}</button>
               <button onClick={handleConfirmReassign}
-                className="flex-1 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600">Confirmer</button>
+                className="flex-1 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600">{t('adminOrg.prospects.reassignModal.confirm')}</button>
             </div>
           </div>
         </div>
@@ -450,7 +449,7 @@ export const ProspectsListAdmin: React.FC = () => {
           <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto font-sans">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-foreground">
-                {isEn ? 'New Prospect' : 'Nouveau Prospect'}
+                {t('adminOrg.prospects.modal.title')}
               </h2>
               <button onClick={() => { setIsNewModalOpen(false); resetForm(); }} className="p-1 hover:bg-muted rounded-lg">
                 <X className="w-5 h-5" />
@@ -460,7 +459,7 @@ export const ProspectsListAdmin: React.FC = () => {
             {duplicateAlert && (
               <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-bold flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>{isEn ? 'Warning: This phone number already exists in the organization!' : "Ce numéro existe déjà dans l'organisation !"}</span>
+                <span>{t('adminOrg.prospects.modal.duplicate')}</span>
               </div>
             )}
 
@@ -468,22 +467,22 @@ export const ProspectsListAdmin: React.FC = () => {
               {/* Identité */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {isEn ? 'IDENTITY' : 'Identité'}
+                  {t('adminOrg.prospects.modal.sectionId')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Last Name *' : 'Nom *'}</label>
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.lastName')}</label>
                     <input type="text" value={fNom} onChange={(e) => setFNom(e.target.value)}
                       placeholder="Diop" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'First Name' : 'Prénom'}</label>
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.firstName')}</label>
                     <input type="text" value={fPrenom} onChange={(e) => setFPrenom(e.target.value)}
                       placeholder="Moussa" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Company *' : 'Entreprise *'}</label>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.company')}</label>
                   <input type="text" value={fEntreprise} onChange={(e) => setFEntreprise(e.target.value)}
                     placeholder="Dakar Tech Ltd" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
@@ -492,11 +491,11 @@ export const ProspectsListAdmin: React.FC = () => {
               {/* Contact */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {isEn ? 'CONTACT' : 'Contact'}
+                  {t('adminOrg.prospects.modal.sectionContact')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Phone *' : 'Téléphone *'}</label>
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.phone')}</label>
                     <input type="tel" value={fTelephone} onChange={(e) => handlePhoneChange(e.target.value)}
                       placeholder="+221 77 123 45 67" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
@@ -516,25 +515,25 @@ export const ProspectsListAdmin: React.FC = () => {
               {/* Localisation */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {isEn ? 'LOCATION' : 'Localisation'}
+                  {t('adminOrg.prospects.modal.sectionLocation')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Country *' : 'Pays *'}</label>
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.country')}</label>
                     <select value={fPays} onChange={(e) => setFPays(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                       {paysOptions.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'City' : 'Ville'}</label>
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.city')}</label>
                     <input type="text" value={fVille} onChange={(e) => setFVille(e.target.value)}
                       placeholder="Dakar" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Address' : 'Adresse'}</label>
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.address')}</label>
                     <input type="text" value={fAdresse} onChange={(e) => setFAdresse(e.target.value)}
-                      placeholder={isEn ? 'Neighborhood, street...' : 'Quartier, rue...'} className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                      placeholder={t('adminOrg.prospects.modal.address')} className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
               </div>
@@ -542,14 +541,14 @@ export const ProspectsListAdmin: React.FC = () => {
               {/* Attribution & Pipeline */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {isEn ? 'ASSIGNMENT & PIPELINE' : 'Attribution & Pipeline'}
+                  {t('adminOrg.prospects.modal.sectionPipeline')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Industry / Sector' : "Secteur d'activité"}</label>
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.sector')}</label>
                     <select value={fSecteur} onChange={(e) => setFSecteur(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                      <option value="">{isEn ? '— Select —' : '— Sélectionner —'}</option>
+                      <option value="">{t('adminOrg.prospects.modal.select')}</option>
                       {SECTEURS.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
@@ -561,28 +560,28 @@ export const ProspectsListAdmin: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Assigned Sales Rep *' : 'Commercial attribué *'}</label>
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.assignedTo')}</label>
                     <select value={fCommercialId} onChange={(e) => setFCommercialId(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                       {commerciaux.map(c => <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Pipeline Stage' : 'Étape pipeline'}</label>
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.pipelineStage')}</label>
                     <select value={fEtape} onChange={(e) => setFEtape(e.target.value as PipelineStepId)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                       {ETAPES.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Target Plan' : 'Formule envisagée'}</label>
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.targetPlan')}</label>
                     <select value={fFormule} onChange={(e) => setFFormule(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                       {activeOrgOffers.map(o => <option key={o.id} value={o.nom}>{o.nom}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Estimated Budget (FCFA)' : 'Budget estimé (FCFA)'}</label>
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.budget')}</label>
                     <input type="number" value={fBudget} onChange={(e) => setFBudget(e.target.value)}
                       placeholder="500000" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
@@ -592,16 +591,16 @@ export const ProspectsListAdmin: React.FC = () => {
               {/* Notes */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {isEn ? 'NOTES & FOLLOW-UP' : 'Notes & Relance'}
+                  {t('adminOrg.prospects.modal.sectionNotes')}
                 </h3>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Comment' : 'Commentaire'}</label>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.comment')}</label>
                   <textarea value={fCommentaire} onChange={(e) => setFCommentaire(e.target.value)}
-                    rows={2} placeholder={isEn ? 'Internal notes...' : 'Notes internes...'}
+                    rows={2} placeholder={t('adminOrg.prospects.modal.commentPlaceholder')}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Next Follow-up Date' : 'Date prochaine relance'}</label>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.followUpDate')}</label>
                   <input type="date" value={fRelance} onChange={(e) => setFRelance(e.target.value)}
                     style={{ colorScheme: 'auto' }}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
@@ -610,7 +609,7 @@ export const ProspectsListAdmin: React.FC = () => {
 
               <button type="submit"
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all">
-                {isEn ? 'Create Prospect' : 'Créer le prospect'}
+                {t('adminOrg.prospects.modal.createBtn')}
               </button>
             </form>
           </div>

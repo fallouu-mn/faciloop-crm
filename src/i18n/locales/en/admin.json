@@ -9,5 +9,389 @@
   "actions": {
     "importCsv": "Import CSV",
     "newRep": "New Sales Rep"
+  },
+  "adminOrg": {
+    "dashboard": {
+      "greeting": "Hello",
+      "subtitle": "Global sales overview and team performance",
+      "managementPrefix": "Management",
+      "period": {
+        "mois": "This month",
+        "trimestre": "This quarter",
+        "annee": "This year",
+        "personnalise": "Custom"
+      },
+      "customPeriod": "Custom period",
+      "from": "From",
+      "to": "To",
+      "newSalesRep": "+ New Sales Rep",
+      "totalProspects": "Total Prospects",
+      "activeClients": "Active Clients",
+      "conversionRate": "Conversion Rate",
+      "revenue": "Revenue",
+      "leaderboard": "Ranking & Performance",
+      "manageTeam": "Manage team →",
+      "col": {
+        "commercial": "Sales Rep",
+        "prospects": "Prospects",
+        "sales": "Sales",
+        "revenue": "Revenue",
+        "convRate": "Conv. Rate"
+      },
+      "noActiveSalesRep": "No active sales rep",
+      "compareChart": "Volume & Sales Comparison",
+      "viewAllProspects": "View all prospects",
+      "byFormule": "By plan",
+      "bySector": "By sector",
+      "client": "client",
+      "clients": "clients"
+    },
+    "equipe": {
+      "title": "Sales Team Management",
+      "subtitle": "Manage access for your company sales representatives",
+      "addBtn": "+ Add Sales Rep",
+      "col": {
+        "salesRep": "Sales Rep",
+        "phone": "Phone",
+        "status": "Status",
+        "action": "Action"
+      },
+      "activate": "Activate",
+      "deactivate": "Desactivate",
+      "modal": {
+        "title": "Create Sales Rep Account",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Professional Email",
+        "phone": "Mobile Phone",
+        "createBtn": "Create sales rep access",
+        "errorDefault": "Failed to create sales rep"
+      }
+    },
+    "objectifs": {
+      "title": "Sales Objectives",
+      "subtitle": "Define and track objectives for each sales rep",
+      "defineBtn": "Define an objective",
+      "kpi": {
+        "tracked": "Sales reps tracked",
+        "defined": "Objectives defined",
+        "avgRate": "Average achievement rate"
+      },
+      "types": {
+        "ca": "Revenue",
+        "ventes": "Number of sales",
+        "prospects": "Prospects created"
+      },
+      "caEncaisse": "Revenue collected",
+      "ventes": "Sales",
+      "period": {
+        "hebdomadaire": "Weekly",
+        "mensuel": "Monthly",
+        "trimestriel": "Quarterly",
+        "annuel": "Annual"
+      },
+      "modal": {
+        "title": "Define an objective",
+        "commercial": "Sales Rep *",
+        "type": "Objective type *",
+        "target": "Target value *",
+        "periodType": "Period type",
+        "startDate": "Start date *",
+        "endDate": "End date *",
+        "cancel": "Cancel",
+        "submit": "Define objective"
+      },
+      "empty": "No objectives defined. Click \"Define an objective\" to get started.",
+      "toast": "Objective defined successfully!",
+      "deleteTitle": "Delete objective"
+    },
+    "prospects": {
+      "title": "Prospects",
+      "adminView": "Admin View",
+      "subtitle": "Complete prospect management for the organization",
+      "newBtn": "New Prospect",
+      "reassignBtn": "Reassign",
+      "search": "Search by name, company or phone...",
+      "resetFilters": "Reset",
+      "filterAll": {
+        "stages": "All stages",
+        "sources": "All sources",
+        "commercials": "All sales reps",
+        "countries": "All countries"
+      },
+      "hideClosedToggle": "Hide won / lost prospects",
+      "col": {
+        "prospect": "Prospect / Company",
+        "phone": "Phone",
+        "stage": "Stage",
+        "source": "Source",
+        "commercial": "Sales Rep",
+        "followUp": "Next follow-up",
+        "actions": "Actions"
+      },
+      "empty": "No prospects found for these filters.",
+      "emptyMobile": "No prospects found.",
+      "unassigned": "Unassigned",
+      "openFile": "Open File",
+      "relanceLabel": "Follow-up:",
+      "deleteConfirm": "Permanently delete this prospect?",
+      "modal": {
+        "title": "New Prospect",
+        "sectionId": "IDENTITY",
+        "sectionContact": "CONTACT",
+        "sectionLocation": "LOCATION",
+        "sectionPipeline": "ASSIGNMENT & PIPELINE",
+        "sectionNotes": "NOTES & FOLLOW-UP",
+        "lastName": "Last Name *",
+        "firstName": "First Name",
+        "company": "Company *",
+        "phone": "Phone *",
+        "country": "Country *",
+        "city": "City",
+        "address": "Address",
+        "sector": "Industry / Sector",
+        "select": "— Select —",
+        "assignedTo": "Assigned Sales Rep *",
+        "pipelineStage": "Pipeline Stage",
+        "targetPlan": "Target Plan",
+        "budget": "Estimated Budget (FCFA)",
+        "comment": "Comment",
+        "commentPlaceholder": "Internal notes...",
+        "followUpDate": "Next Follow-up Date",
+        "createBtn": "Create Prospect",
+        "duplicate": "Warning: This phone number already exists in the organization!"
+      },
+      "reassignModal": {
+        "title": "Reassignment",
+        "cancel": "Cancel",
+        "confirm": "Confirm"
+      },
+      "toast": {
+        "created": "Prospect created successfully!",
+        "reassigned": "prospects reassigned!"
+      }
+    },
+    "clients": {
+      "title": "Client Accounts",
+      "convertedTag": "Converted Prospects",
+      "subtitle": "Clients resulting from prospect conversion — active accounts & subscriptions",
+      "kpi": {
+        "total": "Total clients",
+        "active": "Active accounts",
+        "revenue": "Total Revenue",
+        "renewals": "Upcoming Renewals (30d)"
+      },
+      "search": "Search by company, manager or phone...",
+      "resetFilters": "Reset",
+      "col": {
+        "company": "Company",
+        "manager": "Manager",
+        "plan": "Plan",
+        "status": "Status",
+        "subscription": "Subscription",
+        "renewal": "Renewal",
+        "inactivity": "Inactivity",
+        "actions": "Actions"
+      },
+      "empty": "No clients found. Clients appear after converting a prospect.",
+      "emptyMobile": "No clients found.",
+      "details": "Details",
+      "clientFile": "Client File",
+      "close": "Close",
+      "renewalIn": "Renewal in",
+      "inactiveSince": "Inactive for",
+      "days": "days",
+      "expired": "Expired",
+      "renewal": "Renewal"
+    },
+    "abonnements": {
+      "title": "Subscription Plans",
+      "subtitle": "Manage the plans offered to your clients",
+      "addBtn": "Add a plan",
+      "period": {
+        "mensuel": "monthly",
+        "trimestriel": "quarterly",
+        "annuel": "annual"
+      },
+      "periodShort": {
+        "mensuel": "mo",
+        "trimestriel": "qtr",
+        "annuel": "yr"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "pricing": "Pricing (FCFA)",
+      "offerActive": "Offer active",
+      "edit": "Edit",
+      "modal": {
+        "createTitle": "Create a plan",
+        "editTitle": "Edit plan",
+        "name": "Plan name *",
+        "description": "Description",
+        "cancel": "Cancel",
+        "save": "Save",
+        "create": "Create plan"
+      },
+      "empty": {
+        "title": "No plans created",
+        "subtitle": "Create your first plan to start converting prospects",
+        "btn": "Create a plan"
+      },
+      "toast": {
+        "created": "Plan created successfully",
+        "updated": "Plan updated successfully",
+        "deleted": "Plan deleted"
+      }
+    },
+    "paiements": {
+      "title": "Payments & Invoices",
+      "badge": "SaaS Accounting",
+      "subtitle": "Subscription payment history and downloadable PDF receipts",
+      "downloadReleve": "Statement",
+      "kpi": {
+        "collected": "Total Collected",
+        "transactions": "Transactions",
+        "subscriptions": "subscriptions recorded"
+      },
+      "filterAll": "All payment methods",
+      "list": "Transaction List",
+      "col": {
+        "ref": "Invoice Ref.",
+        "company": "Client Company",
+        "amount": "Amount Paid",
+        "mode": "Payment Method",
+        "transactionRef": "Transaction Ref.",
+        "status": "Status",
+        "invoice": "Invoice PDF"
+      },
+      "downloadPdf": "PDF",
+      "downloadInvoice": "Download Invoice PDF",
+      "modes": {
+        "card": "Credit Card (Stripe)",
+        "transfer": "Bank Transfer"
+      }
+    },
+    "commissions": {
+      "title": "Commissions",
+      "badge": "Variable Pay",
+      "subtitle": "Commission tracking for sales reps — Rates: 5% monthly, 8% quarterly, 10% annual",
+      "periodLabel": "Period:",
+      "allPeriods": "All periods",
+      "kpi": {
+        "toVerify": "Total to Pay",
+        "revenue": "Revenue Generated",
+        "salesReps": "Sales Reps",
+        "sales": "Sales"
+      },
+      "detailTitle": "Detail by Sales Rep",
+      "salesCount": "sale(s)",
+      "caLabel": "Rev:",
+      "toPay": "to pay",
+      "markPaid": "Mark as paid",
+      "paid": "Paid ✓",
+      "empty": "No commissions for this period"
+    },
+    "journal": {
+      "title": "Activity Audit Log",
+      "badge": "Audit Log",
+      "subtitle": "Complete history of user actions and operations performed in your organization",
+      "events": "event(s)",
+      "search": "Search by action, user or target...",
+      "filters": {
+        "all": "All actions",
+        "prospect": "Prospects",
+        "client": "Clients",
+        "offer": "Offers & Subscriptions",
+        "payment": "Payments",
+        "objectif": "Objectives",
+        "org": "Organization"
+      },
+      "element": "Element:",
+      "empty": {
+        "title": "No events found",
+        "subtitle": "Change your filters to view the activity history."
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Important alerts and events for your organization",
+      "markAllRead": "Mark all as read",
+      "filters": {
+        "toutes": "All",
+        "non_lues": "Unread",
+        "activite": "Activity",
+        "paiements": "Payments",
+        "clients": "Clients",
+        "objectifs": "Objectives"
+      },
+      "emptyAll": "No notifications",
+      "emptyUnread": "No unread notifications"
+    },
+    "parametres": {
+      "title": "Company Settings",
+      "subtitle": "General information, contact details, and organization preferences",
+      "saved": "Settings saved successfully!",
+      "sections": {
+        "visual": "Visual Identity",
+        "general": "General information",
+        "contact": "Contact details"
+      },
+      "changeLogo": "Change logo",
+      "companyName": "Company name *",
+      "sector": "Industry / Sector",
+      "currency": "Default currency",
+      "country": "Country",
+      "city": "City",
+      "address": "Full address",
+      "addressPlaceholder": "Street number, neighborhood...",
+      "phone": "Phone",
+      "email": "Professional email",
+      "website": "Website",
+      "websitePlaceholder": "https://...",
+      "saveBtn": "Save changes",
+      "select": "Select"
+    },
+    "importExport": {
+      "title": "Data Import / Export (CSV & Excel)",
+      "subtitle": "Import prospect lists, bulk-assign them and prevent duplicates",
+      "export": {
+        "title": "Export my data as CSV",
+        "prospects": "Export Prospects",
+        "clients": "Export Faciloop Clients",
+        "prospectsSubtitle": "Ready CSV file with all CRM columns",
+        "clientsSubtitle": "Full CSV with subscribed plans and amounts"
+      },
+      "import": {
+        "title": "Import a prospect list (CSV file)",
+        "subtitle": "Accepts comma (,) and semicolon (;) separators",
+        "assignTo": "Assign list to:",
+        "dropzone": "Drag and drop your CSV file here",
+        "browseBtn": "Browse files",
+        "changeBtn": "Change CSV file",
+        "fileLoaded": "File loaded:",
+        "parsing": "Parsing CSV & running duplicate scanner...",
+        "success": "Import completed successfully!",
+        "importedPrefix": "prospects have been imported and assigned to",
+        "duplicatesIgnored": "duplicates skipped",
+        "preview": "Preview summary before validation:",
+        "ready": "ready",
+        "attribution": "Assigned to:",
+        "validateBtn": "Validate import",
+        "successBtn": "Prospects imported!"
+      },
+      "col": {
+        "name": "Name / Contact",
+        "company": "Company",
+        "phone": "Phone",
+        "source": "Source",
+        "dupStatus": "Duplicate Status"
+      },
+      "status": {
+        "ready": "✓ Ready",
+        "duplicate": "⚠️ Duplicate (Skipped)"
+      }
+    }
   }
 }

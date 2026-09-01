@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Check, X, Users, TrendingUp, CalendarDays, Goal, Trash2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
@@ -16,15 +17,17 @@ function getMonthRange(): { start: string; end: string } {
   return { start, end };
 }
 
-const PERIODE_LABELS: Record<string, string> = {
-  hebdomadaire: 'Hebdomadaire',
-  mensuel: 'Mensuel',
-  trimestriel: 'Trimestriel',
-  annuel: 'Annuel',
-};
 
 export const ObjectifsAdminPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const { objectifs, addObjectif, deleteObjectif, commerciaux, paiements, clients, prospects } = useAuth();
+
+  const PERIODE_LABELS: Record<string, string> = {
+    hebdomadaire: t('adminOrg.objectifs.period.hebdomadaire'),
+    mensuel: t('adminOrg.objectifs.period.mensuel'),
+    trimestriel: t('adminOrg.objectifs.period.trimestriel'),
+    annuel: t('adminOrg.objectifs.period.annuel'),
+  };
   const [devise, setDevise] = useState<DeviseCode>('XOF');
   const [isDefineOpen, setIsDefineOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -130,7 +133,7 @@ export const ObjectifsAdminPage: React.FC = () => {
     });
     setIsDefineOpen(false);
     setFormObjectif('');
-    setToastMessage('Objectif défini avec succès !');
+    setToastMessage(t('adminOrg.objectifs.toast'));
     setTimeout(() => setToastMessage(null), 3000);
   };
 
@@ -158,9 +161,9 @@ export const ObjectifsAdminPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Objectifs Commerciaux</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">{t('adminOrg.objectifs.title')}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Définissez et suivez les objectifs de chaque commercial
+            {t('adminOrg.objectifs.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -170,7 +173,7 @@ export const ObjectifsAdminPage: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>Définir un objectif</span>
+            <span>{t('adminOrg.objectifs.defineBtn')}</span>
           </button>
         </div>
       </div>
@@ -185,21 +188,21 @@ export const ObjectifsAdminPage: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Commerciaux suivis</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('adminOrg.objectifs.kpi.tracked')}</span>
             <Users className="h-4 w-4 text-primary" />
           </div>
           <span className="text-lg font-bold text-foreground">{Object.keys(groupedByCommercial).length}</span>
         </div>
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Objectifs définis</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('adminOrg.objectifs.kpi.defined')}</span>
             <Goal className="h-4 w-4 text-primary" />
           </div>
           <span className="text-lg font-bold text-foreground">{objectifs.length}</span>
         </div>
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Taux atteinte moyen</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('adminOrg.objectifs.kpi.avgRate')}</span>
             <TrendingUp className="h-4 w-4 text-emerald-500" />
           </div>
           <span className="text-lg font-bold text-emerald-600">{avgAtteinte}%</span>
@@ -238,13 +241,13 @@ export const ObjectifsAdminPage: React.FC = () => {
                 <div className="hidden sm:flex items-center gap-4 text-xs">
                   {objs.some((o) => o.type === 'ca') && (
                     <div className="text-right">
-                      <p className="text-muted-foreground font-medium">CA encaissé</p>
+                      <p className="text-muted-foreground font-medium">{t('adminOrg.objectifs.caEncaisse')}</p>
                       <p className="font-extrabold text-emerald-600">{fmt(totalCAComm)}</p>
                     </div>
                   )}
                   {objs.some((o) => o.type === 'ventes') && (
                     <div className="text-right">
-                      <p className="text-muted-foreground font-medium">Ventes</p>
+                      <p className="text-muted-foreground font-medium">{t('adminOrg.objectifs.ventes')}</p>
                       <p className="font-extrabold text-foreground">{totalVentesComm}</p>
                     </div>
                   )}
@@ -267,18 +270,14 @@ export const ObjectifsAdminPage: React.FC = () => {
                     <div key={obj.id} className="space-y-2">
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-medium text-foreground capitalize">
-                          {obj.type === 'ca'
-                            ? "Chiffre d'affaires"
-                            : obj.type === 'ventes'
-                            ? 'Nombre de ventes'
-                            : 'Prospects créés'}
+                          {t(`adminOrg.objectifs.types.${obj.type}`)}
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground">{periodeLabel}</span>
                           <button
                             onClick={() => deleteObjectif(obj.id)}
                             className="p-1 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
-                            title="Supprimer l'objectif"
+                            title={t('adminOrg.objectifs.deleteTitle')}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -311,7 +310,7 @@ export const ObjectifsAdminPage: React.FC = () => {
 
         {objectifs.length === 0 && (
           <div className="p-8 text-center rounded-xl border border-dashed border-border text-muted-foreground text-sm">
-            Aucun objectif défini. Cliquez sur "Définir un objectif" pour commencer.
+            {t('adminOrg.objectifs.empty')}
           </div>
         )}
       </div>
@@ -322,7 +321,7 @@ export const ObjectifsAdminPage: React.FC = () => {
           <div className="w-full max-w-md bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-                <Goal className="w-5 h-5 text-primary" /> Définir un objectif
+                <Goal className="w-5 h-5 text-primary" /> {t('adminOrg.objectifs.modal.title')}
               </h2>
               <button onClick={() => setIsDefineOpen(false)} className="p-1 hover:bg-muted rounded-lg">
                 <X className="w-5 h-5 text-muted-foreground" />
@@ -331,7 +330,7 @@ export const ObjectifsAdminPage: React.FC = () => {
 
             <div className="space-y-3 text-xs">
               <SelectCustom
-                label="Commercial *"
+                label={t('adminOrg.objectifs.modal.commercial')}
                 value={formCommercialId}
                 onChange={setFormCommercialId}
                 searchable={true}
@@ -339,7 +338,7 @@ export const ObjectifsAdminPage: React.FC = () => {
               />
 
               <SelectCustom
-                label="Type d'objectif *"
+                label={t('adminOrg.objectifs.modal.type')}
                 value={formType}
                 onChange={(v) => setFormType(v as any)}
                 options={[
@@ -351,7 +350,7 @@ export const ObjectifsAdminPage: React.FC = () => {
 
               <div>
                 <label className="block font-semibold mb-1">
-                  Valeur cible * {formType === 'ca' && '(en FCFA)'}
+                  {t('adminOrg.objectifs.modal.target')} {formType === 'ca' && '(en FCFA)'}
                 </label>
                 <input
                   type="number"
@@ -365,7 +364,7 @@ export const ObjectifsAdminPage: React.FC = () => {
               <div>
                 <label className="block font-semibold mb-1 flex items-center gap-1.5">
                   <CalendarDays className="w-3.5 h-3.5 text-primary" />
-                  Type de période
+                  {t('adminOrg.objectifs.modal.periodType')}
                 </label>
                 <select
                   value={formPeriodeType}
@@ -384,7 +383,7 @@ export const ObjectifsAdminPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">Date début *</label>
+                  <label className="block font-semibold mb-1">{t('adminOrg.objectifs.modal.startDate')}</label>
                   <input
                     type="date"
                     value={formDebut}
@@ -393,7 +392,7 @@ export const ObjectifsAdminPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Date fin *</label>
+                  <label className="block font-semibold mb-1">{t('adminOrg.objectifs.modal.endDate')}</label>
                   <input
                     type="date"
                     value={formFin}
@@ -409,14 +408,14 @@ export const ObjectifsAdminPage: React.FC = () => {
                 onClick={() => setIsDefineOpen(false)}
                 className="flex-1 py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground"
               >
-                Annuler
+                {t('adminOrg.objectifs.modal.cancel')}
               </button>
               <button
                 onClick={handleDefine}
                 disabled={!formObjectif}
                 className="flex-1 py-3 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 shadow-md disabled:opacity-50"
               >
-                Définir l'objectif
+                {t('adminOrg.objectifs.modal.submit')}
               </button>
             </div>
           </div>

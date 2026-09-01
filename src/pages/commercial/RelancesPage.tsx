@@ -77,6 +77,7 @@ export const RelancesPage: React.FC = () => {
   const [formHeure, setFormHeure]           = useState('09:30');
   const [formCanal, setFormCanal]           = useState<RelanceCanal>('whatsapp');
   const [formCommentaire, setFormCommentaire] = useState('');
+  const [formCommercialId, setFormCommercialId] = useState<string>(() => commerciaux[0]?.id || '');
 
   // prospect base route depends on role
   const prospectBase = isAdmin ? '/admin/prospects' : '/app/prospects';
@@ -159,11 +160,12 @@ export const RelancesPage: React.FC = () => {
       motif: formCommentaire,
       commentaire: formCommentaire,
       statut: 'prevue',
-      commercial_id: user?.commercialId,
+      commercial_id: isAdmin ? formCommercialId : user?.commercialId,
     } as any);
     setIsModalOpen(false);
     setFormProspectId('');
     setFormCommentaire('');
+    setFormCommercialId(commerciaux[0]?.id || '');
   };
 
   // ── date color
@@ -402,6 +404,22 @@ export const RelancesPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleCreate} className="space-y-3 text-xs">
+              {isAdmin && (
+                <div>
+                  <label className="block font-semibold mb-1">Commercial *</label>
+                  <select
+                    required
+                    value={formCommercialId}
+                    onChange={e => setFormCommercialId(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  >
+                    <option value="">Sélectionner un commercial</option>
+                    {commerciaux.map(c => (
+                      <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block font-semibold mb-1">
                   {isEn ? 'Prospect' : 'Prospect à relancer'} *
@@ -471,7 +489,7 @@ export const RelancesPage: React.FC = () => {
 
               <button
                 type="submit"
-                disabled={!formProspectId || !formCommentaire}
+                disabled={!formProspectId || !formCommentaire || (isAdmin && !formCommercialId)}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50"
               >
                 {isEn ? 'Confirm Follow-up' : 'Valider la relance'}

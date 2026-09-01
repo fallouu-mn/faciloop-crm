@@ -100,15 +100,9 @@ const DashboardAdminSkeleton: React.FC = () => (
   </div>
 );
 
-const PERIOD_LABELS: Record<PeriodFilter, string> = {
-  mois: 'Ce mois',
-  trimestre: 'Ce trimestre',
-  annee: 'Cette année',
-  personnalise: 'Personnalisé',
-};
 
 export const DashboardAdminOrg: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation('admin');
   const { user, currentOrg, prospects, clients, commerciaux, paiements } = useAuth();
   const [currency, setCurrency] = useState<DeviseCode>('XOF');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -122,8 +116,14 @@ export const DashboardAdminOrg: React.FC = () => {
     return `${now.getFullYear()}-12-31`;
   });
 
-  const isEn = i18n.language?.startsWith('en');
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', currency), currency);
+
+  const PERIOD_LABELS: Record<PeriodFilter, string> = {
+    mois: t('adminOrg.dashboard.period.mois'),
+    trimestre: t('adminOrg.dashboard.period.trimestre'),
+    annee: t('adminOrg.dashboard.period.annee'),
+    personnalise: t('adminOrg.dashboard.period.personnalise'),
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 700);
@@ -214,10 +214,10 @@ export const DashboardAdminOrg: React.FC = () => {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
-              {isEn ? 'Hello' : 'Bonjour'}, {user?.prenom || 'Admin'} 👋
+              {t('adminOrg.dashboard.greeting')}, {user?.prenom || 'Admin'} 👋
             </h1>
             <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider">
-              {isEn ? 'Management' : 'Direction'} {currentOrg?.nom || ''}
+              {t('adminOrg.dashboard.managementPrefix')} {currentOrg?.nom || ''}
             </span>
           </div>
           <div className="flex items-center rounded-2xl bg-muted/80 p-1 border border-border/80 text-xs font-black shrink-0">
@@ -237,9 +237,7 @@ export const DashboardAdminOrg: React.FC = () => {
           </div>
         </div>
         <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
-          {isEn
-            ? 'Global sales overview and team performance'
-            : "Vue d'ensemble de l'activité commerciale globale et performance d'équipe"}
+          {t('adminOrg.dashboard.subtitle')}
         </p>
       </div>
 
@@ -266,14 +264,14 @@ export const DashboardAdminOrg: React.FC = () => {
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-input bg-card px-3 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-foreground shadow-sm hover:bg-muted transition-all"
           >
             <FileSpreadsheet className="h-4 w-4 text-emerald-500 shrink-0" />
-            <span>Import CSV</span>
+            <span>{t('actions.importCsv')}</span>
           </Link>
           <Link
             to="/admin/equipe"
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-faciloop px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
           >
             <UserPlus className="h-4 w-4 shrink-0" />
-            <span>{isEn ? '+ New Sales Rep' : 'Nouveau Commercial'}</span>
+            <span>{t('adminOrg.dashboard.newSalesRep')}</span>
           </Link>
         </div>
       </div>
@@ -282,10 +280,10 @@ export const DashboardAdminOrg: React.FC = () => {
       {period === 'personnalise' && (
         <div className="flex flex-wrap items-center gap-3 p-3 sm:p-4 rounded-2xl border border-primary/30 bg-primary/5">
           <Calendar className="h-4 w-4 text-primary shrink-0" />
-          <span className="text-xs font-bold text-primary">Période personnalisée</span>
+          <span className="text-xs font-bold text-primary">{t('adminOrg.dashboard.customPeriod')}</span>
           <div className="flex flex-wrap items-center gap-3 ml-auto sm:ml-0">
             <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Du</label>
+              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">{t('adminOrg.dashboard.from')}</label>
               <input
                 type="date"
                 value={customStart}
@@ -296,7 +294,7 @@ export const DashboardAdminOrg: React.FC = () => {
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Au</label>
+              <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">{t('adminOrg.dashboard.to')}</label>
               <input
                 type="date"
                 value={customEnd}
@@ -318,7 +316,7 @@ export const DashboardAdminOrg: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-              Total Prospects
+              {t('adminOrg.dashboard.totalProspects')}
             </span>
             <div className="rounded-2xl bg-blue-500/10 p-2 sm:p-2.5 text-blue-500 shadow-sm">
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -340,7 +338,7 @@ export const DashboardAdminOrg: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-              Clients Actifs
+              {t('adminOrg.dashboard.activeClients')}
             </span>
             <div className="rounded-2xl bg-emerald-500/10 p-2 sm:p-2.5 text-emerald-500 shadow-sm">
               <UserCheck className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -362,7 +360,7 @@ export const DashboardAdminOrg: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-              Taux de Conversion
+              {t('adminOrg.dashboard.conversionRate')}
             </span>
             <div className="rounded-2xl bg-purple-500/10 p-2 sm:p-2.5 text-purple-500 shadow-sm">
               <Award className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -384,7 +382,7 @@ export const DashboardAdminOrg: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-              Chiffre d'Affaires
+              {t('adminOrg.dashboard.revenue')}
             </span>
             <div className="rounded-2xl bg-emerald-500/10 p-2 sm:p-2.5 text-emerald-500 shadow-sm">
               <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -407,10 +405,10 @@ export const DashboardAdminOrg: React.FC = () => {
           <div className="flex items-center justify-between">
             <h2 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
               <Crown className="w-4 h-4 text-amber-500" />
-              <span>Classement & Performance — {PERIOD_LABELS[period]}</span>
+              <span>{t('adminOrg.dashboard.leaderboard')} — {PERIOD_LABELS[period]}</span>
             </h2>
             <Link to="/admin/equipe" className="text-[11px] sm:text-xs font-bold text-primary hover:underline">
-              Gérer l'équipe →
+              {t('adminOrg.dashboard.manageTeam')}
             </Link>
           </div>
 
@@ -419,18 +417,18 @@ export const DashboardAdminOrg: React.FC = () => {
             <table className="w-full text-left text-xs min-w-[550px]">
               <thead className="border-b border-border/80 bg-muted/60 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="p-4">Commercial</th>
-                  <th className="p-4">Prospects</th>
-                  <th className="p-4">Ventes</th>
-                  <th className="p-4">CA Encaissé</th>
-                  <th className="p-4 text-right">Taux Conv.</th>
+                  <th className="p-4">{t('adminOrg.dashboard.col.commercial')}</th>
+                  <th className="p-4">{t('adminOrg.dashboard.col.prospects')}</th>
+                  <th className="p-4">{t('adminOrg.dashboard.col.sales')}</th>
+                  <th className="p-4">{t('adminOrg.dashboard.col.revenue')}</th>
+                  <th className="p-4 text-right">{t('adminOrg.dashboard.col.convRate')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60 text-[11px]">
                 {teamData.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-6 text-center text-muted-foreground text-xs">
-                      Aucun commercial actif
+                      {t('adminOrg.dashboard.noActiveSalesRep')}
                     </td>
                   </tr>
                 ) : (
@@ -504,7 +502,7 @@ export const DashboardAdminOrg: React.FC = () => {
         <div className="space-y-3 sm:space-y-4">
           <h2 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary" />
-            <span>Comparaison Volume & Ventes</span>
+            <span>{t('adminOrg.dashboard.compareChart')}</span>
           </h2>
           <div className="p-4 sm:p-5 rounded-3xl border border-border/80 bg-card shadow-sm space-y-3 sm:space-y-4">
             <div className="h-56 sm:h-64 w-full">
@@ -523,7 +521,7 @@ export const DashboardAdminOrg: React.FC = () => {
               to="/admin/prospects"
               className="w-full py-2.5 sm:py-3 rounded-2xl bg-gradient-faciloop text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
             >
-              <span>Consulter tous les prospects</span>
+              <span>{t('adminOrg.dashboard.viewAllProspects')}</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -537,7 +535,7 @@ export const DashboardAdminOrg: React.FC = () => {
             <div className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm space-y-3">
               <h3 className="text-xs font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
                 <PieChart className="w-4 h-4 text-primary" />
-                Répartition par formule
+                {t('adminOrg.dashboard.byFormule')}
               </h3>
               <div className="space-y-2">
                 {repartitionFormule.map(({ formule, nombre }) => {
@@ -547,7 +545,7 @@ export const DashboardAdminOrg: React.FC = () => {
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-semibold text-foreground">{formule}</span>
                         <span className="text-muted-foreground font-bold">
-                          {nombre} client{nombre > 1 ? 's' : ''} · {pct}%
+                          {nombre} {nombre > 1 ? t('adminOrg.dashboard.clients') : t('adminOrg.dashboard.client')} · {pct}%
                         </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-1.5">
@@ -567,7 +565,7 @@ export const DashboardAdminOrg: React.FC = () => {
             <div className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm space-y-3">
               <h3 className="text-xs font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
                 <Plus className="w-4 h-4 text-emerald-500" />
-                Répartition par secteur
+                {t('adminOrg.dashboard.bySector')}
               </h3>
               <div className="space-y-2">
                 {repartitionSecteur.map(({ secteur, nombre }) => {

@@ -48,7 +48,7 @@ const ACTION_TYPE_CONFIG: Record<ActionLogType, { icon: React.ComponentType<{ cl
 };
 
 export const JournalActionsPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('admin');
   const { actionLogs } = useAuth();
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -56,13 +56,13 @@ export const JournalActionsPage: React.FC = () => {
   const isEn = i18n.language?.startsWith('en');
 
   const FILTER_CATEGORIES = [
-    { value: 'all', label: isEn ? 'All actions' : 'Toutes les actions' },
-    { value: 'prospect', label: 'Prospects' },
-    { value: 'client', label: 'Clients' },
-    { value: 'offer', label: isEn ? 'Offers & Subscriptions' : 'Offres & Abonnements' },
-    { value: 'payment', label: isEn ? 'Payments' : 'Paiements' },
-    { value: 'objectif', label: isEn ? 'Objectives' : 'Objectifs' },
-    { value: 'org', label: isEn ? 'Organization' : 'Organisation' },
+    { value: 'all', label: t('adminOrg.journal.filters.all') },
+    { value: 'prospect', label: t('adminOrg.journal.filters.prospect') },
+    { value: 'client', label: t('adminOrg.journal.filters.client') },
+    { value: 'offer', label: t('adminOrg.journal.filters.offer') },
+    { value: 'payment', label: t('adminOrg.journal.filters.payment') },
+    { value: 'objectif', label: t('adminOrg.journal.filters.objectif') },
+    { value: 'org', label: t('adminOrg.journal.filters.org') },
   ];
 
   const sorted = useMemo(() =>
@@ -118,18 +118,18 @@ export const JournalActionsPage: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
-              {isEn ? 'Activity Audit Log' : "Journal d'Activité"}
+              {t('adminOrg.journal.title')}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-slate-500/10 text-slate-600 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-              <History className="w-3 h-3" /> Audit Log
+              <History className="w-3 h-3" /> {t('adminOrg.journal.badge')}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5">
-            {isEn ? 'Complete history of user actions and operations performed in your organization' : "Historique complet des actions et opérations effectuées par les utilisateurs de votre entreprise"}
+            {t('adminOrg.journal.subtitle')}
           </p>
         </div>
         <div className="text-xs font-bold text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl border border-border/60">
-          {filtered.length} {isEn ? 'event(s)' : 'événement(s)'}
+          {filtered.length} {t('adminOrg.journal.events')}
         </div>
       </div>
 
@@ -141,7 +141,7 @@ export const JournalActionsPage: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher par action, utilisateur ou cible..."
+            placeholder={t('adminOrg.journal.search')}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-input bg-card text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
           />
         </div>
@@ -208,7 +208,7 @@ export const JournalActionsPage: React.FC = () => {
 
                         {log.cible && (
                           <p className="text-xs font-semibold text-foreground">
-                            Élément : <span className="font-bold">{log.cible}</span>
+                            {t('adminOrg.journal.element')} <span className="font-bold">{log.cible}</span>
                           </p>
                         )}
 
@@ -237,8 +237,8 @@ export const JournalActionsPage: React.FC = () => {
         {filtered.length === 0 && (
           <div className="p-10 text-center rounded-3xl border-2 border-dashed border-border space-y-2">
             <History className="w-10 h-10 text-muted-foreground mx-auto" />
-            <p className="text-sm font-bold text-foreground">Aucun événement trouvé</p>
-            <p className="text-xs text-muted-foreground">Modifiez vos filtres pour voir l'historique d'activité.</p>
+            <p className="text-sm font-bold text-foreground">{t('adminOrg.journal.empty.title')}</p>
+            <p className="text-xs text-muted-foreground">{t('adminOrg.journal.empty.subtitle')}</p>
           </div>
         )}
       </div>

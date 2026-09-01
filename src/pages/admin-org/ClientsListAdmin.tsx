@@ -45,7 +45,7 @@ function renewalBadge(days: number | null): { label: string; color: string } | n
 }
 
 export const ClientsListAdmin: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation('admin');
   const { clients, commerciaux, paiements } = useAuth();
   const [devise, setDevise] = useState<DeviseCode>('XOF');
   const [search, setSearch] = useState('');
@@ -54,8 +54,6 @@ export const ClientsListAdmin: React.FC = () => {
   const [filterFormule, setFilterFormule] = useState<string>('all');
   const [filterCommercial, setFilterCommercial] = useState<string>('all');
   const [selectedClient, setSelectedClient] = useState<ClientFaciloop | null>(null);
-
-  const isEn = i18n.language?.startsWith('en');
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
 
@@ -116,14 +114,14 @@ export const ClientsListAdmin: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-              {isEn ? 'Client Accounts' : 'Comptes Clients'} ({clients.length})
+              {t('adminOrg.clients.title')} ({clients.length})
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold flex items-center gap-1">
-              <Building2 className="w-3 h-3" /> {isEn ? 'Converted Prospects' : 'Prospects convertis'}
+              <Building2 className="w-3 h-3" /> {t('adminOrg.clients.convertedTag')}
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {isEn ? 'Clients resulting from prospect conversion — active accounts & subscriptions' : 'Clients issus de la conversion de prospects — abonnements et comptes actifs'}
+            {t('adminOrg.clients.subtitle')}
           </p>
         </div>
         <CurrencyToggle value={devise} onChange={setDevise} />
@@ -133,7 +131,7 @@ export const ClientsListAdmin: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Total clients' : 'Total clients'}</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('adminOrg.clients.kpi.total')}</span>
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
               <Building2 className="h-4 w-4 text-primary" />
             </div>
@@ -142,7 +140,7 @@ export const ClientsListAdmin: React.FC = () => {
         </div>
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Active accounts' : 'Comptes actifs'}</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('adminOrg.clients.kpi.active')}</span>
             <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
               <Users className="h-4 w-4 text-emerald-500" />
             </div>
@@ -151,7 +149,7 @@ export const ClientsListAdmin: React.FC = () => {
         </div>
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Total Revenue' : 'CA total'}</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('adminOrg.clients.kpi.revenue')}</span>
             <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center">
               <Crown className="h-4 w-4 text-blue-500" />
             </div>
@@ -160,7 +158,7 @@ export const ClientsListAdmin: React.FC = () => {
         </div>
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Upcoming Renewals' : 'Renouvellements (30j)'}</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('adminOrg.clients.kpi.renewals')}</span>
             <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
               <Calendar className="h-4 w-4 text-amber-500" />
             </div>
@@ -178,7 +176,7 @@ export const ClientsListAdmin: React.FC = () => {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher par entreprise, responsable ou téléphone..."
+              placeholder={t('adminOrg.clients.search')}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-input bg-card text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
             />
           </div>
@@ -187,7 +185,7 @@ export const ClientsListAdmin: React.FC = () => {
               onClick={resetFilters}
               className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-1.5 shrink-0"
             >
-              <X className="w-3.5 h-3.5" /> Réinitialiser
+              <X className="w-3.5 h-3.5" /> {t('adminOrg.clients.resetFilters')}
             </button>
           )}
         </div>
@@ -243,21 +241,21 @@ export const ClientsListAdmin: React.FC = () => {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border bg-muted/50">
             <tr className="text-xs font-medium text-muted-foreground">
-              <th className="px-4 py-3">Entreprise</th>
-              <th className="px-4 py-3">Responsable</th>
-              <th className="px-4 py-3">Formule</th>
-              <th className="px-4 py-3">Statut</th>
-              <th className="px-4 py-3">Abonnement</th>
-              <th className="px-4 py-3">Renouvellement</th>
-              <th className="px-4 py-3">Inactivité</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">{t('adminOrg.clients.col.company')}</th>
+              <th className="px-4 py-3">{t('adminOrg.clients.col.manager')}</th>
+              <th className="px-4 py-3">{t('adminOrg.clients.col.plan')}</th>
+              <th className="px-4 py-3">{t('adminOrg.clients.col.status')}</th>
+              <th className="px-4 py-3">{t('adminOrg.clients.col.subscription')}</th>
+              <th className="px-4 py-3">{t('adminOrg.clients.col.renewal')}</th>
+              <th className="px-4 py-3">{t('adminOrg.clients.col.inactivity')}</th>
+              <th className="px-4 py-3">{t('adminOrg.clients.col.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={8} className="p-8 text-center text-sm text-muted-foreground">
-                  Aucun client trouvé. Les clients apparaissent après conversion d'un prospect.
+                  {t('adminOrg.clients.empty')}
                 </td>
               </tr>
             ) : filtered.map((client) => {
@@ -322,7 +320,7 @@ export const ClientsListAdmin: React.FC = () => {
       {/* Mobile Cards */}
       <div className="grid grid-cols-1 gap-3 md:hidden">
         {filtered.length === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">Aucun client trouvé.</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{t('adminOrg.clients.emptyMobile')}</div>
         )}
         {filtered.map((client) => {
           const renewal = renewalBadge(daysUntil(client.prochain_renouvellement));
@@ -340,12 +338,12 @@ export const ClientsListAdmin: React.FC = () => {
                   </span>
                   {renewal && (
                     <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${renewal.color}`}>
-                      Renouvellement {renewal.label}
+                      {t('adminOrg.clients.renewal')} {renewal.label}
                     </span>
                   )}
                   {inactive !== null && inactive > 30 && (
                     <span className="flex items-center gap-1 text-amber-500 font-bold text-[10px]">
-                      <AlertTriangle className="w-3 h-3" />Inactif {inactive}j
+                      <AlertTriangle className="w-3 h-3" />{t('adminOrg.clients.inactiveSince')} {inactive}j
                     </span>
                   )}
                 </div>
@@ -372,7 +370,7 @@ export const ClientsListAdmin: React.FC = () => {
                   onClick={() => setSelectedClient(client)}
                   className="px-3 py-1.5 rounded-lg border border-input text-xs font-bold hover:bg-muted"
                 >
-                  Détails
+                  {t('adminOrg.clients.details')}
                 </button>
               </div>
             </div>
@@ -385,7 +383,7 @@ export const ClientsListAdmin: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-lg bg-card border-t sm:border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-foreground">Fiche Client</h2>
+              <h2 className="text-base font-bold text-foreground">{t('adminOrg.clients.clientFile')}</h2>
               <button onClick={() => setSelectedClient(null)} className="text-muted-foreground hover:text-foreground text-xl">&times;</button>
             </div>
 
@@ -398,13 +396,13 @@ export const ClientsListAdmin: React.FC = () => {
                   {renewal && (
                     <div className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 ${renewal.color}`}>
                       <Calendar className="w-4 h-4 shrink-0" />
-                      Renouvellement dans {renewal.label} — {selectedClient.prochain_renouvellement}
+                      {t('adminOrg.clients.renewalIn')} {renewal.label} — {selectedClient.prochain_renouvellement}
                     </div>
                   )}
                   {inactive !== null && inactive > 30 && (
                     <div className="p-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-600 text-xs font-bold flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0" />
-                      Inactif depuis {inactive} jours
+                      {t('adminOrg.clients.inactiveSince')} {inactive} {t('adminOrg.clients.days')}
                     </div>
                   )}
                 </>
@@ -476,7 +474,7 @@ export const ClientsListAdmin: React.FC = () => {
               onClick={() => setSelectedClient(null)}
               className="w-full py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground transition-all"
             >
-              Fermer
+              {t('adminOrg.clients.close')}
             </button>
           </div>
         </div>

@@ -5,7 +5,7 @@ import {
   DEMO_RELANCES, DEMO_INTERACTIONS, DEMO_NOTIFICATIONS, DEMO_PAIEMENTS,
   DEMO_OBJECTIFS, DEMO_COMMISSIONS, DEMO_ACTION_LOGS, DEMO_ORG_OFFERS, DEMO_ORG_ID,
 } from '../lib/demoData';
-import type { Prospect, ClientFaciloop } from '../types/crm';
+import type { Prospect, ClientFaciloop, NotificationItem } from '../types/crm';
 import type { OrgOffer, CommissionEntry, ObjectifCommercialAdmin } from '../lib/mockAdminOrg';
 
 export const DemoAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -13,11 +13,12 @@ export const DemoAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [relances, setRelances] = useState(DEMO_RELANCES);
   const [interactions, setInteractions] = useState(DEMO_INTERACTIONS);
   const [notifications, setNotifications] = useState(DEMO_NOTIFICATIONS);
+  const [adminNotifications, setAdminNotifications] = useState<NotificationItem[]>([]);
   const [clients, setClients] = useState<ClientFaciloop[]>(DEMO_CLIENTS);
   const [paiements] = useState(DEMO_PAIEMENTS);
   const [commerciaux, setCommerciaux] = useState(DEMO_COMMERCIAUX);
   const [objectifs, setObjectifs] = useState<ObjectifCommercialAdmin[]>(DEMO_OBJECTIFS);
-  const [commissions] = useState<CommissionEntry[]>(DEMO_COMMISSIONS);
+  const [commissions, setCommissions] = useState<CommissionEntry[]>(DEMO_COMMISSIONS);
   const [actionLogs, setActionLogs] = useState(DEMO_ACTION_LOGS);
   const [orgOffers, setOrgOffers] = useState<OrgOffer[]>(DEMO_ORG_OFFERS);
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -59,6 +60,13 @@ export const DemoAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setRelances(prev => prev.map(r => r.id === id ? { ...r, statut: 'annulee' as const } : r));
   };
 
+  const markCommissionVersee = (id: string) => {
+    setCommissions(prev => prev.map(c => c.id === id ? { ...c, statut: 'verse' as const } : c));
+  };
+
+  const syncMissingCommissions = async () => 0;
+  const recalculerCommissions = async () => 0;
+
   const addInteraction = (newI: any) => {
     const created = { ...newI, id: `demo-i-${Date.now()}`, created_at: new Date().toISOString(), organization_id: DEMO_ORG_ID };
     setInteractions(prev => [created, ...prev]);
@@ -66,6 +74,14 @@ export const DemoAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const markNotificationAsRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, lue: true } : n));
+  };
+
+  const markAdminNotificationAsRead = (id: string) => {
+    setAdminNotifications(prev => prev.map(n => n.id === id ? { ...n, lue: true } : n));
+  };
+
+  const markAllAdminNotificationsAsRead = () => {
+    setAdminNotifications(prev => prev.map(n => ({ ...n, lue: true })));
   };
 
   const convertProspectToClient = (prospectId: string, formule: string) => {
@@ -136,14 +152,14 @@ export const DemoAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     user, isLoading: false, currentOrg, currency, setCurrency,
     isDarkMode, toggleDarkMode: () => setIsDarkMode(p => !p),
     login, logout, switchOrganization,
-    prospects, relances, interactions, notifications, clients, paiements,
+    prospects, relances, interactions, notifications, adminNotifications, clients, paiements,
     myProspects, myRelances, myInteractions,
     addProspect, updateProspectStatus, reassignProspects, deleteProspect,
-    addRelance, completeRelance, cancelRelance, addInteraction, markNotificationAsRead, convertProspectToClient,
+    addRelance, completeRelance, cancelRelance, addInteraction, markNotificationAsRead, markAdminNotificationAsRead, markAllAdminNotificationsAsRead, convertProspectToClient,
     orgOffers, addOrgOffer, updateOrgOffer, deleteOrgOffer,
     commerciaux, addCommercial, updateCommercial, toggleCommercialStatus,
     objectifs, addObjectif, updateObjectif, deleteObjectif,
-    commissions, actionLogs, addActionLog, updateOrganization,
+    commissions, markCommissionVersee, syncMissingCommissions, recalculerCommissions, actionLogs, addActionLog, updateOrganization,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

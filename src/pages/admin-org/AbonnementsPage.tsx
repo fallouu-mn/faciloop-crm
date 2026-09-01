@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { OrgOffer, OrgOfferPricing } from '../../lib/mockAdminOrg';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
@@ -17,6 +18,7 @@ const OFFER_COLORS = [
 ];
 
 export const AbonnementsPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const { orgOffers, addOrgOffer, updateOrgOffer, deleteOrgOffer } = useAuth();
   const [devise, setDevise] = useState<DeviseCode>('XOF');
   const [periodView, setPeriodView] = useState<Periodicite>('mensuel');
@@ -69,17 +71,17 @@ export const AbonnementsPage: React.FC = () => {
 
     if (editingOffer) {
       updateOrgOffer(editingOffer.id, { nom: formNom.trim(), description: formDescription.trim(), tarifs, actif: formActif });
-      showToast('Offre modifiée avec succès');
+      showToast(t('adminOrg.abonnements.toast.updated'));
     } else {
       addOrgOffer({ nom: formNom.trim(), description: formDescription.trim(), tarifs, actif: formActif });
-      showToast('Offre créée avec succès');
+      showToast(t('adminOrg.abonnements.toast.created'));
     }
     setModalOpen(false);
   };
 
   const handleDelete = (id: string) => {
     deleteOrgOffer(id);
-    showToast('Offre supprimée');
+    showToast(t('adminOrg.abonnements.toast.deleted'));
   };
 
   const showToast = (msg: string) => {
@@ -94,10 +96,10 @@ export const AbonnementsPage: React.FC = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
             <Crown className="w-5 h-5 text-primary" />
-            Offres d'abonnement
+            {t('adminOrg.abonnements.title')}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Gérez les offres proposées à vos clients
+            {t('adminOrg.abonnements.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -107,7 +109,7 @@ export const AbonnementsPage: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>Ajouter une offre</span>
+            <span>{t('adminOrg.abonnements.addBtn')}</span>
           </button>
         </div>
       </div>
@@ -139,13 +141,13 @@ export const AbonnementsPage: React.FC = () => {
           <div className="w-16 h-16 rounded-full bg-muted/60 flex items-center justify-center mx-auto">
             <Package className="w-8 h-8 text-muted-foreground" />
           </div>
-          <p className="text-sm font-medium text-muted-foreground">Aucune offre créée</p>
-          <p className="text-xs text-muted-foreground">Créez votre première offre pour commencer à convertir des prospects</p>
+          <p className="text-sm font-medium text-muted-foreground">{t('adminOrg.abonnements.empty.title')}</p>
+          <p className="text-xs text-muted-foreground">{t('adminOrg.abonnements.empty.subtitle')}</p>
           <button
             onClick={openCreate}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold shadow-md"
           >
-            <Plus className="w-4 h-4" /> Créer une offre
+            <Plus className="w-4 h-4" /> {t('adminOrg.abonnements.empty.btn')}
           </button>
         </div>
       ) : (
@@ -164,28 +166,28 @@ export const AbonnementsPage: React.FC = () => {
                       )}
                     </div>
                     <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${offer.actif ? 'bg-emerald-500/10 text-emerald-500' : 'bg-muted text-muted-foreground'}`}>
-                      {offer.actif ? 'Active' : 'Inactive'}
+                      {offer.actif ? t('adminOrg.abonnements.status.active') : t('adminOrg.abonnements.status.inactive')}
                     </span>
                   </div>
 
                   <div className="text-2xl font-black text-foreground">
                     {fmt(offer.tarifs[periodView])}
                     <span className="text-xs font-medium text-muted-foreground ml-1">
-                      /{periodView === 'mensuel' ? 'mois' : periodView === 'trimestriel' ? 'trim.' : 'an'}
+                      /{t(`adminOrg.abonnements.periodShort.${periodView}`)}
                     </span>
                   </div>
 
                   <div className="space-y-1.5 text-[11px] text-muted-foreground">
                     <div className="flex justify-between">
-                      <span>Mensuel</span>
+                      <span>{t('adminOrg.abonnements.period.mensuel')}</span>
                       <span className="font-bold text-foreground">{fmt(offer.tarifs.mensuel)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Trimestriel</span>
+                      <span>{t('adminOrg.abonnements.period.trimestriel')}</span>
                       <span className="font-bold text-foreground">{fmt(offer.tarifs.trimestriel)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Annuel</span>
+                      <span>{t('adminOrg.abonnements.period.annuel')}</span>
                       <span className="font-bold text-foreground">{fmt(offer.tarifs.annuel)}</span>
                     </div>
                   </div>
@@ -195,7 +197,7 @@ export const AbonnementsPage: React.FC = () => {
                       onClick={() => openEdit(offer)}
                       className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 rounded-xl border border-input text-xs font-bold text-foreground hover:bg-muted transition-all"
                     >
-                      <Edit3 className="w-3.5 h-3.5" /> Modifier
+                      <Edit3 className="w-3.5 h-3.5" /> {t('adminOrg.abonnements.edit')}
                     </button>
                     <button
                       onClick={() => handleDelete(offer.id)}
@@ -218,7 +220,7 @@ export const AbonnementsPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                 <Crown className="w-5 h-5 text-primary" />
-                {editingOffer ? 'Modifier l\'offre' : 'Créer une offre'}
+                {editingOffer ? t('adminOrg.abonnements.modal.editTitle') : t('adminOrg.abonnements.modal.createTitle')}
               </h2>
               <button onClick={() => setModalOpen(false)} className="p-1 hover:bg-muted rounded-lg">
                 <X className="w-5 h-5 text-muted-foreground" />
@@ -227,7 +229,7 @@ export const AbonnementsPage: React.FC = () => {
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block font-semibold mb-1">Nom de l'offre *</label>
+                <label className="block font-semibold mb-1">{t('adminOrg.abonnements.modal.name')}</label>
                 <input
                   type="text"
                   value={formNom}
@@ -238,7 +240,7 @@ export const AbonnementsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Description</label>
+                <label className="block font-semibold mb-1">{t('adminOrg.abonnements.modal.description')}</label>
                 <input
                   type="text"
                   value={formDescription}
@@ -249,7 +251,7 @@ export const AbonnementsPage: React.FC = () => {
               </div>
 
               <div className="p-3 rounded-xl bg-muted/40 border border-border space-y-2.5">
-                <p className="font-bold text-foreground text-xs">Tarification (FCFA)</p>
+                <p className="font-bold text-foreground text-xs">{t('adminOrg.abonnements.pricing')}</p>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="block text-[10px] font-medium text-muted-foreground mb-1">Mensuel *</label>
@@ -285,7 +287,7 @@ export const AbonnementsPage: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-xl border border-border">
-                <span className="font-semibold text-foreground">Offre active</span>
+                <span className="font-semibold text-foreground">{t('adminOrg.abonnements.offerActive')}</span>
                 <button
                   type="button"
                   onClick={() => setFormActif(!formActif)}
@@ -305,14 +307,14 @@ export const AbonnementsPage: React.FC = () => {
                 onClick={() => setModalOpen(false)}
                 className="flex-1 py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground"
               >
-                Annuler
+                {t('adminOrg.abonnements.modal.cancel')}
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={!formNom.trim() || !formMensuel}
                 className="flex-1 py-3 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 shadow-md disabled:opacity-50"
               >
-                {editingOffer ? 'Enregistrer' : 'Créer l\'offre'}
+                {editingOffer ? t('adminOrg.abonnements.modal.save') : t('adminOrg.abonnements.modal.create')}
               </button>
             </div>
           </div>

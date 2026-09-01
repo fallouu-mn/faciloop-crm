@@ -83,9 +83,11 @@ export interface ObjectifCommercialAdmin {
   id: string;
   commercialId: string;
   commercialNom: string;
+  commercial_nom?: string;
   type: 'ca' | 'ventes' | 'prospects';
   objectif: number;
   realise: number;
+  statut?: 'en_cours' | 'atteint' | 'depasse' | 'non_atteint';
   periode: string;
   date_debut?: string;
   date_fin?: string;
