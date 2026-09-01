@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Check, X, Users, TrendingUp, CalendarDays, Goal, Trash2 } from 'lucide-react';
+import { Plus, X, Users, TrendingUp, CalendarDays, Goal, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
@@ -30,7 +31,6 @@ export const ObjectifsAdminPage: React.FC = () => {
   };
   const [devise, setDevise] = useState<DeviseCode>('XOF');
   const [isDefineOpen, setIsDefineOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const { start: defaultStart, end: defaultEnd } = getMonthRange();
 
@@ -133,8 +133,7 @@ export const ObjectifsAdminPage: React.FC = () => {
     });
     setIsDefineOpen(false);
     setFormObjectif('');
-    setToastMessage(t('adminOrg.objectifs.toast'));
-    setTimeout(() => setToastMessage(null), 3000);
+    toast.success(t('adminOrg.objectifs.toast'));
   };
 
   const groupedByCommercial = objectifs.reduce(
@@ -177,12 +176,6 @@ export const ObjectifsAdminPage: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {toastMessage && (
-        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2">
-          <Check className="w-4 h-4" /> {toastMessage}
-        </div>
-      )}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
@@ -275,7 +268,7 @@ export const ObjectifsAdminPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground">{periodeLabel}</span>
                           <button
-                            onClick={() => deleteObjectif(obj.id)}
+                            onClick={() => { deleteObjectif(obj.id); toast.success('Objectif supprimé.'); }}
                             className="p-1 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
                             title={t('adminOrg.objectifs.deleteTitle')}
                           >

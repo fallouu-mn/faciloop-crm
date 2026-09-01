@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CreditCard, TrendingUp, Search, Download, Clock, Crown } from 'lucide-react';
+import { toast } from 'sonner';
 import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DateRange, isInDateRange, searchParamsToDateRange } from '../../lib/dateFilter';
@@ -111,6 +112,7 @@ export const FacturationPage: React.FC = () => {
       statutLabel(o.statut_abonnement),
     ]);
     downloadCsv(`paiements_abonnements_${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
+    toast.success('Export CSV téléchargé !');
   };
 
   if (loading) {

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Building2, Save, Upload, Check, Globe, Phone, Mail, MapPin, Briefcase } from 'lucide-react';
+import { Building2, Save, Upload, Globe, Phone, Mail, MapPin, Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 export const ParametresEntreprise: React.FC = () => {
   const { t } = useTranslation('admin');
@@ -15,7 +16,6 @@ export const ParametresEntreprise: React.FC = () => {
   const [siteWeb, setSiteWeb] = useState(currentOrg?.site_web || '');
   const [secteur, setSecteur] = useState(currentOrg?.secteur || '');
   const [logoPreview, setLogoPreview] = useState<string | null>(currentOrg?.logo_url || null);
-  const [saved, setSaved] = useState(false);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -29,8 +29,7 @@ export const ParametresEntreprise: React.FC = () => {
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     updateOrganization({ nom, pays, ville, adresse, telephone, email, site_web: siteWeb, secteur, logo_url: logoPreview || undefined, devise_defaut: currency });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    toast.success(t('adminOrg.parametres.saved'));
   };
 
   return (
@@ -43,13 +42,6 @@ export const ParametresEntreprise: React.FC = () => {
           {t('adminOrg.parametres.subtitle')}
         </p>
       </div>
-
-      {saved && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2">
-          <Check className="w-4 h-4" />
-          <span>{t('adminOrg.parametres.saved')}</span>
-        </div>
-      )}
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Logo Section */}

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Wallet, TrendingUp, Users, CheckCircle2, ChevronDown, ChevronUp, Calendar, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
@@ -229,7 +230,7 @@ export const CommissionsPage: React.FC = () => {
                             </div>
                             {entry.statut === 'a_verser' ? (
                               <button
-                                onClick={() => markCommissionVersee(entry.id)}
+                                onClick={() => { markCommissionVersee(entry.id); toast.success(t('adminOrg.commissions.paid')); }}
                                 className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 text-[10px] font-bold hover:bg-emerald-500/20 transition-colors shrink-0"
                               >
                                 <Check className="w-3 h-3" /> {t('adminOrg.commissions.markPaid')}

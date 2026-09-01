@@ -4,9 +4,10 @@ import { ProspectSource, PipelineStepId } from '../../types/crm';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
 import { useTranslation } from 'react-i18next';
 import {
-  Users, Search, Plus, AlertTriangle, X, Check,
+  Users, Search, Plus, AlertTriangle, X,
   ArrowRight, Eye, UserCheck, ArrowRightLeft, Trash2, Filter
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 
 function normalize(str: string): string {
@@ -85,7 +86,6 @@ export const ProspectsListAdmin: React.FC = () => {
   const [fRelance, setFRelance] = useState('');
 
   const [duplicateAlert, setDuplicateAlert] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Dynamic pays options from real data
   const paysOptions = useMemo(() => {
@@ -93,11 +93,6 @@ export const ProspectsListAdmin: React.FC = () => {
     const merged = [...new Set([...PAYS_DEFAUT, ...fromData])];
     return merged.sort();
   }, [prospects]);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
 
   const handlePhoneChange = (val: string) => {
     setFTelephone(val);
@@ -136,7 +131,7 @@ export const ProspectsListAdmin: React.FC = () => {
     });
     if (res.duplicate) { setDuplicateAlert(true); return; }
     if (res.success) {
-      showToast(t('adminOrg.prospects.toast.created'));
+      toast.success(t('adminOrg.prospects.toast.created'));
       setIsNewModalOpen(false);
       resetForm();
     }
@@ -194,7 +189,7 @@ export const ProspectsListAdmin: React.FC = () => {
     const target = commerciaux.find(c => c.id === targetCommercialId) || commerciaux[0];
     if (!target) return;
     reassignProspects(selectedIds, target.id, `${target.prenom} ${target.nom}`);
-    showToast(`${selectedIds.length} ${t('adminOrg.prospects.toast.reassigned')}`);
+    toast.success(`${selectedIds.length} ${t('adminOrg.prospects.toast.reassigned')}`);
     setSelectedIds([]);
     setIsReassignModalOpen(false);
   };
@@ -235,12 +230,6 @@ export const ProspectsListAdmin: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {toastMessage && (
-        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2">
-          <Check className="w-4 h-4" /> {toastMessage}
-        </div>
-      )}
 
       {/* Filters */}
       <div className="space-y-2.5">

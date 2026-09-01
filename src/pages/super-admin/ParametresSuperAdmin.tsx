@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe, Phone, Mail, Save, Loader2, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '../../lib/supabase';
 import { invalidatePlatformSettings } from '../../hooks/usePlatformSettings';
 
@@ -66,14 +67,19 @@ export const ParametresSuperAdmin: React.FC = () => {
   const handleSave = async () => {
     setSaving(true);
 
-    await supabase
+    const { error } = await supabase
       .from('platform_settings')
       .upsert({ id: 1, ...form }, { onConflict: 'id' });
 
     invalidatePlatformSettings();
     setInitial({ ...form });
     setSaving(false);
-    setSaveSuccess(true);
+    if (!error) {
+      setSaveSuccess(true);
+      toast.success('Paramètres de la plateforme sauvegardés !');
+    } else {
+      toast.error(`Erreur lors de la sauvegarde : ${error.message}`);
+    }
   };
 
   return (

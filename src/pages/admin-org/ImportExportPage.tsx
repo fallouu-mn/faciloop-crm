@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
 import { 
@@ -177,6 +178,7 @@ export const ImportExportPage: React.FC = () => {
       skipped: skippedCount,
       commercialNom: commNom
     });
+    toast.success(`${importedCount} prospect(s) importé(s) et attribué(s) à ${commNom}.${skippedCount > 0 ? ` ${skippedCount} doublon(s) ignoré(s).` : ''}`);
 
     setTimeout(() => {
       setIsImportSuccess(false);

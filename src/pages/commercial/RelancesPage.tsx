@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'sonner';
 import {
   Plus, CheckCircle2, X, Ban, Phone, MessageCircle, Mail, MapPin,
   Clock, AlertTriangle, CalendarCheck, CalendarClock, Eye,
@@ -166,6 +167,7 @@ export const RelancesPage: React.FC = () => {
     setFormProspectId('');
     setFormCommentaire('');
     setFormCommercialId(commerciaux[0]?.id || '');
+    toast.success(isEn ? 'Follow-up scheduled!' : 'Relance programmée !');
   };
 
   // ── date color
@@ -361,14 +363,14 @@ export const RelancesPage: React.FC = () => {
                   {isActionable && (
                     <>
                       <button
-                        onClick={() => completeRelance(relance.id)}
+                        onClick={() => { completeRelance(relance.id); toast.success(isEn ? 'Follow-up completed!' : 'Relance marquée effectuée !'); }}
                         className="px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-bold text-[11px] shadow hover:bg-emerald-600 flex items-center gap-1 transition-all"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Effectuée</span>
                       </button>
                       <button
-                        onClick={() => cancelRelance(relance.id)}
+                        onClick={() => { cancelRelance(relance.id); toast.success(isEn ? 'Follow-up cancelled.' : 'Relance annulée.'); }}
                         className="px-3 py-1.5 rounded-xl border border-input text-[11px] font-bold text-muted-foreground hover:text-red-500 hover:border-red-500/50 flex items-center gap-1 transition-all"
                       >
                         <Ban className="w-3.5 h-3.5" />

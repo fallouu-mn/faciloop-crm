@@ -41,6 +41,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProspects } from '@/hooks/commercial/useProspects';
+import { toast } from 'sonner';
 
 interface ColumnDef {
   id: PipelineStepId;
@@ -524,6 +525,7 @@ export const ProspectKanban: React.FC = () => {
       setConvertModalOpen(true);
     } else {
       updateProspectStatus(prospectId, targetStep);
+      toast.success('Étape mise à jour !');
     }
   };
 
@@ -532,6 +534,7 @@ export const ProspectKanban: React.FC = () => {
       updateProspectStatus(pendingProspectId, 'perdu', selectedMotif);
       setLossModalOpen(false);
       setPendingProspectId(null);
+      toast.success('Prospect marqué comme perdu.');
     }
   };
 
@@ -548,6 +551,7 @@ export const ProspectKanban: React.FC = () => {
       setConvMontant('');
       setConvOffre(activeOrgOffers[0]?.nom || '');
       setConvFrequence('mensuel');
+      toast.success('Prospect converti en client !');
       navigate(user?.role === 'admin_org' ? '/admin/clients' : '/app/prospects');
     }
   };

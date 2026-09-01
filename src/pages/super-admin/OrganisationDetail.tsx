@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Building2, Save, Loader2, Crown, User, Phone, MapPin, Mail, Globe, Briefcase, Clock, Shield, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '../../lib/supabase';
 import { formatAmount } from '../../lib/currency';
 import { FormuleConfig, getFormules, getOfferPrice } from '../../services/formulesSaas';
@@ -204,11 +205,10 @@ export const OrganisationDetail: React.FC = () => {
     setSaving(false);
     if (!error) {
       setSaveSuccess(true);
-      setOrg(prev => prev ? {
-        ...prev,
-        ...form,
-        prix_abonnement: prix,
-      } : prev);
+      setOrg(prev => prev ? { ...prev, ...form, prix_abonnement: prix } : prev);
+      toast.success('Organisation mise à jour avec succès !');
+    } else {
+      toast.error(`Erreur lors de la sauvegarde : ${error.message}`);
     }
   };
 

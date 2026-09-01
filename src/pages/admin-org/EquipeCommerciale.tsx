@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserPlus, UserCheck, Shield, X, Check, Mail, Phone, MessageSquare, Power } from 'lucide-react';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
@@ -17,7 +18,10 @@ export const EquipeCommerciale: React.FC = () => {
   const [addError, setAddError] = useState<string | null>(null);
 
   const toggleStatus = (id: string) => {
+    const comm = team.find(c => c.id === id);
     toggleCommercialStatus(id);
+    const newStatus = comm?.statut === 'actif' ? 'désactivé' : 'activé';
+    toast.success(`Commercial ${newStatus} avec succès.`);
   };
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -26,13 +30,16 @@ export const EquipeCommerciale: React.FC = () => {
     setAddLoading(true);
     try {
       await addCommercial({ nom, prenom, email, telephone, statut: 'actif' });
+      toast.success(`Commercial ${prenom} ${nom} créé avec succès !`);
       setIsModalOpen(false);
       setNom('');
       setPrenom('');
       setEmail('');
       setTelephone('');
     } catch (err: any) {
-      setAddError(err.message || t('adminOrg.equipe.modal.errorDefault'));
+      const msg = err.message || t('adminOrg.equipe.modal.errorDefault');
+      setAddError(msg);
+      toast.error(msg);
     } finally {
       setAddLoading(false);
     }

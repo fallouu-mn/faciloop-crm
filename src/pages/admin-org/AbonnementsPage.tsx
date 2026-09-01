@@ -4,7 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { OrgOffer, OrgOfferPricing } from '../../lib/mockAdminOrg';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
-import { Crown, Plus, Edit3, Trash2, X, Check, Package, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Crown, Plus, Edit3, Trash2, X, Package, ToggleLeft, ToggleRight } from 'lucide-react';
+import { toast } from 'sonner';
 
 type Periodicite = 'mensuel' | 'trimestriel' | 'annuel';
 
@@ -34,8 +35,6 @@ export const AbonnementsPage: React.FC = () => {
   const [formTrimestriel, setFormTrimestriel] = useState('');
   const [formAnnuel, setFormAnnuel] = useState('');
   const [formActif, setFormActif] = useState(true);
-
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
 
@@ -71,22 +70,17 @@ export const AbonnementsPage: React.FC = () => {
 
     if (editingOffer) {
       updateOrgOffer(editingOffer.id, { nom: formNom.trim(), description: formDescription.trim(), tarifs, actif: formActif });
-      showToast(t('adminOrg.abonnements.toast.updated'));
+      toast.success(t('adminOrg.abonnements.toast.updated'));
     } else {
       addOrgOffer({ nom: formNom.trim(), description: formDescription.trim(), tarifs, actif: formActif });
-      showToast(t('adminOrg.abonnements.toast.created'));
+      toast.success(t('adminOrg.abonnements.toast.created'));
     }
     setModalOpen(false);
   };
 
   const handleDelete = (id: string) => {
     deleteOrgOffer(id);
-    showToast(t('adminOrg.abonnements.toast.deleted'));
-  };
-
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 3000);
+    toast.success(t('adminOrg.abonnements.toast.deleted'));
   };
 
   return (
@@ -113,12 +107,6 @@ export const AbonnementsPage: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {toastMsg && (
-        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2">
-          <Check className="w-4 h-4" /> {toastMsg}
-        </div>
-      )}
 
       {/* Period Toggle */}
       <div className="inline-flex items-center rounded-full bg-muted p-1 border border-border text-xs">

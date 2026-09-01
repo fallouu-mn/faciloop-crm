@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { Prospect, MotifPerte } from '../../types/crm';
 import { 
@@ -121,6 +122,7 @@ export const ProspectDetail: React.FC = () => {
     setIsInterModalOpen(false);
     setInterComment('');
     setInterNextAction('');
+    toast.success(isEn ? 'Interaction added!' : 'Interaction ajoutée !');
   };
 
   const handleConvert = () => {
@@ -129,6 +131,7 @@ export const ProspectDetail: React.FC = () => {
       montant: convMontant ? Number(convMontant) : undefined,
     });
     setIsConvertModalOpen(false);
+    toast.success(isEn ? 'Prospect converted to client!' : 'Prospect converti en client !');
     navigate(clientsPath);
   };
 
