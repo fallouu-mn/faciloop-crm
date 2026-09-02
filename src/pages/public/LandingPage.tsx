@@ -582,7 +582,7 @@ export const LandingPage: React.FC = () => {
 
               <div className="mt-6">
                 <Link
-                  to="/login"
+                  to="/signup"
                   className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
                 >
                   <span>{isEn ? 'Create my free account' : 'Créer mon compte gratuitement'}</span>
