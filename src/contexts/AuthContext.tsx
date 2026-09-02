@@ -434,6 +434,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const restoreSession = async () => {
       try {
+        const localSaved = localStorage.getItem('faciloop_test_session');
+        if (localSaved) {
+          const parsed = JSON.parse(localSaved);
+          setUser(parsed);
+          setCurrentOrg(DEMO_ORG);
+          await fetchAllData(DEMO_ORG_ID);
+          setIsLoading(false);
+          return;
+        }
+
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           await buildUserSession(session.user.id, session.user.email || '');
@@ -617,8 +627,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           orgStatut: 'actif',
         };
 
+        localStorage.setItem('faciloop_test_session', JSON.stringify(testSession));
         setUser(testSession);
         setCurrentOrg(DEMO_ORG);
+        await fetchAllData(DEMO_ORG_ID);
         return testSession;
       }
       return null;
@@ -635,7 +647,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         nom: profile.profile?.nom || 'Admin',
         prenom: profile.profile?.prenom || 'Super',
         telephone: profile.profile?.telephone || '',
-        email: profile.profile?.email || email,
+        email: profile.profile?.email || primaryEmail,
         role: profile.role,
         organizationId: profile.organizationId || '',
       };
@@ -695,6 +707,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
+    localStorage.removeItem('faciloop_test_session');
     await supabase.auth.signOut();
     setUser(null);
     setCurrentOrg(null);
