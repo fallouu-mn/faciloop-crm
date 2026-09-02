@@ -224,8 +224,8 @@ export interface ObjectifCommercial {
   date_debut: string;
   date_fin: string;
   type: ObjectifType;
-  valeur_cible: number;
-  valeur_actuelle: number;
+  objectif: number;
+  realise: number;
   statut: ObjectifStatut;
   created_at: string;
 }
@@ -270,13 +270,9 @@ export interface Offre {
   organization_id: string;
   nom: string;
   description: string;
-  tarifs?: {
-    mensuel: number;
-    trimestriel: number;
-    annuel: number;
-  };
-  prix_mensuel?: number;
-  prix_annuel?: number;
+  tarif_mensuel: number;
+  tarif_trimestriel: number;
+  tarif_annuel: number;
   actif: boolean;
   created_at: string;
 }

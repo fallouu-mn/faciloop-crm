@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { Paiement, ModePaiement } from '../../types/crm';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
-import { Receipt, Download, CheckCircle2, Clock, FileText, CreditCard } from 'lucide-react';
+import { Receipt, Download, CheckCircle2, FileText, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const PAYMENT_ICONS: Record<string, { icon: string | null; label: string; color: string }> = {
@@ -17,6 +18,7 @@ const PAYMENT_ICONS: Record<string, { icon: string | null; label: string; color:
 };
 
 export const PaiementsPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const { currency, paiements } = useAuth();
   const [filterMode, setFilterMode] = useState<string>('all');
   const [devise, setDevise] = useState<DeviseCode>('XOF');
@@ -39,40 +41,71 @@ export const PaiementsPage: React.FC = () => {
   const filtered = paiements.filter(p => filterMode === 'all' || p.mode_paiement === filterMode);
 
   const handleDownloadInvoice = (pay: Paiement) => {
-    const lines = [
-      `FACTURE - ${pay.entreprise}`,
-      `Référence: FACT-2026-${pay.id.slice(0, 4).toUpperCase()}`,
-      `Date: ${new Date().toLocaleDateString('fr-FR')}`,
-      '',
-      `Client: ${pay.entreprise}`,
-      `Montant attendu: ${pay.montant_attendu.toLocaleString('fr-FR')} FCFA`,
-      `Montant payé: ${pay.montant_paye.toLocaleString('fr-FR')} FCFA`,
-      `Reste à payer: ${pay.montant_restant.toLocaleString('fr-FR')} FCFA`,
-      `Mode de paiement: ${PAYMENT_ICONS[pay.mode_paiement]?.label || pay.mode_paiement}`,
-      `Statut: ${pay.statut}`,
-      `Référence transaction: ${pay.reference_transaction || 'N/A'}`,
-    ];
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Facture-${pay.entreprise.replace(/\s+/g, '_')}-${pay.id.slice(0, 6)}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const ref = `FACT-2026-${pay.id.slice(0, 4).toUpperCase()}`;
+    const dateStr = new Date().toLocaleDateString('fr-FR');
+    const fmtPdf = (n: number) => formatAmount(convertAmount(n, 'XOF', devise), devise);
+    const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Facture ${ref}</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; color: #111; font-size: 14px; }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .sub { color: #666; margin-bottom: 30px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { text-align: left; padding: 10px 12px; background: #f4f4f4; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+    td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; background: #d1fae5; color: #065f46; }
+    .total { font-size: 18px; font-weight: bold; color: #059669; }
+    @media print { button { display: none; } }
+  </style>
+</head>
+<body>
+  <h1>Faciloop CRM</h1>
+  <div class="sub">Facture générée le ${dateStr}</div>
+  <table>
+    <tr><th>Référence</th><td><strong>${ref}</strong></td></tr>
+    <tr><th>Client</th><td>${pay.entreprise}</td></tr>
+    <tr><th>Date</th><td>${pay.date_paiement || dateStr}</td></tr>
+    <tr><th>Mode de paiement</th><td>${PAYMENT_ICONS[pay.mode_paiement]?.label || pay.mode_paiement}</td></tr>
+    <tr><th>Référence transaction</th><td>${pay.reference_transaction || '—'}</td></tr>
+    <tr><th>Statut</th><td><span class="badge">${pay.statut}</span></td></tr>
+  </table>
+  <table style="margin-top:20px">
+    <tr><th>Montant attendu</th><td>${fmtPdf(pay.montant_attendu)}</td></tr>
+    <tr><th>Montant payé</th><td class="total">${fmtPdf(pay.montant_paye)}</td></tr>
+    <tr><th>Reste à payer</th><td>${fmtPdf(pay.montant_restant)}</td></tr>
+  </table>
+  <script>window.onload = () => window.print();<\/script>
+</body>
+</html>`;
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    }
   };
 
   const handleDownloadReleve = () => {
     const BOM = '﻿';
     const separator = ';';
-    const headers = ['Référence', 'Entreprise', 'Montant Attendu (FCFA)', 'Montant Payé (FCFA)', 'Reste (FCFA)', 'Mode Paiement', 'Statut', 'Référence Transaction'];
+    const deviseLabel = devise;
+    const convert = (n: number) => Math.round(convertAmount(n, 'XOF', devise));
+    const headers = [
+      'Référence', 'Entreprise',
+      `Montant Attendu (${deviseLabel})`, `Montant Payé (${deviseLabel})`, `Reste (${deviseLabel})`,
+      'Mode Paiement', 'Statut', 'Date Paiement', 'Référence Transaction',
+    ];
     const rows = filtered.map(p => [
       `FACT-2026-${p.id.slice(0, 4).toUpperCase()}`,
       p.entreprise,
-      p.montant_attendu.toString(),
-      p.montant_paye.toString(),
-      p.montant_restant.toString(),
+      convert(p.montant_attendu).toString(),
+      convert(p.montant_paye).toString(),
+      convert(p.montant_restant).toString(),
       PAYMENT_ICONS[p.mode_paiement]?.label || p.mode_paiement,
       p.statut,
+      p.date_paiement || '',
       p.reference_transaction || '',
     ]);
     const csv = BOM + [headers.join(separator), ...rows.map(r => r.join(separator))].join('\n');
@@ -80,7 +113,7 @@ export const PaiementsPage: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Releve-Paiements-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `Releve-Paiements-${devise}-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -92,14 +125,14 @@ export const PaiementsPage: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-              Suivi des Paiements & Factures
+              {t('adminOrg.paiements.title')}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-              <Receipt className="w-3 h-3" /> Comptabilité SaaS
+              <Receipt className="w-3 h-3" /> {t('adminOrg.paiements.badge')}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Historique des règlements de l'abonnement et téléchargement des pièces justificatives PDF
+            {t('adminOrg.paiements.subtitle')}
           </p>
         </div>
 
@@ -110,7 +143,7 @@ export const PaiementsPage: React.FC = () => {
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
           >
             <Download className="h-4 w-4 shrink-0" />
-            <span>Relevé</span>
+            <span>{t('adminOrg.paiements.downloadReleve')}</span>
           </button>
         </div>
       </div>
@@ -122,7 +155,7 @@ export const PaiementsPage: React.FC = () => {
           className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm space-y-2"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Total Encaissé</span>
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">{t('adminOrg.paiements.kpi.collected')}</span>
             <div className="rounded-2xl bg-emerald-500/10 p-2 text-emerald-500 shadow-sm">
               <CheckCircle2 className="h-5 w-5" />
             </div>
@@ -137,17 +170,18 @@ export const PaiementsPage: React.FC = () => {
           className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm space-y-2"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Reste à Recouvrer</span>
-            <div className="rounded-2xl bg-amber-500/10 p-2 text-amber-500 shadow-sm">
-              <Clock className="h-5 w-5" />
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">{t('adminOrg.paiements.kpi.transactions')}</span>
+            <div className="rounded-2xl bg-blue-500/10 p-2 text-blue-500 shadow-sm">
+              <Receipt className="h-5 w-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-amber-500 pt-1">
-            {fmt(totalRestant)}
+          <div className="text-2xl sm:text-3xl font-black text-blue-500 pt-1">
+            {paiements.length}
           </div>
+          <p className="text-[10px] text-muted-foreground font-semibold">{t('adminOrg.paiements.kpi.subscriptions')}</p>
         </motion.div>
 
-        <motion.div
+        {/* <motion.div
           whileHover={{ y: -3, scale: 1.01 }}
           className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm space-y-2"
         >
@@ -160,13 +194,13 @@ export const PaiementsPage: React.FC = () => {
           <div className="flex items-center gap-2 pt-1">
             <span className="text-xl sm:text-2xl font-black text-foreground">Wave Sénégal</span>
           </div>
-        </motion.div>
+        </motion.div> */}
       </div>
 
       {/* Filter Bar */}
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs font-extrabold text-foreground uppercase tracking-wider">
-          Liste des Transactions ({filtered.length})
+          {t('adminOrg.paiements.list')} ({filtered.length})
         </span>
 
         <SelectCustom
@@ -174,12 +208,12 @@ export const PaiementsPage: React.FC = () => {
           onChange={setFilterMode}
           className="w-48"
           options={[
-            { value: 'all', label: 'Tous les moyens' },
+            { value: 'all', label: t('adminOrg.paiements.filterAll') },
             { value: 'wave', label: 'Wave Sénégal', icon: <img src="/icons/Wave.png" className="w-4 h-4 rounded" /> },
             { value: 'orange_money', label: 'Orange Money', icon: <img src="/icons/OM.jpeg" className="w-4 h-4 rounded" /> },
             { value: 'paytech', label: 'PayTech API' },
-            { value: 'stripe', label: 'Carte bancaire (Stripe)' },
-            { value: 'virement', label: 'Virement bancaire' },
+            { value: 'stripe', label: t('adminOrg.paiements.modes.card') },
+            { value: 'virement', label: t('adminOrg.paiements.modes.transfer') },
           ]}
         />
       </div>
@@ -189,13 +223,13 @@ export const PaiementsPage: React.FC = () => {
         <table className="w-full text-left text-xs min-w-[700px]">
           <thead className="border-b border-border/80 bg-muted/60 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
             <tr>
-              <th className="p-4">Réf. Facture</th>
-              <th className="p-4">Entreprise Client</th>
-              <th className="p-4">Montant Payé</th>
-              <th className="p-4">Moyen de Règlement</th>
-              <th className="p-4">Réf. Transaction</th>
-              <th className="p-4">Statut</th>
-              <th className="p-4 text-right">Facture PDF</th>
+              <th className="p-4">{t('adminOrg.paiements.col.ref')}</th>
+              <th className="p-4">{t('adminOrg.paiements.col.company')}</th>
+              <th className="p-4">{t('adminOrg.paiements.col.amount')}</th>
+              <th className="p-4">{t('adminOrg.paiements.col.mode')}</th>
+              <th className="p-4">{t('adminOrg.paiements.col.transactionRef')}</th>
+              <th className="p-4">{t('adminOrg.paiements.col.status')}</th>
+              <th className="p-4 text-right">{t('adminOrg.paiements.col.invoice')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60 text-[11px]">
@@ -227,7 +261,7 @@ export const PaiementsPage: React.FC = () => {
                     className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-input bg-card hover:bg-muted text-xs font-bold text-foreground transition-all"
                   >
                     <Download className="w-3.5 h-3.5 text-primary" />
-                    <span>PDF</span>
+                    <span>{t('adminOrg.paiements.downloadPdf')}</span>
                   </button>
                 </td>
               </tr>
@@ -271,7 +305,7 @@ export const PaiementsPage: React.FC = () => {
                 className="w-full py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95"
               >
                 <Download className="w-3.5 h-3.5 text-primary" />
-                <span>Télécharger Facture PDF</span>
+                <span>{t('adminOrg.paiements.downloadInvoice')}</span>
               </button>
             </div>
           </div>

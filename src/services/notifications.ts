@@ -83,3 +83,43 @@ export async function markAllNotificationsAsRead(organizationId: string, commerc
   const { error } = await query;
   if (error) throw error;
 }
+
+// ── Admin notifications (notifications_admin_commercial) ──────────────
+
+export async function createAdminNotification(
+  notification: Omit<NotificationItem, 'id' | 'created_at' | 'commercial_id'>
+): Promise<void> {
+  const { error } = await supabase
+    .from('notifications_admin_commercial')
+    .insert(notification);
+  if (error) throw error;
+}
+
+export async function getAdminNotifications(organizationId: string): Promise<NotificationItem[]> {
+  const { data, error } = await supabase
+    .from('notifications_admin_commercial')
+    .select('*')
+    .eq('organization_id', organizationId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data as NotificationItem[];
+}
+
+export async function markAdminNotificationAsRead(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('notifications_admin_commercial')
+    .update({ lue: true })
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
+export async function markAllAdminNotificationsAsRead(organizationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('notifications_admin_commercial')
+    .update({ lue: true })
+    .eq('organization_id', organizationId);
+
+  if (error) throw error;
+}

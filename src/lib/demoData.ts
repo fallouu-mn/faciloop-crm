@@ -95,9 +95,9 @@ export const DEMO_PAIEMENTS: Paiement[] = [
 ];
 
 export const DEMO_OBJECTIFS: ObjectifCommercialAdmin[] = [
-  { id: 'demo-obj-1', commercialId: 'demo-comm-1', commercialNom: 'Fatou Ndiaye', type: 'ca', objectif: 2000000, realise: 1400000, periode: '2026-08' },
-  { id: 'demo-obj-2', commercialId: 'demo-comm-2', commercialNom: 'Omar Sow', type: 'ca', objectif: 2500000, realise: 2100000, periode: '2026-08' },
-  { id: 'demo-obj-3', commercialId: 'demo-comm-3', commercialNom: 'Aminata Ba', type: 'ventes', objectif: 5, realise: 3, periode: '2026-08' },
+  { id: 'demo-obj-1', commercialId: 'demo-comm-1', commercialNom: 'Fatou Ndiaye', type: 'ca', objectif: 2000000, realise: 1400000, periode: '2026-08', date_debut: '2026-08-01', date_fin: '2026-08-31' },
+  { id: 'demo-obj-2', commercialId: 'demo-comm-2', commercialNom: 'Omar Sow', type: 'ca', objectif: 2500000, realise: 2100000, periode: '2026-08', date_debut: '2026-08-01', date_fin: '2026-08-31' },
+  { id: 'demo-obj-3', commercialId: 'demo-comm-3', commercialNom: 'Aminata Ba', type: 'ventes', objectif: 5, realise: 3, periode: '2026-08', date_debut: '2026-08-01', date_fin: '2026-08-31' },
 ];
 
 export const DEMO_COMMISSIONS: CommissionEntry[] = [

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { Prospect, MotifPerte } from '../../types/crm';
 import { 
@@ -24,6 +25,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { WhatsAppActionModal } from '../../components/common/WhatsAppActionModal';
+import { WhatsAppIcon } from '../../components/common/WhatsAppIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useProspectDetail, useInteractions, useRelances } from '@/hooks/commercial';
@@ -42,6 +44,7 @@ export const ProspectDetail: React.FC = () => {
   const prospect = dbProspect || prospects.find(p => p.id === id);
   const prospectInteractions = apiInteractions.length > 0 ? apiInteractions : (authInteractions || []).filter((i: any) => i.prospect_id === id);
   const prospectRelances = apiRelances.length > 0 ? apiRelances.filter(r => r.prospect_id === id) : (authRelances || []).filter((r: any) => r.prospect_id === id);
+  const prospectsListPath = user?.role === 'admin_org' ? '/admin/prospects' : '/app/prospects';
   const [activeTab, setActiveTab] = useState<'timeline' | 'relances' | 'infos'>('timeline');
 
   // Interaction Modal State
@@ -54,6 +57,27 @@ export const ProspectDetail: React.FC = () => {
   const [isConvertModalOpen, setIsConvertModalOpen] = useState<boolean>(false);
   const activeOrgOffers = orgOffers.filter(o => o.actif);
   const [formuleSouscrite, setFormuleSouscrite] = useState<string>(activeOrgOffers[0]?.nom || '');
+  const [convFrequence, setConvFrequence] = useState<'mensuel' | 'trimestriel' | 'annuel'>('mensuel');
+  const [convMontant, setConvMontant] = useState<string>(() => {
+    const first = orgOffers.filter(o => o.actif)[0];
+    return first ? String(first.tarifs.mensuel) : '';
+  });
+
+  const getOfferTarif = (offerNom: string, freq: 'mensuel' | 'trimestriel' | 'annuel') => {
+    const offer = activeOrgOffers.find(o => o.nom === offerNom);
+    if (!offer) return '';
+    return String(offer.tarifs[freq] || 0);
+  };
+
+  const handleOfferChange = (nom: string) => {
+    setFormuleSouscrite(nom);
+    setConvMontant(getOfferTarif(nom, convFrequence));
+  };
+
+  const handleFrequenceChange = (freq: 'mensuel' | 'trimestriel' | 'annuel') => {
+    setConvFrequence(freq);
+    setConvMontant(getOfferTarif(formuleSouscrite, freq));
+  };
 
   // WhatsApp Action Modal State
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState<boolean>(false);
@@ -98,11 +122,16 @@ export const ProspectDetail: React.FC = () => {
     setIsInterModalOpen(false);
     setInterComment('');
     setInterNextAction('');
+    toast.success(isEn ? 'Interaction added!' : 'Interaction ajoutée !');
   };
 
   const handleConvert = () => {
-    convertProspectToClient(prospect.id, formuleSouscrite);
+    convertProspectToClient(prospect.id, formuleSouscrite, {
+      frequence: convFrequence,
+      montant: convMontant ? Number(convMontant) : undefined,
+    });
     setIsConvertModalOpen(false);
+    toast.success(isEn ? 'Prospect converted to client!' : 'Prospect converti en client !');
     navigate(clientsPath);
   };
 
@@ -179,11 +208,10 @@ export const ProspectDetail: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={handleWhatsAppClick}
-              className="px-4 py-2.5 sm:px-4 sm:py-3 rounded-2xl bg-emerald-500 text-white text-xs font-extrabold shadow-md shadow-emerald-500/20 hover:bg-emerald-600 flex items-center gap-1.5 transition-all active:scale-95"
+              title="WhatsApp Direct"
+              className="p-2.5 rounded-2xl bg-[#25D366] text-white shadow-md shadow-emerald-500/20 hover:bg-[#1ebe5d] flex items-center justify-center transition-all active:scale-95"
             >
-              <MessageSquare className="w-4 h-4" />
-              <span className="hidden sm:inline">WhatsApp Direct</span>
-              <span className="sm:hidden">WhatsApp</span>
+              <WhatsAppIcon className="h-5 w-5" />
             </button>
 
             <a
@@ -488,13 +516,14 @@ export const ProspectDetail: React.FC = () => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-md bg-card border-t sm:border border-border/80 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 font-sans relative"
+              className="w-full max-w-lg bg-card border-t sm:border border-border/80 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 font-sans relative"
             >
               <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto sm:hidden mb-1" />
 
               <div className="flex items-center justify-between">
-                <h2 className="text-base sm:text-lg font-extrabold text-foreground">
-                  {isEn ? 'Convert to Client' : 'Conversion en Client Faciloop'}
+                <h2 className="text-base sm:text-lg font-extrabold text-foreground flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-emerald-500" />
+                  {isEn ? 'Convert to Client' : 'Conversion en Client'}
                 </h2>
                 <button onClick={() => setIsConvertModalOpen(false)} className="p-1 rounded-lg hover:bg-muted">
                   <X className="w-5 h-5" />
@@ -502,31 +531,73 @@ export const ProspectDetail: React.FC = () => {
               </div>
 
               <p className="text-xs text-muted-foreground font-semibold">
-                {isEn 
-                  ? `You are converting ${prospect.entreprise} into an official Faciloop CRM client.` 
-                  : `Vous allez convertir ${prospect.entreprise} en Client officiel Faciloop CRM.`}
+                {isEn
+                  ? `Converting ${prospect.entreprise} to an official client.`
+                  : `Conversion de ${prospect.entreprise} en client officiel.`}
               </p>
 
               <div className="space-y-3 text-xs">
+                {/* Offre */}
                 <div>
-                  <label className="block font-bold text-foreground mb-1">{isEn ? 'Subscription plan' : "Offre d'abonnement"}</label>
+                  <label className="block font-bold text-foreground mb-1.5">{isEn ? 'Subscription plan' : "Offre d'abonnement *"}</label>
                   {activeOrgOffers.length === 0 ? (
                     <p className="text-xs text-amber-600 p-3 rounded-xl border border-amber-500/30 bg-amber-500/5">
-                      {isEn ? 'No offer configured. Create offers in Subscriptions.' : 'Aucune offre configurée. Créez vos offres dans Abonnements.'}
+                      {isEn ? 'No active offer configured. Go to Subscriptions to create one.' : 'Aucune offre active. Configurez vos offres dans Abonnements.'}
                     </p>
                   ) : (
                     <select
                       value={formuleSouscrite}
-                      onChange={(e) => setFormuleSouscrite(e.target.value)}
+                      onChange={(e) => handleOfferChange(e.target.value)}
                       className="w-full p-3 rounded-2xl border border-input bg-background font-bold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     >
                       {activeOrgOffers.map(offer => (
-                        <option key={offer.id} value={offer.nom}>
-                          {offer.nom} ({offer.tarifs.mensuel.toLocaleString('fr-FR')} FCFA/{isEn ? 'mo' : 'mois'})
-                        </option>
+                        <option key={offer.id} value={offer.nom}>{offer.nom}</option>
                       ))}
                     </select>
                   )}
+                </div>
+
+                {/* Période */}
+                <div>
+                  <label className="block font-bold text-foreground mb-1.5">{isEn ? 'Billing period *' : 'Périodicité *'}</label>
+                  <div className="flex gap-2">
+                    {(['mensuel', 'trimestriel', 'annuel'] as const).map(freq => {
+                      const selectedOffer = activeOrgOffers.find(o => o.nom === formuleSouscrite);
+                      const tarif = selectedOffer?.tarifs[freq] || 0;
+                      return (
+                        <button
+                          key={freq}
+                          type="button"
+                          onClick={() => handleFrequenceChange(freq)}
+                          className={`flex-1 py-2.5 px-2 rounded-xl border text-[11px] font-bold transition-all ${
+                            convFrequence === freq
+                              ? 'bg-primary text-white border-primary shadow-md'
+                              : 'border-input bg-background text-foreground hover:border-primary/50'
+                          }`}
+                        >
+                          <div className="capitalize">{freq === 'mensuel' ? 'Mensuel' : freq === 'trimestriel' ? 'Trimestriel' : 'Annuel'}</div>
+                          {tarif > 0 && (
+                            <div className="text-[10px] font-semibold opacity-80 mt-0.5">
+                              {tarif.toLocaleString('fr-FR')} FCFA
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Montant */}
+                <div>
+                  <label className="block font-bold text-foreground mb-1.5">{isEn ? 'Amount (FCFA) *' : 'Montant (FCFA) *'}</label>
+                  <input
+                    type="number"
+                    value={convMontant}
+                    onChange={(e) => setConvMontant(e.target.value)}
+                    placeholder="0"
+                    className="w-full p-3 rounded-2xl border border-input bg-background font-bold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">Modifiable — pré-rempli depuis le tarif de l'offre</p>
                 </div>
               </div>
 
@@ -539,9 +610,10 @@ export const ProspectDetail: React.FC = () => {
                 </button>
                 <button
                   onClick={handleConvert}
-                  className="w-full sm:w-1/2 py-3 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs hover:bg-emerald-600 shadow-md shadow-emerald-500/25"
+                  disabled={activeOrgOffers.length === 0}
+                  className="w-full sm:w-1/2 py-3 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs hover:bg-emerald-600 shadow-md shadow-emerald-500/25 disabled:opacity-50"
                 >
-                  {isEn ? 'Confirm sale' : 'Confirmer la vente'}
+                  {isEn ? 'Confirm sale' : '✓ Confirmer la vente'}
                 </button>
               </div>
             </motion.div>

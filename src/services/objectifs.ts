@@ -66,8 +66,8 @@ export async function deleteObjectif(id: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function updateObjectifProgression(id: string, valeur_actuelle: number, statut?: ObjectifCommercial['statut']): Promise<ObjectifCommercial> {
-  const updates: Partial<ObjectifCommercial> = { valeur_actuelle };
+export async function updateObjectifProgression(id: string, realise: number, statut?: ObjectifCommercial['statut']): Promise<ObjectifCommercial> {
+  const updates: Partial<ObjectifCommercial> = { realise };
   if (statut) updates.statut = statut;
   return updateObjectif(id, updates);
 }

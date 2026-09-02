@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Crown, Check, Pencil, X, Save, Plus, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DeviseCode, convertAmount, formatAmount, getDeviseSymbol } from '../../lib/currency';
 import {
@@ -91,8 +92,10 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
         prix_xof: editPricing.mensuel,
       });
       setFormules(prev => prev.map(f => f.code === editingFormule ? updated : f));
-    } catch (err) {
+      toast.success(`Formule "${editingFormule}" mise à jour !`);
+    } catch (err: any) {
       console.error('Erreur sauvegarde:', err);
+      toast.error(`Erreur lors de la mise à jour : ${err?.message || 'Erreur inconnue'}`);
     }
     setEditingFormule(null);
     setEditPricing(null);
@@ -105,8 +108,10 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
     try {
       await toggleFormuleActive(code, newActive);
       setFormules(prev => prev.map(fo => fo.code === code ? { ...fo, isActive: newActive } : fo));
-    } catch (err) {
+      toast.success(newActive ? `Formule "${code}" activée !` : `Formule "${code}" désactivée.`);
+    } catch (err: any) {
       console.error('Erreur toggle:', err);
+      toast.error(`Erreur : ${err?.message || 'Erreur inconnue'}`);
     }
   };
 
@@ -151,8 +156,10 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
       const created = await createFormule(newFormule);
       setFormules(prev => [...prev, created]);
       setIsAddModalOpen(false);
-    } catch (err) {
+      toast.success(`Formule "${newLabel}" créée avec succès !`);
+    } catch (err: any) {
       console.error('Erreur création formule:', err);
+      toast.error(`Erreur lors de la création : ${err?.message || 'Erreur inconnue'}`);
     }
   };
 

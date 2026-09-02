@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
-import { 
-  Plus, 
-  X, 
-  Sparkles, 
-  MessageSquare, 
-  Phone, 
-  Check, 
+import {
+  Plus,
+  X,
+  Sparkles,
+  MessageSquare,
+  Phone,
   AlertTriangle,
   Mic,
   Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 export const GlobalFab: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -28,7 +28,6 @@ export const GlobalFab: React.FC = () => {
   const [noteRapide, setNoteRapide] = useState<string>('');
   
   const [duplicateAlert, setDuplicateAlert] = useState<boolean>(false);
-  const [successToast, setSuccessToast] = useState<string | null>(null);
 
   // Phone input formatting & duplicate scan
   const handlePhoneChange = (val: string) => {
@@ -75,8 +74,7 @@ export const GlobalFab: React.FC = () => {
         });
       }
 
-      setSuccessToast(isEn ? 'Prospect and quick note added successfully!' : 'Prospect et note rapide ajoutés avec succès !');
-      setTimeout(() => setSuccessToast(null), 3500);
+      toast.success(isEn ? 'Prospect and quick note added successfully!' : 'Prospect et note rapide ajoutés avec succès !');
 
       // Reset
       setNom('');
@@ -89,21 +87,6 @@ export const GlobalFab: React.FC = () => {
 
   return (
     <>
-      {/* Toast Notification */}
-      <AnimatePresence>
-        {successToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-24 right-6 z-50 p-4 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs shadow-2xl flex items-center gap-2 max-w-sm"
-          >
-            <Check className="w-5 h-5 shrink-0" />
-            <span>{successToast}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Express Creation Bottom Sheet Modal on Mobile, Centered on PC */}
       <AnimatePresence>
         {isOpen && (

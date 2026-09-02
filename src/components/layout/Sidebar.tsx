@@ -37,12 +37,14 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { t, i18n } = useTranslation();
   const { t: tSA } = useTranslation('superAdmin');
-  const { user, currentOrg } = useAuth();
+  const { user, currentOrg, adminNotifications, notifications } = useAuth();
   const location = useLocation();
   const role = user?.role || 'commercial';
   const isEn = i18n.language?.startsWith('en');
   const platformSettings = usePlatformSettings();
   const adminBase = location.pathname.startsWith('/demo') ? '/demo' : '/admin';
+  const adminUnread = adminNotifications?.filter(n => !n.lue).length ?? 0;
+  const commercialUnread = notifications?.filter(n => !n.lue).length ?? 0;
 
   // Navigation Items per Role
   const commercialLinks = [
@@ -180,6 +182,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   <div className="space-y-0.5">
                     {section.links.map((link) => {
                       const Icon = link.icon;
+                      const isNotifLink = link.to.endsWith('/notifications');
+                      const badge = isNotifLink && adminUnread > 0 ? adminUnread : 0;
                       return (
                         <NavLink
                           key={link.to}
@@ -194,7 +198,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                           }
                         >
                           <Icon className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{link.label}</span>
+                          <span className="flex-1 truncate">{link.label}</span>
+                          {badge > 0 && (
+                            <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shrink-0">
+                              {badge > 99 ? '99+' : badge}
+                            </span>
+                          )}
                         </NavLink>
                       );
                     })}
@@ -209,6 +218,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </div>
               {currentLinks.map((link) => {
                 const Icon = link.icon;
+                const isNotifLink = link.to.endsWith('/notifications');
+                const badge = isNotifLink && commercialUnread > 0 ? commercialUnread : 0;
                 return (
                   <NavLink
                     key={link.to}
@@ -223,7 +234,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     }
                   >
                     <Icon className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{link.label}</span>
+                    <span className="flex-1 truncate">{link.label}</span>
+                    {badge > 0 && (
+                      <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shrink-0">
+                        {badge > 99 ? '99+' : badge}
+                      </span>
+                    )}
                   </NavLink>
                 );
               })}

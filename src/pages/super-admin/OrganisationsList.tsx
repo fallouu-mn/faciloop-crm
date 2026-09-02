@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Plus, X, Clock, Power, Search, CheckCircle2, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { DateRange, isInDateRange, searchParamsToDateRange } from '../../lib/dateFilter';
 import { formatAmount } from '../../lib/currency';
@@ -130,6 +131,7 @@ export const OrganisationsList: React.FC = () => {
     if (error) {
       setActivError(error.message);
       setActivLoading(false);
+      toast.error(`Erreur lors de l'activation : ${error.message}`);
       return;
     }
 
@@ -146,6 +148,7 @@ export const OrganisationsList: React.FC = () => {
 
     setActivLoading(false);
     setActivatingOrg(null);
+    toast.success(`Organisation "${activatingOrg.nom}" activée avec succès !`);
   };
 
   const changeStatus = async (id: string, newStatut: 'actif' | 'suspendu') => {
@@ -166,6 +169,13 @@ export const OrganisationsList: React.FC = () => {
         statut: newStatut,
         statut_abonnement: (updates.statut_abonnement as string) || tenant.statut_abonnement,
       } : tenant));
+      toast.success(
+        newStatut === 'suspendu'
+          ? `Organisation "${target?.nom}" suspendue.`
+          : `Organisation "${target?.nom}" réactivée !`
+      );
+    } else {
+      toast.error(`Erreur : ${error.message}`);
     }
   };
 
@@ -204,6 +214,9 @@ export const OrganisationsList: React.FC = () => {
       setIsCreateModalOpen(false);
       setNomOrg('');
       setAdminEmail('');
+      toast.success(`Organisation "${nomOrg}" créée avec succès !`);
+    } else if (error) {
+      toast.error(`Erreur lors de la création : ${error.message}`);
     }
   };
 

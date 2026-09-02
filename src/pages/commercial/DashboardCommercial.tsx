@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Phone,
-  Sparkles,
   TrendingUp,
   Clock,
   ArrowRight,
@@ -202,7 +201,7 @@ export const DashboardCommercial: React.FC = () => {
         <div className="lg:col-span-2 p-5 sm:p-6 rounded-3xl border border-border/80 bg-card shadow-md space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
+              <WhatsAppIcon className="w-4 h-4 fill-emerald-500" />
               <h3 className="font-extrabold text-sm sm:text-base text-foreground uppercase tracking-wider">
                 {isEn ? "Today's Priorities" : 'Mes Priorités du Jour'}
               </h3>
@@ -244,7 +243,6 @@ export const DashboardCommercial: React.FC = () => {
                       className="py-2 px-3 rounded-xl bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-500/20 hover:bg-emerald-600 active:scale-95 transition-all flex items-center gap-1.5"
                     >
                       <WhatsAppIcon className="w-3.5 h-3.5 fill-white" />
-                      <span>WA</span>
                     </a>
                     <a
                       href={`tel:${phone}`}

@@ -9,5 +9,389 @@
   "actions": {
     "importCsv": "Import CSV",
     "newRep": "Nouveau Commercial"
+  },
+  "adminOrg": {
+    "dashboard": {
+      "greeting": "Bonjour",
+      "subtitle": "Vue d'ensemble de l'activité commerciale globale et performance d'équipe",
+      "managementPrefix": "Direction",
+      "period": {
+        "mois": "Ce mois",
+        "trimestre": "Ce trimestre",
+        "annee": "Cette année",
+        "personnalise": "Personnalisé"
+      },
+      "customPeriod": "Période personnalisée",
+      "from": "Du",
+      "to": "Au",
+      "newSalesRep": "Nouveau Commercial",
+      "totalProspects": "Total Prospects",
+      "activeClients": "Clients Actifs",
+      "conversionRate": "Taux de Conversion",
+      "revenue": "Chiffre d'Affaires",
+      "leaderboard": "Classement & Performance",
+      "manageTeam": "Gérer l'équipe →",
+      "col": {
+        "commercial": "Commercial",
+        "prospects": "Prospects",
+        "sales": "Ventes",
+        "revenue": "CA Encaissé",
+        "convRate": "Taux Conv."
+      },
+      "noActiveSalesRep": "Aucun commercial actif",
+      "compareChart": "Comparaison Volume & Ventes",
+      "viewAllProspects": "Consulter tous les prospects",
+      "byFormule": "Répartition par formule",
+      "bySector": "Répartition par secteur",
+      "client": "client",
+      "clients": "clients"
+    },
+    "equipe": {
+      "title": "Gestion de l'Équipe Commerciale",
+      "subtitle": "Gérez l'accès des commerciaux de votre entreprise",
+      "addBtn": "Ajouter un commercial",
+      "col": {
+        "salesRep": "Commercial",
+        "phone": "Téléphone",
+        "status": "Statut",
+        "action": "Action"
+      },
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "modal": {
+        "title": "Créer un Compte Commercial",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Email Professionnel",
+        "phone": "Téléphone Mobile",
+        "createBtn": "Créer l'accès commercial",
+        "errorDefault": "Erreur lors de la création du commercial"
+      }
+    },
+    "objectifs": {
+      "title": "Objectifs Commerciaux",
+      "subtitle": "Définissez et suivez les objectifs de chaque commercial",
+      "defineBtn": "Définir un objectif",
+      "kpi": {
+        "tracked": "Commerciaux suivis",
+        "defined": "Objectifs définis",
+        "avgRate": "Taux atteinte moyen"
+      },
+      "types": {
+        "ca": "Chiffre d'affaires",
+        "ventes": "Nombre de ventes",
+        "prospects": "Prospects créés"
+      },
+      "caEncaisse": "CA encaissé",
+      "ventes": "Ventes",
+      "period": {
+        "hebdomadaire": "Hebdomadaire",
+        "mensuel": "Mensuel",
+        "trimestriel": "Trimestriel",
+        "annuel": "Annuel"
+      },
+      "modal": {
+        "title": "Définir un objectif",
+        "commercial": "Commercial *",
+        "type": "Type d'objectif *",
+        "target": "Valeur cible *",
+        "periodType": "Type de période",
+        "startDate": "Date début *",
+        "endDate": "Date fin *",
+        "cancel": "Annuler",
+        "submit": "Définir l'objectif"
+      },
+      "empty": "Aucun objectif défini. Cliquez sur \"Définir un objectif\" pour commencer.",
+      "toast": "Objectif défini avec succès !",
+      "deleteTitle": "Supprimer l'objectif"
+    },
+    "prospects": {
+      "title": "Prospects",
+      "adminView": "Vue Admin",
+      "subtitle": "Gestion complète des prospects de l'organisation",
+      "newBtn": "Nouveau Prospect",
+      "reassignBtn": "Réattribuer",
+      "search": "Rechercher par nom, entreprise ou téléphone...",
+      "resetFilters": "Réinitialiser",
+      "filterAll": {
+        "stages": "Toutes étapes",
+        "sources": "Toutes sources",
+        "commercials": "Tous commerciaux",
+        "countries": "Tous pays"
+      },
+      "hideClosedToggle": "Masquer les prospects gagnés / perdus",
+      "col": {
+        "prospect": "Prospect / Entreprise",
+        "phone": "Téléphone",
+        "stage": "Étape",
+        "source": "Source",
+        "commercial": "Commercial",
+        "followUp": "Prochaine relance",
+        "actions": "Actions"
+      },
+      "empty": "Aucun prospect trouvé pour ces filtres.",
+      "emptyMobile": "Aucun prospect trouvé.",
+      "unassigned": "Non attribué",
+      "openFile": "Ouvrir Fiche",
+      "relanceLabel": "Relance :",
+      "deleteConfirm": "Supprimer ce prospect définitivement ?",
+      "modal": {
+        "title": "Nouveau Prospect",
+        "sectionId": "Identité",
+        "sectionContact": "Contact",
+        "sectionLocation": "Localisation",
+        "sectionPipeline": "Attribution & Pipeline",
+        "sectionNotes": "Notes & Relance",
+        "lastName": "Nom *",
+        "firstName": "Prénom",
+        "company": "Entreprise *",
+        "phone": "Téléphone *",
+        "country": "Pays *",
+        "city": "Ville",
+        "address": "Adresse",
+        "sector": "Secteur d'activité",
+        "select": "— Sélectionner —",
+        "assignedTo": "Commercial attribué *",
+        "pipelineStage": "Étape pipeline",
+        "targetPlan": "Formule envisagée",
+        "budget": "Budget estimé (FCFA)",
+        "comment": "Commentaire",
+        "commentPlaceholder": "Notes internes...",
+        "followUpDate": "Date prochaine relance",
+        "createBtn": "Créer le prospect",
+        "duplicate": "Ce numéro existe déjà dans l'organisation !"
+      },
+      "reassignModal": {
+        "title": "Réattribution",
+        "cancel": "Annuler",
+        "confirm": "Confirmer"
+      },
+      "toast": {
+        "created": "Prospect créé avec succès !",
+        "reassigned": "prospects réattribués !"
+      }
+    },
+    "clients": {
+      "title": "Comptes Clients",
+      "convertedTag": "Prospects convertis",
+      "subtitle": "Clients issus de la conversion de prospects — abonnements et comptes actifs",
+      "kpi": {
+        "total": "Total clients",
+        "active": "Comptes actifs",
+        "revenue": "CA total",
+        "renewals": "Renouvellements (30j)"
+      },
+      "search": "Rechercher par entreprise, responsable ou téléphone...",
+      "resetFilters": "Réinitialiser",
+      "col": {
+        "company": "Entreprise",
+        "manager": "Responsable",
+        "plan": "Formule",
+        "status": "Statut",
+        "subscription": "Abonnement",
+        "renewal": "Renouvellement",
+        "inactivity": "Inactivité",
+        "actions": "Actions"
+      },
+      "empty": "Aucun client trouvé. Les clients apparaissent après conversion d'un prospect.",
+      "emptyMobile": "Aucun client trouvé.",
+      "details": "Détails",
+      "clientFile": "Fiche Client",
+      "close": "Fermer",
+      "renewalIn": "Renouvellement dans",
+      "inactiveSince": "Inactif depuis",
+      "days": "jours",
+      "expired": "Expiré",
+      "renewal": "Renouvellement"
+    },
+    "abonnements": {
+      "title": "Offres d'abonnement",
+      "subtitle": "Gérez les offres proposées à vos clients",
+      "addBtn": "Ajouter une offre",
+      "period": {
+        "mensuel": "mensuel",
+        "trimestriel": "trimestriel",
+        "annuel": "annuel"
+      },
+      "periodShort": {
+        "mensuel": "mois",
+        "trimestriel": "trim.",
+        "annuel": "an"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "pricing": "Tarification (FCFA)",
+      "offerActive": "Offre active",
+      "edit": "Modifier",
+      "modal": {
+        "createTitle": "Créer une offre",
+        "editTitle": "Modifier l'offre",
+        "name": "Nom de l'offre *",
+        "description": "Description",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "create": "Créer l'offre"
+      },
+      "empty": {
+        "title": "Aucune offre créée",
+        "subtitle": "Créez votre première offre pour commencer à convertir des prospects",
+        "btn": "Créer une offre"
+      },
+      "toast": {
+        "created": "Offre créée avec succès",
+        "updated": "Offre modifiée avec succès",
+        "deleted": "Offre supprimée"
+      }
+    },
+    "paiements": {
+      "title": "Suivi des Paiements & Factures",
+      "badge": "Comptabilité SaaS",
+      "subtitle": "Historique des règlements de l'abonnement et téléchargement des pièces justificatives PDF",
+      "downloadReleve": "Relevé",
+      "kpi": {
+        "collected": "Total Encaissé",
+        "transactions": "Transactions",
+        "subscriptions": "abonnements enregistrés"
+      },
+      "filterAll": "Tous les moyens",
+      "list": "Liste des Transactions",
+      "col": {
+        "ref": "Réf. Facture",
+        "company": "Entreprise Client",
+        "amount": "Montant Payé",
+        "mode": "Moyen de Règlement",
+        "transactionRef": "Réf. Transaction",
+        "status": "Statut",
+        "invoice": "Facture PDF"
+      },
+      "downloadPdf": "PDF",
+      "downloadInvoice": "Télécharger Facture PDF",
+      "modes": {
+        "card": "Carte bancaire (Stripe)",
+        "transfer": "Virement bancaire"
+      }
+    },
+    "commissions": {
+      "title": "Commissions",
+      "badge": "Rémunération Variable",
+      "subtitle": "Suivi des commissions à verser aux commerciaux — Taux : 5% mensuel, 8% trimestriel, 10% annuel",
+      "periodLabel": "Période :",
+      "allPeriods": "Toutes les périodes",
+      "kpi": {
+        "toVerify": "Total à Verser",
+        "revenue": "CA Généré",
+        "salesReps": "Commerciaux",
+        "sales": "Ventes"
+      },
+      "detailTitle": "Détail par Commercial",
+      "salesCount": "vente(s)",
+      "caLabel": "CA:",
+      "toPay": "à verser",
+      "markPaid": "Marquer versé",
+      "paid": "Versé ✓",
+      "empty": "Aucune commission pour cette période"
+    },
+    "journal": {
+      "title": "Journal d'Activité",
+      "badge": "Audit Log",
+      "subtitle": "Historique complet des actions et opérations effectuées par les utilisateurs de votre entreprise",
+      "events": "événement(s)",
+      "search": "Rechercher par action, utilisateur ou cible...",
+      "filters": {
+        "all": "Toutes les actions",
+        "prospect": "Prospects",
+        "client": "Clients",
+        "offer": "Offres & Abonnements",
+        "payment": "Paiements",
+        "objectif": "Objectifs",
+        "org": "Organisation"
+      },
+      "element": "Élément :",
+      "empty": {
+        "title": "Aucun événement trouvé",
+        "subtitle": "Modifiez vos filtres pour voir l'historique d'activité."
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Alertes et événements importants de votre organisation",
+      "markAllRead": "Tout marquer lu",
+      "filters": {
+        "toutes": "Toutes",
+        "non_lues": "Non lues",
+        "activite": "Activité",
+        "paiements": "Paiements",
+        "clients": "Clients",
+        "objectifs": "Objectifs"
+      },
+      "emptyAll": "Aucune notification",
+      "emptyUnread": "Aucune notification non lue"
+    },
+    "parametres": {
+      "title": "Paramètres de l'Entreprise",
+      "subtitle": "Informations générales, coordonnées et préférences de votre organisation",
+      "saved": "Paramètres sauvegardés avec succès !",
+      "sections": {
+        "visual": "Identité visuelle",
+        "general": "Informations générales",
+        "contact": "Coordonnées"
+      },
+      "changeLogo": "Changer le logo",
+      "companyName": "Nom de l'entreprise *",
+      "sector": "Secteur d'activité",
+      "currency": "Devise par défaut",
+      "country": "Pays",
+      "city": "Ville",
+      "address": "Adresse complète",
+      "addressPlaceholder": "Numéro, rue, quartier...",
+      "phone": "Téléphone",
+      "email": "Email professionnel",
+      "website": "Site web",
+      "websitePlaceholder": "https://...",
+      "saveBtn": "Enregistrer les modifications",
+      "select": "Sélectionner"
+    },
+    "importExport": {
+      "title": "Import / Export de Données (CSV & Excel)",
+      "subtitle": "Importez des listes de prospects, attribuez-les en masse et prévenez les doublons",
+      "export": {
+        "title": "Exporter mes données en CSV",
+        "prospects": "Exporter les Prospects",
+        "clients": "Exporter les Clients Faciloop",
+        "prospectsSubtitle": "Fichier CSV prêt avec toutes les colonnes du CRM",
+        "clientsSubtitle": "Fichier CSV complet avec formules souscrites et montants"
+      },
+      "import": {
+        "title": "Importer une liste de prospects (Fichier CSV)",
+        "subtitle": "Accepte les séparateurs virgule (,) et point-virgule (;)",
+        "assignTo": "Attribuer la liste à :",
+        "dropzone": "Glissez-déposez votre fichier CSV ici",
+        "browseBtn": "Parcourir mes fichiers",
+        "changeBtn": "Changer de fichier CSV",
+        "fileLoaded": "Fichier chargé :",
+        "parsing": "Analyse du fichier CSV & scanner anti-doublon en cours...",
+        "success": "Importation exécutée avec succès !",
+        "importedPrefix": "prospects ont été importés et attribués à",
+        "duplicatesIgnored": "doublons ignorés",
+        "preview": "Résumé de la prévisualisation avant validation :",
+        "ready": "prêts",
+        "attribution": "Attribution :",
+        "validateBtn": "Valider l'importation",
+        "successBtn": "Prospects importés !"
+      },
+      "col": {
+        "name": "Nom / Contact",
+        "company": "Entreprise",
+        "phone": "Téléphone",
+        "source": "Source",
+        "dupStatus": "Statut Anti-Doublon"
+      },
+      "status": {
+        "ready": "✓ Prêt",
+        "duplicate": "⚠️ Doublon (Ignoré)"
+      }
+    }
   }
 }

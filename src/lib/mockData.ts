@@ -458,8 +458,8 @@ export const mockObjectifs: ObjectifCommercial[] = [
     date_debut: '2026-08-01',
     date_fin: '2026-08-31',
     type: 'prospects',
-    valeur_cible: 30,
-    valeur_actuelle: 18,
+    objectif: 30,
+    realise: 18,
     statut: 'en_cours',
     created_at: '2026-08-01T08:00:00Z'
   },
@@ -472,8 +472,8 @@ export const mockObjectifs: ObjectifCommercial[] = [
     date_debut: '2026-08-01',
     date_fin: '2026-08-31',
     type: 'ca',
-    valeur_cible: 5000000,
-    valeur_actuelle: 3377923,
+    objectif: 5000000,
+    realise: 3377923,
     statut: 'en_cours',
     created_at: '2026-08-01T08:00:00Z'
   },
@@ -486,8 +486,8 @@ export const mockObjectifs: ObjectifCommercial[] = [
     date_debut: '2026-08-01',
     date_fin: '2026-08-31',
     type: 'ventes',
-    valeur_cible: 5,
-    valeur_actuelle: 6,
+    objectif: 5,
+    realise: 6,
     statut: 'depasse',
     created_at: '2026-08-01T08:00:00Z'
   }

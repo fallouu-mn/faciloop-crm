@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource } from '../../types/crm';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
@@ -8,7 +9,6 @@ import {
   Plus,
   AlertTriangle,
   X,
-  Check,
   ArrowRight,
   Eye,
   Lock,
@@ -16,8 +16,10 @@ import {
   ArrowRightLeft,
   Download,
   Upload,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Trash2,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useProspects } from '@/hooks/commercial/useProspects';
 
@@ -25,7 +27,9 @@ const PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
 export const ProspectsList: React.FC = () => {
-  const { user, myProspects, prospects, addProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
+  const { i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en');
+  const { user, myProspects, prospects, addProspect, deleteProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
   const { prospects: apiProspects, createProspect: apiCreateProspect, reassignProspects: apiReassignProspects } = useProspects();
   const effectiveProspects = apiProspects.length > 0 ? apiProspects : myProspects;
   const [searchParams] = useSearchParams();
@@ -63,12 +67,7 @@ export const ProspectsList: React.FC = () => {
   const [newRelance, setNewRelance] = useState<string>('');
 
   const [duplicateAlert, setDuplicateAlert] = useState<boolean>(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Phone input duplicate checker (checks across whole org using formatPhoneNumber)
   const handlePhoneChange = (val: string) => {
@@ -121,7 +120,7 @@ export const ProspectsList: React.FC = () => {
     }
 
     if (res.success) {
-      showToast('Prospect créé et attribué avec succès !');
+      toast.success('Prospect créé et attribué avec succès !');
       setIsNewModalOpen(false);
       resetNewForm();
     }
@@ -192,7 +191,7 @@ export const ProspectsList: React.FC = () => {
         else skipped++;
       }
 
-      showToast(`Import terminé : ${imported} prospects créés, ${skipped} ignorés (doublons/invalides)`);
+      toast.success(`Import terminé : ${imported} prospects créés, ${skipped} ignorés (doublons/invalides)`);
       if (fileInputRef.current) fileInputRef.current.value = '';
     };
     reader.readAsText(file);
@@ -230,9 +229,15 @@ export const ProspectsList: React.FC = () => {
     const commNom = `${targetComm.prenom} ${targetComm.nom}`;
 
     reassignProspects(selectedIds, targetComm.id, commNom);
-    showToast(`${selectedIds.length} prospects réattribués avec succès à ${commNom} !`);
+    toast.success(`${selectedIds.length} prospects réattribués avec succès à ${commNom} !`);
     setSelectedIds([]);
     setIsReassignModalOpen(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteProspect(id);
+    setConfirmDeleteId(null);
+    toast.success(isEn ? 'Prospect deleted.' : 'Prospect supprimé.');
   };
 
   const isAdminRole = user?.role === 'admin_org' || user?.role === 'super_admin';
@@ -309,13 +314,6 @@ export const ProspectsList: React.FC = () => {
         </div>
       </div>
 
-      {/* Success Toast Banner */}
-      {toastMessage && (
-        <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2 shadow-md">
-          <Check className="h-4 w-4 shrink-0" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
 
       {/* Controls Bar: Search & Filters (Full-width responsive inputs on Mobile) */}
       <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
@@ -419,13 +417,38 @@ export const ProspectsList: React.FC = () => {
                   <td className="p-4 capitalize text-muted-foreground">{p.source.replace('_', ' ')}</td>
                   <td className="p-4 font-semibold text-primary">{p.commercial_nom || 'Non attribué'}</td>
                   <td className="p-4 text-right">
-                    <Link
-                      to={`/app/prospects/${p.id}`}
-                      className="inline-flex items-center gap-1 rounded-lg border border-input bg-card px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Fiche</span>
-                    </Link>
+                    <div className="inline-flex items-center gap-1.5">
+                      <Link
+                        to={`/app/prospects/${p.id}`}
+                        className="inline-flex items-center gap-1 rounded-lg border border-input bg-card px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Fiche</span>
+                      </Link>
+                      {confirmDeleteId === p.id ? (
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => handleDelete(p.id)}
+                            className="px-2 py-1.5 rounded-lg bg-red-500 text-white text-[10px] font-bold hover:bg-red-600"
+                          >
+                            {isEn ? 'Confirm' : 'Confirmer'}
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="px-2 py-1.5 rounded-lg border border-input text-[10px] font-bold hover:bg-muted"
+                          >
+                            {isEn ? 'Cancel' : 'Annuler'}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteId(p.id)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 dark:border-red-800/40 px-2.5 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -465,14 +488,37 @@ export const ProspectsList: React.FC = () => {
                 <span className="font-extrabold text-primary text-[11px]">{p.commercial_nom}</span>
               </div>
 
-              <div className="pt-2 border-t border-border/60 flex justify-end pl-8">
+              <div className="pt-2 border-t border-border/60 flex gap-2 pl-8">
                 <Link
                   to={`/app/prospects/${p.id}`}
-                  className="w-full py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                  className="flex-1 py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all"
                 >
                   <span>{isEn ? 'Open Prospect Card' : 'Ouvrir Fiche Prospect'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
+                {confirmDeleteId === p.id ? (
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleDelete(p.id)}
+                      className="px-3 py-2 rounded-xl bg-red-500 text-white text-[10px] font-bold hover:bg-red-600 active:scale-95"
+                    >
+                      {isEn ? 'Confirm' : 'OK'}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteId(null)}
+                      className="px-3 py-2 rounded-xl border border-input text-[10px] font-bold hover:bg-muted active:scale-95"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setConfirmDeleteId(p.id)}
+                    className="px-3 py-2 rounded-xl border border-red-200 dark:border-red-800/40 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 active:scale-95 transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -693,7 +739,7 @@ export const ProspectsList: React.FC = () => {
               </div>
 
               <button type="submit"
-                disabled={(!newNom && !newEntreprise) || !newPhone || !newPays}
+                disabled={(!newNom && !newEntreprise) || !newPhone || !newPays || duplicateAlert}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 {isEn ? 'Create Prospect' : 'Créer le prospect'}
               </button>

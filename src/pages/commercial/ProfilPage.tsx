@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { KeyRound, LogOut, Mail, Phone, User, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { KeyRound, LogOut, Mail, Phone, User, Eye, EyeOff, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
+import { toast } from 'sonner';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../../components/ui/input-otp';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +18,7 @@ export function ProfilPage() {
   const [showPin, setShowPin] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const isEn = i18n.language?.startsWith('en');
 
@@ -23,8 +26,9 @@ export function ProfilPage() {
     ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase()
     : '?';
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     setError('');
+    setSuccess(false);
     if (nouveau.length !== 6) {
       setError(isEn ? 'Secret PIN code must contain 6 digits.' : 'Le code secret doit contenir exactement 6 chiffres.');
       return;
@@ -34,14 +38,27 @@ export function ProfilPage() {
       return;
     }
     setIsPending(true);
-    // TODO: appel API backend (supabase.auth.updateUser)
-    setTimeout(() => {
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({ password: nouveau });
+      if (updateError) {
+        setError(isEn ? `Error: ${updateError.message}` : `Erreur : ${updateError.message}`);
+        toast.error(updateError.message);
+        return;
+      }
+      setSuccess(true);
+      toast.success(isEn ? 'PIN code updated successfully!' : 'Code secret mis à jour avec succès !');
+      setTimeout(() => {
+        setDialogOpen(false);
+        setNouveau('');
+        setConfirmation('');
+        setSuccess(false);
+        setError('');
+      }, 1500);
+    } catch (e: any) {
+      setError(isEn ? 'An unexpected error occurred.' : 'Une erreur inattendue est survenue.');
+    } finally {
       setIsPending(false);
-      setDialogOpen(false);
-      setNouveau('');
-      setConfirmation('');
-      setError('');
-    }, 500);
+    }
   };
 
   const handleClose = () => {
@@ -210,6 +227,14 @@ export function ProfilPage() {
 
             {error && (
               <p className="text-xs text-red-500 font-semibold text-center">{error}</p>
+            )}
+            {success && (
+              <div className="flex items-center justify-center gap-2 text-emerald-600">
+                <CheckCircle2 className="h-4 w-4" />
+                <p className="text-xs font-semibold">
+                  {isEn ? 'PIN code updated successfully!' : 'Code secret mis à jour avec succès !'}
+                </p>
+              </div>
             )}
 
             <div className="flex gap-2 pt-2">

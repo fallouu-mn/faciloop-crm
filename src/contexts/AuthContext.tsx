@@ -45,6 +45,7 @@ export interface AuthContextType {
   relances: Relance[];
   interactions: Interaction[];
   notifications: NotificationItem[];
+  adminNotifications: NotificationItem[];
   clients: ClientFaciloop[];
   paiements: Paiement[];
 
@@ -59,9 +60,12 @@ export interface AuthContextType {
 
   addRelance: (r: Omit<Relance, 'id' | 'created_at' | 'organization_id'>) => void;
   completeRelance: (id: string) => void;
+  cancelRelance: (id: string) => void;
 
   addInteraction: (i: Omit<Interaction, 'id' | 'created_at' | 'organization_id'>) => void;
   markNotificationAsRead: (id: string) => void;
+  markAdminNotificationAsRead: (id: string) => void;
+  markAllAdminNotificationsAsRead: () => void;
   convertProspectToClient: (prospectId: string, formule: string, options?: { frequence?: string; montant?: number; modePaiement?: ModePaiement }) => void;
 
   orgOffers: OrgOffer[];
@@ -80,6 +84,9 @@ export interface AuthContextType {
   deleteObjectif: (id: string) => void;
 
   commissions: CommissionEntry[];
+  markCommissionVersee: (id: string) => void;
+  syncMissingCommissions: () => Promise<number>;
+  recalculerCommissions: () => Promise<number>;
 
   actionLogs: ActionLog[];
   addActionLog: (log: Omit<ActionLog, 'id' | 'organization_id' | 'created_at'>) => void;
@@ -181,9 +188,11 @@ function mapObjectifToAdmin(o: ObjectifCommercial): ObjectifCommercialAdmin {
     commercialId: o.commercial_id,
     commercialNom: o.commercial_nom || '',
     type: o.type as 'ca' | 'ventes' | 'prospects',
-    objectif: o.valeur_cible,
-    realise: o.valeur_actuelle,
+    objectif: o.objectif,
+    realise: o.realise,
     periode: o.date_debut?.slice(0, 7) || '',
+    date_debut: o.date_debut,
+    date_fin: o.date_fin,
   };
 }
 
@@ -193,7 +202,7 @@ function mapOffreToOrgOffer(o: Offre): OrgOffer {
     organization_id: o.organization_id,
     nom: o.nom,
     description: o.description || '',
-    tarifs: o.tarifs || { mensuel: o.prix_mensuel || 0, trimestriel: (o.prix_mensuel || 0) * 3, annuel: o.prix_annuel || 0 },
+    tarifs: { mensuel: o.tarif_mensuel || 0, trimestriel: o.tarif_trimestriel || 0, annuel: o.tarif_annuel || 0 },
     actif: o.actif,
     created_at: o.created_at,
   };
@@ -211,6 +220,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [relances, setRelances] = useState<Relance[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [adminNotifications, setAdminNotifications] = useState<NotificationItem[]>([]);
   const [clients, setClients] = useState<ClientFaciloop[]>([]);
   const [paiements, setPaiements] = useState<Paiement[]>([]);
   const [offres, setOffres] = useState<Offre[]>([]);
@@ -227,6 +237,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         relancesData,
         interactionsData,
         notificationsData,
+        adminNotificationsData,
         clientsData,
         paiementsData,
         offresData,
@@ -239,6 +250,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         relancesService.getRelances(orgId),
         interactionsService.getInteractions(orgId),
         notificationsService.getNotifications(orgId),
+        notificationsService.getAdminNotifications(orgId),
         clientsService.getClients(orgId),
         paiementsService.getPaiements(orgId),
         offresService.getOffres(orgId),
@@ -252,13 +264,167 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setRelances(relancesData);
       setInteractions(interactionsData);
       setNotifications(notificationsData);
+      setAdminNotifications(adminNotificationsData);
       setClients(clientsData);
       setPaiements(paiementsData);
       setOffres(offresData);
       setCommerciaux(commerciauxData);
-      setObjectifsRaw(objectifsData);
-      setCommissionsRaw(commissionsData);
       setActionLogs(logsData);
+
+      // ── Auto-sync + recalcul commissions au chargement ──────────────
+      const COMM_RATES: Record<string, number> = { mensuel: 5, trimestriel: 8, annuel: 10 };
+      const validCommIds = new Set(commerciauxData.map((c: any) => c.id));
+
+      // 1. Corriger les montants aberrants (montant_commission ≈ montant_vente)
+      let correctedCommissions = [...commissionsData];
+      for (const c of correctedCommissions) {
+        const taux = COMM_RATES[c.periodicite || 'mensuel'] || 5;
+        const expected = Math.round(c.montant_vente * taux / 100);
+        if (Math.abs(c.montant_commission - c.montant_vente) < c.montant_vente * 0.5) {
+          try {
+            const updated = await commissionsService.updateCommission(c.id, {
+              montant_commission: expected,
+              taux_commission: taux,
+            });
+            correctedCommissions = correctedCommissions.map(x => x.id === c.id ? updated : x);
+          } catch { /* continue */ }
+        }
+      }
+
+      // 2. Créer les commissions manquantes depuis les paiements valides
+      const existingKeys = new Set(
+        correctedCommissions.map((c: any) => `${c.commercial_id}|${c.date_vente}|${c.montant_vente}`)
+      );
+      const toCreate = paiementsData.filter((p: any) =>
+        p.statut === 'valide' &&
+        p.commercial_id &&
+        validCommIds.has(p.commercial_id) &&
+        !existingKeys.has(`${p.commercial_id}|${p.date_paiement}|${p.montant_paye}`)
+      );
+      for (const p of toCreate) {
+        try {
+          const client = clientsData.find((cl: any) => cl.id === p.client_id);
+          let periodicite: 'mensuel' | 'trimestriel' | 'annuel' = 'mensuel';
+          if (client?.prochain_renouvellement && client?.created_at) {
+            const days = (new Date(client.prochain_renouvellement).getTime() - new Date(client.created_at).getTime()) / 86400000;
+            if (days >= 300) periodicite = 'annuel';
+            else if (days >= 75) periodicite = 'trimestriel';
+          }
+          const taux = COMM_RATES[periodicite];
+          const commercialRec = commerciauxData.find((c: any) => c.id === p.commercial_id);
+          const created = await commissionsService.createCommission({
+            organization_id: p.organization_id,
+            commercial_id: p.commercial_id,
+            commercial_nom: commercialRec ? `${commercialRec.prenom} ${commercialRec.nom}` : '',
+            client_nom: p.entreprise,
+            formule: client?.formule_souscrite || '',
+            periodicite,
+            montant_vente: p.montant_paye,
+            taux_commission: taux,
+            montant_commission: Math.round(p.montant_paye * taux / 100),
+            date_vente: p.date_paiement,
+            statut: 'a_verser',
+          });
+          correctedCommissions = [created, ...correctedCommissions];
+        } catch { /* continue */ }
+      }
+
+      setCommissionsRaw(correctedCommissions);
+
+      // ── Auto-sync realise des objectifs depuis les vraies données ────
+      const today = new Date().toISOString().split('T')[0];
+      let syncedObjectifs = [...objectifsData];
+      const newAdminNotifs: typeof adminNotificationsData = [];
+
+      for (const obj of syncedObjectifs) {
+        if (!obj.date_debut || !obj.date_fin) continue;
+
+        // Calculer realise depuis les données réelles selon le type
+        let nouveauRealise = 0;
+        if (obj.type === 'ca') {
+          nouveauRealise = paiementsData
+            .filter((p: any) =>
+              p.commercial_id === obj.commercial_id &&
+              p.statut === 'valide' &&
+              p.date_paiement >= obj.date_debut &&
+              p.date_paiement <= obj.date_fin
+            )
+            .reduce((sum: number, p: any) => sum + (p.montant_paye || 0), 0);
+        } else if (obj.type === 'ventes') {
+          nouveauRealise = clientsData.filter((c: any) =>
+            c.commercial_id === obj.commercial_id &&
+            c.created_at?.slice(0, 10) >= obj.date_debut &&
+            c.created_at?.slice(0, 10) <= obj.date_fin
+          ).length;
+        } else if (obj.type === 'prospects') {
+          nouveauRealise = prospectsData.filter((p: any) =>
+            p.commercial_id === obj.commercial_id &&
+            p.created_at?.slice(0, 10) >= obj.date_debut &&
+            p.created_at?.slice(0, 10) <= obj.date_fin
+          ).length;
+        }
+
+        // Déterminer nouveau statut
+        let nouveauStatut: string = obj.statut;
+        if (obj.statut === 'en_cours') {
+          if (nouveauRealise > obj.objectif) nouveauStatut = 'depasse';
+          else if (nouveauRealise >= obj.objectif) nouveauStatut = 'atteint';
+          else if (today > obj.date_fin) nouveauStatut = 'non_atteint';
+        }
+
+        // Mettre à jour en DB si realise ou statut a changé
+        const realiseChange = Math.abs(nouveauRealise - obj.realise) >= 1;
+        const statutChange = nouveauStatut !== obj.statut;
+        if (realiseChange || statutChange) {
+          try {
+            const updated = await objectifsService.updateObjectif(obj.id, {
+              realise: nouveauRealise,
+              ...(statutChange ? { statut: nouveauStatut as any } : {}),
+            });
+            syncedObjectifs = syncedObjectifs.map(o => o.id === obj.id ? updated : o);
+
+            // Créer notification admin si statut vient de changer
+            if (statutChange && orgId) {
+              const commercialNom = obj.commercial_nom || 'Commercial';
+              const alreadyNotified = adminNotificationsData.some((n: any) =>
+                n.type === (nouveauStatut === 'non_atteint' ? 'objectif_non_atteint' : 'objectif_atteint') &&
+                n.cible === commercialNom &&
+                n.created_at?.slice(0, 10) === today
+              );
+              if (!alreadyNotified) {
+                if (nouveauStatut === 'atteint' || nouveauStatut === 'depasse') {
+                  const notif = {
+                    organization_id: orgId,
+                    type: 'objectif_atteint',
+                    titre: `Objectif atteint — ${commercialNom}`,
+                    message: `${commercialNom} a atteint son objectif ${obj.type} (${nouveauRealise}/${obj.objectif}).`,
+                    lien: '/admin/objectifs',
+                    lue: false,
+                  };
+                  try { await notificationsService.createAdminNotification(notif); } catch { /* continue */ }
+                  newAdminNotifs.push({ ...notif, id: `sync-${obj.id}`, created_at: new Date().toISOString() } as any);
+                } else if (nouveauStatut === 'non_atteint') {
+                  const notif = {
+                    organization_id: orgId,
+                    type: 'objectif_non_atteint',
+                    titre: `Objectif non atteint — ${commercialNom}`,
+                    message: `${commercialNom} n'a pas atteint son objectif ${obj.type} (${nouveauRealise}/${obj.objectif}).`,
+                    lien: '/admin/objectifs',
+                    lue: false,
+                  };
+                  try { await notificationsService.createAdminNotification(notif); } catch { /* continue */ }
+                  newAdminNotifs.push({ ...notif, id: `sync-${obj.id}`, created_at: new Date().toISOString() } as any);
+                }
+              }
+            }
+          } catch { /* continue */ }
+        }
+      }
+
+      setObjectifsRaw(syncedObjectifs);
+      if (newAdminNotifs.length > 0) {
+        setAdminNotifications(prev => [...newAdminNotifs, ...prev]);
+      }
     } catch (e) {
       console.error('Erreur chargement données:', e);
     }
@@ -636,6 +802,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         created_at: new Date().toISOString(),
       };
       setCommerciaux(prev => [created, ...prev]);
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'commercial_added',
+        action: 'Ajout d\'un commercial',
+        entite_type: 'commercial',
+        entite_id: created.id,
+        cible: `${created.prenom} ${created.nom}`,
+        nouvelle_valeur: `Email: ${created.email}`,
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
     } catch (e) {
       console.error('Erreur ajout commercial:', e);
       throw e;
@@ -688,10 +866,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         commercial_nom: o.commercialNom,
         type: o.type as any,
         periode: 'mensuel',
-        date_debut: `${o.periode}-01`,
-        date_fin: `${o.periode}-28`,
-        valeur_cible: o.objectif,
-        valeur_actuelle: o.realise,
+        date_debut: o.date_debut || `${o.periode}-01`,
+        date_fin: o.date_fin || `${o.periode}-28`,
+        objectif: o.objectif,
+        realise: 0,
         statut: 'en_cours',
       });
       setObjectifsRaw(prev => [...prev, created]);
@@ -713,15 +891,92 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateObjectif = async (id: string, updates: Partial<Omit<ObjectifCommercialAdmin, 'id'>>) => {
+    if (!user) return;
     try {
+      const current = objectifsRaw.find(o => o.id === id);
       const dbUpdates: Partial<ObjectifCommercial> = {};
-      if (updates.objectif !== undefined) dbUpdates.valeur_cible = updates.objectif;
-      if (updates.realise !== undefined) dbUpdates.valeur_actuelle = updates.realise;
+      if (updates.objectif !== undefined) dbUpdates.objectif = updates.objectif;
+      if (updates.realise !== undefined) dbUpdates.realise = updates.realise;
       if (updates.commercialNom !== undefined) dbUpdates.commercial_nom = updates.commercialNom;
       if (updates.type !== undefined) dbUpdates.type = updates.type as any;
+      if (updates.statut !== undefined) dbUpdates.statut = updates.statut as any;
+
+      // Auto-détecter statut depuis realise vs objectif
+      const newRealise = updates.realise ?? current?.realise ?? 0;
+      const cibleObjectif = updates.objectif ?? current?.objectif ?? 0;
+      let nouveauStatut: string | null = null;
+
+      if (updates.realise !== undefined && cibleObjectif > 0) {
+        if (newRealise > cibleObjectif) {
+          nouveauStatut = 'depasse';
+          dbUpdates.statut = 'depasse' as any;
+        } else if (newRealise >= cibleObjectif) {
+          nouveauStatut = 'atteint';
+          dbUpdates.statut = 'atteint' as any;
+        }
+      }
+      if (updates.statut === 'non_atteint') {
+        nouveauStatut = 'non_atteint';
+      }
 
       const updated = await objectifsService.updateObjectif(id, dbUpdates);
       setObjectifsRaw(prev => prev.map(o => o.id === id ? updated : o));
+
+      // Créer notification admin si statut significatif atteint
+      if (nouveauStatut && user.organizationId) {
+        const commercialNom = updates.commercialNom ?? current?.commercial_nom ?? 'Commercial';
+        const typeObj = updates.type ?? current?.type ?? '';
+        if (nouveauStatut === 'atteint' || nouveauStatut === 'depasse') {
+          await notificationsService.createAdminNotification({
+            organization_id: user.organizationId,
+            type: 'objectif_atteint',
+            titre: `Objectif atteint — ${commercialNom}`,
+            message: `${commercialNom} a atteint son objectif ${typeObj} (${newRealise}/${cibleObjectif}).`,
+            lien: '/admin/objectifs',
+            lue: false,
+          });
+          setAdminNotifications(prev => [{
+            id: `temp-${Date.now()}`,
+            organization_id: user.organizationId,
+            type: 'objectif_atteint',
+            titre: `Objectif atteint — ${commercialNom}`,
+            message: `${commercialNom} a atteint son objectif ${typeObj} (${newRealise}/${cibleObjectif}).`,
+            lien: '/admin/objectifs',
+            lue: false,
+            created_at: new Date().toISOString(),
+          }, ...prev]);
+        } else if (nouveauStatut === 'non_atteint') {
+          await notificationsService.createAdminNotification({
+            organization_id: user.organizationId,
+            type: 'objectif_non_atteint',
+            titre: `Objectif non atteint — ${commercialNom}`,
+            message: `${commercialNom} n'a pas atteint son objectif ${typeObj} (${newRealise}/${cibleObjectif}).`,
+            lien: '/admin/objectifs',
+            lue: false,
+          });
+          setAdminNotifications(prev => [{
+            id: `temp-${Date.now()}`,
+            organization_id: user.organizationId,
+            type: 'objectif_non_atteint',
+            titre: `Objectif non atteint — ${commercialNom}`,
+            message: `${commercialNom} n'a pas atteint son objectif ${typeObj} (${newRealise}/${cibleObjectif}).`,
+            lien: '/admin/objectifs',
+            lue: false,
+            created_at: new Date().toISOString(),
+          }, ...prev]);
+        }
+      }
+
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'objectif_updated',
+        action: 'Modification d\'un objectif',
+        entite_type: 'objectif',
+        entite_id: id,
+        date: new Date().toISOString().split('T')[0],
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      });
     } catch (e) {
       console.error('Erreur mise à jour objectif:', e);
     }
@@ -881,9 +1136,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteProspect = async (id: string) => {
+    const target = prospects.find(p => p.id === id);
     try {
       await prospectsService.deleteProspect(id);
       setProspects(prev => prev.filter(p => p.id !== id));
+      if (user && target) {
+        addActionLog({
+          utilisateur_id: user.id,
+          utilisateur_nom: `${user.prenom} ${user.nom}`,
+          action_type: 'other',
+          action: 'Suppression d\'un prospect',
+          entite_type: 'prospect',
+          entite_id: id,
+          cible: target.entreprise || `${target.prenom || ''} ${target.nom}`,
+          date: new Date().toISOString().split('T')[0],
+          heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        });
+      }
     } catch (e) {
       console.error('Erreur suppression prospect:', e);
     }
@@ -915,6 +1184,106 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const cancelRelance = async (id: string) => {
+    try {
+      const updated = await relancesService.updateRelance(id, { statut: 'annulee' });
+      setRelances(prev => prev.map(r => r.id === id ? updated : r));
+    } catch (e) {
+      console.error('Erreur annulation relance:', e);
+    }
+  };
+
+  const markCommissionVersee = async (id: string) => {
+    try {
+      const updated = await commissionsService.updateCommissionStatut(id, 'verse');
+      setCommissionsRaw(prev => prev.map(c => c.id === id ? updated : c));
+    } catch (e) {
+      console.error('Erreur mise à jour commission:', e);
+    }
+  };
+
+  const syncMissingCommissions = async (): Promise<number> => {
+    if (!user) return 0;
+    const RATES: Record<string, number> = { mensuel: 5, trimestriel: 8, annuel: 10 };
+
+    function inferPeriodicite(clientId: string): 'mensuel' | 'trimestriel' | 'annuel' {
+      const c = clients.find(cl => cl.id === clientId);
+      if (!c?.prochain_renouvellement || !c?.created_at) return 'mensuel';
+      const days = (new Date(c.prochain_renouvellement).getTime() - new Date(c.created_at).getTime()) / 86400000;
+      if (days >= 300) return 'annuel';
+      if (days >= 75) return 'trimestriel';
+      return 'mensuel';
+    }
+
+    // clé de déduplication : commercial_id + date_paiement + montant (évite les doublons)
+    const existingKeys = new Set(
+      commissionsRaw.map(c => `${c.commercial_id}|${c.date_vente}|${c.montant_vente}`)
+    );
+
+    // On garde uniquement les paiements dont le commercial_id correspond à un vrai commercial
+    const validCommercialIds = new Set(commerciaux.map(c => c.id));
+
+    const toCreate = paiements.filter(p =>
+      p.statut === 'valide' &&
+      p.commercial_id &&
+      validCommercialIds.has(p.commercial_id) &&
+      !existingKeys.has(`${p.commercial_id}|${p.date_paiement}|${p.montant_paye}`)
+    );
+
+    let count = 0;
+    for (const p of toCreate) {
+      try {
+        const periodicite = inferPeriodicite(p.client_id);
+        const taux = RATES[periodicite];
+        const montantCommission = Math.round(p.montant_paye * taux / 100);
+        const commercialRecord = commerciaux.find(c => c.id === p.commercial_id);
+        const created = await commissionsService.createCommission({
+          organization_id: p.organization_id,
+          commercial_id: p.commercial_id!,
+          commercial_nom: commercialRecord ? `${commercialRecord.prenom} ${commercialRecord.nom}` : '',
+          client_nom: p.entreprise,
+          formule: clients.find(c => c.id === p.client_id)?.formule_souscrite || '',
+          periodicite,
+          montant_vente: p.montant_paye,
+          taux_commission: taux,
+          montant_commission: montantCommission,
+          date_vente: p.date_paiement,
+          statut: 'a_verser',
+        });
+        setCommissionsRaw(prev => [created, ...prev]);
+        count++;
+      } catch {
+        // continue sur les autres
+      }
+    }
+    return count;
+  };
+
+  const recalculerCommissions = async (): Promise<number> => {
+    if (!user) return 0;
+    const RATES: Record<string, number> = { mensuel: 5, trimestriel: 8, annuel: 10 };
+    let count = 0;
+
+    for (const c of commissionsRaw) {
+      const taux = RATES[c.periodicite || 'mensuel'] || 5;
+      const montantAttendu = Math.round(c.montant_vente * taux / 100);
+      // Correction si montant_commission est aberrant (> 50% du montant_vente = clairement faux)
+      if (Math.abs(c.montant_commission - c.montant_vente) < c.montant_vente * 0.5) {
+        try {
+          const updated = await commissionsService.updateCommission(c.id, {
+            montant_commission: montantAttendu,
+            taux_commission: taux,
+          });
+          setCommissionsRaw(prev => prev.map(x => x.id === c.id ? updated : x));
+          count++;
+        } catch {
+          // continue
+        }
+      }
+    }
+    return count;
+  };
+
   const addInteraction = async (newI: Omit<Interaction, 'id' | 'created_at' | 'organization_id'>) => {
     if (!user) return;
     try {
@@ -938,6 +1307,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const markAdminNotificationAsRead = async (id: string) => {
+    try {
+      await notificationsService.markAdminNotificationAsRead(id);
+      setAdminNotifications(prev => prev.map(n => n.id === id ? { ...n, lue: true } : n));
+    } catch (e) {
+      console.error('Erreur marquage notification admin:', e);
+    }
+  };
+
+  const markAllAdminNotificationsAsRead = async () => {
+    if (!user?.organizationId) return;
+    try {
+      await notificationsService.markAllAdminNotificationsAsRead(user.organizationId);
+      setAdminNotifications(prev => prev.map(n => ({ ...n, lue: true })));
+    } catch (e) {
+      console.error('Erreur marquage toutes notifications admin:', e);
+    }
+  };
+
   // ============================================
   // CRUD ORG OFFERS
   // ============================================
@@ -948,7 +1336,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         organization_id: user.organizationId,
         nom: offer.nom,
         description: offer.description,
-        tarifs: offer.tarifs,
+        tarif_mensuel: offer.tarifs?.mensuel || 0,
+        tarif_trimestriel: offer.tarifs?.trimestriel || 0,
+        tarif_annuel: offer.tarifs?.annuel || 0,
         actif: offer.actif,
       });
       setOffres(prev => [created, ...prev]);
@@ -974,7 +1364,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const dbUpdates: Partial<Offre> = {};
       if (updates.nom !== undefined) dbUpdates.nom = updates.nom;
       if (updates.description !== undefined) dbUpdates.description = updates.description;
-      if (updates.tarifs !== undefined) dbUpdates.tarifs = updates.tarifs;
+      if (updates.tarifs !== undefined) {
+        dbUpdates.tarif_mensuel = updates.tarifs.mensuel;
+        dbUpdates.tarif_trimestriel = updates.tarifs.trimestriel;
+        dbUpdates.tarif_annuel = updates.tarifs.annuel;
+      }
       if (updates.actif !== undefined) dbUpdates.actif = updates.actif;
 
       const updated = await offresService.updateOffre(id, dbUpdates);
@@ -1026,8 +1420,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const freq = (options?.frequence || 'mensuel') as 'mensuel' | 'trimestriel' | 'annuel';
     const offer = offres.find(o => o.nom === formule);
-    const tarifs = offer?.tarifs;
-    const montant = options?.montant || (tarifs ? tarifs[freq] : null) || p.budget_estime || 500000;
+    const offerTarifByFreq = offer
+      ? { mensuel: offer.tarif_mensuel, trimestriel: offer.tarif_trimestriel, annuel: offer.tarif_annuel }[freq]
+      : null;
+    const montant = options?.montant || offerTarifByFreq || p.budget_estime || 500000;
     const modePaiement = options?.modePaiement || 'wave';
 
     try {
@@ -1068,7 +1464,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setClients(prev => [newClient, ...prev]);
       setPaiements(prev => [newPaiement, ...prev]);
+
+      // Commission : uniquement si le prospect a un commercial assigné
+      if (p.commercial_id) {
+        const COMMISSION_RATES: Record<string, number> = { mensuel: 5, trimestriel: 8, annuel: 10 };
+        const taux = COMMISSION_RATES[freq] || 5;
+        const montantCommission = Math.round(montant * taux / 100);
+        const commercialRecord = commerciaux.find(c => c.id === p.commercial_id);
+        const newCommission = await commissionsService.createCommission({
+          organization_id: p.organization_id,
+          commercial_id: p.commercial_id,
+          commercial_nom: commercialRecord ? `${commercialRecord.prenom} ${commercialRecord.nom}` : '',
+          client_nom: p.entreprise,
+          formule,
+          periodicite: freq,
+          montant_vente: montant,
+          taux_commission: taux,
+          montant_commission: montantCommission,
+          date_vente: new Date().toISOString().split('T')[0],
+          statut: 'a_verser',
+        });
+        setCommissionsRaw(prev => [newCommission, ...prev]);
+      }
       await updateProspectStatus(prospectId, 'gagne');
+
+      const now = new Date();
+      const logDate = now.toISOString().split('T')[0];
+      const logHeure = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
       addActionLog({
         utilisateur_id: user.id,
@@ -1080,8 +1502,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         cible: p.entreprise || `${p.prenom || ''} ${p.nom}`,
         ancienne_valeur: `Prospect — ${p.statut_pipeline}`,
         nouvelle_valeur: `Client actif — ${formule}`,
-        date: new Date().toISOString().split('T')[0],
-        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        date: logDate,
+        heure: logHeure,
+      });
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'client_created',
+        action: 'Création d\'un compte client',
+        entite_type: 'client',
+        entite_id: newClient.id,
+        cible: p.entreprise,
+        nouvelle_valeur: `Formule: ${formule} — ${freq}`,
+        date: logDate,
+        heure: logHeure,
+      });
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'subscription_created',
+        action: 'Création d\'un abonnement',
+        entite_type: 'abonnement',
+        entite_id: newClient.id,
+        cible: p.entreprise,
+        nouvelle_valeur: `${formule} — ${freq} — ${montant.toLocaleString('fr-FR')} FCFA`,
+        date: logDate,
+        heure: logHeure,
+      });
+      addActionLog({
+        utilisateur_id: user.id,
+        utilisateur_nom: `${user.prenom} ${user.nom}`,
+        action_type: 'payment_received',
+        action: 'Paiement reçu',
+        entite_type: 'paiement',
+        entite_id: newPaiement.id,
+        cible: p.entreprise,
+        nouvelle_valeur: `${montant.toLocaleString('fr-FR')} FCFA — ${modePaiement}`,
+        date: logDate,
+        heure: logHeure,
       });
     } catch (e) {
       console.error('Erreur conversion prospect:', e);
@@ -1105,6 +1563,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         relances,
         interactions,
         notifications,
+        adminNotifications,
         clients,
         paiements,
         myProspects,
@@ -1116,8 +1575,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         deleteProspect,
         addRelance,
         completeRelance,
+        cancelRelance,
         addInteraction,
         markNotificationAsRead,
+        markAdminNotificationAsRead,
+        markAllAdminNotificationsAsRead,
         convertProspectToClient,
         orgOffers,
         addOrgOffer,
@@ -1132,6 +1594,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateObjectif,
         deleteObjectif,
         commissions,
+        markCommissionVersee,
+        syncMissingCommissions,
+        recalculerCommissions,
         actionLogs,
         addActionLog,
         updateOrganization,
