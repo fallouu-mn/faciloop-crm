@@ -296,7 +296,7 @@ export const RegisterPage: React.FC = () => {
               <option value="ecole">{isEn ? 'What is the name of your first school?' : 'Quel est le nom de votre première école ?'}</option>
             </select>
             <p className="text-xs text-muted-foreground">
-              {isEn ? 'Used to recover your account' : 'Servira à récupérer votre compte'}
+              {isEn ? 'This question will help you recover your account' : 'Cette question vous aidera à récupérer votre compte'}
             </p>
           </div>
 

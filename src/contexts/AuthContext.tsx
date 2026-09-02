@@ -886,6 +886,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         statut: 'en_cours',
       });
       setObjectifsRaw(prev => [...prev, created]);
+
+      // Notification In-App instantanée pour le commercial
+      if (created.commercial_id) {
+        const notif: Omit<NotificationItem, 'id' | 'created_at'> = {
+          organization_id: user.organizationId,
+          commercial_id: created.commercial_id,
+          type: 'objectif',
+          titre: 'Nouvel objectif attribué',
+          message: `Un objectif de ${created.objectif} (${created.type}) vous a été fixé pour la période du ${created.date_debut} au ${created.date_fin}.`,
+          lien: '/app/objectifs',
+          lue: false,
+        };
+        notificationsService.createNotification(notif).catch(() => {});
+        setNotifications(prev => [{ ...notif, id: `notif-${Date.now()}`, created_at: new Date().toISOString() } as any, ...prev]);
+      }
+
       addActionLog({
         utilisateur_id: user.id,
         utilisateur_nom: `${user.prenom} ${user.nom}`,
@@ -1058,6 +1074,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       setProspects(prev => [created, ...prev]);
+
+      // Notification commercial instantanée
+      if (created.commercial_id) {
+        const notif: Omit<NotificationItem, 'id' | 'created_at'> = {
+          organization_id: user.organizationId,
+          commercial_id: created.commercial_id,
+          type: 'nouveau_prospect',
+          titre: 'Nouveau prospect attribué',
+          message: `Le prospect ${created.entreprise || created.nom} vous a été attribué.`,
+          lien: `/app/prospects/${created.id}`,
+          lue: false,
+        };
+        notificationsService.createNotification(notif).catch(() => {});
+        setNotifications(prev => [{ ...notif, id: `notif-${Date.now()}`, created_at: new Date().toISOString() } as any, ...prev]);
+      }
+
       addActionLog({
         utilisateur_id: user.id,
         utilisateur_nom: `${user.prenom} ${user.nom}`,
@@ -1082,6 +1114,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!target || !user) return;
     const oldStep = target.statut_pipeline;
 
+    // Mise à jour optimiste instantanée de l'UI
+    setProspects(prev => prev.map(p => p.id === id ? { ...p, statut_pipeline: newStep as any, date_derniere_interaction: new Date().toISOString() } : p));
+
     try {
       const updates: Partial<Prospect> = {
         statut_pipeline: newStep as any,
@@ -1091,6 +1126,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const updated = await prospectsService.updateProspect(id, updates);
       setProspects(prev => prev.map(p => p.id === id ? updated : p));
+
+      // Notification Admin si vente conclue (Gagné)
+      if (newStep === 'gagne' && user.organizationId) {
+        const adminNotif = {
+          organization_id: user.organizationId,
+          type: 'vente',
+          titre: 'Vente réalisée ! 🎉',
+          message: `${user.prenom} ${user.nom} a conclu la vente avec ${target.entreprise || target.nom}.`,
+          lien: '/admin/prospects',
+          lue: false,
+        };
+        notificationsService.createAdminNotification(adminNotif).catch(() => {});
+        setAdminNotifications(prev => [{ ...adminNotif, id: `admin-notif-${Date.now()}`, created_at: new Date().toISOString() } as any, ...prev]);
+      }
 
       const actionType = newStep === 'gagne' ? 'prospect_converted' : newStep === 'perdu' ? 'prospect_lost' : 'prospect_pipeline_move';
       addActionLog({
@@ -1113,6 +1162,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const reassignProspects = async (prospectIds: string[], targetCommercialId: string, targetCommercialNom: string) => {
     if (!user) return;
+
+    // Mise à jour optimiste instantanée de l'UI
+    setProspects(prev =>
+      prev.map(p =>
+        prospectIds.includes(p.id)
+          ? { ...p, commercial_id: targetCommercialId, commercial_nom: targetCommercialNom }
+          : p
+      )
+    );
+
+    // Notification commercial réattribué
+    if (targetCommercialId) {
+      const notif: Omit<NotificationItem, 'id' | 'created_at'> = {
+        organization_id: user.organizationId,
+        commercial_id: targetCommercialId,
+        type: 'nouveau_prospect',
+        titre: 'Nouveaux prospects attribués',
+        message: `${prospectIds.length} prospect(s) vous ont été réattribués.`,
+        lien: '/app/prospects',
+        lue: false,
+      };
+      notificationsService.createNotification(notif).catch(() => {});
+      setNotifications(prev => [{ ...notif, id: `notif-${Date.now()}`, created_at: new Date().toISOString() } as any, ...prev]);
+    }
+
     try {
       await Promise.all(
         prospectIds.map(id =>
@@ -1120,14 +1194,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             commercial_id: targetCommercialId,
             commercial_nom: targetCommercialNom,
           })
-        )
-      );
-
-      setProspects(prev =>
-        prev.map(p =>
-          prospectIds.includes(p.id)
-            ? { ...p, commercial_id: targetCommercialId, commercial_nom: targetCommercialNom }
-            : p
         )
       );
 
@@ -1150,9 +1216,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const deleteProspect = async (id: string) => {
     const target = prospects.find(p => p.id === id);
+
+    // Mise à jour optimiste instantanée de l'UI
+    setProspects(prev => prev.filter(p => p.id !== id));
+
     try {
       await prospectsService.deleteProspect(id);
-      setProspects(prev => prev.filter(p => p.id !== id));
       if (user && target) {
         addActionLog({
           utilisateur_id: user.id,
@@ -1176,19 +1245,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // ============================================
   const addRelance = async (newR: Omit<Relance, 'id' | 'created_at' | 'organization_id'>) => {
     if (!user) return;
+    const tempId = `temp-${Date.now()}`;
+    const tempRelance: Relance = {
+      id: tempId,
+      organization_id: user.organizationId,
+      prospect_id: newR.prospect_id,
+      prospect_nom: newR.prospect_nom,
+      prospect_entreprise: newR.prospect_entreprise,
+      commercial_id: newR.commercial_id || (user.role === 'commercial' ? user.id : undefined),
+      date: newR.date,
+      heure: newR.heure,
+      canal: newR.canal,
+      motif: newR.motif,
+      commentaire: newR.commentaire,
+      statut: 'prevue',
+      created_at: new Date().toISOString(),
+    };
+
+    // Mise à jour optimiste instantanée de l'UI
+    setRelances(prev => [tempRelance, ...prev]);
+
+    // Notification commercial instantanée
+    if (tempRelance.commercial_id) {
+      const notif: Omit<NotificationItem, 'id' | 'created_at'> = {
+        organization_id: user.organizationId,
+        commercial_id: tempRelance.commercial_id,
+        type: 'relance',
+        titre: 'Nouvelle relance programmée',
+        message: `Relance prévue le ${tempRelance.date} à ${tempRelance.heure} pour ${tempRelance.prospect_nom}.`,
+        lien: '/app/relances',
+        lue: false,
+      };
+      notificationsService.createNotification(notif).catch(() => {});
+      setNotifications(prev => [{ ...notif, id: `notif-${Date.now()}`, created_at: new Date().toISOString() } as any, ...prev]);
+    }
+
     try {
       const created = await relancesService.createRelance({
         ...newR,
         organization_id: user.organizationId,
         commercial_id: newR.commercial_id || (user.role === 'commercial' ? user.id : undefined),
       });
-      setRelances(prev => [created, ...prev]);
+      setRelances(prev => prev.map(r => r.id === tempId ? created : r));
     } catch (e) {
       console.error('Erreur création relance:', e);
     }
   };
 
   const completeRelance = async (id: string) => {
+    // Mise à jour optimiste instantanée de l'UI
+    setRelances(prev => prev.map(r => r.id === id ? { ...r, statut: 'realisee' } : r));
     try {
       const updated = await relancesService.completeRelance(id);
       setRelances(prev => prev.map(r => r.id === id ? updated : r));
@@ -1198,6 +1304,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const cancelRelance = async (id: string) => {
+    // Mise à jour optimiste instantanée de l'UI
+    setRelances(prev => prev.map(r => r.id === id ? { ...r, statut: 'annulee' } : r));
     try {
       const updated = await relancesService.updateRelance(id, { statut: 'annulee' });
       setRelances(prev => prev.map(r => r.id === id ? updated : r));
