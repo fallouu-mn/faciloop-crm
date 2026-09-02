@@ -615,8 +615,8 @@ export const ProspectsList: React.FC = () => {
                       placeholder="Diop" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'First Name' : 'Prénom'}</label>
-                    <input type="text" value={newPrenom} onChange={(e) => setNewPrenom(e.target.value)}
+                    <label className="block font-semibold mb-1">{isEn ? 'First Name *' : 'Prénom *'}</label>
+                    <input type="text" required value={newPrenom} onChange={(e) => setNewPrenom(e.target.value)}
                       placeholder="Moussa" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>

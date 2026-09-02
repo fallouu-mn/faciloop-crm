@@ -248,7 +248,7 @@ export const RegisterPage: React.FC = () => {
             disabled={loading}
             label={isEn ? 'Secret PIN code (6 digits) *' : 'Code secret (6 chiffres) *'}
           />
-          <p className="text-xs text-muted-foreground text-center -mt-1">
+          <p className="text-xs text-muted-foreground text-left -mt-1">
             {isEn ? 'This code will be used to log into your account' : 'Ce code vous servira à vous connecter'}
           </p>
 
@@ -264,7 +264,7 @@ export const RegisterPage: React.FC = () => {
                 label={isEn ? 'Confirm PIN code *' : 'Confirmez le code *'}
               />
             </div>
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center justify-start gap-1.5">
               {pinsMatch && (
                 <span className="flex items-center gap-1 text-xs text-emerald-600">
                   <CheckCircle className="h-3.5 w-3.5" /> {isEn ? 'PIN codes match' : 'Codes identiques'}
@@ -296,7 +296,7 @@ export const RegisterPage: React.FC = () => {
               <option value="ecole">{isEn ? 'What is the name of your first school?' : 'Quel est le nom de votre première école ?'}</option>
             </select>
             <p className="text-xs text-muted-foreground">
-              {isEn ? 'Used to recover your account' : 'Servira à récupérer votre compte'}
+              {isEn ? 'This question will help you recover your account' : 'Cette question vous aidera à récupérer votre compte'}
             </p>
           </div>
 

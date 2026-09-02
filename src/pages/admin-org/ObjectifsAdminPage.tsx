@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, X, Users, TrendingUp, CalendarDays, Goal, Trash2 } from 'lucide-react';
+import { Plus, X, Users, TrendingUp, CalendarDays, Goal, Trash2, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
@@ -376,7 +376,10 @@ export const ObjectifsAdminPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">{t('adminOrg.objectifs.modal.startDate')}</label>
+                  <label className="block font-semibold mb-1 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-primary" />
+                    {t('adminOrg.objectifs.modal.startDate')}
+                  </label>
                   <input
                     type="date"
                     value={formDebut}
@@ -385,7 +388,10 @@ export const ObjectifsAdminPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{t('adminOrg.objectifs.modal.endDate')}</label>
+                  <label className="block font-semibold mb-1 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-primary" />
+                    {t('adminOrg.objectifs.modal.endDate')}
+                  </label>
                   <input
                     type="date"
                     value={formFin}

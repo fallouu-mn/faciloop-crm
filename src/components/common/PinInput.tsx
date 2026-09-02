@@ -73,7 +73,7 @@ export function PinInput({ value, onChange, showPin, onToggleShow, disabled = fa
       {label && (
         <label className="text-sm font-medium text-foreground">{label}</label>
       )}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-start gap-2">
         {/* OTP Group - shared borders, rounded ends */}
         <div className="flex items-center">
           {value.map((digit, idx) => (

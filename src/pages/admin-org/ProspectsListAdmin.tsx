@@ -465,8 +465,8 @@ export const ProspectsListAdmin: React.FC = () => {
                       placeholder="Diop" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.firstName')}</label>
-                    <input type="text" value={fPrenom} onChange={(e) => setFPrenom(e.target.value)}
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.firstName')} *</label>
+                    <input type="text" required value={fPrenom} onChange={(e) => setFPrenom(e.target.value)}
                       placeholder="Moussa" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
