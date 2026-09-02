@@ -57,7 +57,12 @@ export const LoginPage: React.FC = () => {
     try {
       const session = await login(phone, pin);
       if (session) {
-        if (session.orgStatut === 'en_attente') {
+        if (session.commStatut === 'inactif') {
+          setErrorMsg(isEn
+            ? 'Your account has been deactivated. Please contact your manager.'
+            : 'Votre compte a été désactivé. Veuillez contacter votre responsable.'
+          );
+        } else if (session.orgStatut === 'en_attente') {
           navigate('/pending-activation');
         } else if (session.orgStatut === 'suspendu' || session.orgStatut === 'inactif') {
           navigate('/suspended');
@@ -81,7 +86,12 @@ export const LoginPage: React.FC = () => {
     try {
       const session = await login(phoneVal, pin);
       if (session) {
-        if (session.orgStatut === 'en_attente') {
+        if (session.commStatut === 'inactif') {
+          setErrorMsg(isEn
+            ? 'Your account has been deactivated. Please contact your manager.'
+            : 'Votre compte a été désactivé. Veuillez contacter votre responsable.'
+          );
+        } else if (session.orgStatut === 'en_attente') {
           navigate('/pending-activation');
         } else if (session.orgStatut === 'suspendu' || session.orgStatut === 'inactif') {
           navigate('/suspended');

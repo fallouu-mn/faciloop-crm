@@ -27,6 +27,7 @@ export interface UserSession {
   role: UserRole;
   organizationId: string; // vide '' pour super_admin sans org
   orgStatut?: string; // 'actif' | 'en_attente' | 'suspendu' | 'inactif'
+  commStatut?: string; // 'actif' | 'inactif'
 }
 
 export interface AuthContextType {
@@ -105,6 +106,7 @@ async function fetchUserProfile(authUserId: string): Promise<{
   role: UserRole;
   organizationId: string | null;
   profile?: { id: string; nom: string; prenom: string; email: string; telephone: string };
+  commStatut?: string;
 } | null> {
   const { data: roleData, error: roleError } = await supabase
     .from('user_roles')
@@ -117,15 +119,18 @@ async function fetchUserProfile(authUserId: string): Promise<{
 
   let profile: { id: string; nom: string; prenom: string; email: string; telephone: string } | undefined;
 
+  let commStatut: string | undefined;
+
   if (roleData.role === 'commercial') {
     const { data: commData } = await supabase
       .from('commerciaux')
-      .select('id, nom, prenom, email, telephone')
+      .select('id, nom, prenom, email, telephone, statut')
       .eq('user_id', authUserId)
       .single();
 
     if (commData) {
       profile = commData;
+      commStatut = commData.statut;
     }
   } else if (roleData.role === 'admin_org') {
     const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -147,6 +152,7 @@ async function fetchUserProfile(authUserId: string): Promise<{
     role: roleData.role as UserRole,
     organizationId: roleData.organization_id || null,
     profile,
+    commStatut,
   };
 }
 
@@ -570,6 +576,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (data.user) {
       const profile = await fetchUserProfile(data.user.id);
       if (!profile) return null;
+
+      // Bloquer les comptes commerciaux désactivés
+      if (profile.role === 'commercial' && profile.commStatut === 'inactif') {
+        await supabase.auth.signOut();
+        return { commStatut: 'inactif' } as UserSession;
+      }
 
       const sess: UserSession = {
         id: profile.profile?.id || data.user.id,
