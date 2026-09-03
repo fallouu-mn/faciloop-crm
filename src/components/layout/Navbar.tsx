@@ -46,12 +46,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
             <Menu className="h-5 w-5" />
           </button>
 
-          {/* Clean Icon Logo "F" + Role Title matching screenshot model */}
-          <Link to="/app/dashboard" className="flex items-center gap-2 group shrink-0">
-            <FaciloopBrand variant="icon" className="h-8 w-8 sm:h-9 sm:w-9 group-hover:scale-105 transition-transform" />
-            <span className="font-extrabold text-sm sm:text-base text-foreground tracking-tight">
-              {getRoleTitle()}
-            </span>
+          {/* Clean "F" Icon Logo only */}
+          <Link to={user?.role === 'admin_org' ? '/admin/dashboard' : user?.role === 'super_admin' ? '/super-admin' : '/app/dashboard'} className="flex items-center gap-2 group shrink-0">
+            <FaciloopBrand variant="icon" className="h-8 w-8 sm:h-9 sm:w-9 object-contain group-hover:scale-105 transition-transform" />
           </Link>
         </div>
 
