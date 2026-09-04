@@ -440,8 +440,8 @@ export const ProspectKanban: React.FC = () => {
 
   const [activeProspect, setActiveProspect] = useState<Prospect | null>(null);
 
-  // View Mode: 'vertical' (stacked stages card view for optimum UX) vs 'horizontal' (classic kanban board)
-  const [viewMode, setViewMode] = useState<'vertical' | 'horizontal'>('vertical');
+  // View Mode: 'horizontal' (classic kanban board) by default vs 'vertical' (stacked stages card view)
+  const [viewMode, setViewMode] = useState<'vertical' | 'horizontal'>('horizontal');
   const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>({
     nouveau: true,
     a_contacter: true,

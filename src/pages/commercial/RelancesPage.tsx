@@ -64,6 +64,7 @@ export const RelancesPage: React.FC = () => {
 
   // Modal form state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRelanceForView, setSelectedRelanceForView] = useState<Relance | null>(null);
   const [formProspectId, setFormProspectId] = useState('');
   const [formCommercialId, setFormCommercialId] = useState(commerciaux[0]?.id || '');
   const [formDate, setFormDate] = useState(TODAY);
@@ -349,12 +350,13 @@ export const RelancesPage: React.FC = () => {
                       </button>
                     </>
                   )}
-                  <Link
+                  <button
+                    onClick={() => setSelectedRelanceForView(relance)}
                     className="px-3 py-1.5 rounded-xl border border-input text-[11px] font-bold text-foreground hover:bg-muted flex items-center gap-1 transition-all"
                   >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>Voir</span>
-                  </Link>
+                    <Eye className="w-3.5 h-3.5 text-primary" />
+                    <span>{isEn ? 'View' : 'Voir'}</span>
+                  </button>
                 </div>
               </div>
             );
@@ -477,6 +479,96 @@ export const RelancesPage: React.FC = () => {
                 {isEn ? 'Confirm Follow-up' : 'Valider la relance'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal Détails Relance */}
+      {selectedRelanceForView && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md bg-card border border-border rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Eye className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-foreground">
+                    {isEn ? 'Follow-up Details' : 'Détails de la relance'}
+                  </h2>
+                  <p className="text-[11px] text-muted-foreground">
+                    {selectedRelanceForView.prospect_nom} — {selectedRelanceForView.prospect_entreprise}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedRelanceForView(null)}
+                className="p-1.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/60">
+                <span className="font-semibold text-muted-foreground">{isEn ? 'Status:' : 'Statut :'}</span>
+                <div>{statutBadge(getEffectiveStatut(selectedRelanceForView))}</div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 space-y-1">
+                  <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-primary" />
+                    {isEn ? 'Date & Time' : 'Date & Heure'}
+                  </span>
+                  <p className="font-bold text-foreground">
+                    {selectedRelanceForView.date} {selectedRelanceForView.heure ? `@ ${selectedRelanceForView.heure}` : ''}
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 space-y-1">
+                  <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
+                    <MessageCircle className="w-3 h-3 text-primary" />
+                    {isEn ? 'Channel' : 'Canal'}
+                  </span>
+                  <p className="font-bold text-foreground flex items-center gap-1">
+                    {CANAL_ICONS[selectedRelanceForView.canal]}
+                    {canalLabels[selectedRelanceForView.canal]}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 space-y-1">
+                <span className="text-[10px] font-bold text-muted-foreground">{isEn ? 'Note / Motif:' : 'Motif / Commentaire :'}</span>
+                <p className="font-medium text-foreground whitespace-pre-wrap">
+                  {selectedRelanceForView.commentaire || selectedRelanceForView.motif || (isEn ? 'No note specified' : 'Aucun commentaire spécifié')}
+                </p>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-muted-foreground">{isEn ? 'Sales Rep:' : 'Commercial responsable :'}</span>
+                <span className="font-bold text-foreground">
+                  {commerciaux.find(c => c.id === selectedRelanceForView.commercial_id)
+                    ? `${commerciaux.find(c => c.id === selectedRelanceForView.commercial_id)?.prenom} ${commerciaux.find(c => c.id === selectedRelanceForView.commercial_id)?.nom}`
+                    : (isEn ? 'Commercial' : 'Commercial')}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2 border-t border-border">
+              <Link
+                to={`/${isAdmin ? 'admin' : 'app'}/prospects/${selectedRelanceForView.prospect_id}`}
+                className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white font-bold text-xs shadow-md text-center hover:opacity-95 transition-all"
+              >
+                {isEn ? 'Open Prospect File' : 'Ouvrir fiche prospect'}
+              </Link>
+              <button
+                onClick={() => setSelectedRelanceForView(null)}
+                className="px-4 py-2.5 rounded-xl border border-input text-xs font-bold text-muted-foreground hover:bg-muted transition-colors"
+              >
+                {isEn ? 'Close' : 'Fermer'}
+              </button>
+            </div>
           </div>
         </div>
       )}
