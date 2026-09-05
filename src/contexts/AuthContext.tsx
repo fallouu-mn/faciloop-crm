@@ -218,7 +218,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
-  const [currency, setCurrency] = useState<string>('XOF');
+  const [currency, setCurrency] = useState<string>('FCFA');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
 
   // Data state (initialized empty, fetched from Supabase)

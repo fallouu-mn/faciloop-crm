@@ -12,9 +12,18 @@ import { Sun, Moon } from 'lucide-react';
 export const AppLayout: React.FC = () => {
   const { user, isLoading, isDarkMode, toggleDarkMode } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const location = useLocation();
   const mainRef = useRef<HTMLElement>(null);
   const isDemoMode = location.pathname.startsWith('/demo');
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px) and (max-width: 1023px)');
+    setIsSidebarCollapsed(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsSidebarCollapsed(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0);
@@ -54,7 +63,12 @@ export const AppLayout: React.FC = () => {
       <Navbar onOpenMobileMenu={() => setIsSidebarOpen(prev => !prev)} />
       
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(prev => !prev)}
+        />
         
         <main ref={mainRef} className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
           <motion.div

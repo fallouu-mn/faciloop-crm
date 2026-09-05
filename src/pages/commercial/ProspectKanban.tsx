@@ -609,19 +609,7 @@ export const ProspectKanban: React.FC = () => {
 
           {/* View Mode Toggle Switcher */}
           <div className="flex items-center rounded-2xl bg-muted p-1 border border-border/80 text-xs font-extrabold">
-            <button
-              onClick={() => setViewMode('vertical')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all ${
-                viewMode === 'vertical'
-                  ? 'bg-gradient-faciloop text-white shadow-md'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              title={isEn ? "Vertical Stage-by-Stage View (Ideal on Mobile)" : "Vue Étape par Étape Verticale (Idéale sur Mobile)"}
-            >
-              <List className="w-4 h-4" />
-              <span>{isEn ? 'Vertical' : 'Verticale'}</span>
-            </button>
-
+            
             <button
               onClick={() => setViewMode('horizontal')}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all ${
@@ -633,6 +621,19 @@ export const ProspectKanban: React.FC = () => {
             >
               <Columns className="w-4 h-4" />
               <span className="hidden sm:inline">{isEn ? 'Horizontal' : 'Horizontale'}</span>
+            </button>
+
+            <button
+              onClick={() => setViewMode('vertical')}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all ${
+                viewMode === 'vertical'
+                  ? 'bg-gradient-faciloop text-white shadow-md'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title={isEn ? "Vertical Stage-by-Stage View (Ideal on Mobile)" : "Vue Étape par Étape Verticale (Idéale sur Mobile)"}
+            >
+              <List className="w-4 h-4" />
+              <span>{isEn ? 'Vertical' : 'Verticale'}</span>
             </button>
           </div>
 

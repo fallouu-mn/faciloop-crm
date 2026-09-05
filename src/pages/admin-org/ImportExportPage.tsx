@@ -313,7 +313,7 @@ export const ImportExportPage: React.FC = () => {
                 className="w-full sm:w-auto bg-transparent font-extrabold text-foreground focus:outline-none text-xs"
               >
                 {commerciaux.map((c) => (
-                  <option key={c.id} value={c.id}>
+                  <option key={c.id} value={c.id} className="bg-card text-foreground">
                     {c.prenom} {c.nom} ({c.email})
                   </option>
                 ))}

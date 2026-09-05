@@ -22,7 +22,9 @@ import {
   ScrollText,
   DollarSign,
   UserCircle,
-  Goal
+  Goal,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaciloopBrand } from '../common/FaciloopBrand';
@@ -32,9 +34,11 @@ import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
   const { t, i18n } = useTranslation();
   const { t: tSA } = useTranslation('superAdmin');
   const { user, currentOrg, adminNotifications, notifications } = useAuth();
@@ -46,7 +50,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const adminUnread = adminNotifications?.filter(n => !n.lue).length ?? 0;
   const commercialUnread = notifications?.filter(n => !n.lue).length ?? 0;
 
-  // Navigation Items per Role
   const commercialLinks = [
     { to: '/app/dashboard', label: isEn ? 'Dashboard' : 'Dashboard', icon: LayoutDashboard },
     { to: '/app/prospects', label: isEn ? 'My Prospects' : 'Mes Prospects', icon: Users },
@@ -115,9 +118,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { to: '/super-admin/parametres', label: tSA('nav.parametres'), icon: Settings },
   ];
 
-  const currentLinks = 
-    role === 'super_admin' ? superAdminLinks : 
+  const currentLinks =
+    role === 'super_admin' ? superAdminLinks :
     role === 'admin_org' ? adminOrgLinks : commercialLinks;
+
+  const renderLink = (link: { to: string; label: string; icon: React.ElementType }, badge: number = 0) => {
+    const Icon = link.icon;
+    return (
+      <NavLink
+        key={link.to}
+        to={link.to}
+        onClick={onClose}
+        title={isCollapsed ? link.label : undefined}
+        className={({ isActive }) =>
+          `group relative flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-3.5'} py-2 sm:py-2.5 rounded-2xl text-xs font-extrabold transition-all ${
+            isActive
+              ? 'bg-gradient-faciloop text-white shadow-md shadow-primary/25'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          }`
+        }
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        {!isCollapsed && <span className="flex-1 truncate">{link.label}</span>}
+        {badge > 0 && (
+          <span className={`${isCollapsed ? 'absolute -top-1 -right-1' : 'ml-auto'} min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shrink-0`}>
+            {badge > 99 ? '99+' : badge}
+          </span>
+        )}
+        {isCollapsed && (
+          <span className="pointer-events-none absolute left-full ml-2 z-50 hidden group-hover:flex items-center whitespace-nowrap rounded-lg bg-foreground text-background px-2.5 py-1.5 text-[11px] font-bold shadow-lg">
+            {link.label}
+          </span>
+        )}
+      </NavLink>
+    );
+  };
 
   return (
     <>
@@ -134,11 +169,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         )}
       </AnimatePresence>
 
-      {/* World-Class Mobile Drawer & Desktop Sidebar */}
       <aside
-        className={`fixed bottom-0 top-0 sm:top-16 z-50 flex w-[280px] sm:w-64 flex-col border-r border-border/80 bg-card shadow-2xl transition-transform duration-300 md:static md:translate-x-0 font-sans ${
-          isOpen ? 'left-0 translate-x-0' : '-left-[280px] -translate-x-full md:translate-x-0'
-        }`}
+        className={`fixed bottom-0 top-0 sm:top-16 z-50 flex flex-col border-r border-border/80 bg-card shadow-2xl transition-all duration-300 ease-in-out font-sans
+          ${isCollapsed ? 'md:w-[68px]' : 'w-[280px] sm:w-64'}
+          ${isOpen ? 'left-0 translate-x-0' : '-left-[280px] -translate-x-full'}
+          md:static md:translate-x-0 md:left-auto md:shadow-none
+        `}
       >
         {/* Mobile Header Close & Brand */}
         <div className="flex items-center justify-between border-b border-border/80 p-4 md:hidden bg-card">
@@ -154,10 +190,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Current Workspace Card */}
-        <div className="p-3 sm:p-4">
+        {/* Workspace Card */}
+        <div className={`${isCollapsed ? 'p-2' : 'p-3 sm:p-4'} hidden md:block`}>
+          {isCollapsed ? (
+            <div className="flex items-center justify-center py-2" title={currentOrg?.nom || (role === 'super_admin' ? 'Faciloop' : 'Mon Entreprise')}>
+              <div className="w-9 h-9 rounded-xl bg-gradient-faciloop flex items-center justify-center text-white text-sm font-black">
+                {(currentOrg?.nom || (role === 'super_admin' ? 'F' : 'E'))[0].toUpperCase()}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-border/80 bg-muted/40 p-3 space-y-1 shadow-sm">
+              <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+                <Building2 className="w-3 h-3 text-primary" /> {isEn ? 'Workspace' : 'Espace de travail'}
+              </div>
+              <div className="text-xs font-black text-foreground truncate">
+                {currentOrg?.nom || (role === 'super_admin' ? platformSettings.nom_plateforme : 'Mon Entreprise')}
+              </div>
+              <div className="text-[10px] font-bold text-primary capitalize flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                {role === 'super_admin' ? 'Super Admin' : role === 'admin_org' ? (isEn ? 'Management Console' : 'Console Direction') : (isEn ? 'Sales Rep' : 'Commercial')}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Workspace Card (always expanded) */}
+        <div className="p-3 md:hidden">
           <div className="rounded-2xl border border-border/80 bg-muted/40 p-3 space-y-1 shadow-sm">
-            <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+            <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
               <Building2 className="w-3 h-3 text-primary" /> {isEn ? 'Workspace' : 'Espace de travail'}
             </div>
             <div className="text-xs font-black text-foreground truncate">
@@ -171,41 +231,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Navigation Menu Links */}
-        <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 space-y-1">
+        <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-3 sm:px-4'} py-2 space-y-1`}>
           {role === 'admin_org' ? (
             <div className="space-y-4">
               {adminOrgSections.map((section) => (
                 <div key={section.title}>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-3 mb-1.5">
-                    {section.title}
-                  </div>
+                  {!isCollapsed && (
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-3 mb-1.5">
+                      {section.title}
+                    </div>
+                  )}
+                  {isCollapsed && <div className="border-t border-border/60 my-2 mx-1" />}
                   <div className="space-y-0.5">
                     {section.links.map((link) => {
-                      const Icon = link.icon;
                       const isNotifLink = link.to.endsWith('/notifications');
                       const badge = isNotifLink && adminUnread > 0 ? adminUnread : 0;
-                      return (
-                        <NavLink
-                          key={link.to}
-                          to={link.to}
-                          onClick={onClose}
-                          className={({ isActive }) =>
-                            `flex items-center gap-3 px-3.5 py-2 sm:py-2.5 rounded-2xl text-xs font-extrabold transition-all ${
-                              isActive
-                                ? 'bg-gradient-faciloop text-white shadow-md shadow-primary/25'
-                                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                            }`
-                          }
-                        >
-                          <Icon className="h-4 w-4 shrink-0" />
-                          <span className="flex-1 truncate">{link.label}</span>
-                          {badge > 0 && (
-                            <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shrink-0">
-                              {badge > 99 ? '99+' : badge}
-                            </span>
-                          )}
-                        </NavLink>
-                      );
+                      return renderLink(link, badge);
                     })}
                   </div>
                 </div>
@@ -213,44 +254,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </div>
           ) : (
             <>
-              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-3 mb-2">
-                {isEn ? 'Navigation Menu' : 'Menu Navigation'}
-              </div>
+              {!isCollapsed && (
+                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-3 mb-2">
+                  {isEn ? 'Navigation Menu' : 'Menu Navigation'}
+                </div>
+              )}
               {currentLinks.map((link) => {
-                const Icon = link.icon;
                 const isNotifLink = link.to.endsWith('/notifications');
                 const badge = isNotifLink && commercialUnread > 0 ? commercialUnread : 0;
-                return (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-3.5 py-2.5 sm:py-3 rounded-2xl text-xs font-extrabold transition-all ${
-                        isActive
-                          ? 'bg-gradient-faciloop text-white shadow-md shadow-primary/25'
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                      }`
-                    }
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <span className="flex-1 truncate">{link.label}</span>
-                    {badge > 0 && (
-                      <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shrink-0">
-                        {badge > 99 ? '99+' : badge}
-                      </span>
-                    )}
-                  </NavLink>
-                );
+                return renderLink(link, badge);
               })}
             </>
           )}
         </div>
 
-        {/* Footer Tenant Info */}
-        {/* <div className="p-4 border-t border-border/80 bg-muted/20 text-center text-[10px] font-bold text-muted-foreground">
-          <span>Faciloop CRM v2.0 • SaaS Multi-Tenant</span>
-        </div> */}
+        {/* Collapse Toggle Button (desktop only) */}
+        <div className="hidden md:flex border-t border-border/80 p-2">
+          <button
+            onClick={onToggleCollapse}
+            className={`flex items-center ${isCollapsed ? 'justify-center w-full' : 'gap-2 px-3'} py-2.5 rounded-xl text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-all w-full`}
+            title={isCollapsed ? (isEn ? 'Expand menu' : 'Ouvrir le menu') : (isEn ? 'Collapse menu' : 'Réduire le menu')}
+          >
+            {isCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            {!isCollapsed && <span>{isEn ? 'Collapse' : 'Réduire'}</span>}
+          </button>
+        </div>
       </aside>
     </>
   );
