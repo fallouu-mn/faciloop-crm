@@ -434,12 +434,12 @@ export const LandingPage: React.FC = () => {
                   ))}
                 </div>
 
-                <div className="inline-flex items-center rounded-full bg-muted p-1 border border-border text-sm">
+                <div className="inline-flex items-center rounded-full bg-muted p-0.5 sm:p-1 border border-border shrink-0">
                   {(['XOF', 'EUR', 'USD'] as DeviseCode[]).map((c) => (
                     <button
                       key={c}
                       onClick={() => setCurrency(c)}
-                      className={`px-3 py-1.5 rounded-full font-medium transition-all ${
+                      className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-all ${
                         currency === c ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground'
                       }`}
                     >

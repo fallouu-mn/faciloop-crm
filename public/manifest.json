@@ -1,0 +1,56 @@
+{
+  "name": "Faciloop CRM",
+  "short_name": "Faciloop",
+  "description": "CRM SaaS B2B multi-tenant pour TPE/PME — Pipeline commercial, relances, commissions",
+  "start_url": "/login",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#FF8A00",
+  "background_color": "#0f0f1a",
+  "lang": "fr",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nouveau prospect",
+      "short_name": "Prospect",
+      "url": "/app/prospects",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Pipeline Kanban",
+      "short_name": "Pipeline",
+      "url": "/app/pipeline",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Relances",
+      "short_name": "Relances",
+      "url": "/app/relances",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

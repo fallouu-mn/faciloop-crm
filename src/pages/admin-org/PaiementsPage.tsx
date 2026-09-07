@@ -19,7 +19,7 @@ const PAYMENT_ICONS: Record<string, { icon: string | null; label: string; color:
 
 export const PaiementsPage: React.FC = () => {
   const { t } = useTranslation('admin');
-  const { currency, paiements } = useAuth();
+  const { currency, paiements, currentOrg, user } = useAuth();
   const [filterMode, setFilterMode] = useState<string>('all');
   const [devise, setDevise] = useState<DeviseCode>('XOF');
 
@@ -44,39 +44,178 @@ export const PaiementsPage: React.FC = () => {
     const ref = `FACT-2026-${pay.id.slice(0, 4).toUpperCase()}`;
     const dateStr = new Date().toLocaleDateString('fr-FR');
     const fmtPdf = (n: number) => formatAmount(convertAmount(n, 'XOF', devise), devise);
+    const isPaid = pay.montant_restant <= 0;
+    const orgName = currentOrg?.nom || 'Mon Entreprise';
+    const orgPhone = currentOrg?.telephone || '';
+    const orgEmail = currentOrg?.email || '';
+    const orgAddress = [currentOrg?.adresse, currentOrg?.ville, currentOrg?.pays].filter(Boolean).join(', ');
+    const logoUrl = currentOrg?.logo_url || '';
+    const logoHtml = logoUrl
+      ? `<img src="${logoUrl}" alt="Logo" style="max-height:60px;max-width:160px;object-fit:contain;" />`
+      : `<div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#FF8A00,#FF3D81);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Faciloop CRM</div>`;
+
     const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <title>Facture ${ref}</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; color: #111; font-size: 14px; }
-    h1 { font-size: 22px; margin-bottom: 4px; }
-    .sub { color: #666; margin-bottom: 30px; font-size: 12px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th { text-align: left; padding: 10px 12px; background: #f4f4f4; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
-    td { padding: 10px 12px; border-bottom: 1px solid #eee; }
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; background: #d1fae5; color: #065f46; }
-    .total { font-size: 18px; font-weight: bold; color: #059669; }
-    @media print { button { display: none; } }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; max-width: 780px; margin: 0 auto; padding: 40px 32px; color: #1a1a2e; font-size: 13px; line-height: 1.5; }
+
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+    .header-left { flex: 1; }
+    .header-right { text-align: right; }
+    .invoice-title { font-size: 32px; font-weight: 800; color: #1a1a2e; letter-spacing: -0.5px; }
+    .invoice-meta { margin-top: 8px; font-size: 12px; color: #888; }
+    .invoice-meta strong { color: #444; font-weight: 600; }
+
+    .separator { height: 3px; background: linear-gradient(90deg, #FF8A00, #FF3D81); border-radius: 2px; margin: 24px 0; }
+
+    .parties { display: flex; gap: 24px; margin-bottom: 28px; }
+    .party-box { flex: 1; padding: 18px 20px; border-radius: 12px; border: 1px solid #e8e8e8; background: #fafafa; }
+    .party-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #999; margin-bottom: 8px; }
+    .party-name { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .party-info { font-size: 11.5px; color: #666; line-height: 1.7; }
+    .party-info span { display: block; }
+
+    .amount-card { background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%); border-radius: 14px; padding: 24px 28px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+    .amount-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 4px; }
+    .amount-value { font-size: 28px; font-weight: 800; }
+    .status-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .status-paid { background: rgba(40,160,80,0.2); color: #28a050; }
+    .status-pending { background: rgba(200,140,30,0.2); color: #c88c1e; }
+
+    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    thead th { text-align: left; padding: 12px 16px; background: #f4f4f7; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #888; border-bottom: 2px solid #e0e0e0; }
+    thead th:last-child { text-align: right; }
+    tbody td { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    tbody td:last-child { text-align: right; font-weight: 600; }
+    tbody tr:hover { background: #fafafa; }
+
+    .totals { display: flex; justify-content: flex-end; margin-bottom: 28px; }
+    .totals-box { width: 280px; }
+    .totals-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; color: #555; }
+    .totals-row.main { border-top: 2px solid #1a1a2e; padding-top: 12px; margin-top: 4px; font-size: 15px; font-weight: 700; color: #1a1a2e; }
+    .totals-row .paid { color: #28a050; font-weight: 700; }
+    .totals-row .due { color: #c83737; font-weight: 700; }
+
+    .payment-box { padding: 16px 20px; border-radius: 12px; background: #f8f8fb; border: 1px solid #e8e8e8; display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+    .payment-icon { width: 40px; height: 40px; border-radius: 10px; background: #1a1a2e; display: flex; align-items: center; justify-content: center; }
+    .payment-icon svg { width: 20px; height: 20px; fill: white; }
+    .payment-details { font-size: 12px; color: #555; }
+    .payment-details strong { color: #1a1a2e; }
+
+    .footer { text-align: center; padding-top: 20px; border-top: 1px solid #e8e8e8; }
+    .footer-legal { font-size: 10px; color: #aaa; margin-bottom: 6px; }
+    .footer-brand { font-size: 10px; color: #bbb; font-weight: 600; }
+
+    @media print {
+      body { padding: 20px; }
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
 <body>
-  <h1>Faciloop CRM</h1>
-  <div class="sub">Facture générée le ${dateStr}</div>
+  <div class="header">
+    <div class="header-left">
+      ${logoHtml}
+    </div>
+    <div class="header-right">
+      <div class="invoice-title">FACTURE</div>
+      <div class="invoice-meta">
+        <div>N° <strong>${ref}</strong></div>
+        <div>Date : <strong>${pay.date_paiement || dateStr}</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="separator"></div>
+
+  <div class="parties">
+    <div class="party-box">
+      <div class="party-label">Émetteur</div>
+      <div class="party-name">${orgName}</div>
+      <div class="party-info">
+        ${orgPhone ? `<span>📞 ${orgPhone}</span>` : ''}
+        ${orgEmail ? `<span>✉ ${orgEmail}</span>` : ''}
+        ${orgAddress ? `<span>📍 ${orgAddress}</span>` : ''}
+      </div>
+    </div>
+    <div class="party-box">
+      <div class="party-label">Client</div>
+      <div class="party-name">${pay.entreprise}</div>
+      <div class="party-info">
+        <span>Réf. transaction : ${pay.reference_transaction || '—'}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="amount-card">
+    <div>
+      <div class="amount-label">Montant total</div>
+      <div class="amount-value">${fmtPdf(pay.montant_attendu)}</div>
+    </div>
+    <span class="status-badge ${isPaid ? 'status-paid' : 'status-pending'}">
+      ${isPaid ? '✓ PAYÉ' : '⏳ EN ATTENTE'}
+    </span>
+  </div>
+
   <table>
-    <tr><th>Référence</th><td><strong>${ref}</strong></td></tr>
-    <tr><th>Client</th><td>${pay.entreprise}</td></tr>
-    <tr><th>Date</th><td>${pay.date_paiement || dateStr}</td></tr>
-    <tr><th>Mode de paiement</th><td>${PAYMENT_ICONS[pay.mode_paiement]?.label || pay.mode_paiement}</td></tr>
-    <tr><th>Référence transaction</th><td>${pay.reference_transaction || '—'}</td></tr>
-    <tr><th>Statut</th><td><span class="badge">${pay.statut}</span></td></tr>
+    <thead>
+      <tr>
+        <th>Désignation</th>
+        <th>Mode de paiement</th>
+        <th>Montant</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Abonnement — ${pay.entreprise}</td>
+        <td>${PAYMENT_ICONS[pay.mode_paiement]?.label || pay.mode_paiement}</td>
+        <td>${fmtPdf(pay.montant_attendu)}</td>
+      </tr>
+    </tbody>
   </table>
-  <table style="margin-top:20px">
-    <tr><th>Montant attendu</th><td>${fmtPdf(pay.montant_attendu)}</td></tr>
-    <tr><th>Montant payé</th><td class="total">${fmtPdf(pay.montant_paye)}</td></tr>
-    <tr><th>Reste à payer</th><td>${fmtPdf(pay.montant_restant)}</td></tr>
-  </table>
+
+  <div class="totals">
+    <div class="totals-box">
+      <div class="totals-row">
+        <span>Montant attendu</span>
+        <span>${fmtPdf(pay.montant_attendu)}</span>
+      </div>
+      <div class="totals-row">
+        <span>Montant payé</span>
+        <span class="paid">${fmtPdf(pay.montant_paye)}</span>
+      </div>
+      ${pay.montant_restant > 0 ? `
+      <div class="totals-row">
+        <span>Reste à payer</span>
+        <span class="due">${fmtPdf(pay.montant_restant)}</span>
+      </div>` : ''}
+      <div class="totals-row main">
+        <span>Total TTC</span>
+        <span>${fmtPdf(pay.montant_attendu)}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="payment-box">
+    <div class="payment-icon">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM4 10h16v2H4z"/></svg>
+    </div>
+    <div class="payment-details">
+      <strong>Paiement</strong><br/>
+      Mode : ${PAYMENT_ICONS[pay.mode_paiement]?.label || pay.mode_paiement} &bull;
+      Statut : ${isPaid ? 'Payé' : 'En attente'} &bull;
+      Date : ${pay.date_paiement || dateStr}
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">Généré par Faciloop CRM — ${orgName}</div>
+  </div>
+
   <script>window.onload = () => window.print();<\/script>
 </body>
 </html>`;

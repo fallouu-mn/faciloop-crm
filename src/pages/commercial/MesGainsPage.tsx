@@ -187,7 +187,7 @@ export function MesGainsPage() {
               type="button"
               onClick={() => setCurrency(c)}
               className={cn(
-                'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all',
+                'px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all',
                 currency === c
                   ? 'bg-gradient-faciloop text-white shadow-sm'
                   : 'text-muted-foreground hover:text-foreground',
