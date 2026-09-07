@@ -16,6 +16,15 @@ import * as objectifsService from '../services/objectifs';
 import * as commissionsService from '../services/commissions';
 import * as journalService from '../services/journal';
 
+const DEMO_ORG_ID = '00000000-0000-0000-0000-000000000000';
+const DEMO_ORG: Organization = {
+  id: DEMO_ORG_ID,
+  nom: 'Organisation Demo',
+  devise_defaut: 'FCFA',
+  statut: 'actif' as const,
+  created_at: new Date().toISOString(),
+};
+
 export interface UserSession {
   id: string;
   authId: string;

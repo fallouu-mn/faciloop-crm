@@ -420,16 +420,14 @@ export const LandingPage: React.FC = () => {
                     <button
                       key={p.code}
                       onClick={() => setBillingCycle(p.code)}
-                      className={`px-4 py-1.5 rounded-full font-medium transition-all ${
+                      className={`px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-all ${
                         billingCycle === p.code
-                          ? p.code === 'annuel'
-                            ? 'bg-gradient-faciloop text-white shadow-sm'
-                            : 'bg-card shadow-sm text-foreground'
+                          ? 'bg-gradient-faciloop text-white shadow-sm'
                           : 'text-muted-foreground'
                       }`}
                     >
                       {isEn ? (p.code === 'mensuel' ? 'Monthly' : p.code === 'trimestriel' ? 'Quarterly' : 'Annual') : p.label}
-                      {p.code === 'annuel' ? ' (-20%)' : p.code === 'trimestriel' ? ' (-10%)' : ''}
+                      {p.code === 'annuel' ? '' : p.code === 'trimestriel' ? ' ' : ''}
                     </button>
                   ))}
                 </div>
@@ -564,8 +562,8 @@ export const LandingPage: React.FC = () => {
               </h2>
               <p className="mt-3 text-sm text-muted-foreground max-w-lg mx-auto">
                 {isEn
-                  ? '14-day free trial. No credit card required. Set up your pipeline in less than 2 minutes.'
-                  : "14 jours d'essai gratuit. Aucune carte bancaire requise. Configurez votre pipeline en moins de 2 minutes."}
+                  ? 'Set up your pipeline in less than 2 minutes.'
+                  : "Configurez votre pipeline en moins de 2 minutes."}
               </p>
 
               <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-foreground">
