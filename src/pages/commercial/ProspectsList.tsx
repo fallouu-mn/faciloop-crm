@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource } from '../../types/crm';
+import { useEtapesPipeline, getEtapeLabelByNom } from '@/hooks/useEtapesPipeline';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
 import {
   Users,
@@ -31,6 +32,7 @@ export const ProspectsList: React.FC = () => {
   const isEn = i18n.language?.startsWith('en');
   const { user, myProspects, prospects, addProspect, deleteProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
   const { prospects: apiProspects, createProspect: apiCreateProspect, reassignProspects: apiReassignProspects } = useProspects();
+  const { etapes } = useEtapesPipeline();
   const effectiveProspects = apiProspects.length > 0 ? apiProspects : myProspects;
   const [searchParams] = useSearchParams();
 
@@ -334,19 +336,10 @@ export const ProspectsList: React.FC = () => {
             onChange={(e) => setFilterStep(e.target.value)}
             className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
           >
-            <option value="all">Toutes les étapes</option>
-            <option value="nouveau">Nouveau</option>
-            <option value="a_contacter">À contacter</option>
-            <option value="contacte">Contacté</option>
-            <option value="interesse">Intéressé</option>
-            <option value="rdv_programme">RDV programmé</option>
-            <option value="demo_realisee">Démo réalisée</option>
-            <option value="essai_en_cours">Essai en cours</option>
-            <option value="proposition">Proposition</option>
-            <option value="paiement_att">Paiement att.</option>
-            <option value="gagne">Client gagné</option>
-            <option value="a_relancer">À relancer</option>
-            <option value="perdu">Perdu</option>
+            <option value="all">{isEn ? 'All stages' : 'Toutes les étapes'}</option>
+            {etapes.map(e => (
+              <option key={e.nom} value={e.nom}>{getEtapeLabelByNom(e.nom, etapes, isEn)}</option>
+            ))}
           </select>
 
           <select
@@ -411,7 +404,7 @@ export const ProspectsList: React.FC = () => {
                       p.statut_pipeline === 'perdu' ? 'bg-rose-500/10 text-rose-500' :
                       'bg-primary/10 text-primary'
                     }`}>
-                      {p.statut_pipeline.replace('_', ' ')}
+                      {getEtapeLabelByNom(p.statut_pipeline, etapes, isEn)}
                     </span>
                   </td>
                   <td className="p-4 capitalize text-muted-foreground">{p.source.replace('_', ' ')}</td>
@@ -479,7 +472,7 @@ export const ProspectsList: React.FC = () => {
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${
                   p.statut_pipeline === 'gagne' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'
                 }`}>
-                  {p.statut_pipeline.replace('_', ' ')}
+                  {getEtapeLabelByNom(p.statut_pipeline, etapes, isEn)}
                 </span>
               </div>
 

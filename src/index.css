@@ -173,6 +173,30 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Landing page CRM theme preview */
+  .landing-crm-theme {
+    --primary: 0 84% 60%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 0 84% 60%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 0 84% 60%;
+  }
+
+  .landing-crm-theme .bg-gradient-faciloop {
+    background: linear-gradient(135deg, #EF4444 0%, #EC4899 100%);
+  }
+
+  .landing-crm-theme .text-gradient-faciloop {
+    background: linear-gradient(135deg, #EF4444 0%, #EC4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .landing-crm-theme .border-gradient-faciloop {
+    border-image: linear-gradient(135deg, #EF4444 0%, #EC4899 100%) 1;
+  }
 }
 
 /* Style moderne et lisible avec l'Orange Faciloop (#FF8A3D) pour les sélecteurs de date et d'heure */

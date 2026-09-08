@@ -16,15 +16,6 @@ import * as objectifsService from '../services/objectifs';
 import * as commissionsService from '../services/commissions';
 import * as journalService from '../services/journal';
 
-const DEMO_ORG_ID = '00000000-0000-0000-0000-000000000000';
-const DEMO_ORG: Organization = {
-  id: DEMO_ORG_ID,
-  nom: 'Organisation Demo',
-  devise_defaut: 'FCFA',
-  statut: 'actif' as const,
-  created_at: new Date().toISOString(),
-};
-
 export interface UserSession {
   id: string;
   authId: string;
@@ -449,16 +440,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        const localSaved = localStorage.getItem('faciloop_test_session');
-        if (localSaved) {
-          const parsed = JSON.parse(localSaved);
-          setUser(parsed);
-          setCurrentOrg(DEMO_ORG);
-          await fetchAllData(DEMO_ORG_ID);
-          setIsLoading(false);
-          return;
-        }
-
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           await buildUserSession(session.user.id, session.user.email || '');
@@ -623,31 +604,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    // Si Supabase Auth distante rejette ou si Supabase est hors-ligne / placeholder :
-    // Fallback automatique pour autoriser les comptes de test (comme 774816985 / 461435)
     if (error || !data?.user) {
-      console.warn('Authentification Supabase distante non disponible, création de session test locale:', cleanPhone);
-      
-      if (codeSecret.length === 6 && cleanPhone.length >= 8) {
-        const testSession: UserSession = {
-          id: `comm-${cleanPhone}`,
-          authId: `auth-${cleanPhone}`,
-          commercialId: `comm-${cleanPhone}`,
-          nom: 'Commercial',
-          prenom: 'Test',
-          telephone: cleanPhone,
-          email: `${cleanPhone}@faciloop.app`,
-          role: 'commercial',
-          organizationId: DEMO_ORG_ID,
-          orgStatut: 'actif',
-        };
-
-        localStorage.setItem('faciloop_test_session', JSON.stringify(testSession));
-        setUser(testSession);
-        setCurrentOrg(DEMO_ORG);
-        await fetchAllData(DEMO_ORG_ID);
-        return testSession;
-      }
       return null;
     }
 

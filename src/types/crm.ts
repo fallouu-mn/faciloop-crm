@@ -13,19 +13,7 @@ export type ProspectSource =
   | 'evenement' 
   | 'autre';
 
-export type PipelineStepId =
-  | 'nouveau'
-  | 'a_contacter'
-  | 'contacte'
-  | 'interesse'
-  | 'rdv_programme'
-  | 'demo_realisee'
-  | 'essai_en_cours'
-  | 'proposition'
-  | 'paiement_att'
-  | 'gagne'
-  | 'a_relancer'
-  | 'perdu';
+export type PipelineStepId = string;
 
 export type MotifPerte = 
   | 'prix_trop_eleve' 

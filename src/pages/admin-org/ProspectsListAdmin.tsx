@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource, PipelineStepId } from '../../types/crm';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
 import { useTranslation } from 'react-i18next';
+import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
 import {
   Users, Search, Plus, AlertTriangle, X,
   ArrowRight, Eye, UserCheck, ArrowRightLeft, Trash2, Filter
@@ -32,27 +33,16 @@ const SOURCES: { value: ProspectSource; label: string }[] = [
   { value: 'autre', label: 'Autre' },
 ];
 
-const ETAPES: { value: PipelineStepId; label: string }[] = [
-  { value: 'nouveau', label: 'Nouveau' },
-  { value: 'a_contacter', label: 'À contacter' },
-  { value: 'contacte', label: 'Contacté' },
-  { value: 'interesse', label: 'Intéressé' },
-  { value: 'rdv_programme', label: 'RDV programmé' },
-  { value: 'demo_realisee', label: 'Démo réalisée' },
-  { value: 'essai_en_cours', label: 'Essai en cours' },
-  { value: 'proposition', label: 'Proposition' },
-  { value: 'paiement_att', label: 'Paiement attendu' },
-  { value: 'gagne', label: 'Gagné' },
-  { value: 'a_relancer', label: 'À relancer' },
-  { value: 'perdu', label: 'Perdu' },
-];
 
 const PAYS_DEFAUT = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
 export const ProspectsListAdmin: React.FC = () => {
-  const { t } = useTranslation('admin');
+  const { t, i18n } = useTranslation('admin');
+  const isEn = i18n.language?.startsWith('en');
   const { prospects, addProspect, deleteProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
+  const { etapes } = useEtapesPipeline();
+  const ETAPES = etapes.map(e => ({ value: e.nom as PipelineStepId, label: getEtapeLabel(e, isEn) }));
   const activeOrgOffers = orgOffers.filter(o => o.actif);
 
   const [search, setSearch] = useState('');

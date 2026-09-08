@@ -35,12 +35,16 @@ import {
   List,
   ChevronDown,
   ChevronUp,
-  CalendarClock
+  CalendarClock,
+  Settings2,
+  Circle
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProspects } from '@/hooks/commercial/useProspects';
+import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
+import { GestionEtapesModal } from '@/components/common/GestionEtapesModal';
 import { toast } from 'sonner';
 
 interface ColumnDef {
@@ -53,117 +57,13 @@ interface ColumnDef {
   emptyHint: string;
 }
 
-// Complete 12 Pipeline Stages matching model app
-const columns: ColumnDef[] = [
-  { 
-    id: 'nouveau', 
-    title: '1. Nouveau', 
-    color: 'border-blue-500', 
-    badgeBg: 'bg-blue-500/10 text-blue-500',
-    icon: Inbox,
-    emptyText: 'Aucun nouveau prospect',
-    emptyHint: 'Ajoutez une nouvelle cible ou importez un fichier CSV'
-  },
-  { 
-    id: 'a_contacter', 
-    title: '2. À contacter', 
-    color: 'border-sky-500', 
-    badgeBg: 'bg-sky-500/10 text-sky-500',
-    icon: PhoneCall,
-    emptyText: 'Aucun prospect à contacter',
-    emptyHint: 'Prospects prêts pour la première prise de contact'
-  },
-  { 
-    id: 'contacte', 
-    title: '3. Contacté', 
-    color: 'border-indigo-500', 
-    badgeBg: 'bg-indigo-500/10 text-indigo-500',
-    icon: PhoneCall,
-    emptyText: 'Aucun prospect contacté',
-    emptyHint: 'Premier échange ou appel effectué'
-  },
-  { 
-    id: 'interesse', 
-    title: '4. Intéressé', 
-    color: 'border-cyan-500', 
-    badgeBg: 'bg-cyan-500/10 text-cyan-500',
-    icon: Sparkles,
-    emptyText: 'Aucun prospect intéressé',
-    emptyHint: 'Prospect ayant confirmé son intérêt pour Faciloop'
-  },
-  { 
-    id: 'rdv_programme', 
-    title: '5. RDV programmé', 
-    color: 'border-purple-500', 
-    badgeBg: 'bg-purple-500/10 text-purple-500',
-    icon: Calendar,
-    emptyText: 'Aucun RDV planifié',
-    emptyHint: 'Déposez ici les prospects ayant fixé un rendez-vous'
-  },
-  { 
-    id: 'demo_realisee', 
-    title: '6. Démo réalisée', 
-    color: 'border-violet-500', 
-    badgeBg: 'bg-violet-500/10 text-violet-500',
-    icon: Calendar,
-    emptyText: 'Aucune démo réalisée',
-    emptyHint: 'Démonstration produit effectuée'
-  },
-  { 
-    id: 'essai_en_cours', 
-    title: '7. Essai en cours', 
-    color: 'border-teal-500', 
-    badgeBg: 'bg-teal-500/10 text-teal-500',
-    icon: Clock,
-    emptyText: 'Aucun essai en cours',
-    emptyHint: 'Prospect testant actuellement la plateforme'
-  },
-  { 
-    id: 'proposition', 
-    title: '8. Proposition', 
-    color: 'border-amber-500', 
-    badgeBg: 'bg-amber-500/10 text-amber-500',
-    icon: FileText,
-    emptyText: 'Aucune offre transmise',
-    emptyHint: 'Devis commercial ou proposition tarifaire envoyée'
-  },
-  { 
-    id: 'paiement_att', 
-    title: '9. Paiement att.', 
-    color: 'border-orange-500', 
-    badgeBg: 'bg-orange-500/10 text-orange-500',
-    icon: CalendarClock,
-    emptyText: 'Aucun paiement en attente',
-    emptyHint: 'Facture transmise, en attente de règlement'
-  },
-  { 
-    id: 'gagne', 
-    title: '10. Client gagné', 
-    color: 'border-emerald-500', 
-    badgeBg: 'bg-emerald-500/10 text-emerald-500',
-    icon: Trophy,
-    emptyText: 'Pas encore de contrat signé',
-    emptyHint: 'Déposez ici pour déclencher la conversion en Client'
-  },
-  { 
-    id: 'a_relancer', 
-    title: '11. À relancer', 
-    color: 'border-yellow-500', 
-    badgeBg: 'bg-yellow-500/10 text-yellow-500',
-    icon: CalendarClock,
-    emptyText: 'Aucune relance en attente',
-    emptyHint: 'Prospect à relancer plus tard'
-  },
-  { 
-    id: 'perdu', 
-    title: '12. Perdu', 
-    color: 'border-rose-500', 
-    badgeBg: 'bg-rose-500/10 text-rose-500',
-    icon: FolderX,
-    emptyText: 'Aucune opportunité perdue',
-    emptyHint: 'Déposer ici pour saisir obligatoirement un motif de perte'
-  }
-];
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Inbox, PhoneCall, Sparkles, Calendar, Clock, FileText, CalendarClock, Trophy, FolderX, Circle,
+};
+
+function resolveIcon(name: string): React.ComponentType<{ className?: string }> {
+  return ICON_MAP[name] || Circle;
+}
 
 // Stylized Draggable Prospect Card Component
 const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; activeCurrency?: Currency }> = ({ prospect, basePath = '/app/prospects', activeCurrency = 'XOF' }) => {
@@ -239,77 +139,12 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; a
   );
 };
 
-const getColumnTitle = (id: PipelineStepId, isEn: boolean): string => {
-  if (!isEn) {
-    const map: Record<PipelineStepId, string> = {
-      nouveau: '1. Nouveau',
-      a_contacter: '2. À contacter',
-      contacte: '3. Contacté',
-      interesse: '4. Intéressé',
-      rdv_programme: '5. RDV programmé',
-      demo_realisee: '6. Démo réalisée',
-      essai_en_cours: '7. Essai en cours',
-      proposition: '8. Proposition',
-      paiement_att: '9. Paiement att.',
-      gagne: '10. Client gagné',
-      a_relancer: '11. À relancer',
-      perdu: '12. Perdu',
-    };
-    return map[id] || id;
-  }
-  const mapEn: Record<PipelineStepId, string> = {
-    nouveau: '1. New',
-    a_contacter: '2. To Contact',
-    contacte: '3. Contacted',
-    interesse: '4. Interested',
-    rdv_programme: '5. Meeting Set',
-    demo_realisee: '6. Demo Done',
-    essai_en_cours: '7. Trial Ongoing',
-    proposition: '8. Proposal',
-    paiement_att: '9. Payment Pending',
-    gagne: '10. Won Client',
-    a_relancer: '11. To Follow-up',
-    perdu: '12. Lost',
-  };
-  return mapEn[id] || id;
-};
-
 const getColumnEmptyText = (col: ColumnDef, isEn: boolean): string => {
-  if (!isEn) return col.emptyText;
-  const map: Record<PipelineStepId, string> = {
-    nouveau: 'No new prospect',
-    a_contacter: 'No prospect to contact',
-    contacte: 'No contacted prospect',
-    interesse: 'No interested prospect',
-    rdv_programme: 'No meeting scheduled',
-    demo_realisee: 'No demo completed',
-    essai_en_cours: 'No active trial',
-    proposition: 'No proposal sent',
-    paiement_att: 'No pending payment',
-    gagne: 'No signed contract yet',
-    a_relancer: 'No follow-up pending',
-    perdu: 'No lost prospect',
-  };
-  return map[col.id] || col.emptyText;
+  return isEn ? `No prospect in "${col.title}"` : `Aucun prospect dans « ${col.title} »`;
 };
 
 const getColumnEmptyHint = (col: ColumnDef, isEn: boolean): string => {
-  if (!isEn) return col.emptyHint;
-  const map: Record<PipelineStepId, string> = {
-    nouveau: 'Add a new target or import a CSV file',
-    a_contacter: 'Prospects ready for initial outreach',
-    contacte: 'First exchange or call completed',
-    interesse: 'Prospect confirmed interest in Faciloop',
-    rdv_programme: 'Drop prospects here once a meeting is booked',
-    demo_realisee: 'Product demonstration completed',
-    essai_en_cours: 'Prospect currently testing the platform',
-    proposition: 'Quotation or price proposal sent',
-    paiement_att: 'Invoice sent, awaiting settlement',
-    gagne: 'Drop here to convert into a Client',
-    a_relancer: 'On hold for scheduled follow-up',
-    perdu: 'Mandatory loss reason required for learning',
-  };
-  return map[col.id] || col.emptyHint;
+  return isEn ? 'Drag and drop prospects here' : 'Glissez-déposez des prospects ici';
 };
 
 // Vertical Droppable Zone (wraps each stage in vertical view for DnD)
@@ -326,7 +161,7 @@ const VerticalDropZone: React.FC<{ col: ColumnDef; isExpanded: boolean; isEn: bo
       {isOver && !isExpanded && (
         <div className="p-3 bg-primary/10 text-center text-xs font-bold text-primary animate-pulse flex items-center justify-center gap-2">
           <Sparkles className="w-4 h-4" />
-          {isEn ? `Drop here to move to "${getColumnTitle(col.id, isEn)}"` : `Déposer ici pour déplacer vers « ${getColumnTitle(col.id, isEn)} »`}
+          {isEn ? `Drop here to move to "${col.title}"` : `Déposer ici pour déplacer vers « ${col.title} »`}
         </div>
       )}
       {children}
@@ -381,7 +216,7 @@ const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePat
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <col.icon className="w-4 h-4 text-muted-foreground" />
-          <span className="text-xs sm:text-sm font-extrabold text-foreground truncate">{getColumnTitle(col.id, isEn)}</span>
+          <span className="text-xs sm:text-sm font-extrabold text-foreground truncate">{col.title}</span>
         </div>
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-black ${col.badgeBg}`}>
           {prospects.length}
@@ -420,10 +255,22 @@ export const ProspectKanban: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { user, prospects, myProspects, commerciaux, updateProspectStatus, convertProspectToClient, orgOffers, currency, setCurrency } = useAuth();
   const { prospects: apiProspects, updatePipeline: apiUpdatePipeline } = useProspects();
+  const { etapes, loading: etapesLoading, create: createEtape, update: updateEtape, remove: removeEtape, reorder: reorderEtapes } = useEtapesPipeline();
   const navigate = useNavigate();
 
   const isEn = i18n.language?.startsWith('en');
   const isAdmin = user?.role === 'admin_org' || user?.role === 'super_admin';
+  const [etapesModalOpen, setEtapesModalOpen] = useState(false);
+
+  const columns: ColumnDef[] = etapes.map((e, idx) => ({
+    id: e.nom,
+    title: `${idx + 1}. ${getEtapeLabel(e, isEn)}`,
+    color: e.couleur,
+    badgeBg: e.badge_bg,
+    icon: resolveIcon(e.icone),
+    emptyText: '',
+    emptyHint: '',
+  }));
 
   // Admin sees all org prospects; commercial sees only their own
   const baseProspects = isAdmin
@@ -442,20 +289,7 @@ export const ProspectKanban: React.FC = () => {
 
   // View Mode: 'horizontal' (classic kanban board) by default vs 'vertical' (stacked stages card view)
   const [viewMode, setViewMode] = useState<'vertical' | 'horizontal'>('horizontal');
-  const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>({
-    nouveau: true,
-    a_contacter: true,
-    contacte: true,
-    interesse: true,
-    rdv_programme: true,
-    demo_realisee: true,
-    essai_en_cours: true,
-    proposition: true,
-    paiement_att: true,
-    gagne: true,
-    a_relancer: true,
-    perdu: false
-  });
+  const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>({});
 
   const toggleStageExpand = (stageId: string) => {
     setExpandedStages(prev => ({ ...prev, [stageId]: !prev[stageId] }));
@@ -501,12 +335,11 @@ export const ProspectKanban: React.FC = () => {
     const prospectId = active.id as string;
     const overId = over.id as string;
 
-    // Determine target step: either directly a column ID, or find which column contains the target prospect
     const isColumnId = columns.some(c => c.id === overId);
     let targetStep: PipelineStepId;
 
     if (isColumnId) {
-      targetStep = overId as PipelineStepId;
+      targetStep = overId;
     } else {
       const targetProspect = effectiveProspects.find(p => p.id === overId);
       if (!targetProspect) return;
@@ -555,6 +388,16 @@ export const ProspectKanban: React.FC = () => {
       navigate(user?.role === 'admin_org' ? '/admin/clients' : '/app/prospects');
     }
   };
+
+  if (etapesLoading && etapes.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <div className="text-sm text-muted-foreground font-semibold animate-pulse">
+          {isEn ? 'Loading pipeline...' : 'Chargement du pipeline...'}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6 font-sans">
@@ -606,6 +449,18 @@ export const ProspectKanban: React.FC = () => {
               </button>
             ))}
           </div>
+
+          {/* Manage Stages Button (admin only) */}
+          {isAdmin && (
+            <button
+              onClick={() => setEtapesModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-2xl border border-border/80 bg-muted/80 text-xs font-extrabold text-foreground hover:bg-muted transition-all shrink-0"
+              title={isEn ? 'Manage pipeline stages' : 'Gérer les étapes'}
+            >
+              <Settings2 className="w-4 h-4" />
+              <span className="hidden sm:inline">{isEn ? 'Stages' : 'Étapes'}</span>
+            </button>
+          )}
 
           {/* View Mode Toggle Switcher */}
           <div className="flex items-center rounded-2xl bg-muted p-1 border border-border/80 text-xs font-extrabold">
@@ -669,7 +524,7 @@ export const ProspectKanban: React.FC = () => {
                       </div>
 
                       <div>
-                        <h3 className="font-extrabold text-sm sm:text-base text-foreground">{getColumnTitle(col.id, isEn)}</h3>
+                        <h3 className="font-extrabold text-sm sm:text-base text-foreground">{col.title}</h3>
                         <div className="text-xs font-semibold text-muted-foreground">
                           <span>{colProspects.length} prospect(s)</span>
                         </div>
@@ -802,6 +657,23 @@ export const ProspectKanban: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Gestion Etapes Pipeline Modal */}
+      {isAdmin && (
+        <GestionEtapesModal
+          isOpen={etapesModalOpen}
+          onClose={() => setEtapesModalOpen(false)}
+          etapes={etapes}
+          onCreate={createEtape}
+          onUpdate={updateEtape}
+          onDelete={removeEtape}
+          onReorder={reorderEtapes}
+          prospectCountByEtape={Object.fromEntries(
+            etapes.map(e => [e.nom, effectiveProspects.filter(p => p.statut_pipeline === e.nom).length])
+          )}
+          isEn={isEn}
+        />
+      )}
 
       {/* Convert to Client Bottom Sheet Modal - Full Faciloop-dev Form */}
       <AnimatePresence>

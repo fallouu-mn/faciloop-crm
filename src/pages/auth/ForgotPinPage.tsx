@@ -7,6 +7,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '../../components/ui/input
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useTranslation } from 'react-i18next';
 import { FaciloopToast } from '../../components/common/FaciloopToast';
+import { supabase } from '../../lib/supabase';
 
 type Step = 'phone' | 'otp' | 'success';
 
@@ -32,7 +33,7 @@ export const ForgotPinPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [cooldown]);
 
-  const handleSendOtp = useCallback((e?: React.FormEvent) => {
+  const handleSendOtp = useCallback(async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setError('');
     if (!phone || phone.length < 9) {
@@ -42,14 +43,34 @@ export const ForgotPinPage: React.FC = () => {
     if (cooldown > 0) return;
 
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const cleanPhone = phone.replace(/\s+/g, '');
+      const { data, error: fnError } = await supabase.functions.invoke('reset-pin', {
+        body: { phone: cleanPhone, action: 'send_otp' },
+      });
+
+      if (fnError || data?.error) {
+        const msg = data?.error || fnError?.message;
+        if (msg?.includes('Aucun compte')) {
+          setError(isEn ? 'No account found with this number.' : 'Aucun compte trouvé avec ce numéro.');
+        } else if (msg?.includes('SMS non configuré')) {
+          setError(isEn ? 'SMS service not available. Please try later.' : 'Service SMS non disponible. Réessayez plus tard.');
+        } else {
+          setError(isEn ? 'Failed to send verification code.' : "Erreur lors de l'envoi du code de vérification.");
+        }
+        return;
+      }
+
       setStep('otp');
       setCooldown(60);
-    }, 800);
+    } catch {
+      setError(isEn ? 'Connection error. Please try again.' : 'Erreur de connexion. Veuillez réessayer.');
+    } finally {
+      setIsLoading(false);
+    }
   }, [phone, cooldown, isEn]);
 
-  const handleVerifyAndReset = (e: React.FormEvent) => {
+  const handleVerifyAndReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -67,9 +88,13 @@ export const ForgotPinPage: React.FC = () => {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      if (otp === '0000') {
+    try {
+      const cleanPhone = phone.replace(/\s+/g, '');
+      const { data, error: fnError } = await supabase.functions.invoke('reset-pin', {
+        body: { phone: cleanPhone, otp, newPin, action: 'verify_otp' },
+      });
+
+      if (fnError || data?.error || data?.code === 'INVALID_OTP') {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
         if (newAttempts >= 3) {
@@ -80,8 +105,13 @@ export const ForgotPinPage: React.FC = () => {
         setError(isEn ? `Incorrect OTP code. ${3 - newAttempts} attempt(s) remaining.` : `Code OTP incorrect. ${3 - newAttempts} tentative(s) restante(s).`);
         return;
       }
+
       setStep('success');
-    }, 800);
+    } catch {
+      setError(isEn ? 'Connection error. Please try again.' : 'Erreur de connexion. Veuillez réessayer.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleNewPinChange = (value: string) => {

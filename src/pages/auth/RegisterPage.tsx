@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, Gift, ChevronDown, ChevronUp, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { PinInput } from '../../components/common/PinInput';
@@ -24,8 +24,6 @@ export const RegisterPage: React.FC = () => {
   const [confirmDigits, setConfirmDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [showCode, setShowCode] = useState<boolean>(false);
   const [showConfirmCode, setShowConfirmCode] = useState<boolean>(false);
-  const [questionSecrete, setQuestionSecrete] = useState<string>('');
-  const [reponseSecrete, setReponseSecrete] = useState<string>('');
   const [acceptTerms, setAcceptTerms] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -277,45 +275,6 @@ export const RegisterPage: React.FC = () => {
               )}
             </div>
           </div>
-
-          {/* Question secrète */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">
-              {isEn ? 'Security Question *' : 'Question secrète *'}
-            </label>
-            <select
-              value={questionSecrete}
-              onChange={(e) => setQuestionSecrete(e.target.value)}
-              disabled={loading}
-              className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none disabled:opacity-50 transition-all"
-            >
-              <option value="">{isEn ? 'Choose a question' : 'Choisissez une question'}</option>
-              <option value="animal">{isEn ? 'What is the name of your first pet?' : 'Quel est le nom de votre premier animal domestique ?'}</option>
-              <option value="ville">{isEn ? 'What is your birthplace city?' : 'Quelle est votre ville de naissance ?'}</option>
-              <option value="mere">{isEn ? "What is your mother's first name?" : 'Quel est le prénom de votre mère ?'}</option>
-              <option value="ecole">{isEn ? 'What is the name of your first school?' : 'Quel est le nom de votre première école ?'}</option>
-            </select>
-            <p className="text-xs text-muted-foreground">
-              {isEn ? 'This question will help you recover your account' : 'Cette question vous aidera à récupérer votre compte'}
-            </p>
-          </div>
-
-          {questionSecrete && (
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                {isEn ? 'Security Answer *' : 'Réponse secrète *'}
-              </label>
-              <input
-                type="text"
-                required
-                value={reponseSecrete}
-                onChange={(e) => setReponseSecrete(e.target.value)}
-                placeholder={isEn ? 'Your answer...' : 'Votre réponse...'}
-                disabled={loading}
-                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none disabled:opacity-50 transition-all"
-              />
-            </div>
-          )}
 
           {/* CGU */}
           <div className="flex items-start gap-2 pt-1">

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
+import { useEtapesPipeline, getEtapeLabelByNom } from '@/hooks/useEtapesPipeline';
 import { Prospect, MotifPerte } from '../../types/crm';
 import { 
   Building2, 
@@ -33,6 +34,7 @@ import { useProspectDetail, useInteractions, useRelances } from '@/hooks/commerc
 export const ProspectDetail: React.FC = () => {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en');
+  const { etapes } = useEtapesPipeline();
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -135,24 +137,7 @@ export const ProspectDetail: React.FC = () => {
     navigate(clientsPath);
   };
 
-  const getStageTitle = (st: string) => {
-    if (!isEn) return st.replace('_', ' ');
-    const map: Record<string, string> = {
-      nouveau: 'New',
-      a_contacter: 'To Contact',
-      contacte: 'Contacted',
-      interesse: 'Interested',
-      rdv_programme: 'Meeting Set',
-      demo_realisee: 'Demo Done',
-      essai_en_cours: 'Trial Ongoing',
-      proposition: 'Proposal',
-      paiement_att: 'Payment Pending',
-      gagne: 'Won Client',
-      a_relancer: 'To Follow-up',
-      perdu: 'Lost',
-    };
-    return map[st] || st;
-  };
+  const getStageTitle = (st: string) => getEtapeLabelByNom(st, etapes, isEn);
 
   return (
     <div className="space-y-0 font-sans">
