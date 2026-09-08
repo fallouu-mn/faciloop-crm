@@ -107,7 +107,12 @@ export const ProspectsListAdmin: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!fNom && !fEntreprise) || !fTelephone || !fPays) return;
+    if ((!fNom && !fEntreprise) || !fTelephone || !fPays || !fEtape) {
+      if (!fEtape) {
+        toast.error("L'étape pipeline est obligatoire");
+      }
+      return;
+    }
     const commercial = commerciaux.find(c => c.id === fCommercialId);
     const res = await addProspect({
       nom: fNom || fEntreprise,
@@ -557,7 +562,7 @@ export const ProspectsListAdmin: React.FC = () => {
                   </div>
                   <div>
                     <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.pipelineStage')}</label>
-                    <select value={fEtape} onChange={(e) => setFEtape(e.target.value as PipelineStepId)}
+                    <select required value={fEtape} onChange={(e) => setFEtape(e.target.value as PipelineStepId)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                       {ETAPES.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
                     </select>

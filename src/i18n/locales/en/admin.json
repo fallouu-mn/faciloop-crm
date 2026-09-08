@@ -152,7 +152,7 @@
         "sector": "Industry / Sector",
         "select": "— Select —",
         "assignedTo": "Assigned Sales Rep *",
-        "pipelineStage": "Pipeline Stage",
+        "pipelineStage": "Pipeline Stage *",
         "targetPlan": "Target Plan",
         "budget": "Estimated Budget (FCFA)",
         "comment": "Comment",

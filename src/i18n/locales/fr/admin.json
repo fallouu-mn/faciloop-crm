@@ -152,7 +152,7 @@
         "sector": "Secteur d'activité",
         "select": "— Sélectionner —",
         "assignedTo": "Commercial attribué *",
-        "pipelineStage": "Étape pipeline",
+        "pipelineStage": "Étape pipeline *",
         "targetPlan": "Formule envisagée",
         "budget": "Budget estimé (FCFA)",
         "comment": "Commentaire",
