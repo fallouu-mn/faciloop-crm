@@ -1,6 +1,6 @@
 {
-  "pipelineTitle": "Pipeline Commercial Kanban",
-  "pipelineSubtitle": "Suivi ergonomique vertical ou tableau Kanban horizontal de votre pipeline commercial",
+  "pipelineTitle": "Parcours Client",
+  "pipelineSubtitle": "Suivi ergonomique des étapes de vos prospects en vue horizontale ou verticale",
   "personalPortfolio": "Portefeuille Personnel",
   "steps": {
     "nouveau": "1. Nouveau",

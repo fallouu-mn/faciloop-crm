@@ -31,7 +31,7 @@
     "ctaStart": "Start for free",
     "ctaDemo": "Request a demo",
     "featuresTitle": "Features built for performance",
-    "feature1Title": "Intuitive Kanban Pipeline",
+    "feature1Title": "Intuitive Customer Journey",
     "feature1Desc": "Visualize and move your prospects in 1 click across 12 sales stages.",
     "feature2Title": "WhatsApp & Phone Follow-ups",
     "feature2Desc": "Trigger direct calls or pre-filled messages on WhatsApp.",
@@ -43,7 +43,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "prospects": "Prospects",
-    "pipeline": "Kanban Pipeline",
+    "pipeline": "Customer Journey",
     "relances": "Follow-ups",
     "objectifs": "Objectives",
     "team": "Sales Team",
@@ -80,8 +80,8 @@
     "goToLogin": "Go to Login"
   },
   "kanban": {
-    "title": "Sales Kanban Pipeline",
-    "subtitle": "Ergonomic vertical cards or horizontal Kanban board for your sales pipeline",
+    "title": "Customer Journey",
+    "subtitle": "Ergonomic vertical cards or horizontal board view for your customer journey",
     "verticalView": "Vertical",
     "horizontalView": "Horizontal",
     "addProspect": "New prospect",

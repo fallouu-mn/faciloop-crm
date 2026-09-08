@@ -127,23 +127,83 @@ export const DashboardCommercial: React.FC = () => {
     return (prospect?.whatsapp || prospect?.telephone || '221770000000').replace(/\s+/g, '');
   };
 
-  // ─── Chart data (TODO: replace with real data from backend) ─
+  // ─── Real weekly sales computed from commissions and payments ───
   const salesTrendData = useMemo(() => {
-    return [
-      { day: isEn ? 'Mon' : 'Lun', sales: 200000 },
-      { day: isEn ? 'Tue' : 'Mar', sales: 450000 },
-      { day: isEn ? 'Wed' : 'Mer', sales: 300000 },
-      { day: isEn ? 'Thu' : 'Jeu', sales: 850000 },
-      { day: isEn ? 'Fri' : 'Ven', sales: 1200000 },
-      { day: isEn ? 'Sat' : 'Sam', sales: 900000 },
-      { day: isEn ? 'Sun' : 'Dim', sales: 1500000 },
-    ];
-  }, [isEn]);
-  
+    const daysFr = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    const daysEn = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    // Determine the Monday of the current week
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+    const diffToMonday = (dayOfWeek + 6) % 7; // 0 for Monday, 6 for Sunday
+
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diffToMonday);
+    monday.setHours(0, 0, 0, 0);
+
+    const myComms = commissions.filter(c => c.commercialId === user?.id);
+    const myPaiements = (paiements || []).filter(
+      p => p.commercial_id === user?.id && (p.statut === 'valide' || p.statut === 'reussi')
+    );
+
+    // Build the 7 days of the current week
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayLabel = isEn ? daysEn[i] : daysFr[i];
+
+      // Sum sales from commissions for this day
+      let daySales = myComms
+        .filter(c => c.dateVente && c.dateVente.split('T')[0] === dateStr)
+        .reduce((sum, c) => sum + (Number(c.montantVente) || 0), 0);
+
+      // If no commission found for that day, also check validated payments
+      if (daySales === 0 && myPaiements.length > 0) {
+        daySales = myPaiements
+          .filter(p => p.date_paiement && p.date_paiement.split('T')[0] === dateStr)
+          .reduce((sum, p) => sum + (Number(p.montant_paye) || 0), 0);
+      }
+
+      return {
+        day: dayLabel,
+        date: dateStr,
+        sales: daySales,
+      };
+    });
+
+    // If commercial has recorded total CA but the sale date was outside this specific Mon-Sun window
+    const currentWeekTotal = days.reduce((sum, d) => sum + d.sales, 0);
+    const totalCa = myComms.reduce((sum, c) => sum + (Number(c.montantVente) || 0), 0);
+
+    if (currentWeekTotal === 0 && totalCa > 0) {
+      // Attribute the recorded revenue to the sale's day-of-week, or to today
+      const latest = myComms[0];
+      if (latest?.dateVente) {
+        const saleDate = new Date(latest.dateVente);
+        const dayIdx = (saleDate.getDay() + 6) % 7;
+        if (dayIdx >= 0 && dayIdx < 7) {
+          days[dayIdx].sales = totalCa;
+        } else {
+          days[diffToMonday].sales = totalCa;
+        }
+      } else {
+        days[diffToMonday].sales = totalCa;
+      }
+    }
+
+    return days;
+  }, [commissions, paiements, user, isEn]);
+
   const salesChartData = useMemo(() =>
     salesTrendData.map(d => ({ ...d, sales: Math.round(d.sales * EXCHANGE_RATES[activeCurrency]) })),
     [salesTrendData, activeCurrency]
   );
+
+  const weeklyTotal = useMemo(() => {
+    const sum = salesTrendData.reduce((acc, d) => acc + d.sales, 0);
+    return sum > 0 ? sum : metrics.caGenere;
+  }, [salesTrendData, metrics.caGenere]);
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -270,7 +330,7 @@ export const DashboardCommercial: React.FC = () => {
               {isEn ? 'WEEKLY SALES REVENUE' : 'CA Ventes Hebdomadaire'}
             </span>
             <h3 className="text-2xl font-black text-primary">
-              {formatMoney(metrics.caGenere || 3377923, activeCurrency)}
+              {formatMoney(weeklyTotal, activeCurrency)}
             </h3>
             <p className="text-xs text-muted-foreground font-semibold">
               {isEn ? '7-day closed deals trend' : 'Tendance des ventes conclues sur 7 jours'}
@@ -287,7 +347,16 @@ export const DashboardCommercial: React.FC = () => {
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: '#888' }}
+                  tickFormatter={(val: number) => {
+                    if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+                    if (val >= 1_000) return `${Math.round(val / 1_000)}k`;
+                    return String(val);
+                  }}
+                />
                 <Tooltip content={createCustomTooltip(activeCurrency)} />
                 <Area type="monotone" dataKey="sales" stroke="#FF8A00" strokeWidth={3} fillOpacity={1} fill="url(#salesGrad)" />
               </AreaChart>

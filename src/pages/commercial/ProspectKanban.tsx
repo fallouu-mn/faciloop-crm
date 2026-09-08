@@ -563,7 +563,7 @@ export const ProspectKanban: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
-              {isEn ? 'Sales Kanban Pipeline' : 'Pipeline Commercial Kanban'}
+              {isEn ? 'Customer Journey' : 'Parcours Client'}
             </h1>
             {isAdmin ? (
               <select
@@ -584,8 +584,8 @@ export const ProspectKanban: React.FC = () => {
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5">
             {isEn 
-              ? 'Ergonomic vertical card view or horizontal Kanban board for your sales pipeline'
-              : 'Suivi ergonomique vertical ou tableau Kanban horizontal de votre pipeline commercial'}
+              ? 'Ergonomic vertical or horizontal board view of your customer journey'
+              : 'Suivi ergonomique vertical ou tableau horizontal de votre parcours client'}
           </p>
         </div>
 

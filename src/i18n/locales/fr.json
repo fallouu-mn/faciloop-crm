@@ -31,7 +31,7 @@
     "ctaStart": "Démarrer gratuitement",
     "ctaDemo": "Demander une démo",
     "featuresTitle": "Des fonctionnalités taillées pour la performance",
-    "feature1Title": "Pipeline Kanban Intuitif",
+    "feature1Title": "Parcours Client Intuitif",
     "feature1Desc": "Visualisez et déplacez vos prospects en 1 clic à travers 12 étapes de vente.",
     "feature2Title": "Relances WhatsApp & Appel",
     "feature2Desc": "Déclenchez directement des appels ou messages pré-remplis sur WhatsApp.",
@@ -43,7 +43,7 @@
   "nav": {
     "dashboard": "Tableau de Bord",
     "prospects": "Prospects",
-    "pipeline": "Pipeline Kanban",
+    "pipeline": "Parcours Client",
     "relances": "Relances",
     "objectifs": "Objectifs",
     "team": "Équipe Commerciale",
@@ -80,8 +80,8 @@
     "goToLogin": "Aller à la connexion"
   },
   "kanban": {
-    "title": "Pipeline Commercial Kanban",
-    "subtitle": "Suivi ergonomique vertical ou tableau Kanban horizontal de votre pipeline commercial",
+    "title": "Parcours Client",
+    "subtitle": "Suivi ergonomique des étapes de vos prospects en vue horizontale ou verticale",
     "verticalView": "Verticale",
     "horizontalView": "Horizontale",
     "addProspect": "Nouveau prospect",

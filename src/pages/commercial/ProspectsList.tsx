@@ -381,7 +381,7 @@ export const ProspectsList: React.FC = () => {
               </th>
               <th className="p-4">Prospect / Entreprise</th>
               <th className="p-4">Téléphone</th>
-              <th className="p-4">Étape Pipeline</th>
+              <th className="p-4">Étape du Parcours</th>
               <th className="p-4">Source</th>
               <th className="p-4">Commercial Attribué</th>
               <th className="p-4 text-right">Actions</th>

@@ -74,14 +74,14 @@ export const LandingPage: React.FC = () => {
   const offerFeatures: Record<string, string[]> = {
     Pro: isEn ? [
       "Up to 3 sales reps",
-      "12-stage Kanban pipeline",
+      "12-stage customer journey",
       "Automated follow-ups",
       "Anti-duplicate detection",
       "CSV Export",
       "Standard support",
     ] : [
       "Jusqu'à 3 commerciaux",
-      'Pipeline Kanban 12 étapes',
+      'Parcours client 12 étapes',
       'Relances automatiques',
       'Détection anti-doublon',
       'Export CSV',
@@ -132,7 +132,7 @@ export const LandingPage: React.FC = () => {
   const features = [
     {
       icon: Kanban,
-      title: isEn ? '12-Stage Kanban Pipeline' : 'Pipeline Kanban 12 Étapes',
+      title: isEn ? '12-Stage Customer Journey' : 'Parcours Client 12 Étapes',
       desc: isEn
         ? 'Visualize your opportunities with drag-and-drop, loss reason modals, and client conversion.'
         : 'Visualisez vos opportunités avec le glisser-déposer et les modales de motif de perte et conversion.',
@@ -278,8 +278,8 @@ export const LandingPage: React.FC = () => {
 
             <p className="mt-4 sm:mt-6 text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto font-medium">
               {isEn
-                ? 'Portfolio tracking per sales rep, 12-stage Kanban pipeline, daily follow-ups, and 1-click direct WhatsApp trigger.'
-                : 'Suivi de portefeuille par commercial, pipeline Kanban 12 étapes, relances quotidiennes et déclencheur WhatsApp direct en 1 clic.'}
+                ? 'Portfolio tracking per sales rep, 12-stage customer journey, daily follow-ups, and 1-click direct WhatsApp trigger.'
+                : 'Suivi de portefeuille par commercial, parcours client 12 étapes, relances quotidiennes et déclencheur WhatsApp direct en 1 clic.'}
             </p>
 
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -325,10 +325,10 @@ export const LandingPage: React.FC = () => {
           <FadeInOnScroll>
             <div className="text-center mb-8">
               <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
-                {isEn ? 'INTERACTIVE PIPELINE' : 'Pipeline Interactif'}
+                {isEn ? 'INTERACTIVE CUSTOMER JOURNEY' : 'Parcours Client Interactif'}
               </p>
               <h2 className="text-xl sm:text-3xl font-bold text-foreground">
-                {isEn ? '12-Stage Kanban Pipeline in Action' : 'Le Pipeline Kanban 12 Étapes en Action'}
+                {isEn ? '12-Stage Customer Journey in Action' : 'Le Parcours Client 12 Étapes en Action'}
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 {isEn ? 'Experience smooth drag-and-drop and WhatsApp action loop' : "Découvrez la fluidité du glisser-déposer et la boucle d'action WhatsApp"}
