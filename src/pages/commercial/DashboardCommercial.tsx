@@ -342,8 +342,8 @@ export const DashboardCommercial: React.FC = () => {
               <AreaChart data={salesChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#FF8A00" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#FF3D81" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#FF6A00" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#FFBD22" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} />
@@ -358,7 +358,7 @@ export const DashboardCommercial: React.FC = () => {
                   }}
                 />
                 <Tooltip content={createCustomTooltip(activeCurrency)} />
-                <Area type="monotone" dataKey="sales" stroke="#FF8A00" strokeWidth={3} fillOpacity={1} fill="url(#salesGrad)" />
+                <Area type="monotone" dataKey="sales" stroke="#FF6A00" strokeWidth={3} fillOpacity={1} fill="url(#salesGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

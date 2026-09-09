@@ -4,6 +4,7 @@ import { LogOut, Menu, UserPlus } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaciloopBrand } from '../common/FaciloopBrand';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 import { useTranslation } from 'react-i18next';
 
@@ -52,8 +53,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
           </Link>
         </div>
 
-        {/* Right: Logout or Demo CTA */}
+        {/* Right: Theme Toggle + Logout or Demo CTA */}
         <div className="flex items-center gap-2 shrink-0">
+          <ThemeToggle />
+
           {isDemoMode ? (
             <Link
               to="/signup"

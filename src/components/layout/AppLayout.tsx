@@ -7,10 +7,9 @@ import { LanguageToggle } from '../common/LanguageToggle';
 import { motion } from 'framer-motion';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Sun, Moon } from 'lucide-react';
 
 export const AppLayout: React.FC = () => {
-  const { user, isLoading, isDarkMode, toggleDarkMode } = useAuth();
+  const { user, isLoading } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const location = useLocation();
@@ -81,28 +80,6 @@ export const AppLayout: React.FC = () => {
             <Outlet />
           </motion.div>
         </main>
-      </div>
-
-      {/* Floating Vertical Light/Dark Mode Switcher Pill (Matching Screenshot Right Edge) */}
-      <div className="fixed right-3 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center p-1 rounded-full bg-card/90 border border-border/80 shadow-2xl backdrop-blur-xl gap-1">
-        <button
-          onClick={() => isDarkMode && toggleDarkMode()}
-          className={`p-2 rounded-full transition-all ${
-            !isDarkMode ? 'bg-amber-500 text-white shadow-md' : 'text-muted-foreground hover:text-foreground'
-          }`}
-          title="Mode Clair"
-        >
-          <Sun className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => !isDarkMode && toggleDarkMode()}
-          className={`p-2 rounded-full transition-all ${
-            isDarkMode ? 'bg-gradient-faciloop text-white shadow-md' : 'text-muted-foreground hover:text-foreground'
-          }`}
-          title="Mode Sombre"
-        >
-          <Moon className="w-4 h-4" />
-        </button>
       </div>
 
       {/* Floating Language Switcher Pill (Matching Screenshot Bottom Right) */}

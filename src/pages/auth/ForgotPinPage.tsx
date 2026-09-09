@@ -7,6 +7,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '../../components/ui/input
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useTranslation } from 'react-i18next';
 import { FaciloopToast } from '../../components/common/FaciloopToast';
+import { ThemeToggle } from '../../components/common/ThemeToggle';
 import { supabase } from '../../lib/supabase';
 
 type Step = 'phone' | 'otp' | 'success';
@@ -125,7 +126,10 @@ export const ForgotPinPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 font-sans">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 font-sans relative">
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-sm">
         {/* Header */}
         <div className="text-center px-6 pt-6 pb-4">

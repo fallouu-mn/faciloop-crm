@@ -9,6 +9,7 @@ import { DateRange, isInDateRange, searchParamsToDateRange } from '../../lib/dat
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 import { downloadCsv } from '../../lib/exportCsv';
 import { supabase } from '../../lib/supabase';
+import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
 interface OrgPaiement {
   id: string;
@@ -36,32 +37,32 @@ export const FacturationPage: React.FC = () => {
   const [orgs, setOrgs] = useState<OrgPaiement[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchOrgs = async () => {
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('id, nom, formule_code, periodicite, prix_abonnement, date_debut_abonnement, date_fin_abonnement, statut_abonnement, statut, created_at')
-        .order('created_at', { ascending: false });
+  const fetchOrgs = async () => {
+    const { data, error } = await supabase
+      .from('organizations')
+      .select('id, nom, formule_code, periodicite, prix_abonnement, date_debut_abonnement, date_fin_abonnement, statut_abonnement, statut, created_at')
+      .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        const today = new Date();
-        const expiredIds: string[] = [];
-        const updated = data.map(o => {
-          if (o.statut_abonnement === 'actif' && o.date_fin_abonnement && new Date(o.date_fin_abonnement) < today) {
-            expiredIds.push(o.id);
-            return { ...o, statut_abonnement: 'expire' };
-          }
-          return o;
-        });
-        if (expiredIds.length > 0) {
-          supabase.from('organizations').update({ statut_abonnement: 'expire' }).in('id', expiredIds).then(() => {});
+    if (!error && data) {
+      const today = new Date();
+      const expiredIds: string[] = [];
+      const updated = data.map(o => {
+        if (o.statut_abonnement === 'actif' && o.date_fin_abonnement && new Date(o.date_fin_abonnement) < today) {
+          expiredIds.push(o.id);
+          return { ...o, statut_abonnement: 'expire' };
         }
-        setOrgs(updated);
+        return o;
+      });
+      if (expiredIds.length > 0) {
+        supabase.from('organizations').update({ statut_abonnement: 'expire' }).in('id', expiredIds).then(() => {});
       }
-      setLoading(false);
-    };
-    fetchOrgs();
-  }, []);
+      setOrgs(updated);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchOrgs(); }, []);
+  useRefetchOnFocus(fetchOrgs);
 
   const withAbonnement = useMemo(() => orgs.filter(o => o.prix_abonnement && o.prix_abonnement > 0), [orgs]);
 

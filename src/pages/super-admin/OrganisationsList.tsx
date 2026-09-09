@@ -8,6 +8,7 @@ import { formatAmount } from '../../lib/currency';
 import { supabase } from '../../lib/supabase';
 import { FormuleConfig, getFormules, getOfferPrice } from '../../services/formulesSaas';
 import { useTranslation } from 'react-i18next';
+import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
 const PERIODICITES_CODES = ['mensuel', 'trimestriel', 'annuel'] as const;
 
@@ -61,23 +62,23 @@ export const OrganisationsList: React.FC = () => {
 
   const PERIODICITES = PERIODICITES_CODES.map(code => ({ code, label: t(`period.${code}`) }));
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [orgsRes, formulesData] = await Promise.all([
-        supabase.from('organizations').select('*').order('created_at', { ascending: false }),
-        getFormules(),
-      ]);
-      if (!orgsRes.error && orgsRes.data) setTenants(orgsRes.data);
-      setFormules(formulesData);
-      if (formulesData.length > 0) {
-        const firstActive = formulesData.find(f => f.isActive)?.code || formulesData[0].code;
-        setCreateFormule(firstActive);
-        setActivFormule(firstActive);
-      }
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
+  const fetchData = async () => {
+    const [orgsRes, formulesData] = await Promise.all([
+      supabase.from('organizations').select('*').order('created_at', { ascending: false }),
+      getFormules(),
+    ]);
+    if (!orgsRes.error && orgsRes.data) setTenants(orgsRes.data);
+    setFormules(formulesData);
+    if (formulesData.length > 0) {
+      const firstActive = formulesData.find(f => f.isActive)?.code || formulesData[0].code;
+      setCreateFormule(firstActive);
+      setActivFormule(firstActive);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchData(); }, []);
+  useRefetchOnFocus(fetchData);
 
   const fmtPrice = (amount: number) => formatAmount(amount, 'XOF');
 

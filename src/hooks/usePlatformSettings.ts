@@ -29,6 +29,24 @@ export function invalidatePlatformSettings() {
   cached = null;
 }
 
+export async function refreshPlatformSettings() {
+  const { data } = await supabase
+    .from('platform_settings')
+    .select('*')
+    .limit(1)
+    .single();
+  const loaded: PlatformSettings = data
+    ? {
+        nom_plateforme: data.nom_plateforme || DEFAULTS.nom_plateforme,
+        email_support: data.email_support || '',
+        whatsapp_support: data.whatsapp_support || '',
+        devise_defaut: data.devise_defaut || 'XOF',
+        message_maintenance: data.message_maintenance || '',
+      }
+    : DEFAULTS;
+  notify(loaded);
+}
+
 export function usePlatformSettings(): PlatformSettings {
   const [settings, setSettings] = useState<PlatformSettings>(cached ?? DEFAULTS);
 

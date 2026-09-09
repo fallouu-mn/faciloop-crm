@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Globe, Phone, Mail, Save, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../lib/supabase';
-import { invalidatePlatformSettings } from '../../hooks/usePlatformSettings';
+import { refreshPlatformSettings } from '../../hooks/usePlatformSettings';
 
 interface PlatformSettings {
   nom_plateforme: string;
@@ -71,7 +71,7 @@ export const ParametresSuperAdmin: React.FC = () => {
       .from('platform_settings')
       .upsert({ id: 1, ...form }, { onConflict: 'id' });
 
-    invalidatePlatformSettings();
+    await refreshPlatformSettings();
     setInitial({ ...form });
     setSaving(false);
     if (!error) {

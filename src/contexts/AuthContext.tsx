@@ -93,6 +93,7 @@ export interface AuthContextType {
   addActionLog: (log: Omit<ActionLog, 'id' | 'organization_id' | 'created_at'>) => void;
 
   updateOrganization: (updates: Partial<Omit<Organization, 'id'>>) => void;
+  refreshUser: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -570,6 +571,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [isDarkMode]);
 
   const toggleDarkMode = () => setIsDarkMode(prev => !prev);
+
+  // Polling notifications toutes les 30s
+  useEffect(() => {
+    if (!user?.organizationId) return;
+    const orgId = user.organizationId;
+    const interval = setInterval(async () => {
+      try {
+        const [notifs, adminNotifs] = await Promise.all([
+          notificationsService.getNotifications(orgId),
+          notificationsService.getAdminNotifications(orgId),
+        ]);
+        setNotifications(notifs);
+        setAdminNotifications(adminNotifs);
+      } catch {}
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [user?.organizationId]);
+
+  // Rafraîchir le profil utilisateur depuis la BDD
+  const refreshUser = useCallback(async () => {
+    if (!user) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    const profile = await fetchUserProfile(session.user.id);
+    if (!profile) return;
+    setUser(prev => prev ? {
+      ...prev,
+      nom: profile.profile?.nom || prev.nom,
+      prenom: profile.profile?.prenom || prev.prenom,
+      telephone: profile.profile?.telephone || prev.telephone,
+      email: profile.profile?.email || prev.email,
+    } : prev);
+    if (profile.organizationId) {
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', profile.organizationId)
+        .single();
+      if (orgData) setCurrentOrg(orgData);
+    }
+  }, [user]);
 
   // ============================================
   // AUTH ACTIONS
@@ -1699,6 +1741,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         actionLogs,
         addActionLog,
         updateOrganization,
+        refreshUser,
       }}
     >
       {children}

@@ -13,21 +13,18 @@ import {
   Play,
   ArrowUpRight,
   LockKeyhole,
-  Sun,
-  Moon,
   Crown,
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
+import { ThemeToggle } from '../../components/common/ThemeToggle';
 import { FadeInOnScroll } from '../../components/common/FadeInOnScroll';
 import { FormuleConfig, getFormules } from '../../services/formulesSaas';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 
 export const LandingPage: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { isDarkMode, toggleDarkMode } = useAuth();
   const [billingCycle, setBillingCycle] = useState<string>('mensuel');
   const [currency, setCurrency] = useState<DeviseCode>('XOF');
   const [demoStep, setDemoStep] = useState<number>(1);
@@ -211,7 +208,7 @@ export const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans landing-crm-theme">
+    <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-14 max-w-6xl mx-auto">
@@ -220,27 +217,7 @@ export const LandingPage: React.FC = () => {
           </Link>
 
           <div className="flex items-center gap-2">
-            {/* Theme toggle */}
-            <div className="flex items-center p-1 rounded-full bg-muted border border-border gap-0.5">
-              <button
-                onClick={() => isDarkMode && toggleDarkMode()}
-                className={`p-1.5 rounded-full transition-all ${
-                  !isDarkMode ? 'bg-amber-500 text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                }`}
-                title={isEn ? "Light Mode" : "Mode Clair"}
-              >
-                <Sun className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => !isDarkMode && toggleDarkMode()}
-                className={`p-1.5 rounded-full transition-all ${
-                  isDarkMode ? 'bg-gradient-faciloop text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                }`}
-                title={isEn ? "Dark Mode" : "Mode Sombre"}
-              >
-                <Moon className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            <ThemeToggle />
 
             <Link
               to="/login"

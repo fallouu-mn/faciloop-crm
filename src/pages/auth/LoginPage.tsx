@@ -7,6 +7,7 @@ import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { PinInput } from '../../components/common/PinInput';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
+import { ThemeToggle } from '../../components/common/ThemeToggle';
 import { FaciloopToast } from '../../components/common/FaciloopToast';
 import { useTranslation } from 'react-i18next';
 
@@ -105,7 +106,10 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative">
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-sm">
         {/* Header */}
         <div className="text-center px-6 pt-6 pb-4">

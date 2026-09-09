@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="250 220 150 155">
   <defs>
     <linearGradient id="faciloopGradient" x1="0%" y1="0%" x2="90%" y2="120%">
-      <stop offset="0%" stop-color="#FF8A00"/>
-      <stop offset="100%" stop-color="#FF3D81"/>
+      <stop offset="0%" stop-color="#FF6A00"/>
+      <stop offset="100%" stop-color="#FFBD22"/>
     </linearGradient>
   </defs>
   <!-- Fond blanc pour que le F reste visible en mode sombre -->

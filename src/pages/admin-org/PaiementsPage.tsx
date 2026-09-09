@@ -52,7 +52,7 @@ export const PaiementsPage: React.FC = () => {
     const logoUrl = currentOrg?.logo_url || '';
     const logoHtml = logoUrl
       ? `<img src="${logoUrl}" alt="Logo" style="max-height:60px;max-width:160px;object-fit:contain;" />`
-      : `<div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#FF8A00,#FF3D81);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Faciloop CRM</div>`;
+      : `<div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#FF6A00,#FFBD22);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Faciloop CRM</div>`;
 
     const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -70,7 +70,7 @@ export const PaiementsPage: React.FC = () => {
     .invoice-meta { margin-top: 8px; font-size: 12px; color: #888; }
     .invoice-meta strong { color: #444; font-weight: 600; }
 
-    .separator { height: 3px; background: linear-gradient(90deg, #FF8A00, #FF3D81); border-radius: 2px; margin: 24px 0; }
+    .separator { height: 3px; background: linear-gradient(90deg, #FF6A00, #FFBD22); border-radius: 2px; margin: 24px 0; }
 
     .parties { display: flex; gap: 24px; margin-bottom: 28px; }
     .party-box { flex: 1; padding: 18px 20px; border-radius: 12px; border: 1px solid #e8e8e8; background: #fafafa; }

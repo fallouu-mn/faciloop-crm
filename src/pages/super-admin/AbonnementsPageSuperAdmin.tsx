@@ -12,6 +12,7 @@ import {
   toggleFormuleActive,
 } from '../../services/formulesSaas';
 import { translateText } from '../../lib/translate';
+import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
 export const AbonnementsPageSuperAdmin: React.FC = () => {
   const { t, i18n } = useTranslation('superAdmin');
@@ -31,19 +32,19 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
   const [newTrimestriel, setNewTrimestriel] = useState(0);
   const [newAnnuel, setNewAnnuel] = useState(0);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getFormules();
-        setFormules(data);
-      } catch (err) {
-        console.error('Erreur chargement formules:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+  const loadFormules = async () => {
+    try {
+      const data = await getFormules();
+      setFormules(data);
+    } catch (err) {
+      console.error('Erreur chargement formules:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadFormules(); }, []);
+  useRefetchOnFocus(loadFormules);
 
   useEffect(() => {
     if (!isEn || formules.length === 0) return;

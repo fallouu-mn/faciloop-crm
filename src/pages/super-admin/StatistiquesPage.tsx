@@ -7,6 +7,7 @@ import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DateRange, isInDateRange, searchParamsToDateRange, buildFilteredUrl } from '../../lib/dateFilter';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 import { FormuleConfig, getFormules } from '../../services/formulesSaas';
+import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
 interface TenantData {
   id: string;
@@ -40,9 +41,10 @@ export const StatistiquesPage: React.FC = () => {
   const [devise, setDevise] = useState<DeviseCode>('XOF');
   const [formules, setFormules] = useState<FormuleConfig[]>([]);
 
-  React.useEffect(() => {
-    getFormules().then(setFormules).catch(() => {});
-  }, []);
+  const loadFormules = () => getFormules().then(setFormules).catch(() => {});
+
+  React.useEffect(() => { loadFormules(); }, []);
+  useRefetchOnFocus(loadFormules);
 
   const filteredFactures = useMemo(() =>
     mockFactures.filter(f => isInDateRange(f.date_emission, period)),

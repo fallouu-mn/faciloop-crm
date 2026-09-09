@@ -8,6 +8,7 @@ import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DateRange, isInDateRange, searchParamsToDateRange, buildFilteredUrl } from '../../lib/dateFilter';
 import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 import { supabase } from '../../lib/supabase';
+import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
 interface TenantRow {
   id: string;
@@ -30,39 +31,39 @@ export const DashboardSuperAdmin: React.FC = () => {
   const [tenants, setTenants] = useState<TenantRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchOrgs = async () => {
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('id, nom, statut, formule_code, periodicite, prix_abonnement, statut_abonnement, date_fin_abonnement, created_at')
-        .order('created_at', { ascending: false });
-      if (!error && data) {
-        const today = new Date();
-        const expiredIds: string[] = [];
-        const updated = data.map(row => {
-          if (
-            row.statut_abonnement === 'actif' &&
-            row.date_fin_abonnement &&
-            new Date(row.date_fin_abonnement) < today
-          ) {
-            expiredIds.push(row.id);
-            return { ...row, statut_abonnement: 'expire' };
-          }
-          return row;
-        });
-        if (expiredIds.length > 0) {
-          supabase
-            .from('organizations')
-            .update({ statut_abonnement: 'expire' })
-            .in('id', expiredIds)
-            .then(() => {});
+  const fetchOrgs = async () => {
+    const { data, error } = await supabase
+      .from('organizations')
+      .select('id, nom, statut, formule_code, periodicite, prix_abonnement, statut_abonnement, date_fin_abonnement, created_at')
+      .order('created_at', { ascending: false });
+    if (!error && data) {
+      const today = new Date();
+      const expiredIds: string[] = [];
+      const updated = data.map(row => {
+        if (
+          row.statut_abonnement === 'actif' &&
+          row.date_fin_abonnement &&
+          new Date(row.date_fin_abonnement) < today
+        ) {
+          expiredIds.push(row.id);
+          return { ...row, statut_abonnement: 'expire' };
         }
-        setTenants(updated);
+        return row;
+      });
+      if (expiredIds.length > 0) {
+        supabase
+          .from('organizations')
+          .update({ statut_abonnement: 'expire' })
+          .in('id', expiredIds)
+          .then(() => {});
       }
-      setLoading(false);
-    };
-    fetchOrgs();
-  }, []);
+      setTenants(updated);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchOrgs(); }, []);
+  useRefetchOnFocus(fetchOrgs);
 
   const filteredTenants = useMemo(() =>
     tenants.filter(row => isInDateRange(row.created_at, period)),

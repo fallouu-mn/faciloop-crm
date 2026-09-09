@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { KeyRound, LogOut, Mail, Phone, User, Eye, EyeOff, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +10,9 @@ import { useTranslation } from 'react-i18next';
 
 export function ProfilPage() {
   const { t, i18n } = useTranslation();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
+
+  useEffect(() => { refreshUser(); }, []);
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [nouveau, setNouveau] = useState('');

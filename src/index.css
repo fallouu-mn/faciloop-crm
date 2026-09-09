@@ -2,30 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Faciloop CRM Design System - Charte graphique orange-rose */
+/* Faciloop Pro Design System — Palette cliente #FF6A00 → #FFBD22 */
 
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 23%;
+    --foreground: 220 18% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 23%;
+    --card-foreground: 220 18% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 23%;
+    --popover-foreground: 220 18% 12%;
 
-    /* Primary = Orange Faciloop (#FF8A3D) */
-    --primary: 24 100% 62%;
+    /* Primary = Orange principal (#FF6A00) */
+    --primary: 25 100% 50%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 23%;
+    --secondary-foreground: 220 18% 12%;
 
     --muted: 0 0% 97%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 24 100% 62%;
+    --accent: 25 100% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -33,34 +33,34 @@
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 24 100% 62%;
+    --ring: 25 100% 50%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 23%;
-    --sidebar-primary: 24 100% 62%;
+    --sidebar-foreground: 220 18% 12%;
+    --sidebar-primary: 25 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 23%;
+    --sidebar-accent-foreground: 220 18% 12%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 24 100% 62%;
+    --sidebar-ring: 25 100% 50%;
 
-    /* Faciloop brand colors */
-    --faciloop-orange: 24 100% 62%;
-    --faciloop-pink: 342 87% 62%;
+    /* Faciloop Pro brand colors */
+    --faciloop-orange: 25 100% 50%;
+    --faciloop-amber: 44 100% 57%;
 
     /* Success */
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
     /* Warning */
-    --warning: 24 100% 62%;
+    --warning: 36 100% 50%;
     --warning-foreground: 0 0% 100%;
 
     /* Couleurs sémantiques CRM par module */
     --color-prospects: 199 89% 48%;
-    --color-pipeline: 24 100% 62%;
+    --color-pipeline: 25 100% 50%;
     --color-clients-crm: 142 71% 45%;
     --color-relances: 38 92% 50%;
     --color-paiements: 262 83% 66%;
@@ -69,16 +69,16 @@
   }
 
   .dark {
-    --background: 0 0% 7%;
+    --background: 0 0% 4%;
     --foreground: 0 0% 95%;
 
-    --card: 0 0% 10%;
+    --card: 0 0% 6%;
     --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 10%;
+    --popover: 0 0% 6%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 24 100% 62%;
+    --primary: 25 100% 50%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 15%;
@@ -87,7 +87,7 @@
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 24 100% 62%;
+    --accent: 25 100% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 40%;
@@ -95,23 +95,23 @@
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 24 100% 62%;
+    --ring: 25 100% 50%;
 
-    --sidebar-background: 0 0% 7%;
+    --sidebar-background: 0 0% 4%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 24 100% 62%;
+    --sidebar-primary: 25 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 24 100% 62%;
+    --sidebar-ring: 25 100% 50%;
 
-    --warning: 38 92% 50%;
+    --warning: 36 100% 50%;
     --warning-foreground: 0 0% 100%;
 
     /* Couleurs sémantiques CRM adaptées dark mode */
     --color-prospects: 199 89% 55%;
-    --color-pipeline: 24 100% 65%;
+    --color-pipeline: 25 100% 55%;
     --color-clients-crm: 142 71% 55%;
     --color-relances: 38 92% 55%;
     --color-paiements: 262 83% 72%;
@@ -144,18 +144,18 @@
 
 @layer utilities {
   .bg-gradient-faciloop {
-    background: linear-gradient(135deg, hsl(24 100% 62%) 0%, hsl(342 87% 62%) 100%);
+    background: linear-gradient(135deg, #FF6A00 0%, #FFBD22 100%);
   }
 
   .text-gradient-faciloop {
-    background: linear-gradient(135deg, hsl(24 100% 62%) 0%, hsl(342 87% 62%) 100%);
+    background: linear-gradient(135deg, #FF6A00 0%, #FFBD22 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .border-gradient-faciloop {
-    border-image: linear-gradient(135deg, hsl(24 100% 62%) 0%, hsl(342 87% 62%) 100%) 1;
+    border-image: linear-gradient(135deg, #FF6A00 0%, #FFBD22 100%) 1;
   }
 
   .card-lift {
@@ -174,36 +174,13 @@
     scrollbar-width: none;
   }
 
-  /* Landing page CRM theme preview */
-  .landing-crm-theme {
-    --primary: 0 84% 60%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 0 84% 60%;
-    --accent-foreground: 0 0% 100%;
-    --ring: 0 84% 60%;
-  }
-
-  .landing-crm-theme .bg-gradient-faciloop {
-    background: linear-gradient(135deg, #EF4444 0%, #EC4899 100%);
-  }
-
-  .landing-crm-theme .text-gradient-faciloop {
-    background: linear-gradient(135deg, #EF4444 0%, #EC4899 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .landing-crm-theme .border-gradient-faciloop {
-    border-image: linear-gradient(135deg, #EF4444 0%, #EC4899 100%) 1;
-  }
 }
 
-/* Style moderne et lisible avec l'Orange Faciloop (#FF8A3D) pour les sélecteurs de date et d'heure */
+/* Style date/time pickers — Orange Faciloopro (#FF6A00) */
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
-  filter: invert(62%) sepia(85%) saturate(1630%) hue-rotate(345deg) brightness(103%) contrast(101%);
+  filter: invert(45%) sepia(100%) saturate(2000%) hue-rotate(10deg) brightness(105%) contrast(101%);
   opacity: 0.9;
   transition: all 0.2s ease;
   padding: 2px;
@@ -212,7 +189,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .dark input[type="date"]::-webkit-calendar-picker-indicator,
 .dark input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(62%) sepia(85%) saturate(1630%) hue-rotate(345deg) brightness(103%) contrast(101%);
+  filter: invert(45%) sepia(100%) saturate(2000%) hue-rotate(10deg) brightness(105%) contrast(101%);
   opacity: 0.95;
 }
 
@@ -222,13 +199,13 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
   transform: scale(1.15);
 }
 
-/* Style universel des Toasts d'alerte / notification au style de la charte Faciloop */
+/* Toasts — palette Faciloopro */
 [data-sonner-toaster] [data-sonner-toast] {
-  background: linear-gradient(135deg, #FF8A3D 0%, #E91E63 100%) !important;
+  background: linear-gradient(135deg, #FF6A00 0%, #FFBD22 100%) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
   border-radius: 1rem !important;
-  box-shadow: 0 12px 28px -4px rgba(255, 138, 61, 0.45), 0 8px 16px -4px rgba(233, 30, 99, 0.35) !important;
+  box-shadow: 0 12px 28px -4px rgba(255, 106, 0, 0.45), 0 8px 16px -4px rgba(255, 189, 34, 0.35) !important;
   font-family: 'Inter', system-ui, sans-serif !important;
   font-weight: 700 !important;
   font-size: 0.8125rem !important;
