@@ -1,13 +1,13 @@
 {
-  "name": "Faciloop CRM",
-  "short_name": "Faciloop",
+  "name": "Faciloopro",
+  "short_name": "Faciloopro",
   "description": "CRM SaaS B2B multi-tenant pour TPE/PME — Pipeline commercial, relances, commissions",
   "start_url": "/login",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "theme_color": "#FF8A00",
-  "background_color": "#0f0f1a",
+  "theme_color": "#FF6A00",
+  "background_color": "#0a0a0a",
   "lang": "fr",
   "categories": ["business", "productivity"],
   "icons": [
