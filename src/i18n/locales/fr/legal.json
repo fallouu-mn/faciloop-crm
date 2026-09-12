@@ -1,0 +1,111 @@
+{
+  "privacy": {
+    "title": "Politique de confidentialité",
+    "lastUpdate": "Dernière mise à jour : septembre 2026",
+    "sections": {
+      "intro": {
+        "title": "Introduction",
+        "text": "Faciloopro, édité par Digit'Advisor, s'engage à protéger la vie privée de ses utilisateurs. Cette politique de confidentialité décrit les données personnelles que nous collectons, pourquoi nous les collectons et comment nous les utilisons."
+      },
+      "dataCollected": {
+        "title": "Données collectées",
+        "text": "Nous collectons uniquement les données nécessaires au fonctionnement du service :",
+        "items": [
+          "Prénom et nom",
+          "Numéro de téléphone (identifiant de connexion)",
+          "Nom de l'entreprise et informations commerciales",
+          "Données d'activité : prospects, clients, pipeline, paiements",
+          "Données techniques : type d'appareil, langue, préférences d'affichage"
+        ]
+      },
+      "purpose": {
+        "title": "Finalités du traitement",
+        "text": "Vos données sont utilisées exclusivement pour :",
+        "items": [
+          "Permettre l'accès à votre compte et l'authentification",
+          "Gérer votre activité commerciale (prospects, clients, pipeline, paiements)",
+          "Synchroniser vos données entre vos appareils",
+          "Envoyer des notifications et rappels de relances",
+          "Améliorer le service et corriger les bugs"
+        ]
+      },
+      "storage": {
+        "title": "Stockage et sécurité",
+        "text": "Vos données sont stockées de manière sécurisée sur les serveurs de Supabase (hébergés dans l'Union Européenne). Les communications sont chiffrées via HTTPS. Votre code PIN est haché et ne peut pas être lu par nos équipes."
+      },
+      "retention": {
+        "title": "Durée de conservation",
+        "text": "Vos données sont conservées tant que votre compte est actif. En cas de suppression de votre compte, toutes vos données personnelles sont supprimées définitivement dans un délai de 30 jours. Les données d'activité anonymisées peuvent être conservées à des fins statistiques."
+      },
+      "rights": {
+        "title": "Vos droits",
+        "text": "Conformément au RGPD et aux lois applicables, vous disposez des droits suivants :",
+        "items": [
+          "Droit d'accès : consulter vos données personnelles",
+          "Droit de rectification : modifier vos informations depuis l'application",
+          "Droit à l'effacement : supprimer votre compte et toutes vos données",
+          "Droit à la portabilité : exporter vos données au format CSV",
+          "Droit d'opposition : vous opposer au traitement de vos données"
+        ]
+      },
+      "cookies": {
+        "title": "Cookies et stockage local",
+        "text": "Faciloopro n'utilise pas de cookies publicitaires ni de traceurs tiers. Le stockage local (localStorage) est utilisé uniquement pour le fonctionnement de l'application (préférences d'interface, thème). Ces données techniques sont strictement nécessaires et exemptées de consentement selon la directive ePrivacy."
+      },
+      "contact": {
+        "title": "Contact",
+        "text": "Pour toute question relative à vos données personnelles, contactez-nous."
+      }
+    }
+  },
+  "terms": {
+    "title": "Conditions Générales d'Utilisation",
+    "lastUpdate": "Dernière mise à jour : septembre 2026",
+    "sections": {
+      "object": {
+        "title": "Objet",
+        "text": "Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de l'application Faciloopro, éditée par Digit'Advisor. Faciloopro est un CRM SaaS B2B multi-tenant destiné aux TPE/PME pour la gestion de leur pipeline commercial, prospects, clients et paiements."
+      },
+      "access": {
+        "title": "Accès au service",
+        "text": "L'accès à Faciloopro nécessite la création d'un compte avec un numéro de téléphone valide et un code PIN à 6 chiffres. L'application est accessible via navigateur web et en tant qu'application progressive (PWA). Une connexion internet est nécessaire pour l'utilisation du service."
+      },
+      "account": {
+        "title": "Compte utilisateur",
+        "text": "Vous êtes responsable de la confidentialité de vos identifiants de connexion (numéro de téléphone et code PIN). Toute activité effectuée depuis votre compte est sous votre responsabilité. En cas de suspicion d'utilisation non autorisée, contactez-nous immédiatement."
+      },
+      "usage": {
+        "title": "Utilisation du service",
+        "text": "Vous vous engagez à utiliser Faciloopro conformément à sa finalité : la gestion de votre activité commerciale. Il est interdit d'utiliser le service à des fins illégales, de tenter d'accéder aux données d'autres utilisateurs ou organisations, ou de compromettre la sécurité de la plateforme."
+      },
+      "subscription": {
+        "title": "Abonnement et tarification",
+        "text": "Faciloopro propose différentes formules d'abonnement payantes (mensuel, trimestriel, annuel). Les tarifs sont affichés dans l'application et sur le site web. L'abonnement est activé après validation par l'administrateur. Les modalités de paiement sont communiquées via WhatsApp ou email."
+      },
+      "ip": {
+        "title": "Propriété intellectuelle",
+        "text": "L'ensemble du contenu de Faciloopro (code source, design, textes, logos, icônes) est la propriété exclusive de Digit'Advisor. Toute reproduction, modification ou distribution sans autorisation écrite est interdite."
+      },
+      "liability": {
+        "title": "Responsabilité",
+        "text": "Faciloopro est fourni \"en l'état\". Digit'Advisor s'efforce d'assurer la disponibilité et la fiabilité du service, mais ne peut garantir une disponibilité ininterrompue. En cas de perte de données due à un dysfonctionnement, la responsabilité de Digit'Advisor est limitée au montant de l'abonnement en cours."
+      },
+      "termination": {
+        "title": "Résiliation",
+        "text": "Vous pouvez demander la suppression de votre compte à tout moment en contactant le support. La suppression entraîne l'effacement définitif de vos données personnelles. Digit'Advisor se réserve le droit de suspendre ou supprimer un compte en cas de violation des présentes CGU."
+      },
+      "law": {
+        "title": "Droit applicable",
+        "text": "Les présentes CGU sont soumises au droit sénégalais. En cas de litige, les tribunaux de Dakar sont compétents, sauf disposition légale contraire."
+      },
+      "contact": {
+        "title": "Contact",
+        "text": "Pour toute question : contact@digitadvisor.sn ou par WhatsApp au +221 77 630 82 66. Digit'Advisor - www.digitadvisor.sn"
+      }
+    }
+  },
+  "footer": {
+    "privacy": "Confidentialité",
+    "terms": "CGU"
+  }
+}
