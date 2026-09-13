@@ -7,7 +7,10 @@ import { PinInput } from '../../components/common/PinInput';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
 import { FaciloopToast } from '../../components/common/FaciloopToast';
+import { TermsContent } from '../public/TermsPage';
+import { PrivacyContent } from '../public/PrivacyPage';
 import { useTranslation } from 'react-i18next';
+import { X } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -28,6 +31,7 @@ export const RegisterPage: React.FC = () => {
   const [acceptTerms, setAcceptTerms] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [legalModal, setLegalModal] = useState<'terms' | 'privacy' | null>(null);
 
   const pin = codeDigits.join('');
   const confirmPin = confirmDigits.join('');
@@ -250,13 +254,12 @@ export const RegisterPage: React.FC = () => {
             disabled={loading}
             label={isEn ? 'Secret PIN code (6 digits) *' : 'Code secret (6 chiffres) *'}
           />
-          <p className="text-xs text-muted-foreground text-left -mt-1">
+          <p className="text-xs text-muted-foreground text-center -mt-1">
             {isEn ? 'This code will be used to log into your account' : 'Ce code vous servira à vous connecter'}
           </p>
 
           {/* Confirmation code */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
               <PinInput
                 value={confirmDigits}
                 onChange={setConfirmDigits}
@@ -265,8 +268,7 @@ export const RegisterPage: React.FC = () => {
                 disabled={loading}
                 label={isEn ? 'Confirm PIN code *' : 'Confirmez le code *'}
               />
-            </div>
-            <div className="flex items-center justify-start gap-1.5">
+            <div className="flex items-center justify-center gap-1.5">
               {pinsMatch && (
                 <span className="flex items-center gap-1 text-xs text-emerald-600">
                   <CheckCircle className="h-3.5 w-3.5" /> {isEn ? 'PIN codes match' : 'Codes identiques'}
@@ -292,9 +294,9 @@ export const RegisterPage: React.FC = () => {
             />
             <label htmlFor="acceptTerms" className="text-xs text-muted-foreground cursor-pointer leading-relaxed">
               {isEn ? 'I accept the ' : "J'accepte les "}
-              <span className="text-primary hover:underline">{isEn ? 'Terms of Service' : 'Conditions Générales'}</span>
+              <button type="button" onClick={() => setLegalModal('terms')} className="text-primary hover:underline">{isEn ? 'Terms of Service' : 'Conditions Générales'}</button>
               {isEn ? ' and the ' : ' et la '}
-              <span className="text-primary hover:underline">{isEn ? 'Privacy Policy' : 'Politique de Confidentialité'}</span>.
+              <button type="button" onClick={() => setLegalModal('privacy')} className="text-primary hover:underline">{isEn ? 'Privacy Policy' : 'Politique de Confidentialité'}</button>.
             </label>
           </div>
 
@@ -333,6 +335,35 @@ export const RegisterPage: React.FC = () => {
       <div className="fixed bottom-4 right-4 z-50">
         <LanguageToggle />
       </div>
+
+      {/* Legal Modal — same layout as Faciloop-dev LegalDialog */}
+      {legalModal && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setLegalModal(null)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+            <div
+              className="pointer-events-auto relative w-[95vw] max-w-2xl max-h-[85vh] border bg-background shadow-lg sm:rounded-lg flex flex-col overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="px-6 pt-6 pb-3 border-b border-border shrink-0 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-foreground">
+                  {legalModal === 'terms' ? t('legal:terms.title') : t('legal:privacy.title')}
+                </h2>
+                <button type="button" onClick={() => setLegalModal(null)} className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="max-h-[calc(85vh-80px)] overflow-y-auto px-6 py-4">
+                {legalModal === 'terms' ? (
+                  <TermsContent embedded />
+                ) : (
+                  <PrivacyContent embedded />
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
