@@ -14,6 +14,10 @@ import {
   ArrowUpRight,
   LockKeyhole,
   Crown,
+  ClipboardList,
+  Bell,
+  Users,
+  Shield,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
@@ -279,16 +283,21 @@ export const LandingPage: React.FC = () => {
           <FadeInOnScroll delay={200}>
             <div className="mt-12 sm:mt-16 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto">
               {[
-                { icon: '📋', label: isEn ? 'Centralized prospects' : 'Prospects centralisés' },
-                { icon: '🔔', label: isEn ? 'Organized follow-ups' : 'Relances organisées' },
-                { icon: '👥', label: isEn ? 'Team oversight' : 'Équipe pilotée' },
-                { icon: '🔒', label: isEn ? 'Secure data' : 'Données sécurisées' },
-              ].map((stat, idx) => (
-                <div key={idx} className="p-4 rounded-xl border border-border bg-card text-center">
-                  <div className="text-2xl sm:text-3xl">{stat.icon}</div>
-                  <div className="text-xs text-muted-foreground mt-1.5 font-semibold">{stat.label}</div>
-                </div>
-              ))}
+                { icon: ClipboardList, label: isEn ? 'Centralized prospects' : 'Prospects centralisés', color: 'text-orange-500 bg-orange-500/10' },
+                { icon: Bell, label: isEn ? 'Organized follow-ups' : 'Relances organisées', color: 'text-amber-500 bg-amber-500/10' },
+                { icon: Users, label: isEn ? 'Team oversight' : 'Équipe pilotée', color: 'text-orange-600 bg-orange-600/10' },
+                { icon: Shield, label: isEn ? 'Secure data' : 'Données sécurisées', color: 'text-amber-600 bg-amber-600/10' },
+              ].map((stat, idx) => {
+                const IconComp = stat.icon;
+                return (
+                  <div key={idx} className="p-4 rounded-xl border border-border bg-card text-center flex flex-col items-center">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${stat.color} flex items-center justify-center`}>
+                      <IconComp className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2 font-semibold">{stat.label}</div>
+                  </div>
+                );
+              })}
             </div>
           </FadeInOnScroll>
         </div>
