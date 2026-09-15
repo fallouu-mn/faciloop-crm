@@ -16,8 +16,11 @@ import {
   ArrowRight,
   Calendar,
   PieChart,
+  Lock,
+  ArrowUpRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { usePlanLimits } from '../../hooks/usePlanLimits';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
@@ -102,8 +105,11 @@ const DashboardAdminSkeleton: React.FC = () => (
 
 
 export const DashboardAdminOrg: React.FC = () => {
-  const { t } = useTranslation('admin');
+  const { t, i18n } = useTranslation('admin');
+  const isEn = i18n.language?.startsWith('en');
   const { user, currentOrg, prospects, clients, commerciaux, paiements } = useAuth();
+  const { hasFeature, getRequiredPlan, plan } = usePlanLimits();
+  const canAdvancedStats = hasFeature('stats_avancees');
   const [currency, setCurrency] = useState<DeviseCode>('XOF');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [period, setPeriod] = useState<PeriodFilter>('mois');
@@ -528,8 +534,37 @@ export const DashboardAdminOrg: React.FC = () => {
         </div>
       </div>
 
-      {/* Répartitions */}
-      {(repartitionFormule.length > 0 || repartitionSecteur.length > 0) && (
+      {/* Répartitions — gated by stats_avancees */}
+      {!canAdvancedStats ? (
+        <div className="p-6 sm:p-8 rounded-3xl border border-border/80 bg-card shadow-sm">
+          <div className="flex flex-col items-center justify-center py-6 sm:py-10 text-center">
+            <div className="h-14 w-14 rounded-2xl bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mb-4">
+              <Lock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h3 className="text-sm sm:text-base font-bold text-foreground">
+              {isEn ? 'Advanced Analytics — Business plan required' : 'Statistiques avancées — Offre Business requise'}
+            </h3>
+            <p className="mt-2 text-xs text-muted-foreground max-w-sm">
+              {isEn
+                ? `Distribution charts by formula and sector are available starting from the Business plan. You are currently on the ${plan.label} plan.`
+                : `Les répartitions par formule et secteur sont disponibles à partir de l'offre Business. Vous êtes actuellement sur l'offre ${plan.label}.`}
+            </p>
+            <a
+              href={`https://wa.me/221711387878?text=${encodeURIComponent(
+                isEn
+                  ? `Hello, I would like to upgrade from ${plan.label} to ${getRequiredPlan('stats_avancees')}.`
+                  : `Bonjour, je souhaite passer de l'offre ${plan.label} à l'offre ${getRequiredPlan('stats_avancees')}.`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-faciloop text-white font-semibold text-xs shadow-md hover:opacity-90 transition-opacity"
+            >
+              <span>{isEn ? 'Upgrade to Business' : "Passer à l'offre Business"}</span>
+              <ArrowUpRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      ) : (repartitionFormule.length > 0 || repartitionSecteur.length > 0) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {repartitionFormule.length > 0 && (
             <div className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm space-y-3">

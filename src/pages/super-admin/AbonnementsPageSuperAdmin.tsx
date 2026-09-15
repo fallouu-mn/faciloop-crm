@@ -183,11 +183,11 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
     setEditPricing(updated);
   };
 
-  const defaultColor = { bg: 'bg-purple-500/10', text: 'text-purple-600', border: 'border-purple-500/20', gradient: 'from-purple-500 to-purple-600' };
+  const defaultColor = { bg: 'bg-orange-500/10', text: 'text-orange-600', border: 'border-orange-500/20', gradient: 'from-orange-500 to-orange-600' };
   const colors: Record<string, { bg: string; text: string; border: string; gradient: string }> = {
-    Pro: { bg: 'bg-blue-500/10', text: 'text-blue-600', border: 'border-blue-500/20', gradient: 'from-blue-500 to-blue-600' },
-    Business: { bg: 'bg-amber-500/10', text: 'text-amber-600', border: 'border-amber-500/20', gradient: 'from-amber-500 to-amber-600' },
-    Premium: { bg: 'bg-emerald-500/10', text: 'text-emerald-600', border: 'border-emerald-500/20', gradient: 'from-emerald-500 to-emerald-600' },
+    Pro: { bg: 'bg-amber-500/10', text: 'text-amber-600', border: 'border-amber-400/30', gradient: 'from-amber-400 to-amber-500' },
+    Business: { bg: 'bg-orange-500/10', text: 'text-orange-600', border: 'border-orange-500/30', gradient: 'from-orange-500 to-amber-500' },
+    Premium: { bg: 'bg-orange-600/10', text: 'text-orange-700', border: 'border-orange-600/30', gradient: 'from-orange-600 to-orange-700' },
   };
 
   if (loading) {

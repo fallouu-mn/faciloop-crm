@@ -1,14 +1,14 @@
 {
-  "badge": "CRM B2B Multi-Entreprises 2.0",
-  "heroTitle": "Le CRM commercial B2B conçu pour accélérer vos ventes et convertir vos prospects",
-  "heroSubtitle": "Suivi de portefeuille par commercial, parcours client 12 étapes, relances quotidiennes et déclencheur WhatsApp direct en 1 clic.",
+  "badge": "CRM simple pour TPE / PME",
+  "heroTitle": "Le CRM simple pour mieux suivre vos prospects et développer vos ventes",
+  "heroSubtitle": "Centralisez vos prospects, organisez les relances, suivez vos commerciaux et pilotez vos ventes depuis une seule plateforme.",
   "accessButton": "Accéder à la plateforme",
   "demoButton": "Voir la démo",
   "loginButton": "Connexion",
   "metrics": {
-    "relance": "Taux de relance",
-    "isolation": "Isolation RLS",
-    "dedup": "Anti-doublon",
-    "onboarding": "Prise en main"
+    "prospects": "Prospects centralisés",
+    "relances": "Relances organisées",
+    "equipe": "Équipe pilotée",
+    "securite": "Données sécurisées"
   }
 }
