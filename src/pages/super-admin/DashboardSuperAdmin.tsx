@@ -6,7 +6,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DateRange, isInDateRange, searchParamsToDateRange, buildFilteredUrl } from '../../lib/dateFilter';
-import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { supabase } from '../../lib/supabase';
 import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
@@ -27,7 +27,7 @@ export const DashboardSuperAdmin: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
-  const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [tenants, setTenants] = useState<TenantRow[]>([]);
   const [loading, setLoading] = useState(true);
 

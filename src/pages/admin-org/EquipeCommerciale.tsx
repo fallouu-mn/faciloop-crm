@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { UserPlus, UserCheck, Shield, X, Check, Mail, Phone, MessageSquare, Power } from 'lucide-react';
+import { UserPlus, UserCheck, Shield, X, Check, Mail, Phone, MessageSquare, Power, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { usePlanLimits } from '../../hooks/usePlanLimits';
 
 export const EquipeCommerciale: React.FC = () => {
-  const { t } = useTranslation('admin');
+  const { t, i18n } = useTranslation('admin');
+  const isEn = i18n.language?.startsWith('en');
   const { commerciaux: team, addCommercial, toggleCommercialStatus } = useAuth();
+  const { canAddCommercial, activeCommerciaux, plan, formuleCode } = usePlanLimits();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const [nom, setNom] = useState<string>('');
@@ -26,6 +29,13 @@ export const EquipeCommerciale: React.FC = () => {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canAddCommercial) {
+      setAddError(isEn
+        ? `Limit reached (${plan.maxCommerciaux} sales reps on ${plan.label}).`
+        : `Limite atteinte (${plan.maxCommerciaux} commerciaux sur ${plan.label}).`
+      );
+      return;
+    }
     setAddError(null);
     setAddLoading(true);
     try {
@@ -59,13 +69,38 @@ export const EquipeCommerciale: React.FC = () => {
         </div>
 
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
+          onClick={() => {
+            if (!canAddCommercial) {
+              toast.error(isEn
+                ? `Limit reached (${plan.maxCommerciaux} sales reps on ${plan.label}). Upgrade your plan to add more.`
+                : `Limite atteinte (${plan.maxCommerciaux} commerciaux sur ${plan.label}). Passez à une offre supérieure pour en ajouter.`
+              );
+              return;
+            }
+            setIsModalOpen(true);
+          }}
+          className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-extrabold shadow-lg transition-all ${
+            canAddCommercial
+              ? 'bg-gradient-faciloop text-white shadow-primary/25 hover:opacity-95'
+              : 'bg-muted text-muted-foreground shadow-none cursor-not-allowed'
+          }`}
         >
           <UserPlus className="h-4 w-4 shrink-0" />
           <span>{t('adminOrg.equipe.addBtn')}</span>
         </button>
       </div>
+
+      {/* Plan limit banner */}
+      {!canAddCommercial && (
+        <div className="flex items-center gap-3 p-3 rounded-xl border border-amber-300/50 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-700/30">
+          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+          <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
+            {isEn
+              ? `You have reached the limit of ${plan.maxCommerciaux} active sales reps on the ${plan.label} plan. Upgrade to add more.`
+              : `Vous avez atteint la limite de ${plan.maxCommerciaux} commerciaux actifs sur l'offre ${plan.label}. Passez à une offre supérieure pour en ajouter.`}
+          </p>
+        </div>
+      )}
 
       {/* Desktop Table View (Horizontal scroll wrapper) */}
       <div className="hidden md:block overflow-x-auto rounded-2xl border border-border/80 bg-card shadow-sm">

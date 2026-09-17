@@ -42,3 +42,15 @@ export const DEVISES: { code: DeviseCode; label: string }[] = [
   { code: 'EUR', label: 'EUR' },
   { code: 'USD', label: 'USD' },
 ];
+
+const EUROPE_TZ_PREFIXES = ['Europe/', 'Atlantic/Canary', 'Atlantic/Faroe', 'Atlantic/Madeira', 'Atlantic/Reykjavik'];
+const AMERICAS_TZ_PREFIXES = ['America/', 'US/', 'Canada/', 'Pacific/Honolulu'];
+
+export function detectDevise(): DeviseCode {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    if (EUROPE_TZ_PREFIXES.some(p => tz.startsWith(p))) return 'EUR';
+    if (AMERICAS_TZ_PREFIXES.some(p => tz.startsWith(p))) return 'USD';
+  } catch {}
+  return 'XOF';
+}

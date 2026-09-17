@@ -1,6 +1,6 @@
 import React from 'react';
-import logoClair from '../../assets/faciloopro-clair.jpeg';
-import logoSombre from '../../assets/faciloopro-sombre.jpeg';
+import logoClair from '../../assets/faciloopro-clair.png';
+import logoSombre from '../../assets/faciloopro-sombre.png';
 import iconSvg from '../../assets/faciloop-icon.svg';
 import { useAuth } from '../../contexts/AuthContext';
 

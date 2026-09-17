@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Paiement, ModePaiement } from '../../types/crm';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
-import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { Receipt, Download, CheckCircle2, FileText, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -21,7 +21,7 @@ export const PaiementsPage: React.FC = () => {
   const { t } = useTranslation('admin');
   const { currency, paiements, currentOrg, user } = useAuth();
   const [filterMode, setFilterMode] = useState<string>('all');
-  const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [devise, setDevise] = useState<DeviseCode>(detectDevise());
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
 

@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ClientFaciloop } from '../../types/crm';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
-import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { useTranslation } from 'react-i18next';
 import {
   Building2,
@@ -47,7 +47,7 @@ function renewalBadge(days: number | null): { label: string; color: string } | n
 export const ClientsListAdmin: React.FC = () => {
   const { t } = useTranslation('admin');
   const { clients, commerciaux, paiements } = useAuth();
-  const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [search, setSearch] = useState('');
   const [filterStatutCompte, setFilterStatutCompte] = useState<string>('all');
   const [filterStatutAbo, setFilterStatutAbo] = useState<string>('all');

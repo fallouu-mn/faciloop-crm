@@ -4,7 +4,7 @@ import { Wallet, TrendingUp, Users, CheckCircle2, ChevronDown, ChevronUp, Calend
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
-import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { CommissionEntry } from '../../lib/mockAdminOrg';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -35,7 +35,7 @@ function getLastMonths(count: number): { value: string; label: string }[] {
 export const CommissionsPage: React.FC = () => {
   const { t } = useTranslation('admin');
   const { commissions, markCommissionVersee } = useAuth();
-  const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [expandedCommercial, setExpandedCommercial] = useState<string | null>(null);
 

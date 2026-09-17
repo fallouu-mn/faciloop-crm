@@ -10,6 +10,7 @@ import frSales from './locales/fr/sales.json';
 import frAdmin from './locales/fr/admin.json';
 import frClients from './locales/fr/clients.json';
 import frSuperAdmin from './locales/fr/superAdmin.json';
+import frLegal from './locales/fr/legal.json';
 
 // English Locales
 import enCommon from './locales/en/common.json';
@@ -30,6 +31,7 @@ export const NAMESPACES = [
   'admin',
   'clients',
   'superAdmin',
+  'legal',
 ] as const;
 
 const resources = {
@@ -42,6 +44,7 @@ const resources = {
     admin: frAdmin,
     clients: frClients,
     superAdmin: frSuperAdmin,
+    legal: frLegal,
   },
   en: {
     common: enCommon,
@@ -52,6 +55,7 @@ const resources = {
     admin: enAdmin,
     clients: enClients,
     superAdmin: enSuperAdmin,
+    legal: frLegal,
   },
 };
 

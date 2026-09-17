@@ -5,7 +5,8 @@ import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
-import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { PlanGate } from '../../components/common/PlanGate';
+import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { ObjectifCommercialAdmin } from '../../lib/mockAdminOrg';
 
 function getMonthRange(): { start: string; end: string } {
@@ -29,7 +30,7 @@ export const ObjectifsAdminPage: React.FC = () => {
     trimestriel: t('adminOrg.objectifs.period.trimestriel'),
     annuel: t('adminOrg.objectifs.period.annuel'),
   };
-  const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [isDefineOpen, setIsDefineOpen] = useState(false);
 
   const { start: defaultStart, end: defaultEnd } = getMonthRange();
@@ -156,6 +157,7 @@ export const ObjectifsAdminPage: React.FC = () => {
       : 0;
 
   return (
+    <PlanGate feature="objectifs_equipe">
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -421,5 +423,6 @@ export const ObjectifsAdminPage: React.FC = () => {
         </div>
       )}
     </div>
+    </PlanGate>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { PlanGate } from '../../components/common/PlanGate';
 import { ActionLogType } from '../../types/crm';
 import {
   History,
@@ -112,6 +113,7 @@ export const JournalActionsPage: React.FC = () => {
   };
 
   return (
+    <PlanGate feature="journal_actions">
     <div className="space-y-4 sm:space-y-6 font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -243,5 +245,6 @@ export const JournalActionsPage: React.FC = () => {
         )}
       </div>
     </div>
+    </PlanGate>
   );
 };

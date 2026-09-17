@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePlanLimits } from '../../hooks/usePlanLimits';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
 import { 
   FileSpreadsheet, 
@@ -17,7 +18,9 @@ import {
   Sparkles,
   Loader2,
   ArrowRight,
-  ShieldAlert
+  ShieldAlert,
+  Lock,
+  ArrowUpRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -32,8 +35,11 @@ interface ParsedProspectRow {
 }
 
 export const ImportExportPage: React.FC = () => {
-  const { t } = useTranslation('admin');
+  const { t, i18n } = useTranslation('admin');
+  const isEn = i18n.language?.startsWith('en');
   const { prospects, clients, addProspect, commerciaux } = useAuth();
+  const { hasFeature, getRequiredPlan, plan } = usePlanLimits();
+  const canImport = hasFeature('import_csv');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Import State
@@ -289,7 +295,37 @@ export const ImportExportPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Animated Dropzone Import Section (Mobile-First responsive padding) */}
+      {/* Import Section — gated by plan */}
+      {!canImport ? (
+        <div className="p-6 sm:p-10 rounded-3xl border border-border/80 bg-card shadow-sm">
+          <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center">
+            <div className="h-14 w-14 rounded-2xl bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mb-4">
+              <Lock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h3 className="text-sm sm:text-base font-bold text-foreground">
+              {isEn ? 'CSV Import — Business plan required' : 'Import CSV — Offre Business requise'}
+            </h3>
+            <p className="mt-2 text-xs text-muted-foreground max-w-sm">
+              {isEn
+                ? `CSV import & deduplication is available starting from the Business plan. You are currently on the ${plan.label} plan.`
+                : `L'import CSV & dédoublonnage est disponible à partir de l'offre Business. Vous êtes actuellement sur l'offre ${plan.label}.`}
+            </p>
+            <a
+              href={`https://wa.me/221711387878?text=${encodeURIComponent(
+                isEn
+                  ? `Hello, I would like to upgrade from ${plan.label} to ${getRequiredPlan('import_csv')}.`
+                  : `Bonjour, je souhaite passer de l'offre ${plan.label} à l'offre ${getRequiredPlan('import_csv')}.`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-faciloop text-white font-semibold text-xs shadow-md hover:opacity-90 transition-opacity"
+            >
+              <span>{isEn ? 'Upgrade to Business' : "Passer à l'offre Business"}</span>
+              <ArrowUpRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      ) : (
       <div className="p-4 sm:p-6 rounded-3xl border border-border/80 bg-card space-y-4 sm:space-y-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
@@ -465,6 +501,7 @@ export const ImportExportPage: React.FC = () => {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DateRange, isInDateRange, searchParamsToDateRange } from '../../lib/dateFilter';
-import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { downloadCsv } from '../../lib/exportCsv';
 import { supabase } from '../../lib/supabase';
 import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
@@ -31,7 +31,7 @@ export const FacturationPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
-  const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [search, setSearch] = useState('');
   const [filterStatut, setFilterStatut] = useState<FilterStatut>('tous');
   const [orgs, setOrgs] = useState<OrgPaiement[]>([]);

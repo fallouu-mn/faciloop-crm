@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { OrgOffer, OrgOfferPricing } from '../../lib/mockAdminOrg';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
-import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { Crown, Plus, Edit3, Trash2, X, Package, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -21,7 +21,7 @@ const OFFER_COLORS = [
 export const AbonnementsPage: React.FC = () => {
   const { t } = useTranslation('admin');
   const { orgOffers, addOrgOffer, updateOrgOffer, deleteOrgOffer } = useAuth();
-  const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [periodView, setPeriodView] = useState<Periodicite>('mensuel');
 
   // Modal state

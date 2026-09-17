@@ -13,6 +13,8 @@ import { SuspendedPage } from './pages/auth/SuspendedPage';
 import { DemoAuthProvider } from './contexts/DemoAuthProvider';
 import { WelcomeOnboardingPage } from './pages/auth/WelcomeOnboardingPage';
 import { ForgotPinPage } from './pages/auth/ForgotPinPage';
+import PrivacyPage from './pages/public/PrivacyPage';
+import TermsPage from './pages/public/TermsPage';
 
 // Commercial Pages
 import { DashboardCommercial } from './pages/commercial/DashboardCommercial';
@@ -60,6 +62,8 @@ function App() {
           <Route path="/pending-activation" element={<PendingActivationPage />} />
           <Route path="/suspended" element={<SuspendedPage />} />
           <Route path="/welcome" element={<WelcomeOnboardingPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
 
           {/* Commercial Espace */}
           <Route path="/app" element={<AppLayout />}>

@@ -1,14 +1,14 @@
 {
-  "badge": "#1 B2B Multi-Tenant CRM Solution",
-  "heroTitle": "The B2B sales CRM designed to accelerate your sales and convert your prospects",
-  "heroSubtitle": "Portfolio tracking per sales rep, 12-stage customer journey, daily follow-ups, and 1-click direct WhatsApp trigger.",
+  "badge": "Simple CRM for SMBs",
+  "heroTitle": "The simple CRM to better track your prospects and grow your sales",
+  "heroSubtitle": "Centralize your prospects, organize follow-ups, track your sales team and manage your sales from one platform.",
   "accessButton": "Access Platform",
   "demoButton": "View Demo",
   "loginButton": "Log in",
   "metrics": {
-    "relance": "Follow-up rate",
-    "isolation": "RLS Isolation",
-    "dedup": "Anti-duplicate",
-    "onboarding": "Onboarding time"
+    "prospects": "Centralized prospects",
+    "relances": "Organized follow-ups",
+    "equipe": "Team oversight",
+    "securite": "Secure data"
   }
 }
