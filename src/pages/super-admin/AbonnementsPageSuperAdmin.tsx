@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Crown, Check, Pencil, X, Save, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
-import { DeviseCode, convertAmount, formatAmount, getDeviseSymbol } from '../../lib/currency';
+import { DeviseCode, convertAmount, formatAmount, getDeviseSymbol, detectDevise } from '../../lib/currency';
 import {
   FormuleConfig,
   getFormules,
@@ -17,13 +17,15 @@ import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 export const AbonnementsPageSuperAdmin: React.FC = () => {
   const { t, i18n } = useTranslation('superAdmin');
   const isEn = i18n.language?.startsWith('en');
-  const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [formules, setFormules] = useState<FormuleConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [enDescriptions, setEnDescriptions] = useState<Record<string, string>>({});
   const translatingCodes = useRef<Set<string>>(new Set());
   const [editingFormule, setEditingFormule] = useState<string | null>(null);
   const [editPricing, setEditPricing] = useState<FormuleConfig['pricing'] | null>(null);
+  const [editLabel, setEditLabel] = useState<string>('');
+  const [editDescription, setEditDescription] = useState<string>('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newLabel, setNewLabel] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -77,18 +79,24 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
     if (f) {
       setEditingFormule(code);
       setEditPricing({ ...f.pricing });
+      setEditLabel(f.label);
+      setEditDescription(f.description || '');
     }
   };
 
   const cancelEdit = () => {
     setEditingFormule(null);
     setEditPricing(null);
+    setEditLabel('');
+    setEditDescription('');
   };
 
   const saveEdit = async () => {
     if (!editingFormule || !editPricing) return;
     try {
       const updated = await updateFormule(editingFormule, {
+        label: editLabel,
+        description: editDescription,
         pricing: editPricing,
         prix_xof: editPricing.mensuel,
       });
@@ -100,6 +108,8 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
     }
     setEditingFormule(null);
     setEditPricing(null);
+    setEditLabel('');
+    setEditDescription('');
   };
 
   const handleToggleActive = async (code: string) => {
@@ -262,10 +272,19 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                 <div className={`px-5 py-4 bg-gradient-to-r ${color.gradient} text-white`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Crown className="h-5 w-5" />
-                      <span className="text-lg font-bold">{f.label}</span>
+                      <Crown className="h-5 w-5 shrink-0" />
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editLabel}
+                          onChange={(e) => setEditLabel(e.target.value)}
+                          className="bg-white/20 text-white placeholder-white/50 text-lg font-bold px-2 py-0.5 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 w-full"
+                        />
+                      ) : (
+                        <span className="text-lg font-bold">{f.label}</span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => handleToggleActive(f.code)}
                         className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors ${
@@ -286,9 +305,19 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  <p className="text-xs text-white/80 mt-1">
-                    {isEn ? (enDescriptions[f.code] || f.description) : f.description}
-                  </p>
+                  {isEditing ? (
+                    <textarea
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      rows={2}
+                      className="w-full mt-2 bg-white/20 text-white placeholder-white/50 text-xs px-2 py-1.5 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 resize-none"
+                      placeholder={isEn ? 'Offer description...' : 'Description de l\'offre...'}
+                    />
+                  ) : (
+                    <p className="text-xs text-white/80 mt-1">
+                      {isEn ? (enDescriptions[f.code] || f.description) : f.description}
+                    </p>
+                  )}
                 </div>
 
                 {/* Pricing Table */}

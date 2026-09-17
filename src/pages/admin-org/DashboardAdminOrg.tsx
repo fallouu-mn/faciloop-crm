@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import {
   Users,
@@ -110,7 +110,7 @@ export const DashboardAdminOrg: React.FC = () => {
   const { user, currentOrg, prospects, clients, commerciaux, paiements } = useAuth();
   const { hasFeature, getRequiredPlan, plan } = usePlanLimits();
   const canAdvancedStats = hasFeature('stats_avancees');
-  const [currency, setCurrency] = useState<DeviseCode>('XOF');
+  const [currency, setCurrency] = useState<DeviseCode>(detectDevise());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [period, setPeriod] = useState<PeriodFilter>('mois');
   const [customStart, setCustomStart] = useState<string>(() => {

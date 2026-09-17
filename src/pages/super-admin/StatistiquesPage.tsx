@@ -5,7 +5,7 @@ import { TrendingUp, FileText, Building2, BarChart3, ArrowUpRight } from 'lucide
 import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { DateRange, isInDateRange, searchParamsToDateRange, buildFilteredUrl } from '../../lib/dateFilter';
-import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { FormuleConfig, getFormules } from '../../services/formulesSaas';
 import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
@@ -38,7 +38,7 @@ export const StatistiquesPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
-  const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [formules, setFormules] = useState<FormuleConfig[]>([]);
 
   const loadFormules = () => getFormules().then(setFormules).catch(() => {});

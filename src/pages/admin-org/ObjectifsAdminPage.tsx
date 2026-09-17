@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
 import { PlanGate } from '../../components/common/PlanGate';
-import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { ObjectifCommercialAdmin } from '../../lib/mockAdminOrg';
 
 function getMonthRange(): { start: string; end: string } {
@@ -30,7 +30,7 @@ export const ObjectifsAdminPage: React.FC = () => {
     trimestriel: t('adminOrg.objectifs.period.trimestriel'),
     annuel: t('adminOrg.objectifs.period.annuel'),
   };
-  const [devise, setDevise] = useState<DeviseCode>('XOF');
+  const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [isDefineOpen, setIsDefineOpen] = useState(false);
 
   const { start: defaultStart, end: defaultEnd } = getMonthRange();

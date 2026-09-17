@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Kanban,
@@ -24,25 +24,26 @@ import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
 import { FadeInOnScroll } from '../../components/common/FadeInOnScroll';
-import { FormuleConfig, getFormules } from '../../services/formulesSaas';
-import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
+// import { FormuleConfig, getFormules } from '../../services/formulesSaas';
+// import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 
 export const LandingPage: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const [billingCycle, setBillingCycle] = useState<string>('mensuel');
-  const [currency, setCurrency] = useState<DeviseCode>('XOF');
+  // const [billingCycle, setBillingCycle] = useState<string>('mensuel');
+  // const [currency, setCurrency] = useState<DeviseCode>('XOF');
   const [demoStep, setDemoStep] = useState<number>(1);
-  const [formules, setFormules] = useState<FormuleConfig[]>([]);
+  // const [formules, setFormules] = useState<FormuleConfig[]>([]);
   const [showWhatsAppMenu, setShowWhatsAppMenu] = useState(false);
 
-  useEffect(() => {
-    getFormules().then(data => setFormules(data.filter(f => f.isActive))).catch(() => {});
-  }, []);
+  // useEffect(() => {
+  //   getFormules().then(data => setFormules(data.filter(f => f.isActive))).catch(() => {});
+  // }, []);
 
-  const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', currency), currency);
+  // const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', currency), currency);
 
   const isEn = i18n.language?.startsWith('en');
 
+  /* --- Ancien code offres (commenté) ---
   const PERIODICITES = [
     { code: 'mensuel', label: 'Mensuel' },
     { code: 'trimestriel', label: 'Trimestriel' },
@@ -126,6 +127,7 @@ export const LandingPage: React.FC = () => {
     Business: { gradient: 'from-orange-500 to-amber-500', border: 'border-orange-500/30' },
     Premium: { gradient: 'from-orange-600 to-orange-700', border: 'border-orange-600/30' },
   };
+  --- fin ancien code offres --- */
 
   const features = [
     {
@@ -385,166 +387,52 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Pricing Section — offres commentées temporairement, remplacées par CTA WhatsApp */}
       <section id="pricing" className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 bg-muted/30">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <FadeInOnScroll>
-            <div className="text-center mb-8">
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
-                {isEn ? 'TRANSPARENT PRICING' : 'Tarifs Transparents'}
-              </p>
-              <h2 className="text-xl sm:text-3xl font-bold text-foreground">
-                {isEn ? 'A plan tailored for every stage' : 'Une formule adaptée à chaque étape'}
-              </h2>
-
-              {/* Toggles */}
-              <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <div className="inline-flex items-center rounded-full bg-muted p-1 border border-border text-sm">
-                  {PERIODICITES.map((p) => (
-                    <button
-                      key={p.code}
-                      onClick={() => setBillingCycle(p.code)}
-                      className={`px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-all ${
-                        billingCycle === p.code
-                          ? 'bg-gradient-faciloop text-white shadow-sm'
-                          : 'text-muted-foreground'
-                      }`}
-                    >
-                      {isEn ? (p.code === 'mensuel' ? 'Monthly' : p.code === 'trimestriel' ? 'Quarterly' : 'Annual') : p.label}
-                      {p.code === 'annuel' ? '' : p.code === 'trimestriel' ? ' ' : ''}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="inline-flex items-center rounded-full bg-muted p-0.5 sm:p-1 border border-border shrink-0">
-                  {(['XOF', 'EUR', 'USD'] as DeviseCode[]).map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setCurrency(c)}
-                      className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-all ${
-                        currency === c ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground'
-                      }`}
-                    >
-                      {c === 'XOF' ? 'FCFA' : c}
-                    </button>
-                  ))}
-                </div>
+            <div className="text-center p-6 sm:p-10 rounded-xl border border-border bg-card">
+              <div className="w-14 h-14 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center mx-auto mb-5">
+                <Crown className="w-7 h-7" />
               </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                {isEn ? 'Want to subscribe?' : 'Vous souhaitez vous abonner ?'}
+              </h2>
+              <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
+                {isEn
+                  ? 'Contact our team to discover the offer best suited to your needs and get started quickly.'
+                  : 'Contactez notre équipe pour découvrir l\'offre la mieux adaptée à vos besoins et démarrer rapidement.'}
+              </p>
+              <a
+                href={`https://wa.me/221711387878?text=${encodeURIComponent(
+                  isEn
+                    ? 'Hello, I would like information about your CRM offers.'
+                    : 'Bonjour, je souhaite des informations sur vos offres CRM.'
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center gap-2.5 px-8 py-3 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span>{isEn ? 'Contact us on WhatsApp' : 'Nous contacter sur WhatsApp'}</span>
+                <ArrowUpRight className="h-4 w-4" />
+              </a>
             </div>
           </FadeInOnScroll>
-
-          {/* Plans from FORMULES */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            {formules.map((f, idx) => {
-              const color = offerColors[f.code];
-              const isPopular = f.code === 'Business';
-              const price = getPrice(f);
-              const normalPrice = getNormalPrice(f);
-              const remise = getRemise(f);
-
-              return (
-                <FadeInOnScroll key={f.code} delay={idx * 100}>
-                  <div
-                    className={`rounded-xl overflow-hidden border flex flex-col justify-between h-full ${
-                      isPopular
-                        ? `${color.border} bg-card shadow-lg ring-2 ring-orange-500/20`
-                        : 'border-border bg-card'
-                    }`}
-                  >
-                    {/* Card Gradient Header */}
-                    <div className={`px-5 py-4 bg-gradient-to-r ${color.gradient} text-white`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Crown className="h-5 w-5" />
-                          <span className="text-lg font-bold">{f.label}</span>
-                        </div>
-                        {isPopular && (
-                          <span className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold">
-                            {isEn ? 'Recommended' : 'Recommandé'}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-white/80 mt-1">
-                        {isEn
-                          ? f.code === 'Pro' ? 'Ideal for small sales teams' : f.code === 'Business' ? 'For growing businesses' : 'Complete solution for large organizations'
-                          : f.description}
-                      </p>
-                    </div>
-
-                    <div className="p-5 sm:p-6 flex flex-col flex-1">
-                      {/* Price */}
-                      <div>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl sm:text-3xl font-bold text-foreground">
-                            {fmt(price)}
-                          </span>
-                          <span className="text-sm text-muted-foreground">{periodLabels[billingCycle]}</span>
-                        </div>
-                        {remise > 0 && (
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-muted-foreground line-through">{fmt(normalPrice)}</span>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-bold">
-                              -{remise}%
-                            </span>
-                          </div>
-                        )}
-                        {billingCycle === 'mensuel' && f.pricing.mensuel_premier_mois && (
-                          <div className="mt-1">
-                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-bold">
-                              {isEn ? `1st month: ${fmt(f.pricing.mensuel_premier_mois)}` : `1er mois: ${fmt(f.pricing.mensuel_premier_mois)}`}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Features */}
-                      <ul className="mt-5 space-y-2.5 border-t border-border pt-5 flex-1">
-                        {(offerFeatures[f.code] || []).map((feat, fIdx) => (
-                          <li key={fIdx} className="flex items-start gap-2 text-sm text-foreground">
-                            <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" strokeWidth={2.5} />
-                            <span>{feat}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* CTA */}
-                      <div className="mt-6">
-                        {f.code === 'Premium' ? (
-                          <a
-                            href={`https://wa.me/221711387878?text=${encodeURIComponent(isEn ? 'Hello, I would like information about the Premium plan.' : 'Bonjour, je souhaite des informations sur l\'offre Premium.')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-full font-semibold text-sm transition-all border border-border text-foreground hover:bg-muted"
-                          >
-                            <span>{isEn ? 'Contact our team' : 'Contacter notre équipe'}</span>
-                            <ArrowUpRight className="w-4 h-4" />
-                          </a>
-                        ) : (
-                          <Link
-                            to="/signup"
-                            className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-full font-semibold text-sm transition-all ${
-                              isPopular
-                                ? 'bg-gradient-faciloop text-white shadow-md hover:opacity-90'
-                                : 'border border-border text-foreground hover:bg-muted'
-                            }`}
-                          >
-                            <span>
-                              {isPopular
-                                ? (isEn ? 'Subscribe Now' : 'Souscrire maintenant')
-                                : (isEn ? 'Get started' : "S'inscrire")}
-                            </span>
-                            <ArrowUpRight className="w-4 h-4" />
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </FadeInOnScroll>
-              );
-            })}
-          </div>
         </div>
       </section>
+
+      {/* ANCIEN CODE OFFRES — commenté temporairement
+      <section id="pricing-old" className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 bg-muted/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">Tarifs Transparents</p>
+            <h2 className="text-xl sm:text-3xl font-bold text-foreground">Une formule adaptée à chaque étape</h2>
+          </div>
+          ... Plans from FORMULES grid ...
+        </div>
+      </section>
+      */}
 
       {/* Trial CTA Section */}
       <section className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
