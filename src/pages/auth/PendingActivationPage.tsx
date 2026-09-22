@@ -1,9 +1,10 @@
 import React from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Clock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
+import { FaciloopBrand } from '../../components/common/FaciloopBrand';
 import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 
 export const PendingActivationPage: React.FC = () => {
@@ -15,8 +16,8 @@ export const PendingActivationPage: React.FC = () => {
   const platformSettings = usePlatformSettings();
   const supportPhone = platformSettings.whatsapp_support
     ? platformSettings.whatsapp_support.replace(/\D/g, '')
-    : '221711387878';
-  const supportPhoneDisplay = platformSettings.whatsapp_support || '+221 71 138 78 78';
+    : '33614578547';
+  const supportPhoneDisplay = platformSettings.whatsapp_support || '+33 6 14 57 85 47';
 
   const handleWhatsAppContact = () => {
     const message = encodeURIComponent(t('whatsappMessage', { company: companyName }));
@@ -36,11 +37,8 @@ export const PendingActivationPage: React.FC = () => {
       >
         {/* Logo */}
         <div className="flex justify-center mb-2">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-faciloop flex items-center justify-center text-white shadow-lg shadow-primary/25">
-              <span className="text-2xl font-black">F</span>
-            </div>
-            <span className="text-2xl font-extrabold tracking-tight text-gradient-faciloop">faciloop</span>
+          <Link to="/">
+            <FaciloopBrand size="lg" />
           </Link>
         </div>
 
