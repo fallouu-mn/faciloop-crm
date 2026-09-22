@@ -49,6 +49,9 @@ import { AbonnementsPageSuperAdmin } from './pages/super-admin/AbonnementsPageSu
 import { FacturationPage } from './pages/super-admin/FacturationPage';
 import { ParametresSuperAdmin } from './pages/super-admin/ParametresSuperAdmin';
 
+// Shared Pages
+import { ProfilAdminPage } from './pages/shared/ProfilAdminPage';
+
 function App() {
   return (
     <AuthProvider>
@@ -97,6 +100,7 @@ function App() {
             <Route path="import-export" element={<ImportExportPage />} />
             <Route path="journal" element={<JournalActionsPage />} />
             <Route path="parametres" element={<ParametresEntreprise />} />
+            <Route path="profil" element={<ProfilAdminPage />} />
             <Route path="notifications" element={<NotificationsAdminPage />} />
             <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>
@@ -110,6 +114,7 @@ function App() {
             <Route path="abonnements" element={<AbonnementsPageSuperAdmin />} />
             <Route path="facturation" element={<FacturationPage />} />
             <Route path="parametres" element={<ParametresSuperAdmin />} />
+            <Route path="profil" element={<ProfilAdminPage />} />
             <Route path="*" element={<Navigate to="/super-admin/dashboard" replace />} />
           </Route>
 

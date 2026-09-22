@@ -98,6 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, 
         { to: `${adminBase}/journal`, label: isEn ? 'Action Log' : 'Journal', icon: ScrollText },
         { to: `${adminBase}/import-export`, label: isEn ? 'Import / Export' : 'Import / Export', icon: FileSpreadsheet },
         { to: `${adminBase}/parametres`, label: isEn ? 'Settings' : 'Paramètres', icon: Settings },
+        { to: `${adminBase}/profil`, label: isEn ? 'My Profile' : 'Mon Profil', icon: UserCircle },
       ],
     },
     {
@@ -116,6 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, 
     { to: '/super-admin/abonnements', label: tSA('nav.abonnements'), icon: Crown },
     { to: '/super-admin/facturation', label: tSA('nav.facturation'), icon: CreditCard },
     { to: '/super-admin/parametres', label: tSA('nav.parametres'), icon: Settings },
+    { to: '/super-admin/profil', label: isEn ? 'My Profile' : 'Mon Profil', icon: UserCircle },
   ];
 
   const currentLinks =
