@@ -52,6 +52,10 @@ export const OrganisationsList: React.FC = () => {
   const [createFormule, setCreateFormule] = useState('');
   const [createPeriodicite, setCreatePeriodicite] = useState('mensuel');
   const [adminEmail, setAdminEmail] = useState('');
+  const [adminPrenom, setAdminPrenom] = useState('');
+  const [adminNom, setAdminNom] = useState('');
+  const [adminTelephone, setAdminTelephone] = useState('');
+  const [createLoading, setCreateLoading] = useState(false);
 
   // Modal "Activation"
   const [activatingOrg, setActivatingOrg] = useState<OrgRow | null>(null);
@@ -187,13 +191,26 @@ export const OrganisationsList: React.FC = () => {
     await changeStatus(id, newStatut);
   };
 
+  const resetCreateForm = () => {
+    setNomOrg('');
+    setAdminEmail('');
+    setAdminPrenom('');
+    setAdminNom('');
+    setAdminTelephone('');
+    setCreateFormule('');
+    setCreatePeriodicite('mensuel');
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setCreateLoading(true);
+
     const prix = getOfferPrice(formules, createFormule, createPeriodicite, false);
     const durationDays = createPeriodicite === 'annuel' ? 365 : createPeriodicite === 'trimestriel' ? 90 : 30;
     const dateDebut = new Date().toISOString().split('T')[0];
     const dateFin = new Date(Date.now() + durationDays * 86400000).toISOString().split('T')[0];
 
+    // 1. Créer l'organisation
     const { data, error } = await supabase
       .from('organizations')
       .insert({
@@ -210,15 +227,46 @@ export const OrganisationsList: React.FC = () => {
       .select()
       .single();
 
-    if (!error && data) {
-      setTenants(prev => [data, ...prev]);
-      setIsCreateModalOpen(false);
-      setNomOrg('');
-      setAdminEmail('');
-      toast.success(`Organisation "${nomOrg}" créée avec succès !`);
-    } else if (error) {
-      toast.error(`Erreur lors de la création : ${error.message}`);
+    if (error || !data) {
+      toast.error(`Erreur lors de la création : ${error?.message}`);
+      setCreateLoading(false);
+      return;
     }
+
+    setTenants(prev => [data, ...prev]);
+
+    // 2. Créer le compte admin_org via l'edge function
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Session expirée');
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-admin-org`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          organization_id: data.id,
+          nom: adminNom,
+          prenom: adminPrenom,
+          email: adminEmail,
+          telephone: adminTelephone,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Erreur création compte admin');
+
+      toast.success(`Organisation "${nomOrg}" créée et identifiants envoyés à ${adminEmail} !`);
+    } catch (err: any) {
+      toast.warning(`Organisation créée mais erreur compte admin : ${err.message}`);
+    }
+
+    setIsCreateModalOpen(false);
+    resetCreateForm();
+    setCreateLoading(false);
   };
 
   const filtered = useMemo(() =>
@@ -258,7 +306,12 @@ export const OrganisationsList: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={() => {
+            if (activeFormules.length > 0 && !createFormule) {
+              setCreateFormule(activeFormules[0].code);
+            }
+            setIsCreateModalOpen(true);
+          }}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-gradient-faciloop px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity"
         >
           <Plus className="h-4 w-4" />
@@ -615,14 +668,15 @@ export const OrganisationsList: React.FC = () => {
       {/* ═══════ Modal Nouvelle Entreprise ═══════ */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg space-y-4">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-foreground">{t('organisations.createModal.title')}</h2>
-              <button onClick={() => setIsCreateModalOpen(false)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground">
+              <button onClick={() => { setIsCreateModalOpen(false); resetCreateForm(); }} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
+              {/* Nom de l'organisation */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">{t('organisations.createModal.labelName')}</label>
                 <input
@@ -633,6 +687,47 @@ export const OrganisationsList: React.FC = () => {
                   placeholder="Ex: Sénégal Distribution SA"
                   className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                 />
+              </div>
+
+              {/* Responsable */}
+              <div className="pt-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Responsable / Admin</p>
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-foreground">Prénom</label>
+                    <input
+                      type="text"
+                      required
+                      value={adminPrenom}
+                      onChange={(e) => setAdminPrenom(e.target.value)}
+                      placeholder="Prénom"
+                      className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-foreground">Nom</label>
+                    <input
+                      type="text"
+                      required
+                      value={adminNom}
+                      onChange={(e) => setAdminNom(e.target.value)}
+                      placeholder="Nom"
+                      className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5 mb-2">
+                  <label className="text-xs font-medium text-foreground">Numéro de téléphone</label>
+                  <input
+                    type="tel"
+                    required
+                    value={adminTelephone}
+                    onChange={(e) => setAdminTelephone(e.target.value)}
+                    placeholder="+221 77 000 00 00"
+                    className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+                  />
+                  <p className="text-[10px] text-muted-foreground">Utilisé comme identifiant de connexion</p>
+                </div>
               </div>
               {activeFormules.length > 0 && (
                 <>
@@ -701,16 +796,21 @@ export const OrganisationsList: React.FC = () => {
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setIsCreateModalOpen(false)}
+                  onClick={() => { setIsCreateModalOpen(false); resetCreateForm(); }}
                   className="flex-1 h-10 rounded-full border border-border text-sm font-medium hover:bg-muted text-foreground transition-colors"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 h-10 rounded-full bg-gradient-faciloop text-white text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity"
+                  disabled={createLoading}
+                  className="flex-1 h-10 rounded-full bg-gradient-faciloop text-white text-sm font-semibold shadow-sm hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-2"
                 >
-                  {t('common.create')}
+                  {createLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    t('common.create')
+                  )}
                 </button>
               </div>
             </form>
