@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Building2, Save, Upload, Globe, Phone, Mail, MapPin, Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { PinChangeSection } from '../../components/common/PinChangeSection';
 
 export const ParametresEntreprise: React.FC = () => {
   const { t } = useTranslation('admin');
@@ -204,6 +205,9 @@ export const ParametresEntreprise: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Security — PIN change */}
+        <PinChangeSection />
 
         <button
           type="submit"

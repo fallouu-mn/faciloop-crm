@@ -263,7 +263,7 @@ export const EquipeCommerciale: React.FC = () => {
                   required
                   value={telephone}
                   onChange={(e) => setTelephone(e.target.value)}
-                  placeholder="+221 77 000 11 22"
+                  placeholder="+33 6 12 34 56 78"
                   className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
               </div>

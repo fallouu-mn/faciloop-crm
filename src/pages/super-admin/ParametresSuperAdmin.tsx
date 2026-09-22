@@ -4,6 +4,7 @@ import { Globe, Phone, Mail, Save, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../lib/supabase';
 import { refreshPlatformSettings } from '../../hooks/usePlatformSettings';
+import { PinChangeSection } from '../../components/common/PinChangeSection';
 
 interface PlatformSettings {
   nom_plateforme: string;
@@ -165,6 +166,9 @@ export const ParametresSuperAdmin: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Security — PIN change */}
+      <PinChangeSection />
 
       {/* Sticky Save */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border p-4">
