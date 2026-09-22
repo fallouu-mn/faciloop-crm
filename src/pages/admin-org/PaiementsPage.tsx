@@ -8,6 +8,8 @@ import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib
 import { Receipt, Download, CheckCircle2, FileText, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import logoClair from '../../assets/faciloopro-clair.png';
+
 const PAYMENT_ICONS: Record<string, { icon: string | null; label: string; color: string }> = {
   wave: { icon: '/icons/Wave.png', label: 'Wave', color: 'bg-blue-500/10' },
   orange_money: { icon: '/icons/OM.jpeg', label: 'Orange Money', color: 'bg-orange-500/10' },
@@ -50,9 +52,10 @@ export const PaiementsPage: React.FC = () => {
     const orgEmail = currentOrg?.email || '';
     const orgAddress = [currentOrg?.adresse, currentOrg?.ville, currentOrg?.pays].filter(Boolean).join(', ');
     const logoUrl = currentOrg?.logo_url || '';
+    const defaultBrandHtml = `<img src="${logoClair}" alt="Faciloopro" style="max-height:50px;max-width:220px;object-fit:contain;" />`;
     const logoHtml = logoUrl
       ? `<img src="${logoUrl}" alt="Logo" style="max-height:60px;max-width:160px;object-fit:contain;" />`
-      : `<div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#FF6A00,#FFBD22);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Faciloop CRM</div>`;
+      : defaultBrandHtml;
 
     const html = `<!DOCTYPE html>
 <html lang="fr">

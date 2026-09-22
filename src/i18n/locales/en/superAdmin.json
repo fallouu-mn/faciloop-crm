@@ -110,6 +110,7 @@
       "labelFormula": "Plan",
       "labelPeriod": "Period",
       "labelAdminEmail": "Admin Email *",
+      "labelAdminPhone": "Admin Phone *",
       "firstMonthBadge": "1st month price"
     }
   },

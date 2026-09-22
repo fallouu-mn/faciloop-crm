@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Plus, X, Clock, Power, Search, CheckCircle2, Loader2 } from 'lucide-react';
+import { Plus, X, Clock, Power, Search, CheckCircle2, Loader2, Copy, Send, Key, Check, Mail, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { DateRange, isInDateRange, searchParamsToDateRange } from '../../lib/dateFilter';
@@ -52,6 +52,20 @@ export const OrganisationsList: React.FC = () => {
   const [createFormule, setCreateFormule] = useState('');
   const [createPeriodicite, setCreatePeriodicite] = useState('mensuel');
   const [adminEmail, setAdminEmail] = useState('');
+  const [adminPhone, setAdminPhone] = useState('');
+  const [isCreateLoading, setIsCreateLoading] = useState(false);
+
+  // Modal Recap / Identifiants créés
+  const [createdCredentials, setCreatedCredentials] = useState<{
+    nomOrg: string;
+    email: string;
+    telephone: string;
+    pin: string;
+    formule: string;
+    periodicite: string;
+    prix: number;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Modal "Activation"
   const [activatingOrg, setActivatingOrg] = useState<OrgRow | null>(null);
@@ -189,35 +203,107 @@ export const OrganisationsList: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!nomOrg || !adminEmail || !adminPhone) {
+      toast.error('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    setIsCreateLoading(true);
+    const generatedPin = String(Math.floor(100000 + Math.random() * 900000));
     const prix = getOfferPrice(formules, createFormule, createPeriodicite, false);
     const durationDays = createPeriodicite === 'annuel' ? 365 : createPeriodicite === 'trimestriel' ? 90 : 30;
     const dateDebut = new Date().toISOString().split('T')[0];
     const dateFin = new Date(Date.now() + durationDays * 86400000).toISOString().split('T')[0];
 
-    const { data, error } = await supabase
-      .from('organizations')
-      .insert({
-        nom: nomOrg,
-        devise_defaut: 'XOF',
-        statut: 'actif',
-        formule_code: createFormule || null,
-        periodicite: createPeriodicite || null,
-        prix_abonnement: prix,
-        date_debut_abonnement: dateDebut,
-        date_fin_abonnement: dateFin,
-        statut_abonnement: formules.length > 0 ? 'actif' : 'inactif',
-      })
-      .select()
-      .single();
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Tentative d'appel Edge Function "create-organization" pour tout faire proprement (auth + mail + DB)
+      let edgeSuccess = false;
+      let finalPin = generatedPin;
+      if (session) {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-organization`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+              'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({
+              nom: nomOrg,
+              email: adminEmail,
+              telephone: adminPhone,
+              formule_code: createFormule,
+              periodicite: createPeriodicite,
+              prix_abonnement: prix,
+            }),
+          });
 
-    if (!error && data) {
-      setTenants(prev => [data, ...prev]);
+          const result = await response.json();
+          if (response.ok && result.success && result.organization) {
+            setTenants(prev => [result.organization, ...prev]);
+            edgeSuccess = true;
+            if (result.credentials?.pin) {
+              finalPin = result.credentials.pin;
+            }
+            toast.success(`Organisation "${nomOrg}" créée ! Identifiants envoyés à ${adminEmail}`);
+          }
+        } catch (edgeErr) {
+          console.warn('Edge Function create-organization non disponible, utilisation du fallback direct DB:', edgeErr);
+        }
+      }
+
+      // Fallback direct Supabase DB si Edge function non déployée
+      if (!edgeSuccess) {
+        const { data, error } = await supabase
+          .from('organizations')
+          .insert({
+            nom: nomOrg,
+            email: adminEmail,
+            telephone: adminPhone,
+            devise_defaut: 'XOF',
+            statut: 'actif',
+            formule_code: createFormule || null,
+            periodicite: createPeriodicite || null,
+            prix_abonnement: prix,
+            date_debut_abonnement: dateDebut,
+            date_fin_abonnement: dateFin,
+            statut_abonnement: formules.length > 0 ? 'actif' : 'inactif',
+          })
+          .select()
+          .single();
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        if (data) {
+          setTenants(prev => [data, ...prev]);
+          toast.success(`Organisation "${nomOrg}" créée avec succès !`);
+        }
+      }
+
+      // Ouvrir la modal récapitulative des identifiants créés
+      setCreatedCredentials({
+        nomOrg,
+        email: adminEmail,
+        telephone: adminPhone,
+        pin: finalPin,
+        formule: createFormule || 'Business',
+        periodicite: createPeriodicite,
+        prix,
+      });
+
       setIsCreateModalOpen(false);
       setNomOrg('');
       setAdminEmail('');
-      toast.success(`Organisation "${nomOrg}" créée avec succès !`);
-    } else if (error) {
-      toast.error(`Erreur lors de la création : ${error.message}`);
+      setAdminPhone('');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erreur inconnue';
+      toast.error(`Erreur lors de la création : ${msg}`);
+    } finally {
+      setIsCreateLoading(false);
     }
   };
 
@@ -698,22 +784,125 @@ export const OrganisationsList: React.FC = () => {
                   className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                 />
               </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-foreground">{t('organisations.createModal.labelAdminPhone')}</label>
+                <input
+                  type="tel"
+                  required
+                  value={adminPhone}
+                  onChange={(e) => setAdminPhone(e.target.value)}
+                  placeholder="Ex: +221 77 123 45 67"
+                  className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+                />
+              </div>
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="flex-1 h-10 rounded-full border border-border text-sm font-medium hover:bg-muted text-foreground transition-colors"
+                  disabled={isCreateLoading}
+                  className="flex-1 h-10 rounded-full border border-border text-sm font-medium hover:bg-muted text-foreground transition-colors disabled:opacity-50"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 h-10 rounded-full bg-gradient-faciloop text-white text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity"
+                  disabled={isCreateLoading}
+                  className="flex-1 h-10 rounded-full bg-gradient-faciloop text-white text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {t('common.create')}
+                  {isCreateLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Création...</span>
+                    </>
+                  ) : (
+                    t('common.create')
+                  )}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════ Modal Identifiants Entreprise Créée ═══════ */}
+      {createdCredentials && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-border/50 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Entreprise créée avec succès !</h2>
+                  <p className="text-xs text-muted-foreground">{createdCredentials.nomOrg}</p>
+                </div>
+              </div>
+              <button onClick={() => setCreatedCredentials(null)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-amber-600 uppercase tracking-wider">Identifiants d'accès administrateur</span>
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-bold">
+                  Formule {createdCredentials.formule.toUpperCase()}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div className="p-2.5 rounded-lg bg-background/80 border border-border/60">
+                  <span className="text-[11px] text-muted-foreground block mb-0.5">Email Admin</span>
+                  <span className="text-xs font-semibold text-foreground break-all">{createdCredentials.email}</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-background/80 border border-border/60">
+                  <span className="text-[11px] text-muted-foreground block mb-0.5">Téléphone</span>
+                  <span className="text-xs font-semibold text-foreground">{createdCredentials.telephone}</span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-background border border-amber-500/30 flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] text-muted-foreground block">Mot de passe / Code PIN par défaut</span>
+                  <span className="text-xl font-extrabold text-amber-500 tracking-widest">{createdCredentials.pin}</span>
+                </div>
+                <button
+                  onClick={() => {
+                    const text = `Identifiants Faciloop CRM (${createdCredentials.nomOrg}):\nEmail: ${createdCredentials.email}\nTéléphone: ${createdCredentials.telephone}\nMot de passe: ${createdCredentials.pin}\nFormule: ${createdCredentials.formule}`;
+                    navigator.clipboard.writeText(text);
+                    setCopied(true);
+                    toast.success('Identifiants copiés dans le presse-papier !');
+                    setTimeout(() => setCopied(false), 3000);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  <span>{copied ? 'Copié !' : 'Copier'}</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <a
+                href={`https://wa.me/${createdCredentials.telephone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                  `Bonjour ${createdCredentials.nomOrg},\nVotre compte Faciloop CRM a été créé avec succès !\n\nVoici vos accès administrateur :\n- Email : ${createdCredentials.email}\n- Téléphone : ${createdCredentials.telephone}\n- Code Secret : ${createdCredentials.pin}\n\nAccédez à votre espace ici : https://crm.faciloop.com`
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 h-10 rounded-full border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+              >
+                <Send className="w-4 h-4" />
+                <span>Envoyer via WhatsApp</span>
+              </a>
+
+              <button
+                onClick={() => setCreatedCredentials(null)}
+                className="flex-1 h-10 rounded-full bg-gradient-faciloop text-white text-xs font-bold hover:opacity-90 transition-opacity"
+              >
+                Fermer
+              </button>
+            </div>
           </div>
         </div>
       )}

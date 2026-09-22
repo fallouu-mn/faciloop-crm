@@ -87,7 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, 
     {
       title: isEn ? 'Revenue' : 'Revenus',
       links: [
-        { to: `${adminBase}/abonnements`, label: isEn ? 'Subscriptions' : 'Abonnements', icon: Crown },
+        { to: `${adminBase}/abonnements`, label: isEn ? 'Offers' : 'Offres', icon: Crown },
         { to: `${adminBase}/paiements`, label: isEn ? 'Payments' : 'Paiements', icon: CreditCard },
         { to: `${adminBase}/commissions`, label: isEn ? 'Commissions' : 'Commissions', icon: Wallet },
       ],
