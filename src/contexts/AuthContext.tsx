@@ -48,13 +48,16 @@ export interface AuthContextType {
   notifications: NotificationItem[];
   adminNotifications: NotificationItem[];
   clients: ClientFaciloop[];
+  updateClient: (id: string, updates: Partial<Omit<ClientFaciloop, 'id' | 'organization_id' | 'created_at'>>) => Promise<void>;
   paiements: Paiement[];
+  updatePaiement: (id: string, updates: Partial<Omit<Paiement, 'id' | 'organization_id' | 'created_at'>>) => Promise<void>;
 
   myProspects: Prospect[];
   myRelances: Relance[];
   myInteractions: Interaction[];
 
   addProspect: (p: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>) => Promise<{ success: boolean; duplicate?: boolean; prospect?: Prospect }>;
+  updateProspect: (id: string, updates: Partial<Omit<Prospect, 'id' | 'organization_id' | 'created_at'>>) => Promise<void>;
   updateProspectStatus: (id: string, newStep: string, motifPerte?: string) => void;
   reassignProspects: (prospectIds: string[], targetCommercialId: string, targetCommercialNom: string) => void;
   deleteProspect: (id: string) => void;
@@ -78,6 +81,7 @@ export interface AuthContextType {
   addCommercial: (c: Omit<Commercial, 'id' | 'organization_id' | 'created_at'>) => void;
   updateCommercial: (id: string, updates: Partial<Omit<Commercial, 'id' | 'organization_id' | 'created_at'>>) => void;
   toggleCommercialStatus: (id: string) => void;
+  deleteCommercial: (id: string) => void;
 
   objectifs: ObjectifCommercialAdmin[];
   addObjectif: (o: Omit<ObjectifCommercialAdmin, 'id'>) => void;
@@ -887,6 +891,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const deleteCommercial = async (id: string) => {
+    setCommerciaux(prev => prev.filter(c => c.id !== id));
+    try {
+      await commerciauxService.deleteCommercial(id);
+    } catch (e) {
+      console.error('Erreur suppression commercial:', e);
+    }
+  };
+
   // ============================================
   // CRUD OBJECTIFS
   // ============================================
@@ -1126,6 +1139,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (e) {
       console.error('Erreur création prospect:', e);
       return { success: false };
+    }
+  };
+
+  const updateProspect = async (id: string, updates: Partial<Omit<Prospect, 'id' | 'organization_id' | 'created_at'>>) => {
+    try {
+      const updated = await prospectsService.updateProspect(id, updates);
+      setProspects(prev => prev.map(p => p.id === id ? updated : p));
+    } catch (e) {
+      console.error('Erreur mise à jour prospect:', e);
+      throw e;
     }
   };
 
@@ -1687,6 +1710,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateClient = async (id: string, updates: Partial<Omit<ClientFaciloop, 'id' | 'organization_id' | 'created_at'>>) => {
+    try {
+      const updated = await clientsService.updateClient(id, updates);
+      setClients(prev => prev.map(c => c.id === id ? updated : c));
+    } catch (e) {
+      console.error('Erreur mise à jour client:', e);
+      throw e;
+    }
+  };
+
+  const updatePaiement = async (id: string, updates: Partial<Omit<Paiement, 'id' | 'organization_id' | 'created_at'>>) => {
+    try {
+      const updated = await paiementsService.updatePaiement(id, updates);
+      setPaiements(prev => prev.map(p => p.id === id ? updated : p));
+    } catch (e) {
+      console.error('Erreur mise à jour paiement:', e);
+      throw e;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -1706,11 +1749,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         notifications,
         adminNotifications,
         clients,
+        updateClient,
         paiements,
+        updatePaiement,
         myProspects,
         myRelances,
         myInteractions,
         addProspect,
+        updateProspect,
         updateProspectStatus,
         reassignProspects,
         deleteProspect,
@@ -1730,6 +1776,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addCommercial,
         updateCommercial,
         toggleCommercialStatus,
+        deleteCommercial,
         objectifs,
         addObjectif,
         updateObjectif,

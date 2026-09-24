@@ -102,6 +102,7 @@ export interface Prospect {
   source: ProspectSource;
   formule_envisagee?: string;
   budget_estime?: number;
+  nbre_commerciaux?: number;
   commentaire?: string;
   motif_perte?: MotifPerte;
   date_prochaine_relance?: string;

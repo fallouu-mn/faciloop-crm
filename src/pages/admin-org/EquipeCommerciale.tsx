@@ -1,24 +1,62 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { UserPlus, UserCheck, Shield, X, Check, Mail, Phone, MessageSquare, Power, AlertTriangle } from 'lucide-react';
+import { UserPlus, UserCheck, Shield, X, Check, Mail, Phone, MessageSquare, Power, AlertTriangle, Pencil, Trash2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { usePlanLimits } from '../../hooks/usePlanLimits';
+import { Commercial } from '../../types/crm';
 
 export const EquipeCommerciale: React.FC = () => {
   const { t, i18n } = useTranslation('admin');
   const isEn = i18n.language?.startsWith('en');
-  const { commerciaux: team, addCommercial, toggleCommercialStatus } = useAuth();
+  const { commerciaux: team, addCommercial, toggleCommercialStatus, updateCommercial, deleteCommercial } = useAuth();
   const { canAddCommercial, activeCommerciaux, plan, formuleCode } = usePlanLimits();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
+  // Add form
   const [nom, setNom] = useState<string>('');
   const [prenom, setPrenom] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [telephone, setTelephone] = useState<string>('');
   const [addLoading, setAddLoading] = useState<boolean>(false);
   const [addError, setAddError] = useState<string | null>(null);
+
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editNom, setEditNom] = useState('');
+  const [editPrenom, setEditPrenom] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editTelephone, setEditTelephone] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
+
+  const openEdit = (comm: Commercial) => {
+    setEditingId(comm.id);
+    setEditNom(comm.nom);
+    setEditPrenom(comm.prenom || '');
+    setEditEmail(comm.email);
+    setEditTelephone(comm.telephone);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingId) return;
+    setEditSaving(true);
+    try {
+      await updateCommercial(editingId, { nom: editNom, prenom: editPrenom, email: editEmail, telephone: editTelephone });
+      toast.success(isEn ? 'Sales rep updated.' : 'Commercial mis à jour.');
+      setEditingId(null);
+    } catch {
+      toast.error(isEn ? 'Update failed.' : 'Erreur lors de la mise à jour.');
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleDelete = (comm: Commercial) => {
+    if (!window.confirm(isEn ? `Delete ${comm.prenom} ${comm.nom}? This action is irreversible.` : `Supprimer ${comm.prenom} ${comm.nom} ? Cette action est irréversible.`)) return;
+    deleteCommercial(comm.id);
+    toast.success(isEn ? 'Sales rep deleted.' : 'Commercial supprimé.');
+  };
 
   const toggleStatus = (id: string) => {
     const comm = team.find(c => c.id === id);
@@ -42,10 +80,7 @@ export const EquipeCommerciale: React.FC = () => {
       await addCommercial({ nom, prenom, email, telephone, statut: 'actif' });
       toast.success(`Commercial ${prenom} ${nom} créé avec succès !`);
       setIsModalOpen(false);
-      setNom('');
-      setPrenom('');
-      setEmail('');
-      setTelephone('');
+      setNom(''); setPrenom(''); setEmail(''); setTelephone('');
     } catch (err: any) {
       const msg = err.message || t('adminOrg.equipe.modal.errorDefault');
       setAddError(msg);
@@ -102,7 +137,7 @@ export const EquipeCommerciale: React.FC = () => {
         </div>
       )}
 
-      {/* Desktop Table View (Horizontal scroll wrapper) */}
+      {/* Desktop Table View */}
       <div className="hidden md:block overflow-x-auto rounded-2xl border border-border/80 bg-card shadow-sm">
         <table className="w-full text-left text-xs min-w-[650px]">
           <thead className="border-b border-border/80 bg-muted/60 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
@@ -135,12 +170,28 @@ export const EquipeCommerciale: React.FC = () => {
                   </span>
                 </td>
                 <td className="p-4 text-right">
-                  <button
-                    onClick={() => toggleStatus(comm.id)}
-                    className="px-3 py-1.5 rounded-xl border border-input text-xs font-bold hover:bg-muted transition-all"
-                  >
-                    {comm.statut === 'actif' ? t('adminOrg.equipe.deactivate') : t('adminOrg.equipe.activate')}
-                  </button>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <button
+                      onClick={() => toggleStatus(comm.id)}
+                      className="px-3 py-1.5 rounded-xl border border-input text-xs font-bold hover:bg-muted transition-all"
+                    >
+                      {comm.statut === 'actif' ? t('adminOrg.equipe.deactivate') : t('adminOrg.equipe.activate')}
+                    </button>
+                    <button
+                      onClick={() => openEdit(comm)}
+                      className="p-1.5 rounded-lg border border-input hover:bg-muted transition-all"
+                      title={isEn ? 'Edit' : 'Modifier'}
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-primary" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(comm)}
+                      className="p-1.5 rounded-lg border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-all"
+                      title={isEn ? 'Delete' : 'Supprimer'}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -148,7 +199,7 @@ export const EquipeCommerciale: React.FC = () => {
         </table>
       </div>
 
-      {/* Mobile Stacked Cards View (Solves Screenshot 1) */}
+      {/* Mobile Cards */}
       <div className="grid grid-cols-1 gap-3 md:hidden">
         {team.map((comm) => (
           <div key={comm.id} className="p-4 rounded-2xl border border-border/80 bg-card space-y-3 shadow-sm">
@@ -191,17 +242,31 @@ export const EquipeCommerciale: React.FC = () => {
                 <span className="font-bold text-foreground text-xs">{comm.telephone}</span>
               </div>
 
-              <button
-                onClick={() => toggleStatus(comm.id)}
-                className={`px-3 py-1.5 rounded-xl font-extrabold text-xs transition-all flex items-center gap-1 ${
-                  comm.statut === 'actif'
-                    ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500/20'
-                    : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
-                }`}
-              >
-                <Power className="w-3.5 h-3.5" />
-                <span>{comm.statut === 'actif' ? t('adminOrg.equipe.deactivate') : t('adminOrg.equipe.activate')}</span>
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => openEdit(comm)}
+                  className="p-2 rounded-xl border border-input hover:bg-muted transition-all"
+                  title={isEn ? 'Edit' : 'Modifier'}
+                >
+                  <Pencil className="w-3.5 h-3.5 text-primary" />
+                </button>
+                <button
+                  onClick={() => toggleStatus(comm.id)}
+                  className={`px-3 py-1.5 rounded-xl font-extrabold text-xs transition-all flex items-center gap-1 ${
+                    comm.statut === 'actif'
+                      ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500/20'
+                      : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+                  }`}
+                >
+                  <Power className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => handleDelete(comm)}
+                  className="p-2 rounded-xl border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-all"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -222,50 +287,28 @@ export const EquipeCommerciale: React.FC = () => {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.firstName')}</label>
-                  <input
-                    type="text"
-                    required
-                    value={prenom}
-                    onChange={(e) => setPrenom(e.target.value)}
+                  <input type="text" required value={prenom} onChange={(e) => setPrenom(e.target.value)}
                     placeholder="Abdoulaye"
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  />
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
                 </div>
                 <div>
                   <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.lastName')}</label>
-                  <input
-                    type="text"
-                    required
-                    value={nom}
-                    onChange={(e) => setNom(e.target.value)}
+                  <input type="text" required value={nom} onChange={(e) => setNom(e.target.value)}
                     placeholder="Sarr"
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  />
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
                 </div>
               </div>
-
               <div>
                 <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.email')}</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
                   placeholder="abdoulaye@entreprise.sn"
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                />
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
               </div>
-
               <div>
                 <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.phone')}</label>
-                <input
-                  type="tel"
-                  required
-                  value={telephone}
-                  onChange={(e) => setTelephone(e.target.value)}
+                <input type="tel" required value={telephone} onChange={(e) => setTelephone(e.target.value)}
                   placeholder="+33 6 12 34 56 78"
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                />
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
               </div>
 
               {addError && (
@@ -274,11 +317,8 @@ export const EquipeCommerciale: React.FC = () => {
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={addLoading}
-                className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2"
-              >
+              <button type="submit" disabled={addLoading}
+                className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
                 {addLoading ? (
                   <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
                 ) : (
@@ -286,6 +326,62 @@ export const EquipeCommerciale: React.FC = () => {
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Commercial Modal */}
+      {editingId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-card border border-border rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 font-sans">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-primary" />
+                {isEn ? 'Edit sales rep' : 'Modifier le commercial'}
+              </h2>
+              <button onClick={() => setEditingId(null)} className="p-1 rounded-lg hover:bg-muted">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.firstName')}</label>
+                  <input value={editPrenom} onChange={(e) => setEditPrenom(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.lastName')}</label>
+                  <input value={editNom} onChange={(e) => setEditNom(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                </div>
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.email')}</label>
+                <input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.phone')}</label>
+                <input type="tel" value={editTelephone} onChange={(e) => setEditTelephone(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => setEditingId(null)}
+                className="flex-1 py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
+                {isEn ? 'Cancel' : 'Annuler'}
+              </button>
+              <button onClick={handleSaveEdit} disabled={editSaving}
+                className="flex-1 py-3 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                {editSaving
+                  ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  : <><Save className="w-3.5 h-3.5" /> {isEn ? 'Save' : 'Enregistrer'}</>
+                }
+              </button>
+            </div>
           </div>
         </div>
       )}

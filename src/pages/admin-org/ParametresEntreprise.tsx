@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Building2, Save, Upload, Globe, Phone, Mail, MapPin, Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +17,19 @@ export const ParametresEntreprise: React.FC = () => {
   const [siteWeb, setSiteWeb] = useState(currentOrg?.site_web || '');
   const [secteur, setSecteur] = useState(currentOrg?.secteur || '');
   const [logoPreview, setLogoPreview] = useState<string | null>(currentOrg?.logo_url || null);
+
+  useEffect(() => {
+    if (!currentOrg) return;
+    setNom(currentOrg.nom || '');
+    setPays(currentOrg.pays || '');
+    setVille(currentOrg.ville || '');
+    setAdresse(currentOrg.adresse || '');
+    setTelephone(currentOrg.telephone || user?.telephone || '');
+    setEmail(currentOrg.email || '');
+    setSiteWeb(currentOrg.site_web || '');
+    setSecteur(currentOrg.secteur || '');
+    setLogoPreview(currentOrg.logo_url || null);
+  }, [currentOrg]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -18,6 +18,8 @@ import {
   MessageSquare,
   X,
   AlertTriangle,
+  Pencil,
+  Save,
 } from 'lucide-react';
 
 function normalize(str: string): string {
@@ -46,7 +48,7 @@ function renewalBadge(days: number | null): { label: string; color: string } | n
 
 export const ClientsListAdmin: React.FC = () => {
   const { t } = useTranslation('admin');
-  const { clients, commerciaux, paiements } = useAuth();
+  const { clients, updateClient, commerciaux, paiements } = useAuth();
   const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [search, setSearch] = useState('');
   const [filterStatutCompte, setFilterStatutCompte] = useState<string>('all');
@@ -54,6 +56,55 @@ export const ClientsListAdmin: React.FC = () => {
   const [filterFormule, setFilterFormule] = useState<string>('all');
   const [filterCommercial, setFilterCommercial] = useState<string>('all');
   const [selectedClient, setSelectedClient] = useState<ClientFaciloop | null>(null);
+
+  // Edit state
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editEntreprise, setEditEntreprise] = useState('');
+  const [editNomResp, setEditNomResp] = useState('');
+  const [editTelephone, setEditTelephone] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editStatutCompte, setEditStatutCompte] = useState<ClientFaciloop['statut_compte']>('actif');
+  const [editStatutAbo, setEditStatutAbo] = useState<ClientFaciloop['statut_abonnement']>('actif');
+  const [editSaving, setEditSaving] = useState(false);
+
+  const openEditClient = (c: ClientFaciloop) => {
+    setEditEntreprise(c.entreprise);
+    setEditNomResp(c.nom_responsable);
+    setEditTelephone(c.telephone);
+    setEditEmail(c.email || '');
+    setEditStatutCompte(c.statut_compte);
+    setEditStatutAbo(c.statut_abonnement);
+    setIsEditMode(true);
+  };
+
+  const handleSaveClient = async () => {
+    if (!selectedClient) return;
+    setEditSaving(true);
+    try {
+      await updateClient(selectedClient.id, {
+        entreprise: editEntreprise,
+        nom_responsable: editNomResp,
+        telephone: editTelephone,
+        email: editEmail || undefined,
+        statut_compte: editStatutCompte,
+        statut_abonnement: editStatutAbo,
+      });
+      setSelectedClient(prev => prev ? {
+        ...prev,
+        entreprise: editEntreprise,
+        nom_responsable: editNomResp,
+        telephone: editTelephone,
+        email: editEmail || undefined,
+        statut_compte: editStatutCompte,
+        statut_abonnement: editStatutAbo,
+      } : null);
+      setIsEditMode(false);
+    } catch {
+      // handled silently
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
 
@@ -303,12 +354,21 @@ export const ClientsListAdmin: React.FC = () => {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => setSelectedClient(client)}
-                      className="p-2 rounded-lg border border-input hover:bg-muted transition-colors"
-                    >
-                      <Eye className="w-4 h-4 text-foreground" />
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => { setSelectedClient(client); openEditClient(client); }}
+                        className="p-2 rounded-lg border border-input hover:bg-muted transition-colors"
+                        title="Modifier"
+                      >
+                        <Pencil className="w-4 h-4 text-primary" />
+                      </button>
+                      <button
+                        onClick={() => { setSelectedClient(client); setIsEditMode(false); }}
+                        className="p-2 rounded-lg border border-input hover:bg-muted transition-colors"
+                      >
+                        <Eye className="w-4 h-4 text-foreground" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -383,8 +443,18 @@ export const ClientsListAdmin: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-lg bg-card border-t sm:border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-foreground">{t('adminOrg.clients.clientFile')}</h2>
-              <button onClick={() => setSelectedClient(null)} className="text-muted-foreground hover:text-foreground text-xl">&times;</button>
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                {isEditMode ? <><Pencil className="w-4 h-4 text-primary" /> Modifier le client</> : t('adminOrg.clients.clientFile')}
+              </h2>
+              <div className="flex items-center gap-2">
+                {!isEditMode && (
+                  <button onClick={() => openEditClient(selectedClient)}
+                    className="px-3 py-1.5 rounded-xl border border-input text-xs font-bold hover:bg-muted flex items-center gap-1.5">
+                    <Pencil className="w-3.5 h-3.5 text-primary" /> Modifier
+                  </button>
+                )}
+                <button onClick={() => { setSelectedClient(null); setIsEditMode(false); }} className="text-muted-foreground hover:text-foreground text-xl">&times;</button>
+              </div>
             </div>
 
             {/* Renewal / inactivity alerts in detail panel */}
@@ -409,73 +479,137 @@ export const ClientsListAdmin: React.FC = () => {
               );
             })()}
 
-            <div className="space-y-3">
-              <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
-                <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-primary" />
-                  <span className="font-bold text-sm text-foreground">{selectedClient.entreprise}</span>
+            {isEditMode ? (
+              /* ── Mode édition ── */
+              <div className="space-y-3 text-xs">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-semibold mb-1">Entreprise</label>
+                    <input value={editEntreprise} onChange={(e) => setEditEntreprise(e.target.value)}
+                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Responsable</label>
+                    <input value={editNomResp} onChange={(e) => setEditNomResp(e.target.value)}
+                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Téléphone</label>
+                    <input type="tel" value={editTelephone} onChange={(e) => setEditTelephone(e.target.value)}
+                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Email</label>
+                    <input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)}
+                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Statut compte</label>
+                    <select value={editStatutCompte} onChange={(e) => setEditStatutCompte(e.target.value as ClientFaciloop['statut_compte'])}
+                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                      <option value="actif">Actif</option>
+                      <option value="suspendu">Suspendu</option>
+                      <option value="inactif">Inactif</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Statut abonnement</label>
+                    <select value={editStatutAbo} onChange={(e) => setEditStatutAbo(e.target.value as ClientFaciloop['statut_abonnement'])}
+                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                      <option value="actif">Actif</option>
+                      <option value="en_attente">En attente</option>
+                      <option value="expire">Expiré</option>
+                      <option value="suspendu">Suspendu</option>
+                    </select>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground">{selectedClient.nom_responsable}</p>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="space-y-1">
-                  <span className="text-muted-foreground">Téléphone</span>
-                  <p className="font-medium text-foreground flex items-center gap-1"><Phone className="w-3 h-3" />{selectedClient.telephone}</p>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-muted-foreground">Email</span>
-                  <p className="font-medium text-foreground flex items-center gap-1"><Mail className="w-3 h-3" />{selectedClient.email || '—'}</p>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-muted-foreground">Localisation</span>
-                  <p className="font-medium text-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{selectedClient.ville}{selectedClient.pays ? `, ${selectedClient.pays}` : ''}</p>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-muted-foreground">Secteur</span>
-                  <p className="font-medium text-foreground">{selectedClient.secteur_activite || '—'}</p>
+                <div className="flex gap-2 pt-2">
+                  <button onClick={() => setIsEditMode(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
+                    Annuler
+                  </button>
+                  <button onClick={handleSaveClient} disabled={editSaving}
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                    {editSaving
+                      ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      : <><Save className="w-3.5 h-3.5" /> Enregistrer</>
+                    }
+                  </button>
                 </div>
               </div>
+            ) : (
+              /* ── Mode lecture ── */
+              <>
+                <div className="space-y-3">
+                  <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-primary" />
+                      <span className="font-bold text-sm text-foreground">{selectedClient.entreprise}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{selectedClient.nom_responsable}</p>
+                  </div>
 
-              <div className="p-3 rounded-xl border border-border bg-card space-y-2">
-                <h4 className="text-xs font-bold text-foreground">Abonnement</h4>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-muted-foreground">Formule</span>
-                    <p className="font-bold text-primary">{selectedClient.formule_souscrite}</p>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground">Téléphone</span>
+                      <p className="font-medium text-foreground flex items-center gap-1"><Phone className="w-3 h-3" />{selectedClient.telephone}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground">Email</span>
+                      <p className="font-medium text-foreground flex items-center gap-1"><Mail className="w-3 h-3" />{selectedClient.email || '—'}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground">Localisation</span>
+                      <p className="font-medium text-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{selectedClient.ville}{selectedClient.pays ? `, ${selectedClient.pays}` : ''}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground">Secteur</span>
+                      <p className="font-medium text-foreground">{selectedClient.secteur_activite || '—'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Montant payé</span>
-                    <p className="font-bold text-foreground">{fmt(selectedClient.montant_paye)}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Statut compte</span>
-                    <p className={`font-bold capitalize ${selectedClient.statut_compte === 'actif' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                      {selectedClient.statut_compte}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Renouvellement</span>
-                    <p className="font-bold text-foreground">{selectedClient.prochain_renouvellement || '—'}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Utilisateurs</span>
-                    <p className="font-bold text-foreground">{selectedClient.nombre_utilisateurs}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Dernière connexion</span>
-                    <p className="font-medium text-foreground">{selectedClient.derniere_connexion?.split('T')[0] || '—'}</p>
+
+                  <div className="p-3 rounded-xl border border-border bg-card space-y-2">
+                    <h4 className="text-xs font-bold text-foreground">Abonnement</h4>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">Formule</span>
+                        <p className="font-bold text-primary">{selectedClient.formule_souscrite}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Montant payé</span>
+                        <p className="font-bold text-foreground">{fmt(selectedClient.montant_paye)}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Statut compte</span>
+                        <p className={`font-bold capitalize ${selectedClient.statut_compte === 'actif' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                          {selectedClient.statut_compte}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Renouvellement</span>
+                        <p className="font-bold text-foreground">{selectedClient.prochain_renouvellement || '—'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Utilisateurs</span>
+                        <p className="font-bold text-foreground">{selectedClient.nombre_utilisateurs}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Dernière connexion</span>
+                        <p className="font-medium text-foreground">{selectedClient.derniere_connexion?.split('T')[0] || '—'}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <button
-              onClick={() => setSelectedClient(null)}
-              className="w-full py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground transition-all"
-            >
-              {t('adminOrg.clients.close')}
-            </button>
+                <button
+                  onClick={() => { setSelectedClient(null); setIsEditMode(false); }}
+                  className="w-full py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground transition-all"
+                >
+                  {t('adminOrg.clients.close')}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

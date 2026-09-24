@@ -5,7 +5,7 @@ import { Paiement, ModePaiement } from '../../types/crm';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
 import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
-import { Receipt, Download, CheckCircle2, FileText, CreditCard } from 'lucide-react';
+import { Receipt, Download, CheckCircle2, FileText, CreditCard, Pencil, Save, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import facilooproLogo from '../../assets/faciloopro-clair.png';
 
@@ -20,9 +20,36 @@ const PAYMENT_ICONS: Record<string, { icon: string | null; label: string; color:
 
 export const PaiementsPage: React.FC = () => {
   const { t } = useTranslation('admin');
-  const { currency, paiements, currentOrg, user } = useAuth();
+  const { currency, paiements, updatePaiement, currentOrg, user } = useAuth();
   const [filterMode, setFilterMode] = useState<string>('all');
   const [devise, setDevise] = useState<DeviseCode>(detectDevise());
+
+  // Edit state
+  const [editingPay, setEditingPay] = useState<Paiement | null>(null);
+  const [editStatut, setEditStatut] = useState<Paiement['statut']>('valide');
+  const [editMode, setEditMode] = useState<ModePaiement>('wave');
+  const [editRef, setEditRef] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
+
+  const openEditPay = (pay: Paiement) => {
+    setEditingPay(pay);
+    setEditStatut(pay.statut);
+    setEditMode(pay.mode_paiement);
+    setEditRef(pay.reference_transaction || '');
+  };
+
+  const handleSavePay = async () => {
+    if (!editingPay) return;
+    setEditSaving(true);
+    try {
+      await updatePaiement(editingPay.id, { statut: editStatut, mode_paiement: editMode, reference_transaction: editRef || undefined });
+    } catch {
+      // silently handled in context
+    } finally {
+      setEditSaving(false);
+      setEditingPay(null);
+    }
+  };
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
 
@@ -397,13 +424,22 @@ export const PaiementsPage: React.FC = () => {
                   </span>
                 </td>
                 <td className="p-4 text-right">
-                  <button
-                    onClick={() => handleDownloadInvoice(pay)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-input bg-card hover:bg-muted text-xs font-bold text-foreground transition-all"
-                  >
-                    <Download className="w-3.5 h-3.5 text-primary" />
-                    <span>{t('adminOrg.paiements.downloadPdf')}</span>
-                  </button>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <button
+                      onClick={() => openEditPay(pay)}
+                      className="p-1.5 rounded-xl border border-input hover:bg-muted transition-all"
+                      title="Modifier"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-primary" />
+                    </button>
+                    <button
+                      onClick={() => handleDownloadInvoice(pay)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-input bg-card hover:bg-muted text-xs font-bold text-foreground transition-all"
+                    >
+                      <Download className="w-3.5 h-3.5 text-primary" />
+                      <span>{t('adminOrg.paiements.downloadPdf')}</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -440,10 +476,16 @@ export const PaiementsPage: React.FC = () => {
               <span className="font-mono">Réf: {pay.reference_transaction || 'WV-894739201'}</span>
             </div>
 
-            <div className="pt-2 border-t border-border/60 flex justify-end">
+            <div className="pt-2 border-t border-border/60 flex gap-2">
+              <button
+                onClick={() => openEditPay(pay)}
+                className="p-2 rounded-xl border border-input hover:bg-muted transition-all shrink-0"
+              >
+                <Pencil className="w-3.5 h-3.5 text-primary" />
+              </button>
               <button
                 onClick={() => handleDownloadInvoice(pay)}
-                className="w-full py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95"
+                className="flex-1 py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95"
               >
                 <Download className="w-3.5 h-3.5 text-primary" />
                 <span>{t('adminOrg.paiements.downloadInvoice')}</span>
@@ -452,6 +494,69 @@ export const PaiementsPage: React.FC = () => {
           </div>
         ))}
       </div>
+      {/* Edit Paiement Modal */}
+      {editingPay && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4 font-sans">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-primary" /> Modifier le paiement
+              </h2>
+              <button onClick={() => setEditingPay(null)} className="p-1 hover:bg-muted rounded-lg">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-2.5 rounded-xl bg-muted/40 text-foreground font-bold">
+                {editingPay.entreprise}
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">Statut</label>
+                <select value={editStatut} onChange={(e) => setEditStatut(e.target.value as Paiement['statut'])}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                  <option value="valide">Validé</option>
+                  <option value="en_attente">En attente</option>
+                  <option value="echoue">Échoué</option>
+                  <option value="rembourse">Remboursé</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">Mode de paiement</label>
+                <select value={editMode} onChange={(e) => setEditMode(e.target.value as ModePaiement)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                  <option value="wave">Wave</option>
+                  <option value="orange_money">Orange Money</option>
+                  <option value="paytech">PayTech</option>
+                  <option value="stripe">Stripe / Carte</option>
+                  <option value="virement">Virement</option>
+                  <option value="espece">Espèces</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">Référence transaction</label>
+                <input value={editRef} onChange={(e) => setEditRef(e.target.value)}
+                  placeholder="WV-894739201"
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => setEditingPay(null)}
+                className="flex-1 py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
+                Annuler
+              </button>
+              <button onClick={handleSavePay} disabled={editSaving}
+                className="flex-1 py-3 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                {editSaving
+                  ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  : <><Save className="w-3.5 h-3.5" /> Enregistrer</>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

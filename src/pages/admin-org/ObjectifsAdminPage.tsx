@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, X, Users, TrendingUp, CalendarDays, Goal, Trash2, Calendar } from 'lucide-react';
+import { Plus, X, Users, TrendingUp, CalendarDays, Goal, Trash2, Calendar, Pencil, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
@@ -32,6 +32,38 @@ export const ObjectifsAdminPage: React.FC = () => {
   };
   const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [isDefineOpen, setIsDefineOpen] = useState(false);
+
+  // Edit state
+  const [editingObjId, setEditingObjId] = useState<string | null>(null);
+  const [editObjTarget, setEditObjTarget] = useState('');
+  const [editObjDebut, setEditObjDebut] = useState('');
+  const [editObjFin, setEditObjFin] = useState('');
+  const [editObjSaving, setEditObjSaving] = useState(false);
+
+  const openEditObj = (obj: ObjectifCommercialAdmin) => {
+    setEditingObjId(obj.id);
+    setEditObjTarget(String(obj.objectif));
+    setEditObjDebut(obj.date_debut || '');
+    setEditObjFin(obj.date_fin || '');
+  };
+
+  const handleSaveEditObj = async () => {
+    if (!editingObjId) return;
+    setEditObjSaving(true);
+    try {
+      await updateObjectif(editingObjId, {
+        objectif: Number(editObjTarget),
+        date_debut: editObjDebut,
+        date_fin: editObjFin,
+      });
+      toast.success(t('adminOrg.objectifs.toast'));
+      setEditingObjId(null);
+    } catch {
+      toast.error('Erreur lors de la mise à jour.');
+    } finally {
+      setEditObjSaving(false);
+    }
+  };
 
   const { start: defaultStart, end: defaultEnd } = getMonthRange();
 
@@ -267,8 +299,15 @@ export const ObjectifsAdminPage: React.FC = () => {
                         <span className="font-medium text-foreground capitalize">
                           {t(`adminOrg.objectifs.types.${obj.type}`)}
                         </span>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <span className="text-muted-foreground">{periodeLabel}</span>
+                          <button
+                            onClick={() => openEditObj(obj)}
+                            className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+                            title="Modifier"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
                           <button
                             onClick={() => { deleteObjectif(obj.id); toast.success('Objectif supprimé.'); }}
                             className="p-1 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
@@ -309,6 +348,56 @@ export const ObjectifsAdminPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Objectif Modal */}
+      {editingObjId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-primary" /> Modifier l'objectif
+              </h2>
+              <button onClick={() => setEditingObjId(null)} className="p-1 hover:bg-muted rounded-lg">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold mb-1">{t('adminOrg.objectifs.modal.target')}</label>
+                <input type="number" value={editObjTarget} onChange={(e) => setEditObjTarget(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.objectifs.modal.startDate')}</label>
+                  <input type="date" value={editObjDebut} onChange={(e) => setEditObjDebut(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.objectifs.modal.endDate')}</label>
+                  <input type="date" value={editObjFin} onChange={(e) => setEditObjFin(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => setEditingObjId(null)}
+                className="flex-1 py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
+                {t('adminOrg.objectifs.modal.cancel')}
+              </button>
+              <button onClick={handleSaveEditObj} disabled={editObjSaving || !editObjTarget}
+                className="flex-1 py-3 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                {editObjSaving
+                  ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  : <><Save className="w-3.5 h-3.5" /> Enregistrer</>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
       {isDefineOpen && (

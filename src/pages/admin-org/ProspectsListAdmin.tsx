@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { ProspectSource, PipelineStepId } from '../../types/crm';
+import { ProspectSource, PipelineStepId, Prospect } from '../../types/crm';
 import { formatPhoneNumber } from '../../lib/phoneUtils';
 import { useTranslation } from 'react-i18next';
 import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
 import {
   Users, Search, Plus, AlertTriangle, X,
-  ArrowRight, Eye, UserCheck, ArrowRightLeft, Trash2, Filter
+  ArrowRight, Eye, UserCheck, ArrowRightLeft, Trash2, Filter, Pencil, Save
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
@@ -40,7 +40,7 @@ const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services',
 export const ProspectsListAdmin: React.FC = () => {
   const { t, i18n } = useTranslation('admin');
   const isEn = i18n.language?.startsWith('en');
-  const { prospects, addProspect, deleteProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
+  const { prospects, addProspect, updateProspect, deleteProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
   const { etapes } = useEtapesPipeline();
   const ETAPES = etapes.map(e => ({ value: e.nom as PipelineStepId, label: getEtapeLabel(e, isEn) }));
   const activeOrgOffers = orgOffers.filter(o => o.actif);
@@ -76,6 +76,61 @@ export const ProspectsListAdmin: React.FC = () => {
   const [fRelance, setFRelance] = useState('');
 
   const [duplicateAlert, setDuplicateAlert] = useState(false);
+
+  // Edit state
+  const [editingProspect, setEditingProspect] = useState<Prospect | null>(null);
+  const [eNom, setENom] = useState('');
+  const [ePrenom, setEPrenom] = useState('');
+  const [eEntreprise, setEEntreprise] = useState('');
+  const [eTelephone, setETelephone] = useState('');
+  const [eEmail, setEEmail] = useState('');
+  const [eSource, setESource] = useState<ProspectSource>('prospection_directe');
+  const [eEtape, setEEtape] = useState<PipelineStepId>('nouveau');
+  const [eCommercialId, setECommercialId] = useState('');
+  const [eBudget, setEBudget] = useState('');
+  const [eCommentaire, setECommentaire] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
+
+  const openEditProspect = (p: Prospect) => {
+    setEditingProspect(p);
+    setENom(p.nom);
+    setEPrenom(p.prenom || '');
+    setEEntreprise(p.entreprise);
+    setETelephone(p.telephone);
+    setEEmail(p.email || '');
+    setESource(p.source);
+    setEEtape(p.statut_pipeline as PipelineStepId);
+    setECommercialId(p.commercial_id || '');
+    setEBudget(p.budget_estime ? String(p.budget_estime) : '');
+    setECommentaire(p.commentaire || '');
+  };
+
+  const handleSaveEditProspect = async () => {
+    if (!editingProspect) return;
+    setEditSaving(true);
+    try {
+      const commercial = commerciaux.find(c => c.id === eCommercialId);
+      await updateProspect(editingProspect.id, {
+        nom: eNom,
+        prenom: ePrenom || undefined,
+        entreprise: eEntreprise,
+        telephone: eTelephone,
+        email: eEmail || undefined,
+        source: eSource,
+        statut_pipeline: eEtape,
+        commercial_id: eCommercialId || undefined,
+        commercial_nom: commercial ? `${commercial.prenom} ${commercial.nom}` : editingProspect.commercial_nom,
+        budget_estime: eBudget ? Number(eBudget) : undefined,
+        commentaire: eCommentaire || undefined,
+      });
+      toast.success(isEn ? 'Prospect updated.' : 'Prospect mis à jour.');
+      setEditingProspect(null);
+    } catch {
+      toast.error(isEn ? 'Update failed.' : 'Erreur lors de la mise à jour.');
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   // Dynamic pays options from real data
   const paysOptions = useMemo(() => {
@@ -337,10 +392,18 @@ export const ProspectsListAdmin: React.FC = () => {
                 </td>
                 <td className="p-4 text-right">
                   <div className="flex items-center justify-end gap-1.5">
+                    
                     <Link to={`/admin/prospects/${p.id}`}
                       className="inline-flex items-center gap-1 rounded-lg border border-input px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted">
                       <Eye className="w-3.5 h-3.5" /> {t('adminOrg.prospects.openFile')}
                     </Link>
+                    <button
+                      onClick={() => openEditProspect(p)}
+                      className="p-1.5 rounded-lg border border-input hover:bg-muted transition-colors"
+                      title={isEn ? 'Edit' : 'Modifier'}
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-primary" />
+                    </button>
                     <button
                       onClick={() => handleDelete(p.id)}
                       className="p-1.5 rounded-lg border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-colors"
@@ -389,7 +452,13 @@ export const ProspectsListAdmin: React.FC = () => {
                 {t('adminOrg.prospects.relanceLabel')} {p.date_prochaine_relance}
               </div>
             )}
-            <div className="pt-2 border-t border-border/60 flex items-center justify-between gap-2 pl-8">
+            <div className="pt-2 border-t border-border/60 flex items-center gap-2 pl-8">
+              <button
+                onClick={() => openEditProspect(p)}
+                className="p-2 rounded-xl border border-input hover:bg-muted transition-colors shrink-0"
+              >
+                <Pencil className="w-3.5 h-3.5 text-primary" />
+              </button>
               <Link to={`/admin/prospects/${p.id}`}
                 className="flex-1 py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5">
                 {t('adminOrg.prospects.openFile')} <ArrowRight className="w-3.5 h-3.5" />
@@ -422,6 +491,105 @@ export const ProspectsListAdmin: React.FC = () => {
                 className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted">{t('adminOrg.prospects.reassignModal.cancel')}</button>
               <button onClick={handleConfirmReassign}
                 className="flex-1 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600">{t('adminOrg.prospects.reassignModal.confirm')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Prospect Modal */}
+      {editingProspect && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-lg bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto font-sans">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-primary" />
+                {isEn ? 'Edit prospect' : 'Modifier le prospect'}
+              </h2>
+              <button onClick={() => setEditingProspect(null)} className="p-1 hover:bg-muted rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.lastName')}</label>
+                  <input value={eNom} onChange={(e) => setENom(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.firstName')}</label>
+                  <input value={ePrenom} onChange={(e) => setEPrenom(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.company')}</label>
+                <input value={eEntreprise} onChange={(e) => setEEntreprise(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.phone')}</label>
+                  <input type="tel" value={eTelephone} onChange={(e) => setETelephone(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">Email</label>
+                  <input type="email" value={eEmail} onChange={(e) => setEEmail(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold mb-1">Source</label>
+                  <select value={eSource} onChange={(e) => setESource(e.target.value as ProspectSource)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    {SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.pipelineStage')}</label>
+                  <select value={eEtape} onChange={(e) => setEEtape(e.target.value as PipelineStepId)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    {ETAPES.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.assignedTo')}</label>
+                  <select value={eCommercialId} onChange={(e) => setECommercialId(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="">—</option>
+                    {commerciaux.map(c => <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.budget')}</label>
+                  <input type="number" value={eBudget} onChange={(e) => setEBudget(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.comment')}</label>
+                <textarea rows={2} value={eCommentaire} onChange={(e) => setECommentaire(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => setEditingProspect(null)}
+                className="flex-1 py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
+                {isEn ? 'Cancel' : 'Annuler'}
+              </button>
+              <button onClick={handleSaveEditProspect} disabled={editSaving}
+                className="flex-1 py-3 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                {editSaving
+                  ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  : <><Save className="w-3.5 h-3.5" /> {isEn ? 'Save' : 'Enregistrer'}</>
+                }
+              </button>
             </div>
           </div>
         </div>

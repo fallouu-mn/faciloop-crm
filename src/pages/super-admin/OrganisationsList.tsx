@@ -56,6 +56,8 @@ export const OrganisationsList: React.FC = () => {
   const [adminNom, setAdminNom] = useState('');
   const [adminTelephone, setAdminTelephone] = useState('');
   const [createLoading, setCreateLoading] = useState(false);
+  const [createSansAbonnement, setCreateSansAbonnement] = useState(false);
+  const [createSecteur, setCreateSecteur] = useState('');
 
   // Modal "Activation"
   const [activatingOrg, setActivatingOrg] = useState<OrgRow | null>(null);
@@ -63,6 +65,8 @@ export const OrganisationsList: React.FC = () => {
   const [activPeriodicite, setActivPeriodicite] = useState('mensuel');
   const [activLoading, setActivLoading] = useState(false);
   const [activError, setActivError] = useState<string | null>(null);
+  const [activSansAbonnement, setActivSansAbonnement] = useState(false);
+  const [activSecteur, setActivSecteur] = useState('');
 
   const PERIODICITES = PERIODICITES_CODES.map(code => ({ code, label: t(`period.${code}`) }));
 
@@ -101,6 +105,8 @@ export const OrganisationsList: React.FC = () => {
   const openActivationModal = (org: OrgRow) => {
     setActivatingOrg(org);
     setActivError(null);
+    setActivSansAbonnement(false);
+    setActivSecteur(org.secteur || '');
     if (org.formule_code) {
       setActivFormule(org.formule_code);
     } else {
@@ -115,14 +121,34 @@ export const OrganisationsList: React.FC = () => {
     setActivLoading(true);
     setActivError(null);
 
-    const prix = getOfferPrice(formules, activFormule, activPeriodicite, false);
-    const durationDays = activPeriodicite === 'annuel' ? 365 : activPeriodicite === 'trimestriel' ? 90 : 30;
-    const dateDebut = new Date().toISOString().split('T')[0];
-    const dateFin = new Date(Date.now() + durationDays * 86400000).toISOString().split('T')[0];
+    let updates: Record<string, unknown>;
+    let localPatch: Partial<OrgRow>;
 
-    const { error } = await supabase
-      .from('organizations')
-      .update({
+    if (activSansAbonnement) {
+      updates = {
+        statut: 'actif',
+        statut_abonnement: 'en_attente',
+        prix_abonnement: 0,
+        formule_code: null,
+        periodicite: null,
+        date_debut_abonnement: null,
+        date_fin_abonnement: null,
+        secteur: activSecteur || null,
+      };
+      localPatch = {
+        statut: 'actif',
+        statut_abonnement: 'en_attente',
+        prix_abonnement: 0,
+        formule_code: undefined,
+        periodicite: undefined,
+        secteur: activSecteur || undefined,
+      };
+    } else {
+      const prix = getOfferPrice(formules, activFormule, activPeriodicite, false);
+      const durationDays = activPeriodicite === 'annuel' ? 365 : activPeriodicite === 'trimestriel' ? 90 : 30;
+      const dateDebut = new Date().toISOString().split('T')[0];
+      const dateFin = new Date(Date.now() + durationDays * 86400000).toISOString().split('T')[0];
+      updates = {
         statut: 'actif',
         formule_code: activFormule,
         periodicite: activPeriodicite,
@@ -130,7 +156,21 @@ export const OrganisationsList: React.FC = () => {
         date_debut_abonnement: dateDebut,
         date_fin_abonnement: dateFin,
         statut_abonnement: 'actif',
-      })
+        secteur: activSecteur || null,
+      };
+      localPatch = {
+        statut: 'actif',
+        formule_code: activFormule,
+        periodicite: activPeriodicite,
+        prix_abonnement: prix,
+        statut_abonnement: 'actif',
+        secteur: activSecteur || undefined,
+      };
+    }
+
+    const { error } = await supabase
+      .from('organizations')
+      .update(updates)
       .eq('id', activatingOrg.id);
 
     if (error) {
@@ -140,20 +180,17 @@ export const OrganisationsList: React.FC = () => {
       return;
     }
 
-    setTenants(prev => prev.map(tenant => tenant.id === activatingOrg.id ? {
-      ...tenant,
-      statut: 'actif' as const,
-      formule_code: activFormule,
-      periodicite: activPeriodicite,
-      prix_abonnement: prix,
-      date_debut_abonnement: dateDebut,
-      date_fin_abonnement: dateFin,
-      statut_abonnement: 'actif',
-    } : tenant));
+    setTenants(prev => prev.map(tenant =>
+      tenant.id === activatingOrg.id ? { ...tenant, ...localPatch } : tenant
+    ));
 
     setActivLoading(false);
     setActivatingOrg(null);
-    toast.success(`Organisation "${activatingOrg.nom}" activée avec succès !`);
+    toast.success(
+      activSansAbonnement
+        ? `Organisation "${activatingOrg.nom}" activée sans abonnement.`
+        : `Organisation "${activatingOrg.nom}" activée avec succès !`
+    );
   };
 
   const changeStatus = async (id: string, newStatut: 'actif' | 'suspendu') => {
@@ -199,21 +236,36 @@ export const OrganisationsList: React.FC = () => {
     setAdminTelephone('');
     setCreateFormule('');
     setCreatePeriodicite('mensuel');
+    setCreateSansAbonnement(false);
+    setCreateSecteur('');
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateLoading(true);
 
-    const prix = getOfferPrice(formules, createFormule, createPeriodicite, false);
-    const durationDays = createPeriodicite === 'annuel' ? 365 : createPeriodicite === 'trimestriel' ? 90 : 30;
-    const dateDebut = new Date().toISOString().split('T')[0];
-    const dateFin = new Date(Date.now() + durationDays * 86400000).toISOString().split('T')[0];
+    let orgInsert: Record<string, unknown>;
 
-    // 1. Créer l'organisation
-    const { data, error } = await supabase
-      .from('organizations')
-      .insert({
+    if (createSansAbonnement) {
+      orgInsert = {
+        nom: nomOrg,
+        devise_defaut: 'XOF',
+        statut: 'actif',
+        formule_code: null,
+        periodicite: null,
+        prix_abonnement: 0,
+        date_debut_abonnement: null,
+        date_fin_abonnement: null,
+        statut_abonnement: 'en_attente',
+        secteur: createSecteur || null,
+        email: adminEmail || null,
+      };
+    } else {
+      const prix = getOfferPrice(formules, createFormule, createPeriodicite, false);
+      const durationDays = createPeriodicite === 'annuel' ? 365 : createPeriodicite === 'trimestriel' ? 90 : 30;
+      const dateDebut = new Date().toISOString().split('T')[0];
+      const dateFin = new Date(Date.now() + durationDays * 86400000).toISOString().split('T')[0];
+      orgInsert = {
         nom: nomOrg,
         devise_defaut: 'XOF',
         statut: 'actif',
@@ -223,7 +275,15 @@ export const OrganisationsList: React.FC = () => {
         date_debut_abonnement: dateDebut,
         date_fin_abonnement: dateFin,
         statut_abonnement: formules.length > 0 ? 'actif' : 'inactif',
-      })
+        secteur: createSecteur || null,
+        email: adminEmail || null,
+      };
+    }
+
+    // 1. Créer l'organisation
+    const { data, error } = await supabase
+      .from('organizations')
+      .insert(orgInsert)
       .select()
       .single();
 
@@ -558,12 +618,6 @@ export const OrganisationsList: React.FC = () => {
                     <p className="font-medium text-foreground">{activatingOrg.adresse}</p>
                   </div>
                 )}
-                {activatingOrg.secteur && (
-                  <div>
-                    <span className="text-xs text-muted-foreground">{t('organisations.activateModal.labelSector')}</span>
-                    <p className="font-medium text-foreground">{activatingOrg.secteur}</p>
-                  </div>
-                )}
                 {activatingOrg.site_web && (
                   <div>
                     <span className="text-xs text-muted-foreground">{t('organisations.activateModal.labelWebsite')}</span>
@@ -577,10 +631,44 @@ export const OrganisationsList: React.FC = () => {
               </div>
             </div>
 
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">{t('organisations.activateModal.labelSector')}</label>
+              <input
+                type="text"
+                value={activSecteur}
+                onChange={(e) => setActivSecteur(e.target.value)}
+                placeholder="Ex: Finance, Agriculture, Santé…"
+                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+              />
+            </div>
+
             <div className="space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{t('organisations.activateModal.sectionSub')}</h3>
 
-              {activeFormules.length > 0 ? (
+              {/* Toggle sans abonnement */}
+              <label className="flex items-center gap-3 cursor-pointer select-none p-3 rounded-xl border border-border hover:bg-muted/40 transition-colors">
+                <div className="relative flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={activSansAbonnement}
+                    onChange={(e) => setActivSansAbonnement(e.target.checked)}
+                  />
+                  <div className={`w-10 h-5 rounded-full transition-colors ${activSansAbonnement ? 'bg-amber-500' : 'bg-muted'}`} />
+                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${activSansAbonnement ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Activer sans abonnement</p>
+                  <p className="text-xs text-muted-foreground">L'org peut se connecter mais ne compte pas dans les revenus</p>
+                </div>
+              </label>
+
+              {activSansAbonnement ? (
+                <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-1">
+                  <p className="text-xs font-semibold text-amber-600">Accès sans abonnement actif</p>
+                  <p className="text-xs text-muted-foreground">Statut compte : <span className="font-medium text-foreground">Actif</span> — Statut abonnement : <span className="font-medium text-foreground">En attente</span> — Prix : <span className="font-medium text-foreground">0</span></p>
+                </div>
+              ) : activeFormules.length > 0 ? (
                 <>
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-foreground">{t('organisations.activateModal.labelFormula')}</label>
@@ -648,7 +736,7 @@ export const OrganisationsList: React.FC = () => {
               </button>
               <button
                 onClick={handleActivate}
-                disabled={activLoading || activeFormules.length === 0}
+                disabled={activLoading || (!activSansAbonnement && activeFormules.length === 0)}
                 className="flex-1 h-10 rounded-full bg-emerald-600 text-white text-sm font-semibold shadow-sm hover:bg-emerald-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
               >
                 {activLoading ? (
@@ -729,58 +817,97 @@ export const OrganisationsList: React.FC = () => {
                   <p className="text-[10px] text-muted-foreground">Utilisé comme identifiant de connexion</p>
                 </div>
               </div>
-              {activeFormules.length > 0 && (
+              {/* Secteur */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-foreground">Secteur d'activité</label>
+                <input
+                  type="text"
+                  value={createSecteur}
+                  onChange={(e) => setCreateSecteur(e.target.value)}
+                  placeholder="Ex: Finance, Agriculture, Santé…"
+                  className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+                />
+              </div>
+
+              {/* Toggle sans abonnement */}
+              <label className="flex items-center gap-3 cursor-pointer select-none p-3 rounded-xl border border-border hover:bg-muted/40 transition-colors">
+                <div className="relative flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={createSansAbonnement}
+                    onChange={(e) => setCreateSansAbonnement(e.target.checked)}
+                  />
+                  <div className={`w-10 h-5 rounded-full transition-colors ${createSansAbonnement ? 'bg-amber-500' : 'bg-muted'}`} />
+                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${createSansAbonnement ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Créer sans abonnement</p>
+                  <p className="text-xs text-muted-foreground">L'org peut se connecter mais ne compte pas dans les revenus</p>
+                </div>
+              </label>
+
+              {createSansAbonnement ? (
+                <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-1">
+                  <p className="text-xs font-semibold text-amber-600">Accès sans abonnement actif</p>
+                  <p className="text-xs text-muted-foreground">Statut compte : <span className="font-medium text-foreground">Actif</span> — Statut abonnement : <span className="font-medium text-foreground">En attente</span> — Prix : <span className="font-medium text-foreground">0</span></p>
+                </div>
+              ) : (
                 <>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-foreground">{t('organisations.createModal.labelFormula')}</label>
-                    <select
-                      value={createFormule}
-                      onChange={(e) => setCreateFormule(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
-                    >
-                      {activeFormules.map(f => (
-                        <option key={f.code} value={f.code}>{f.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-foreground">{t('organisations.createModal.labelPeriod')}</label>
-                    <select
-                      value={createPeriodicite}
-                      onChange={(e) => setCreatePeriodicite(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
-                    >
-                      {PERIODICITES.map(p => (
-                        <option key={p.code} value={p.code}>{p.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </>
-              )}
-              {activeFormules.length > 0 && createFormule && (
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-muted-foreground">{t('common.autoCalculated')}</span>
-                    <div className="flex items-center gap-2">
-                      {createIsPremierMois && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-bold">
-                          {t('organisations.createModal.firstMonthBadge')}
-                        </span>
-                      )}
-                      <span className="text-sm font-bold text-primary">{fmtPrice(createPrixAuto)}</span>
+                  {activeFormules.length > 0 && (
+                    <>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-foreground">{t('organisations.createModal.labelFormula')}</label>
+                        <select
+                          value={createFormule}
+                          onChange={(e) => setCreateFormule(e.target.value)}
+                          className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+                        >
+                          {activeFormules.map(f => (
+                            <option key={f.code} value={f.code}>{f.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-foreground">{t('organisations.createModal.labelPeriod')}</label>
+                        <select
+                          value={createPeriodicite}
+                          onChange={(e) => setCreatePeriodicite(e.target.value)}
+                          className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+                        >
+                          {PERIODICITES.map(p => (
+                            <option key={p.code} value={p.code}>{p.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
+                  {activeFormules.length > 0 && createFormule && (
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">{t('common.autoCalculated')}</span>
+                        <div className="flex items-center gap-2">
+                          {createIsPremierMois && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-bold">
+                              {t('organisations.createModal.firstMonthBadge')}
+                            </span>
+                          )}
+                          <span className="text-sm font-bold text-primary">{fmtPrice(createPrixAuto)}</span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        {t('common.pricingFrom', { formula: createFormule, period: PERIODICITES.find(p => p.code === createPeriodicite)?.label })}
+                      </p>
                     </div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    {t('common.pricingFrom', { formula: createFormule, period: PERIODICITES.find(p => p.code === createPeriodicite)?.label })}
-                  </p>
-                </div>
-              )}
-              {formules.length === 0 && (
-                <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
-                  <p className="text-xs text-amber-600 font-medium">
-                    {t('common.noFormula')}
-                  </p>
-                </div>
+                  )}
+                  {formules.length === 0 && (
+                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+                      <p className="text-xs text-amber-600 font-medium">
+                        {t('common.noFormula')}
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">{t('organisations.createModal.labelAdminEmail')}</label>

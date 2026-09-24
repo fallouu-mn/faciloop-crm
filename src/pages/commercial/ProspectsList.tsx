@@ -65,6 +65,7 @@ export const ProspectsList: React.FC = () => {
   const [newSource, setNewSource] = useState<ProspectSource>('prospection_directe');
   const [newFormule, setNewFormule] = useState<string>('');
   const [newBudget, setNewBudget] = useState<string>('');
+  const [newNbreCommerciaux, setNewNbreCommerciaux] = useState<string>('');
   const [newCommentaire, setNewCommentaire] = useState<string>('');
   const [newRelance, setNewRelance] = useState<string>('');
 
@@ -109,6 +110,7 @@ export const ProspectsList: React.FC = () => {
       source: newSource,
       formule_envisagee: newFormule || undefined,
       budget_estime: newBudget ? Number(newBudget) : undefined,
+      nbre_commerciaux: newNbreCommerciaux ? Number(newNbreCommerciaux) : undefined,
       commentaire: newCommentaire || undefined,
       date_prochaine_relance: newRelance || undefined,
       statut_pipeline: 'nouveau',
@@ -709,6 +711,11 @@ export const ProspectsList: React.FC = () => {
                     <label className="block font-semibold mb-1">{isEn ? 'Estimated Budget (FCFA)' : 'Budget estimé (FCFA)'}</label>
                     <input type="number" value={newBudget} onChange={(e) => setNewBudget(e.target.value)}
                       placeholder="500000" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">{isEn ? 'Number of sales reps' : 'Nbre de commerciaux'}</label>
+                    <input type="number" min="0" value={newNbreCommerciaux} onChange={(e) => setNewNbreCommerciaux(e.target.value)}
+                      placeholder="Ex: 5" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
               </div>

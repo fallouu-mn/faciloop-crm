@@ -71,6 +71,7 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; a
     id: prospect.id,
     data: { prospect }
   });
+  const navigate = useNavigate();
 
   const style = transform
     ? {
@@ -84,7 +85,8 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; a
       <motion.div
         whileHover={{ y: -3, scale: 1.01 }}
         transition={{ duration: 0.2 }}
-        className={`p-4 rounded-2xl border border-border/80 bg-card shadow-sm hover:shadow-xl hover:border-primary/40 transition-all space-y-3 cursor-grab active:cursor-grabbing select-none group relative overflow-hidden ${
+        onClick={() => navigate(`${basePath}/${prospect.id}`)}
+        className={`p-4 rounded-2xl border border-border/80 bg-card shadow-sm hover:shadow-xl hover:border-primary/40 transition-all space-y-3 cursor-pointer select-none group relative overflow-hidden ${
           isDragging ? 'ring-2 ring-primary opacity-30' : ''
         }`}
       >
@@ -94,17 +96,15 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; a
         {/* Card Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div {...listeners} {...attributes} className="p-1 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-muted transition-colors cursor-grab">
+            <div {...listeners} {...attributes} onClick={(e) => e.stopPropagation()} className="p-1 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-muted transition-colors cursor-grab active:cursor-grabbing">
               <GripVertical className="w-4 h-4" />
             </div>
             <div>
-              <Link
-                to={`${basePath}/${prospect.id}`}
-                className="font-extrabold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors flex items-center gap-1"
-              >
+              <span className="font-extrabold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
                 <span>{prospect.prenom} {prospect.nom}</span>
                 <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Link>
+              </span>
+
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-bold mt-0.5">
                 <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span className="truncate max-w-[150px]">{prospect.entreprise}</span>

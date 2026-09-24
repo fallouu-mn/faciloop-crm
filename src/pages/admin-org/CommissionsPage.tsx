@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Wallet, TrendingUp, Users, CheckCircle2, ChevronDown, ChevronUp, Calendar, Check } from 'lucide-react';
+import { Wallet, TrendingUp, Users, CheckCircle2, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
+import { PeriodFilter } from '../../components/common/PeriodFilter';
+import { DateRange, DATE_RANGE_ALL, isInDateRange } from '../../lib/dateFilter';
 import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { CommissionEntry } from '../../lib/mockAdminOrg';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,16 +38,14 @@ export const CommissionsPage: React.FC = () => {
   const { t } = useTranslation('admin');
   const { commissions, markCommissionVersee } = useAuth();
   const [devise, setDevise] = useState<DeviseCode>(detectDevise());
-  const [selectedMonth, setSelectedMonth] = useState<string>('all');
+  const [period, setPeriod] = useState<DateRange>(DATE_RANGE_ALL);
   const [expandedCommercial, setExpandedCommercial] = useState<string | null>(null);
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
-  const months = useMemo(() => getLastMonths(12), []);
 
   const filtered = useMemo(() => {
-    if (selectedMonth === 'all') return commissions;
-    return commissions.filter(c => c.dateVente.startsWith(selectedMonth));
-  }, [selectedMonth, commissions]);
+    return commissions.filter(c => isInDateRange(c.dateVente, period));
+  }, [period, commissions]);
 
   const totalAVerser = filtered.filter(c => c.statut === 'a_verser').reduce((s, c) => s + c.montantCommission, 0);
   const totalVerse = filtered.filter(c => c.statut === 'verse').reduce((s, c) => s + c.montantCommission, 0);
@@ -99,23 +99,8 @@ export const CommissionsPage: React.FC = () => {
         <CurrencyToggle value={devise} onChange={setDevise} />
       </div>
 
-      {/* Month Filter */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-          <Calendar className="w-4 h-4 text-primary" />
-          <span>{t('adminOrg.commissions.periodLabel')}</span>
-        </div>
-        <select
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-input bg-card text-xs font-bold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-        >
-          <option value="all">{t('adminOrg.commissions.allPeriods')}</option>
-          {months.map(m => (
-            <option key={m.value} value={m.value}>{m.label}</option>
-          ))}
-        </select>
-      </div>
+      {/* Period Filter */}
+      <PeriodFilter value={period} onChange={setPeriod} />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
