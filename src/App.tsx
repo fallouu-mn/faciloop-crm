@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
+import { usePwaUpdate } from './hooks/usePwaUpdate';
+import { PwaUpdateBanner } from './components/PwaUpdateBanner';
 import { AppLayout } from './components/layout/AppLayout';
 
 // Public & Auth Pages
@@ -52,10 +54,22 @@ import { ParametresSuperAdmin } from './pages/super-admin/ParametresSuperAdmin';
 // Shared Pages
 import { ProfilAdminPage } from './pages/shared/ProfilAdminPage';
 
+function AppWithPwa() {
+  const { updateAvailable, countdown, applyUpdate, dismissUpdate } = usePwaUpdate();
+  return (
+    <>
+      {updateAvailable && (
+        <PwaUpdateBanner countdown={countdown} onApply={applyUpdate} onDismiss={dismissUpdate} />
+      )}
+    </>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <AppWithPwa />
         <Routes>
           {/* Public & Authentication Routes */}
           <Route path="/" element={<LandingPage />} />

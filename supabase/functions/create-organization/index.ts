@@ -1,5 +1,5 @@
 /**
- * Faciloop CRM V2 - Edge Function : Création d'une entreprise par le Super Admin
+ * Faciloopro V2 - Edge Function : Création d'une entreprise par le Super Admin
  *
  * 1. Crée l'organisation dans la table `organizations` avec formule, période, dates et tarif.
  * 2. Génère un code PIN / mot de passe par défaut à 6 chiffres.
@@ -241,7 +241,7 @@ async function sendWelcomeCompanyEmail(opts: {
               <table role="presentation" width="100%">
                 <tr>
                   <td>
-                    <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;">Faciloop CRM</h1>
+                    <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;">Faciloopro</h1>
                     <p style="margin:6px 0 0;color:rgba(255,255,255,0.9);font-size:14px;font-weight:500;">Activation de votre compte Entreprise</p>
                   </td>
                   <td align="right">
@@ -261,7 +261,7 @@ async function sendWelcomeCompanyEmail(opts: {
                 Bienvenue, ${opts.nomEntreprise} !
               </h2>
               <p style="margin:0 0 24px;color:#4b5563;font-size:15px;line-height:1.6;">
-                Votre espace entreprise Faciloop CRM a été créé et activé par l'administration. Voici le récapitulatif complet de votre souscription ainsi que vos identifiants d'accès administrateur.
+                Votre espace entreprise Faciloopro a été créé et activé par l'administration. Voici le récapitulatif complet de votre souscription ainsi que vos identifiants d'accès administrateur.
               </p>
 
               <!-- Carte Récapitulative Souscription -->
@@ -319,7 +319,7 @@ async function sendWelcomeCompanyEmail(opts: {
               <!-- Bouton Connexion -->
               <div style="text-align:center;margin:32px 0 16px;">
                 <a href="${appUrl}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#f59e0b 0%,#f97316 100%);color:#ffffff;padding:16px 36px;border-radius:30px;text-decoration:none;font-size:16px;font-weight:700;box-shadow:0 4px 14px rgba(245,158,11,0.35);">
-                  Accéder à mon espace Faciloop CRM →
+                  Accéder à mon espace Faciloopro →
                 </a>
               </div>
 
@@ -333,7 +333,7 @@ async function sendWelcomeCompanyEmail(opts: {
           <tr>
             <td style="padding:24px 32px;background-color:#fafafa;border-top:1px solid #f3f4f6;text-align:center;">
               <p style="margin:0 0 6px;color:#9ca3af;font-size:12px;font-weight:500;">
-                Faciloop CRM — Gestion Commerciale Multi-Entreprises
+                Faciloopro — Gestion Commerciale Multi-Entreprises
               </p>
               <p style="margin:0;color:#d1d5db;font-size:11px;">
                 © 2026 Digit'Advisor. Tous droits réservés.
@@ -358,9 +358,9 @@ async function sendWelcomeCompanyEmail(opts: {
   });
 
   await transporter.sendMail({
-    from: `"Faciloop CRM" <${SMTP_USER}>`,
+    from: `"Faciloopro" <${SMTP_USER}>`,
     to: opts.to,
-    subject: `Bienvenue sur Faciloop CRM - Accès Administrateur (${opts.nomEntreprise})`,
+    subject: `Bienvenue sur Faciloopro - Accès Administrateur (${opts.nomEntreprise})`,
     html,
   });
 

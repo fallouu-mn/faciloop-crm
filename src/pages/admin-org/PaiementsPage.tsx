@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { Paiement, ModePaiement } from '../../types/crm';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
 import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
-import { Receipt, Download, CheckCircle2, FileText, CreditCard, Pencil, Save, X } from 'lucide-react';
+import { Receipt, Download, CheckCircle2, FileText, CreditCard, Pencil, Save, X, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import facilooproLogo from '../../assets/faciloopro-clair.png';
 
@@ -22,6 +23,9 @@ export const PaiementsPage: React.FC = () => {
   const { t } = useTranslation('admin');
   const { currency, paiements, updatePaiement, currentOrg, user } = useAuth();
   const [filterMode, setFilterMode] = useState<string>('all');
+  const [searchParams] = useSearchParams();
+  const [filterDateFrom, setFilterDateFrom] = useState(() => searchParams.get('from') || '');
+  const [filterDateTo, setFilterDateTo] = useState(() => searchParams.get('to') || '');
   const [devise, setDevise] = useState<DeviseCode>(detectDevise());
 
   // Edit state
@@ -66,7 +70,13 @@ export const PaiementsPage: React.FC = () => {
   const totalRecouvre = paiements.reduce((acc, p) => acc + p.montant_paye, 0);
   const totalRestant = paiements.reduce((acc, p) => acc + p.montant_restant, 0);
 
-  const filtered = paiements.filter(p => filterMode === 'all' || p.mode_paiement === filterMode);
+  const filtered = paiements.filter(p => {
+    if (filterMode !== 'all' && p.mode_paiement !== filterMode) return false;
+    const d = (p.date_paiement || '').split('T')[0];
+    if (filterDateFrom && d < filterDateFrom) return false;
+    if (filterDateTo && d > filterDateTo) return false;
+    return true;
+  });
 
   const handleDownloadInvoice = (pay: Paiement) => {
     const ref = `FACT-2026-${pay.id.slice(0, 4).toUpperCase()}`;
@@ -242,7 +252,7 @@ export const PaiementsPage: React.FC = () => {
   </div>
 
   <div class="footer">
-    <div class="footer-brand">Généré par Faciloop CRM — ${orgName}</div>
+    <div class="footer-brand">Généré par Faciloopro — ${orgName}</div>
   </div>
 
   <script>window.onload = () => window.print();<\/script>
@@ -364,6 +374,19 @@ export const PaiementsPage: React.FC = () => {
           </div>
         </motion.div> */}
       </div>
+
+      {/* Date filter chip from dashboard */}
+      {(filterDateFrom || filterDateTo) && (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+            <Calendar className="w-3.5 h-3.5" />
+            {filterDateFrom && filterDateTo ? `${filterDateFrom} → ${filterDateTo}` : filterDateFrom ? `Depuis ${filterDateFrom}` : `Jusqu'au ${filterDateTo}`}
+            <button onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); }} className="ml-0.5 hover:text-primary/60">
+              <X className="w-3 h-3" />
+            </button>
+          </span>
+        </div>
+      )}
 
       {/* Filter Bar */}
       <div className="flex items-center justify-between gap-3">

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { ClientFaciloop } from '../../types/crm';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
@@ -55,6 +56,9 @@ export const ClientsListAdmin: React.FC = () => {
   const [filterStatutAbo, setFilterStatutAbo] = useState<string>('all');
   const [filterFormule, setFilterFormule] = useState<string>('all');
   const [filterCommercial, setFilterCommercial] = useState<string>('all');
+  const [searchParams] = useSearchParams();
+  const [filterDateFrom, setFilterDateFrom] = useState(() => searchParams.get('from') || '');
+  const [filterDateTo, setFilterDateTo] = useState(() => searchParams.get('to') || '');
   const [selectedClient, setSelectedClient] = useState<ClientFaciloop | null>(null);
 
   // Edit state
@@ -65,6 +69,10 @@ export const ClientsListAdmin: React.FC = () => {
   const [editEmail, setEditEmail] = useState('');
   const [editStatutCompte, setEditStatutCompte] = useState<ClientFaciloop['statut_compte']>('actif');
   const [editStatutAbo, setEditStatutAbo] = useState<ClientFaciloop['statut_abonnement']>('actif');
+  const [editWhatsapp, setEditWhatsapp] = useState('');
+  const [editPays, setEditPays] = useState('');
+  const [editVille, setEditVille] = useState('');
+  const [editSecteur, setEditSecteur] = useState('');
   const [editSaving, setEditSaving] = useState(false);
 
   const openEditClient = (c: ClientFaciloop) => {
@@ -74,6 +82,10 @@ export const ClientsListAdmin: React.FC = () => {
     setEditEmail(c.email || '');
     setEditStatutCompte(c.statut_compte);
     setEditStatutAbo(c.statut_abonnement);
+    setEditWhatsapp(c.whatsapp || '');
+    setEditPays(c.pays || '');
+    setEditVille(c.ville || '');
+    setEditSecteur(c.secteur_activite || '');
     setIsEditMode(true);
   };
 
@@ -88,6 +100,10 @@ export const ClientsListAdmin: React.FC = () => {
         email: editEmail || undefined,
         statut_compte: editStatutCompte,
         statut_abonnement: editStatutAbo,
+        whatsapp: editWhatsapp || undefined,
+        pays: editPays || undefined,
+        ville: editVille || undefined,
+        secteur_activite: editSecteur || undefined,
       });
       setSelectedClient(prev => prev ? {
         ...prev,
@@ -97,6 +113,10 @@ export const ClientsListAdmin: React.FC = () => {
         email: editEmail || undefined,
         statut_compte: editStatutCompte,
         statut_abonnement: editStatutAbo,
+        whatsapp: editWhatsapp || undefined,
+        pays: editPays || undefined,
+        ville: editVille || undefined,
+        secteur_activite: editSecteur || undefined,
       } : null);
       setIsEditMode(false);
     } catch {
@@ -119,9 +139,12 @@ export const ClientsListAdmin: React.FC = () => {
       const matchAbo = filterStatutAbo === 'all' || c.statut_abonnement === filterStatutAbo;
       const matchFormule = filterFormule === 'all' || c.formule_souscrite === filterFormule;
       const matchCommercial = filterCommercial === 'all' || c.commercial_id === filterCommercial;
-      return matchSearch && matchCompte && matchAbo && matchFormule && matchCommercial;
+      const d = (c.created_at || '').split('T')[0];
+      const matchDate = (!filterDateFrom && !filterDateTo) ||
+        ((!filterDateFrom || d >= filterDateFrom) && (!filterDateTo || d <= filterDateTo));
+      return matchSearch && matchCompte && matchAbo && matchFormule && matchCommercial && matchDate;
     });
-  }, [clients, search, filterStatutCompte, filterStatutAbo, filterFormule, filterCommercial]);
+  }, [clients, search, filterStatutCompte, filterStatutAbo, filterFormule, filterCommercial, filterDateFrom, filterDateTo]);
 
   // Real CA from validated paiements
   const totalCA = useMemo(
@@ -137,7 +160,7 @@ export const ClientsListAdmin: React.FC = () => {
 
   const formules = useMemo(() => [...new Set(clients.map(c => c.formule_souscrite))], [clients]);
 
-  const hasActiveFilters = filterStatutCompte !== 'all' || filterStatutAbo !== 'all' || filterFormule !== 'all' || filterCommercial !== 'all' || search !== '';
+  const hasActiveFilters = filterStatutCompte !== 'all' || filterStatutAbo !== 'all' || filterFormule !== 'all' || filterCommercial !== 'all' || search !== '' || !!filterDateFrom || !!filterDateTo;
 
   const resetFilters = () => {
     setSearch('');
@@ -145,6 +168,8 @@ export const ClientsListAdmin: React.FC = () => {
     setFilterStatutAbo('all');
     setFilterFormule('all');
     setFilterCommercial('all');
+    setFilterDateFrom('');
+    setFilterDateTo('');
   };
 
   const getStatutBadge = (statut: string) => {
@@ -217,6 +242,19 @@ export const ClientsListAdmin: React.FC = () => {
           <span className="text-lg font-bold text-foreground">{renewalsSoon}</span>
         </div>
       </div>
+
+      {/* Date filter chip from dashboard */}
+      {(filterDateFrom || filterDateTo) && (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+            <Calendar className="w-3.5 h-3.5" />
+            {filterDateFrom && filterDateTo ? `${filterDateFrom} → ${filterDateTo}` : filterDateFrom ? `Depuis ${filterDateFrom}` : `Jusqu'au ${filterDateTo}`}
+            <button onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); }} className="ml-0.5 hover:text-primary/60">
+              <X className="w-3 h-3" />
+            </button>
+          </span>
+        </div>
+      )}
 
       {/* Search + Filters */}
       <div className="flex flex-col gap-3">
@@ -521,6 +559,32 @@ export const ClientsListAdmin: React.FC = () => {
                       <option value="expire">Expiré</option>
                       <option value="suspendu">Suspendu</option>
                     </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">WhatsApp</label>
+                    <input type="tel" value={editWhatsapp} onChange={(e) => setEditWhatsapp(e.target.value)}
+                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Secteur d'activité</label>
+                    <select value={editSecteur} onChange={(e) => setEditSecteur(e.target.value)}
+                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                      <option value="">Sélectionner…</option>
+                      {['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Éducation / Formation', 'Santé', 'Autre'].map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Pays</label>
+                    <select value={editPays} onChange={(e) => setEditPays(e.target.value)}
+                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                      <option value="">—</option>
+                      {["Sénégal", "Côte d'Ivoire", "Mali", "Burkina Faso", "Guinée", "Cameroun", "Bénin", "Togo", "Niger", "France", "Autre"].map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Ville</label>
+                    <input value={editVille} onChange={(e) => setEditVille(e.target.value)}
+                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                   </div>
                 </div>
 

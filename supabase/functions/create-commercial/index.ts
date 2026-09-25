@@ -1,5 +1,5 @@
 /**
- * Faciloop CRM V2 - Edge Function : Création d'un commercial
+ * Faciloopro V2 - Edge Function : Création d'un commercial
  *
  * Crée le compte Supabase Auth + la fiche commerciaux + le rôle user_roles.
  * Génère un PIN à 6 chiffres et envoie les identifiants par email.
@@ -225,7 +225,7 @@ async function sendCredentialsEmail(opts: {
 <body style="margin:0;padding:0;background:#f9fafb;font-family:Arial,sans-serif;">
   <div style="max-width:560px;margin:40px auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.08);">
     <div style="background:linear-gradient(135deg,#f59e0b,#f97316);padding:28px 32px;">
-      <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Faciloop CRM</h1>
+      <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Faciloopro</h1>
       <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Espace Commercial</p>
     </div>
     <div style="padding:32px;">
@@ -267,9 +267,9 @@ async function sendCredentialsEmail(opts: {
   });
 
   await transporter.sendMail({
-    from: `"Faciloop CRM" <${SMTP_USER}>`,
+    from: `"Faciloopro" <${SMTP_USER}>`,
     to: opts.to,
-    subject: 'Vos identifiants Faciloop CRM',
+    subject: 'Vos identifiants Faciloopro',
     html,
   });
 

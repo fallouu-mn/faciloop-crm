@@ -1,6 +1,6 @@
 -- ============================================
 -- Migration 1 : Enums + Fonction utilitaire
--- Faciloop CRM Multi-Tenant
+-- Faciloopro Multi-Tenant
 -- Aligné sur les types TypeScript du front
 -- ============================================
 

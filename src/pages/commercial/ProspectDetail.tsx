@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
-import { useEtapesPipeline, getEtapeLabelByNom } from '@/hooks/useEtapesPipeline';
-import { Prospect, MotifPerte } from '../../types/crm';
+import { useEtapesPipeline, getEtapeLabelByNom, getEtapeLabel } from '@/hooks/useEtapesPipeline';
+import { Prospect, MotifPerte, RelanceCanal } from '../../types/crm';
 import { 
   Building2,
   Phone,
@@ -26,14 +26,31 @@ import {
   Briefcase,
   Pencil,
   Save,
-  Users
+  Users,
+  CheckCircle2,
+  Trash2,
+  CalendarPlus,
 } from 'lucide-react';
 import { WhatsAppActionModal } from '../../components/common/WhatsAppActionModal';
 import { WhatsAppIcon } from '../../components/common/WhatsAppIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useProspectDetail, useInteractions, useRelances } from '@/hooks/commercial';
 import * as prospectsService from '../../services/prospects';
+import { getRelancesByProspect } from '../../services/relances';
+
+const SOURCES_DETAIL = [
+  { value: 'prospection_directe', label: 'Prospection directe' },
+  { value: 'site_web', label: 'Site web' },
+  { value: 'recommandation', label: 'Recommandation' },
+  { value: 'reseaux_sociaux', label: 'Réseaux sociaux' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'evenement', label: 'Événement' },
+  { value: 'autre', label: 'Autre' },
+];
+const SECTEURS_DETAIL = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
+const PAYS_DETAIL = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 
 export const ProspectDetail: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -42,40 +59,85 @@ export const ProspectDetail: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, prospects, interactions: authInteractions, relances: authRelances, addInteraction, convertProspectToClient, orgOffers } = useAuth();
+  const { user, prospects, interactions: authInteractions, addInteraction, convertProspectToClient, orgOffers, commerciaux } = useAuth();
   const { prospect: dbProspect } = useProspectDetail(id);
   const { interactions: apiInteractions, createInteraction: apiCreateInteraction } = useInteractions(id);
-  const { relances: apiRelances } = useRelances();
+  const { createRelance, completeRelance, deleteRelance } = useRelances();
+  const queryClient = useQueryClient();
+
+  const { data: rawRelances = [], isLoading: relancesLoading } = useQuery({
+    queryKey: ['relances', 'prospect', id],
+    queryFn: () => getRelancesByProspect(id!),
+    enabled: !!id,
+    refetchInterval: 5000,
+  });
 
   const prospect = dbProspect || prospects.find(p => p.id === id);
   const prospectInteractions = apiInteractions.length > 0 ? apiInteractions : (authInteractions || []).filter((i: any) => i.prospect_id === id);
-  const prospectRelances = apiRelances.length > 0 ? apiRelances.filter(r => r.prospect_id === id) : (authRelances || []).filter((r: any) => r.prospect_id === id);
+  const prospectRelances = useMemo(() => {
+    const sorted = [...rawRelances].sort((a, b) => a.date.localeCompare(b.date));
+    // Inject date_prochaine_relance from prospect if not already in the relances table
+    const drp = prospect?.date_prochaine_relance;
+    if (drp && !sorted.some(r => r.date === drp)) {
+      const today = new Date().toISOString().split('T')[0];
+      const synthetic = {
+        id: `synthetic-${prospect!.id}`,
+        date: drp,
+        statut: (drp < today ? 'en_retard' : 'prevue') as any,
+        canal: 'appel' as any,
+        motif: '',
+        heure: undefined,
+        commentaire: undefined,
+        _synthetic: true,
+      };
+      const all = [...sorted, synthetic as any];
+      return all.sort((a, b) => a.date.localeCompare(b.date));
+    }
+    return sorted;
+  }, [rawRelances, prospect]);
   const prospectsListPath = user?.role === 'admin_org' ? '/admin/prospects' : '/app/prospects';
+  const clientsPath = user?.role === 'admin_org' ? '/admin/clients' : '/app/clients';
   const [activeTab, setActiveTab] = useState<'timeline' | 'relances' | 'infos'>('timeline');
 
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [editForm, setEditForm] = useState<{
-    telephone: string; email: string; entreprise: string; secteur_activite: string;
-    source: string; budget_estime: string; nbre_commerciaux: string; commentaire: string;
-    pays: string; ville: string;
-  }>({ telephone: '', email: '', entreprise: '', secteur_activite: '', source: '',
-      budget_estime: '', nbre_commerciaux: '', commentaire: '', pays: '', ville: '' });
+    nom: string; prenom: string; telephone: string; email: string; whatsapp: string;
+    entreprise: string; secteur_activite: string; source: string;
+    budget_estime: string; nbre_commerciaux: string; nombre_employes: string;
+    commentaire: string; pays: string; ville: string; adresse: string;
+    commercial_id: string; statut_pipeline: string;
+    formule_envisagee: string; date_prochaine_relance: string;
+  }>({ nom: '', prenom: '', telephone: '', email: '', whatsapp: '',
+      entreprise: '', secteur_activite: '', source: '',
+      budget_estime: '', nbre_commerciaux: '', nombre_employes: '',
+      commentaire: '', pays: '', ville: '', adresse: '',
+      commercial_id: '', statut_pipeline: '',
+      formule_envisagee: '', date_prochaine_relance: '' });
 
   const startEdit = () => {
     if (!prospect) return;
     setEditForm({
+      nom: prospect.nom || '',
+      prenom: prospect.prenom || '',
       telephone: prospect.telephone || '',
       email: prospect.email || '',
+      whatsapp: prospect.whatsapp || '',
       entreprise: prospect.entreprise || '',
       secteur_activite: prospect.secteur_activite || '',
       source: prospect.source || '',
       budget_estime: prospect.budget_estime ? String(prospect.budget_estime) : '',
       nbre_commerciaux: prospect.nbre_commerciaux ? String(prospect.nbre_commerciaux) : '',
+      nombre_employes: prospect.nombre_employes ? String(prospect.nombre_employes) : '',
       commentaire: prospect.commentaire || '',
       pays: prospect.pays || '',
       ville: prospect.ville || '',
+      adresse: prospect.adresse || '',
+      commercial_id: prospect.commercial_id || '',
+      statut_pipeline: prospect.statut_pipeline || '',
+      formule_envisagee: prospect.formule_envisagee || '',
+      date_prochaine_relance: prospect.date_prochaine_relance || '',
     });
     setIsEditing(true);
   };
@@ -84,24 +146,88 @@ export const ProspectDetail: React.FC = () => {
     if (!prospect) return;
     setEditSaving(true);
     try {
+      const commercial = commerciaux.find(c => c.id === editForm.commercial_id);
+      const prevDrp = prospect.date_prochaine_relance;
       await prospectsService.updateProspect(prospect.id, {
+        nom: editForm.nom,
+        prenom: editForm.prenom || undefined,
         telephone: editForm.telephone,
         email: editForm.email || undefined,
+        whatsapp: editForm.whatsapp || undefined,
         entreprise: editForm.entreprise,
         secteur_activite: editForm.secteur_activite || undefined,
         source: editForm.source as any,
+        statut_pipeline: editForm.statut_pipeline as any,
+        commercial_id: editForm.commercial_id || undefined,
+        commercial_nom: commercial ? `${commercial.prenom} ${commercial.nom}` : prospect.commercial_nom,
+        formule_envisagee: editForm.formule_envisagee || undefined,
         budget_estime: editForm.budget_estime ? Number(editForm.budget_estime) : undefined,
         nbre_commerciaux: editForm.nbre_commerciaux ? Number(editForm.nbre_commerciaux) : undefined,
+        nombre_employes: editForm.nombre_employes ? Number(editForm.nombre_employes) : undefined,
         commentaire: editForm.commentaire || undefined,
         pays: editForm.pays || undefined,
         ville: editForm.ville || undefined,
+        adresse: editForm.adresse || undefined,
+        date_prochaine_relance: editForm.date_prochaine_relance || undefined,
       });
+      // If date_prochaine_relance changed and is new, auto-create a formal relance entry
+      const newDrp = editForm.date_prochaine_relance;
+      if (newDrp && newDrp !== prevDrp && !rawRelances.some(r => r.date === newDrp)) {
+        try {
+          await createRelance({
+            prospect_id: prospect.id,
+            prospect_nom: `${editForm.prenom || ''} ${editForm.nom}`.trim(),
+            prospect_entreprise: editForm.entreprise,
+            organization_id: prospect.organization_id,
+            commercial_id: editForm.commercial_id || prospect.commercial_id,
+            date: newDrp,
+            canal: 'appel',
+            statut: 'prevue',
+          });
+          queryClient.invalidateQueries({ queryKey: ['relances', 'prospect', id] });
+        } catch { /* silent — relance creation is best-effort */ }
+      }
       toast.success(isEn ? 'Prospect updated!' : 'Prospect mis à jour !');
       setIsEditing(false);
     } catch (err: any) {
       toast.error(err.message || 'Erreur lors de la mise à jour');
     } finally {
       setEditSaving(false);
+    }
+  };
+
+  // New Relance Modal State
+  const [isRelanceModalOpen, setIsRelanceModalOpen] = useState(false);
+  const [rDate, setRDate] = useState('');
+  const [rHeure, setRHeure] = useState('');
+  const [rCanal, setRCanal] = useState<RelanceCanal>('appel');
+  const [rMotif, setRMotif] = useState('');
+  const [rComment, setRComment] = useState('');
+  const [rSaving, setRSaving] = useState(false);
+
+  const handleCreateRelance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prospect || !rDate) return;
+    setRSaving(true);
+    try {
+      await createRelance({
+        prospect_id: prospect.id,
+        prospect_nom: `${prospect.prenom || ''} ${prospect.nom}`.trim(),
+        prospect_entreprise: prospect.entreprise,
+        organization_id: prospect.organization_id,
+        commercial_id: prospect.commercial_id,
+        date: rDate,
+        heure: rHeure || undefined,
+        canal: rCanal,
+        motif: rMotif || undefined,
+        commentaire: rComment || undefined,
+        statut: 'prevue',
+      });
+      queryClient.invalidateQueries({ queryKey: ['relances', 'prospect', id] });
+      setIsRelanceModalOpen(false);
+      setRDate(''); setRHeure(''); setRCanal('appel'); setRMotif(''); setRComment('');
+    } finally {
+      setRSaving(false);
     }
   };
 
@@ -144,8 +270,8 @@ export const ProspectDetail: React.FC = () => {
     window.open(
       `https://wa.me/${prospect?.telephone.replace(/\s+/g, '')}?text=${encodeURIComponent(
         isEn
-          ? `Hello ${prospect?.prenom || prospect?.nom}, I am Moussa from Faciloop CRM.`
-          : `Bonjour ${prospect?.prenom || prospect?.nom}, je suis Moussa de Faciloop CRM.`
+          ? `Hello ${prospect?.prenom || prospect?.nom}, I am Moussa from Faciloopro.`
+          : `Bonjour ${prospect?.prenom || prospect?.nom}, je suis Moussa de Faciloopro.`
       )}`,
       '_blank'
     );
@@ -234,14 +360,7 @@ export const ProspectDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Back Button */}
-          <Link
-            to={prospectsListPath}
-            className="w-10 h-10 rounded-xl border border-input text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center transition-all shrink-0 active:scale-95"
-            title={isEn ? "Back to list" : "Retour à la liste"}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
+          
         </div>
 
         {/* Quick Action Bar (Generous Touch Paddings for Walking Commercials) */}
@@ -390,31 +509,106 @@ export const ProspectDetail: React.FC = () => {
           {/* Tab 2: Planned Relances */}
           {activeTab === 'relances' && (
             <div className="space-y-3 sm:space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                {isEn ? 'Scheduled Commercial Follow-ups' : 'Relances Commerciales Programmées'}
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                  {isEn ? 'Scheduled Follow-ups' : 'Relances Programmées'}
+                </h3>
+                <button
+                  onClick={() => setIsRelanceModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all shadow-sm"
+                >
+                  <CalendarPlus className="w-3.5 h-3.5" />
+                  {isEn ? 'Schedule follow-up' : 'Programmer une relance'}
+                </button>
+              </div>
 
-              {prospectRelances.length === 0 ? (
+              {relancesLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <span className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                </div>
+              ) : prospectRelances.length === 0 ? (
                 <div className="p-6 sm:p-8 rounded-3xl border-2 border-dashed border-border text-center text-xs font-semibold text-muted-foreground">
                   {isEn ? 'No follow-up scheduled for this prospect.' : 'Aucune relance programmée pour ce prospect.'}
                 </div>
               ) : (
-                prospectRelances.map((rel) => (
-                  <div key={rel.id} className="p-3.5 sm:p-4 rounded-2xl border border-border bg-card flex justify-between items-center text-xs shadow-sm">
-                    <div className="space-y-1">
-                      <div className="font-extrabold text-foreground">{rel.motif || (isEn ? 'Commercial follow-up' : 'Relance suivi commercial')}</div>
-                      <div className="text-xs font-bold text-muted-foreground flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-primary" />
-                        {rel.date} {isEn ? 'at' : 'à'} {rel.heure}
+                <div className="space-y-2.5">
+                  {prospectRelances.map((rel) => {
+                    const isSynthetic = !!(rel as any)._synthetic;
+                    const isDone = rel.statut === 'realisee';
+                    const isCancelled = rel.statut === 'annulee';
+                    const isLate = rel.statut === 'en_retard';
+                    const canalIcons: Record<string, React.ReactNode> = {
+                      appel: <Phone className="w-3 h-3" />,
+                      whatsapp: <MessageSquare className="w-3 h-3" />,
+                      email: <Mail className="w-3 h-3" />,
+                      visite: <MapPin className="w-3 h-3" />,
+                      autre: <Clock className="w-3 h-3" />,
+                    };
+                    const statutColors = {
+                      prevue: 'bg-blue-500/10 text-blue-600',
+                      en_retard: 'bg-rose-500/10 text-rose-500',
+                      realisee: 'bg-emerald-500/10 text-emerald-600',
+                      annulee: 'bg-muted text-muted-foreground',
+                    };
+                    const statutLabels = {
+                      prevue: isEn ? 'Scheduled' : 'Prévue',
+                      en_retard: isEn ? 'Overdue' : 'En retard',
+                      realisee: isEn ? 'Done' : 'Réalisée',
+                      annulee: isEn ? 'Cancelled' : 'Annulée',
+                    };
+                    return (
+                      <div key={rel.id} className={`p-3.5 sm:p-4 rounded-2xl border bg-card shadow-sm text-xs transition-opacity ${isDone || isCancelled ? 'opacity-60' : ''} ${isLate ? 'border-rose-500/30' : 'border-border'} ${isSynthetic ? 'border-dashed opacity-80' : ''}`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] ${statutColors[rel.statut as keyof typeof statutColors] || 'bg-muted text-muted-foreground'}`}>
+                                {statutLabels[rel.statut as keyof typeof statutLabels] || rel.statut}
+                              </span>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] bg-muted text-muted-foreground capitalize">
+                                {canalIcons[rel.canal]} {rel.canal}
+                              </span>
+                              {/* {isSynthetic && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] bg-amber-500/10 text-amber-600">
+                                  {isEn ? 'From form' : 'Depuis le formulaire'}
+                                </span>
+                              )} */}
+                            </div>
+                            <div className={`font-extrabold text-foreground ${isDone ? 'line-through' : ''}`}>
+                              {rel.motif || (isEn ? 'Commercial follow-up' : 'Relance commerciale')}
+                            </div>
+                            <div className="flex items-center gap-1 text-muted-foreground font-semibold">
+                              <Clock className="w-3 h-3 text-primary shrink-0" />
+                              {rel.date}{rel.heure ? ` ${isEn ? 'at' : 'à'} ${rel.heure}` : ''}
+                            </div>
+                            {rel.commentaire && (
+                              <p className="text-muted-foreground italic mt-1">{rel.commentaire}</p>
+                            )}
+                          </div>
+                          {!isSynthetic && (
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {!isDone && !isCancelled && (
+                                <button
+                                  onClick={async () => { await completeRelance(rel.id); queryClient.invalidateQueries({ queryKey: ['relances', 'prospect', id] }); }}
+                                  title={isEn ? 'Mark as done' : 'Marquer comme réalisée'}
+                                  className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-colors"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              <button
+                                onClick={async () => { await deleteRelance(rel.id); queryClient.invalidateQueries({ queryKey: ['relances', 'prospect', id] }); }}
+                                title={isEn ? 'Delete' : 'Supprimer'}
+                                className="p-1.5 rounded-lg hover:bg-rose-500/10 hover:text-rose-500 text-muted-foreground transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <span className={`px-2.5 py-0.5 rounded-full font-black uppercase text-xs ${
-                      rel.statut === 'en_retard' ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'
-                    }`}>
-                      {isEn && rel.statut === 'en_retard' ? 'Overdue' : isEn && rel.statut === 'en_cours' ? 'Pending' : rel.statut.replace('_', ' ')}
-                    </span>
-                  </div>
-                ))
+                    );
+                  })}
+                </div>
               )}
             </div>
           )}
@@ -460,15 +654,16 @@ export const ProspectDetail: React.FC = () => {
                 {isEditing ? (
                   /* ── Mode édition ── */
                   <div className="space-y-3">
+                    {/* Identité */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Phone' : 'Téléphone'}</label>
-                        <input value={editForm.telephone} onChange={e => setEditForm(f => ({...f, telephone: e.target.value}))}
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Last name' : 'Nom'}</label>
+                        <input value={editForm.nom} onChange={e => setEditForm(f => ({...f, nom: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">Email</label>
-                        <input type="email" value={editForm.email} onChange={e => setEditForm(f => ({...f, email: e.target.value}))}
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'First name' : 'Prénom'}</label>
+                        <input value={editForm.prenom} onChange={e => setEditForm(f => ({...f, prenom: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
@@ -477,14 +672,40 @@ export const ProspectDetail: React.FC = () => {
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Sector' : "Secteur"}</label>
-                        <input value={editForm.secteur_activite} onChange={e => setEditForm(f => ({...f, secteur_activite: e.target.value}))}
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Sector' : "Secteur d'activité"}</label>
+                        <select value={editForm.secteur_activite} onChange={e => setEditForm(f => ({...f, secteur_activite: e.target.value}))}
+                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
+                          <option value="">{isEn ? 'Select…' : 'Sélectionner…'}</option>
+                          {SECTEURS_DETAIL.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    {/* Contact */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Phone' : 'Téléphone'}</label>
+                        <input value={editForm.telephone} onChange={e => setEditForm(f => ({...f, telephone: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Country' : 'Pays'}</label>
-                        <input value={editForm.pays} onChange={e => setEditForm(f => ({...f, pays: e.target.value}))}
+                        <label className="font-extrabold text-muted-foreground">WhatsApp</label>
+                        <input value={editForm.whatsapp} onChange={e => setEditForm(f => ({...f, whatsapp: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                      </div>
+                      <div className="sm:col-span-2 space-y-1">
+                        <label className="font-extrabold text-muted-foreground">Email</label>
+                        <input type="email" value={editForm.email} onChange={e => setEditForm(f => ({...f, email: e.target.value}))}
+                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                      </div>
+                    </div>
+                    {/* Localisation */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Country' : 'Pays'}</label>
+                        <select value={editForm.pays} onChange={e => setEditForm(f => ({...f, pays: e.target.value}))}
+                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
+                          {PAYS_DETAIL.map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
                       </div>
                       <div className="space-y-1">
                         <label className="font-extrabold text-muted-foreground">{isEn ? 'City' : 'Ville'}</label>
@@ -492,13 +713,62 @@ export const ProspectDetail: React.FC = () => {
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Budget (FCFA)' : 'Budget (FCFA)'}</label>
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Address' : 'Adresse'}</label>
+                        <input value={editForm.adresse} onChange={e => setEditForm(f => ({...f, adresse: e.target.value}))}
+                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                      </div>
+                    </div>
+                    {/* Pipeline */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Source' : 'Source'}</label>
+                        <select value={editForm.source} onChange={e => setEditForm(f => ({...f, source: e.target.value}))}
+                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
+                          {SOURCES_DETAIL.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Pipeline stage' : 'Étape pipeline'}</label>
+                        <select value={editForm.statut_pipeline} onChange={e => setEditForm(f => ({...f, statut_pipeline: e.target.value}))}
+                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
+                          {etapes.map(e => <option key={e.nom} value={e.nom}>{getEtapeLabel(e, isEn)}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Assigned to' : 'Commercial assigné'}</label>
+                        <select value={editForm.commercial_id} onChange={e => setEditForm(f => ({...f, commercial_id: e.target.value}))}
+                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
+                          <option value="">—</option>
+                          {commerciaux.map(c => <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Target plan' : 'Formule envisagée'}</label>
+                        <select value={editForm.formule_envisagee} onChange={e => setEditForm(f => ({...f, formule_envisagee: e.target.value}))}
+                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
+                          <option value="">—</option>
+                          {activeOrgOffers.map(o => <option key={o.id} value={o.nom}>{o.nom}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Budget (FCFA)' : 'Budget estimé (FCFA)'}</label>
                         <input type="number" value={editForm.budget_estime} onChange={e => setEditForm(f => ({...f, budget_estime: e.target.value}))}
+                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'No. of employees' : "Nombre d'employés"}</label>
+                        <input type="number" min="0" value={editForm.nombre_employes} onChange={e => setEditForm(f => ({...f, nombre_employes: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
                         <label className="font-extrabold text-muted-foreground">{isEn ? 'No. of sales reps' : 'Nbre de commerciaux'}</label>
                         <input type="number" min="0" value={editForm.nbre_commerciaux} onChange={e => setEditForm(f => ({...f, nbre_commerciaux: e.target.value}))}
+                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Follow-up date' : 'Date de relance'}</label>
+                        <input type="date" value={editForm.date_prochaine_relance} onChange={e => setEditForm(f => ({...f, date_prochaine_relance: e.target.value}))}
+                          style={{ colorScheme: 'auto' }}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                     </div>
@@ -510,62 +780,128 @@ export const ProspectDetail: React.FC = () => {
                   </div>
                 ) : (
                   /* ── Mode lecture ── */
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      <div>
-                        <span className="block text-muted-foreground font-extrabold">{isEn ? 'Primary Phone' : 'Téléphone Principal'}</span>
-                        <span className="font-black text-foreground text-sm">{prospect.telephone}</span>
-                      </div>
-                      <div>
-                        <span className="block text-muted-foreground font-extrabold">{isEn ? 'Email Address' : 'Adresse Email'}</span>
-                        <span className="font-black text-foreground">{prospect.email || (isEn ? 'Not provided' : 'Non renseigné')}</span>
-                      </div>
-                      <div>
-                        <span className="block text-muted-foreground font-extrabold">{isEn ? 'Company' : 'Entreprise'}</span>
-                        <span className="font-black text-foreground">{prospect.entreprise}</span>
-                      </div>
-                      <div>
-                        <span className="block text-muted-foreground font-extrabold">{isEn ? 'Industry / Sector' : "Secteur d'Activité"}</span>
-                        <span className="font-black text-foreground">{prospect.secteur_activite || (isEn ? 'General' : 'Général')}</span>
-                      </div>
-                      {(prospect.pays || prospect.ville) && (
+                  <div className="space-y-4">
+                    {/* Identité */}
+                    <div>
+                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Identity' : 'Identité'}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <span className="block text-muted-foreground font-extrabold">{isEn ? 'Location' : 'Localisation'}</span>
-                          <span className="font-black text-foreground">{[prospect.ville, prospect.pays].filter(Boolean).join(', ')}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Last name' : 'Nom'}</span>
+                          <span className="font-black text-foreground">{prospect.nom || '—'}</span>
                         </div>
-                      )}
-                      <div>
-                        <span className="block text-muted-foreground font-extrabold">{isEn ? 'Acquisition Source' : "Source d'Acquisition"}</span>
-                        <span className="font-black text-foreground capitalize">{prospect.source.replace(/_/g, ' ')}</span>
-                      </div>
-                      <div>
-                        <span className="block text-muted-foreground font-extrabold">{isEn ? 'Estimated Budget' : 'Budget Estimé'}</span>
-                        <span className="font-black text-emerald-500 text-sm">
-                          {prospect.budget_estime ? `${prospect.budget_estime.toLocaleString()} FCFA` : (isEn ? 'Not defined' : 'Non défini')}
-                        </span>
-                      </div>
-                      {prospect.nbre_commerciaux != null && (
                         <div>
-                          <span className="block text-muted-foreground font-extrabold flex items-center gap-1">
-                            <Users className="w-3 h-3" /> {isEn ? 'No. of sales reps' : 'Nbre de commerciaux'}
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'First name' : 'Prénom'}</span>
+                          <span className="font-black text-foreground">{prospect.prenom || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Company' : 'Entreprise'}</span>
+                          <span className="font-black text-foreground">{prospect.entreprise}</span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Industry / Sector' : "Secteur d'Activité"}</span>
+                          <span className="font-black text-foreground">{prospect.secteur_activite || '—'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Contact */}
+                    <div className="pt-3 border-t border-border/60">
+                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Contact' : 'Contact'}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Phone' : 'Téléphone'}</span>
+                          <span className="font-black text-foreground text-sm">{prospect.telephone}</span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">WhatsApp</span>
+                          <span className="font-black text-foreground">{prospect.whatsapp || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">Email</span>
+                          <span className="font-black text-foreground">{prospect.email || '—'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Localisation */}
+                    <div className="pt-3 border-t border-border/60">
+                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Location' : 'Localisation'}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Country' : 'Pays'}</span>
+                          <span className="font-black text-foreground">{prospect.pays || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'City' : 'Ville'}</span>
+                          <span className="font-black text-foreground">{prospect.ville || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Address' : 'Adresse'}</span>
+                          <span className="font-black text-foreground">{prospect.adresse || '—'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pipeline */}
+                    <div className="pt-3 border-t border-border/60">
+                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Pipeline' : 'Pipeline'}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Stage' : 'Étape'}</span>
+                          <span className="font-black text-foreground">
+                            {getEtapeLabelByNom(prospect.statut_pipeline, etapes, isEn)}
                           </span>
-                          <span className="font-black text-foreground">{prospect.nbre_commerciaux}</span>
                         </div>
-                      )}
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Acquisition Source' : "Source d'Acquisition"}</span>
+                          <span className="font-black text-foreground capitalize">
+                            {SOURCES_DETAIL.find(s => s.value === prospect.source)?.label || prospect.source.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Assigned Sales Rep' : 'Commercial Responsable'}</span>
+                          <span className="font-black text-primary">{prospect.commercial_nom || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Target plan' : 'Formule envisagée'}</span>
+                          <span className="font-black text-foreground">{prospect.formule_envisagee || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Follow-up date' : 'Date de relance'}</span>
+                          <span className="font-black text-foreground">{prospect.date_prochaine_relance || '—'}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="pt-3 border-t border-border">
-                      <span className="block text-muted-foreground font-extrabold mb-0.5">{isEn ? 'Assigned Sales Rep' : 'Commercial Responsable'}</span>
-                      <span className="font-black text-primary text-sm">{prospect.commercial_nom || (isEn ? 'Assigned to me' : 'Attribué à moi')}</span>
+                    {/* Données entreprise */}
+                    <div className="pt-3 border-t border-border/60">
+                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Company data' : "Données entreprise"}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Estimated Budget' : 'Budget Estimé'}</span>
+                          <span className="font-black text-emerald-500 text-sm">
+                            {prospect.budget_estime ? `${prospect.budget_estime.toLocaleString()} FCFA` : '—'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'No. of employees' : "Nombre d'employés"}</span>
+                          <span className="font-black text-foreground">{prospect.nombre_employes ?? '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'No. of sales reps' : 'Nbre de commerciaux'}</span>
+                          <span className="font-black text-foreground">{prospect.nbre_commerciaux ?? '—'}</span>
+                        </div>
+                      </div>
                     </div>
 
+                    {/* Notes */}
                     {prospect.commentaire && (
-                      <div className="pt-3 border-t border-border">
-                        <span className="block text-muted-foreground font-extrabold mb-1">{isEn ? 'Notes' : 'Notes / Commentaire'}</span>
+                      <div className="pt-3 border-t border-border/60">
+                        <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Notes' : 'Notes / Commentaire'}</p>
                         <p className="text-foreground font-semibold leading-relaxed bg-muted/40 rounded-xl p-3">{prospect.commentaire}</p>
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
             </div>
@@ -776,6 +1112,81 @@ export const ProspectDetail: React.FC = () => {
         prospectNom={`${prospect.prenom} ${prospect.nom}`}
         onClose={() => setIsWhatsAppModalOpen(false)}
       />
+
+      {/* Modal — Programmer une relance */}
+      <AnimatePresence>
+        {isRelanceModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm font-sans">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-extrabold text-foreground flex items-center gap-2">
+                  <CalendarPlus className="w-4 h-4 text-primary" />
+                  {isEn ? 'Schedule a follow-up' : 'Programmer une relance'}
+                </h2>
+                <button onClick={() => setIsRelanceModalOpen(false)} className="p-1 hover:bg-muted rounded-lg">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateRelance} className="space-y-3 text-xs">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-semibold mb-1">{isEn ? 'Date *' : 'Date *'}</label>
+                    <input type="date" required value={rDate} onChange={e => setRDate(e.target.value)}
+                      style={{ colorScheme: 'auto' }}
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">{isEn ? 'Time' : 'Heure'}</label>
+                    <input type="time" value={rHeure} onChange={e => setRHeure(e.target.value)}
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{isEn ? 'Channel *' : 'Canal *'}</label>
+                  <select value={rCanal} onChange={e => setRCanal(e.target.value as RelanceCanal)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="appel">{isEn ? 'Phone call' : 'Appel téléphonique'}</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="email">Email</option>
+                    <option value="visite">{isEn ? 'Visit' : 'Visite'}</option>
+                    <option value="autre">{isEn ? 'Other' : 'Autre'}</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{isEn ? 'Purpose' : 'Motif'}</label>
+                  <input type="text" value={rMotif} onChange={e => setRMotif(e.target.value)}
+                    placeholder={isEn ? 'e.g. Proposal follow-up' : 'ex. Suivi offre commerciale'}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{isEn ? 'Notes' : 'Commentaire'}</label>
+                  <textarea rows={2} value={rComment} onChange={e => setRComment(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button type="button" onClick={() => setIsRelanceModalOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
+                    {isEn ? 'Cancel' : 'Annuler'}
+                  </button>
+                  <button type="submit" disabled={rSaving}
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                    {rSaving
+                      ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      : <><CalendarPlus className="w-3.5 h-3.5" /> {isEn ? 'Schedule' : 'Programmer'}</>
+                    }
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

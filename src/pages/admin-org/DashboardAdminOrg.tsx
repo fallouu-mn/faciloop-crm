@@ -316,49 +316,55 @@ export const DashboardAdminOrg: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <motion.div
-          whileHover={{ y: -3, scale: 1.01 }}
-          className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-              {t('adminOrg.dashboard.totalProspects')}
-            </span>
-            <div className="rounded-2xl bg-blue-500/10 p-2 sm:p-2.5 text-blue-500 shadow-sm">
-              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+        <Link to={`/admin/prospects?from=${start}&to=${end}`} className="block group/kpi">
+          <motion.div
+            whileHover={{ y: -3, scale: 1.01 }}
+            className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg hover:border-blue-500/40 transition-all space-y-2 sm:space-y-3 cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                {t('adminOrg.dashboard.totalProspects')}
+              </span>
+              <div className="rounded-2xl bg-blue-500/10 p-2 sm:p-2.5 text-blue-500 shadow-sm">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-baseline justify-between pt-0.5">
-            <span className="text-2xl sm:text-3xl font-black text-foreground">
-              <AnimatedNumber value={totalProspects} />
-            </span>
-            <span className="text-[9px] sm:text-[10px] font-extrabold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full">
-              {PERIOD_LABELS[period]}
-            </span>
-          </div>
-        </motion.div>
+            <div className="flex items-baseline justify-between pt-0.5">
+              <span className="text-2xl sm:text-3xl font-black text-foreground">
+                <AnimatedNumber value={totalProspects} />
+              </span>
+              <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full">
+                {PERIOD_LABELS[period]}
+                <ArrowUpRight className="h-3 w-3 opacity-0 group-hover/kpi:opacity-100 transition-opacity" />
+              </span>
+            </div>
+          </motion.div>
+        </Link>
 
-        <motion.div
-          whileHover={{ y: -3, scale: 1.01 }}
-          className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-              {t('adminOrg.dashboard.activeClients')}
-            </span>
-            <div className="rounded-2xl bg-emerald-500/10 p-2 sm:p-2.5 text-emerald-500 shadow-sm">
-              <UserCheck className="h-4 w-4 sm:h-5 sm:w-5" />
+        <Link to={`/admin/clients?from=${start}&to=${end}`} className="block group/kpi">
+          <motion.div
+            whileHover={{ y: -3, scale: 1.01 }}
+            className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg hover:border-emerald-500/40 transition-all space-y-2 sm:space-y-3 cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                {t('adminOrg.dashboard.activeClients')}
+              </span>
+              <div className="rounded-2xl bg-emerald-500/10 p-2 sm:p-2.5 text-emerald-500 shadow-sm">
+                <UserCheck className="h-4 w-4 sm:h-5 sm:w-5" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-baseline justify-between pt-0.5">
-            <span className="text-2xl sm:text-3xl font-black text-emerald-500">
-              <AnimatedNumber value={totalClients} />
-            </span>
-            <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-              <Sparkles className="h-3 w-3" /> {PERIOD_LABELS[period]}
-            </span>
-          </div>
-        </motion.div>
+            <div className="flex items-baseline justify-between pt-0.5">
+              <span className="text-2xl sm:text-3xl font-black text-emerald-500">
+                <AnimatedNumber value={totalClients} />
+              </span>
+              <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                <Sparkles className="h-3 w-3" /> {PERIOD_LABELS[period]}
+                <ArrowUpRight className="h-3 w-3 opacity-0 group-hover/kpi:opacity-100 transition-opacity" />
+              </span>
+            </div>
+          </motion.div>
+        </Link>
 
         <motion.div
           whileHover={{ y: -3, scale: 1.01 }}
@@ -382,27 +388,30 @@ export const DashboardAdminOrg: React.FC = () => {
           </div>
         </motion.div>
 
-        <motion.div
-          whileHover={{ y: -3, scale: 1.01 }}
-          className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg transition-all space-y-2 sm:space-y-3"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-              {t('adminOrg.dashboard.revenue')}
-            </span>
-            <div className="rounded-2xl bg-emerald-500/10 p-2 sm:p-2.5 text-emerald-500 shadow-sm">
-              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
+        <Link to={`/admin/paiements?from=${start}&to=${end}`} className="block group/kpi">
+          <motion.div
+            whileHover={{ y: -3, scale: 1.01 }}
+            className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm hover:shadow-lg hover:border-emerald-500/40 transition-all space-y-2 sm:space-y-3 cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                {t('adminOrg.dashboard.revenue')}
+              </span>
+              <div className="rounded-2xl bg-emerald-500/10 p-2 sm:p-2.5 text-emerald-500 shadow-sm">
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-baseline justify-between pt-0.5">
-            <span className="text-xl sm:text-xl font-black text-foreground truncate max-w-[160px]">
-              {fmt(totalCA)}
-            </span>
-            <span className="text-[9px] sm:text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-              {PERIOD_LABELS[period]}
-            </span>
-          </div>
-        </motion.div>
+            <div className="flex items-baseline justify-between pt-0.5">
+              <span className="text-xl sm:text-xl font-black text-foreground truncate max-w-[160px]">
+                {fmt(totalCA)}
+              </span>
+              <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                {PERIOD_LABELS[period]}
+                <ArrowUpRight className="h-3 w-3 opacity-0 group-hover/kpi:opacity-100 transition-opacity" />
+              </span>
+            </div>
+          </motion.div>
+        </Link>
       </div>
 
       {/* Leaderboard + Chart */}

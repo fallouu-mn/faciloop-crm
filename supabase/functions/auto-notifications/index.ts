@@ -1,5 +1,5 @@
 /**
- * Faciloop CRM V2 - Edge Function : Notifications automatiques
+ * Faciloopro V2 - Edge Function : Notifications automatiques
  *
  * Mode CRON (appelé quotidiennement) :
  *  - Relances à échéance aujourd'hui → notifie le commercial

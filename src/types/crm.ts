@@ -1,4 +1,4 @@
-// TypeScript interfaces for Faciloop CRM Multi-Tenant
+// TypeScript interfaces for Faciloopro Multi-Tenant
 
 export type TenantStatut = 'actif' | 'inactif' | 'suspendu';
 export type UserRole = 'super_admin' | 'admin_org' | 'commercial';
@@ -103,6 +103,7 @@ export interface Prospect {
   formule_envisagee?: string;
   budget_estime?: number;
   nbre_commerciaux?: number;
+  nombre_employes?: number;
   commentaire?: string;
   motif_perte?: MotifPerte;
   date_prochaine_relance?: string;

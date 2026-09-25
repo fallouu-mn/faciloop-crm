@@ -1,5 +1,5 @@
 /**
- * Faciloop CRM V2 - Edge Function : Réinitialisation du code PIN
+ * Faciloopro V2 - Edge Function : Réinitialisation du code PIN
  *
  * Actions :
  *  - send_otp   : envoie un OTP par SMS via DEXCHANGE
@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          service: 'Faciloop CRM',
+          service: 'Faciloopro',
           number: cleanPhone,
           channel: 'sms',
           signature: 'DEXCHANGE',
@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           otp,
           number: cleanPhone,
-          service: 'Faciloop CRM',
+          service: 'Faciloopro',
         }),
       });
 

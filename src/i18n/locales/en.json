@@ -38,7 +38,7 @@
     "feature3Title": "Mobile Money Payments",
     "feature3Desc": "Accept Wave, Orange Money, and cards for your subscriptions and invoices.",
     "pricingTitle": "Transparent pricing for every business",
-    "footer": "© 2026 Faciloop CRM. All rights reserved."
+    "footer": "© 2026 Faciloopro. All rights reserved."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -64,7 +64,7 @@
     "backHome": "Back to home"
   },
   "auth": {
-    "welcomeTitle": "Welcome to Faciloop CRM",
+    "welcomeTitle": "Welcome to Faciloopro",
     "loginSubtitle": "Enter your phone number and 6-digit secret PIN code",
     "registerSubtitle": "Create your sales account in a few seconds",
     "phoneLabel": "Phone Number",

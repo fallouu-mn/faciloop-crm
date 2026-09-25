@@ -1,5 +1,5 @@
 /**
- * Faciloop CRM V2 - Edge Function : Inscription d'une organisation
+ * Faciloopro V2 - Edge Function : Inscription d'une organisation
  *
  * Crée le compte Supabase Auth via admin.createUser() (bypass email validation)
  * puis appelle la RPC register_organization pour créer l'org en statut 'en_attente'.

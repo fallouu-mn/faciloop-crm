@@ -1,5 +1,5 @@
 /**
- * Faciloop CRM V2 - Edge Function : Création d'un admin_org
+ * Faciloopro V2 - Edge Function : Création d'un admin_org
  *
  * Crée le compte Supabase Auth + le rôle user_roles pour l'admin d'une organisation.
  * Génère un PIN à 6 chiffres et envoie les identifiants par email.

@@ -1,5 +1,5 @@
 /**
- * Faciloop CRM V2 - Edge Function : Désactivation/Réactivation d'un commercial
+ * Faciloopro V2 - Edge Function : Désactivation/Réactivation d'un commercial
  *
  * Ban ou unban un utilisateur côté Supabase Auth.
  * Met à jour is_active dans user_roles et statut dans commerciaux.

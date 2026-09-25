@@ -98,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
               </div>
 
               <p className="text-xs sm:text-sm text-muted-foreground font-semibold leading-relaxed">
-                Voulez-vous vraiment vous déconnecter de votre espace Faciloop CRM ?
+                Voulez-vous vraiment vous déconnecter de votre espace Faciloopro ?
               </p>
 
               <div className="flex flex-col sm:flex-row gap-2 pt-2">

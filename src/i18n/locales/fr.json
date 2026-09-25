@@ -38,7 +38,7 @@
     "feature3Title": "Paiements Mobile Money",
     "feature3Desc": "Acceptez Wave, Orange Money et cartes pour vos abonnements et factures.",
     "pricingTitle": "Des tarifs transparents pour toutes les entreprises",
-    "footer": "© 2026 Faciloop CRM. Tous droits réservés."
+    "footer": "© 2026 Faciloopro. Tous droits réservés."
   },
   "nav": {
     "dashboard": "Tableau de Bord",
@@ -64,7 +64,7 @@
     "backHome": "Retour à l'accueil"
   },
   "auth": {
-    "welcomeTitle": "Bienvenue sur Faciloop CRM",
+    "welcomeTitle": "Bienvenue sur Faciloopro",
     "loginSubtitle": "Entrez votre numéro et votre code secret à 6 chiffres",
     "registerSubtitle": "Créez votre compte commercial en quelques secondes",
     "phoneLabel": "Numéro de Téléphone",

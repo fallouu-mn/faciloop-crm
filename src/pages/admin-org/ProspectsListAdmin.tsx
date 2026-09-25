@@ -5,11 +5,11 @@ import { formatPhoneNumber } from '../../lib/phoneUtils';
 import { useTranslation } from 'react-i18next';
 import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
 import {
-  Users, Search, Plus, AlertTriangle, X,
+  Users, Search, Plus, AlertTriangle, X, Calendar,
   ArrowRight, Eye, UserCheck, ArrowRightLeft, Trash2, Filter, Pencil, Save
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 function normalize(str: string): string {
   return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -51,6 +51,9 @@ export const ProspectsListAdmin: React.FC = () => {
   const [filterCommercial, setFilterCommercial] = useState('all');
   const [filterPays, setFilterPays] = useState('all');
   const [hideClosedProspects, setHideClosedProspects] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [filterDateFrom, setFilterDateFrom] = useState(() => searchParams.get('from') || '');
+  const [filterDateTo, setFilterDateTo] = useState(() => searchParams.get('to') || '');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [isReassignModalOpen, setIsReassignModalOpen] = useState(false);
@@ -74,6 +77,7 @@ export const ProspectsListAdmin: React.FC = () => {
   const [fBudget, setFBudget] = useState('');
   const [fCommentaire, setFCommentaire] = useState('');
   const [fRelance, setFRelance] = useState('');
+  const [fNbreEmployes, setFNbreEmployes] = useState('');
 
   const [duplicateAlert, setDuplicateAlert] = useState(false);
 
@@ -84,10 +88,18 @@ export const ProspectsListAdmin: React.FC = () => {
   const [eEntreprise, setEEntreprise] = useState('');
   const [eTelephone, setETelephone] = useState('');
   const [eEmail, setEEmail] = useState('');
+  const [eWhatsapp, setEWhatsapp] = useState('');
+  const [ePays, setEPays] = useState('');
+  const [eVille, setEVille] = useState('');
+  const [eAdresse, setEAdresse] = useState('');
+  const [eSecteur, setESecteur] = useState('');
   const [eSource, setESource] = useState<ProspectSource>('prospection_directe');
   const [eEtape, setEEtape] = useState<PipelineStepId>('nouveau');
   const [eCommercialId, setECommercialId] = useState('');
+  const [eFormule, setEFormule] = useState('');
   const [eBudget, setEBudget] = useState('');
+  const [eNbreEmployes, setENbreEmployes] = useState('');
+  const [eRelance, setERelance] = useState('');
   const [eCommentaire, setECommentaire] = useState('');
   const [editSaving, setEditSaving] = useState(false);
 
@@ -98,10 +110,18 @@ export const ProspectsListAdmin: React.FC = () => {
     setEEntreprise(p.entreprise);
     setETelephone(p.telephone);
     setEEmail(p.email || '');
+    setEWhatsapp(p.whatsapp || '');
+    setEPays(p.pays || 'Sénégal');
+    setEVille(p.ville || '');
+    setEAdresse(p.adresse || '');
+    setESecteur(p.secteur_activite || '');
     setESource(p.source);
     setEEtape(p.statut_pipeline as PipelineStepId);
     setECommercialId(p.commercial_id || '');
+    setEFormule(p.formule_envisagee || '');
     setEBudget(p.budget_estime ? String(p.budget_estime) : '');
+    setENbreEmployes(p.nombre_employes ? String(p.nombre_employes) : '');
+    setERelance(p.date_prochaine_relance || '');
     setECommentaire(p.commentaire || '');
   };
 
@@ -116,11 +136,19 @@ export const ProspectsListAdmin: React.FC = () => {
         entreprise: eEntreprise,
         telephone: eTelephone,
         email: eEmail || undefined,
+        whatsapp: eWhatsapp || undefined,
+        pays: ePays || undefined,
+        ville: eVille || undefined,
+        adresse: eAdresse || undefined,
+        secteur_activite: eSecteur || undefined,
         source: eSource,
         statut_pipeline: eEtape,
         commercial_id: eCommercialId || undefined,
         commercial_nom: commercial ? `${commercial.prenom} ${commercial.nom}` : editingProspect.commercial_nom,
+        formule_envisagee: eFormule || undefined,
         budget_estime: eBudget ? Number(eBudget) : undefined,
+        nombre_employes: eNbreEmployes ? Number(eNbreEmployes) : undefined,
+        date_prochaine_relance: eRelance || undefined,
         commentaire: eCommentaire || undefined,
       });
       toast.success(isEn ? 'Prospect updated.' : 'Prospect mis à jour.');
@@ -173,6 +201,7 @@ export const ProspectsListAdmin: React.FC = () => {
       source: fSource,
       formule_envisagee: fFormule,
       budget_estime: fBudget ? Number(fBudget) : undefined,
+      nombre_employes: fNbreEmployes ? Number(fNbreEmployes) : undefined,
       commentaire: fCommentaire || undefined,
       date_prochaine_relance: fRelance || undefined,
       statut_pipeline: fEtape,
@@ -192,7 +221,7 @@ export const ProspectsListAdmin: React.FC = () => {
     setFEmail(''); setFWhatsapp(''); setFPays('Sénégal'); setFVille('');
     setFAdresse(''); setFSecteur(''); setFSource('prospection_directe');
     setFCommercialId(commerciaux[0]?.id || ''); setFEtape('nouveau');
-    setFFormule(activeOrgOffers[0]?.nom || ''); setFBudget(''); setFCommentaire(''); setFRelance('');
+    setFFormule(activeOrgOffers[0]?.nom || ''); setFBudget(''); setFNbreEmployes(''); setFCommentaire(''); setFRelance('');
     setDuplicateAlert(false);
   };
 
@@ -216,15 +245,19 @@ export const ProspectsListAdmin: React.FC = () => {
       const matchSource = filterSource === 'all' || p.source === filterSource;
       const matchComm = filterCommercial === 'all' || p.commercial_id === filterCommercial;
       const matchPays = filterPays === 'all' || p.pays === filterPays;
-      return matchSearch && matchStep && matchSource && matchComm && matchPays;
+      const d = (p.created_at || '').split('T')[0];
+      const matchDate = (!filterDateFrom && !filterDateTo) ||
+        ((!filterDateFrom || d >= filterDateFrom) && (!filterDateTo || d <= filterDateTo));
+      return matchSearch && matchStep && matchSource && matchComm && matchPays && matchDate;
     });
-  }, [prospects, search, filterStep, filterSource, filterCommercial, filterPays, hideClosedProspects]);
+  }, [prospects, search, filterStep, filterSource, filterCommercial, filterPays, hideClosedProspects, filterDateFrom, filterDateTo]);
 
-  const hasActiveFilters = filterStep !== 'all' || filterSource !== 'all' || filterCommercial !== 'all' || filterPays !== 'all' || hideClosedProspects || search !== '';
+  const hasActiveFilters = filterStep !== 'all' || filterSource !== 'all' || filterCommercial !== 'all' || filterPays !== 'all' || hideClosedProspects || search !== '' || !!filterDateFrom || !!filterDateTo;
 
   const resetFilters = () => {
     setSearch(''); setFilterStep('all'); setFilterSource('all');
     setFilterCommercial('all'); setFilterPays('all'); setHideClosedProspects(false);
+    setFilterDateFrom(''); setFilterDateTo('');
   };
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,6 +313,19 @@ export const ProspectsListAdmin: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Date filter chip from dashboard */}
+      {(filterDateFrom || filterDateTo) && (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+            <Calendar className="w-3.5 h-3.5" />
+            {filterDateFrom && filterDateTo ? `${filterDateFrom} → ${filterDateTo}` : filterDateFrom ? `Depuis ${filterDateFrom}` : `Jusqu'au ${filterDateTo}`}
+            <button onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); }} className="ml-0.5 hover:text-primary/60">
+              <X className="w-3 h-3" />
+            </button>
+          </span>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="space-y-2.5">
@@ -511,6 +557,7 @@ export const ProspectsListAdmin: React.FC = () => {
             </div>
 
             <div className="space-y-3 text-xs">
+              {/* Identité */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.lastName')}</label>
@@ -528,6 +575,7 @@ export const ProspectsListAdmin: React.FC = () => {
                 <input value={eEntreprise} onChange={(e) => setEEntreprise(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
               </div>
+              {/* Contact */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.phone')}</label>
@@ -535,12 +583,46 @@ export const ProspectsListAdmin: React.FC = () => {
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Email</label>
-                  <input type="email" value={eEmail} onChange={(e) => setEEmail(e.target.value)}
+                  <label className="block font-semibold mb-1">WhatsApp</label>
+                  <input type="tel" value={eWhatsapp} onChange={(e) => setEWhatsapp(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
               </div>
+              <div>
+                <label className="block font-semibold mb-1">Email</label>
+                <input type="email" value={eEmail} onChange={(e) => setEEmail(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+              </div>
+              {/* Localisation */}
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.country')}</label>
+                  <select value={ePays} onChange={(e) => setEPays(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    {paysOptions.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.city')}</label>
+                  <input value={eVille} onChange={(e) => setEVille(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.address')}</label>
+                  <input value={eAdresse} onChange={(e) => setEAdresse(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+              </div>
+              {/* Pipeline */}
               <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.sector')}</label>
+                  <select value={eSecteur} onChange={(e) => setESecteur(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="">{t('adminOrg.prospects.modal.select')}</option>
+                    {SECTEURS.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
                 <div>
                   <label className="block font-semibold mb-1">Source</label>
                   <select value={eSource} onChange={(e) => setESource(e.target.value as ProspectSource)}
@@ -555,8 +637,6 @@ export const ProspectsListAdmin: React.FC = () => {
                     {ETAPES.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
                   </select>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.assignedTo')}</label>
                   <select value={eCommercialId} onChange={(e) => setECommercialId(e.target.value)}
@@ -566,8 +646,27 @@ export const ProspectsListAdmin: React.FC = () => {
                   </select>
                 </div>
                 <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.targetPlan')}</label>
+                  <select value={eFormule} onChange={(e) => setEFormule(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="">—</option>
+                    {activeOrgOffers.map(o => <option key={o.id} value={o.nom}>{o.nom}</option>)}
+                  </select>
+                </div>
+                <div>
                   <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.budget')}</label>
                   <input type="number" value={eBudget} onChange={(e) => setEBudget(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">Nombre d'employés</label>
+                  <input type="number" min="0" value={eNbreEmployes} onChange={(e) => setENbreEmployes(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.followUpDate')}</label>
+                  <input type="date" value={eRelance} onChange={(e) => setERelance(e.target.value)}
+                    style={{ colorScheme: 'auto' }}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
               </div>
@@ -736,6 +835,11 @@ export const ProspectsListAdmin: React.FC = () => {
                     <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.budget')}</label>
                     <input type="number" value={fBudget} onChange={(e) => setFBudget(e.target.value)}
                       placeholder="500000" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Nombre d'employés</label>
+                    <input type="number" min="0" value={fNbreEmployes} onChange={(e) => setFNbreEmployes(e.target.value)}
+                      placeholder="50" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
               </div>

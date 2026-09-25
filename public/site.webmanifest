@@ -1,7 +1,7 @@
 {
-  "name": "Faciloop - Gestion Activité",
-  "short_name": "Faciloop",
-  "description": "Gérez votre activité facilement – ventes, crédits, clients, RDV. Même hors ligne.",
+  "name": "Faciloopro CRM",
+  "short_name": "FacilooproCRM",
+  "description": "CRM commercial multi-tenant — prospects, clients, pipeline, relances.",
   "start_url": "/login",
   "scope": "/",
   "display": "standalone",
@@ -9,7 +9,7 @@
   "theme_color": "#1e293b",
   "background_color": "#0f172a",
   "lang": "fr",
-  "categories": ["business", "productivity", "finance"],
+  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -31,32 +31,6 @@
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Nouvelle vente",
-      "short_name": "Vente",
-      "url": "/app/ventes/nouvelle",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "Nouveau crédit",
-      "short_name": "Crédit",
-      "url": "/app/credits/nouveau",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "Nouvel acompte",
-      "short_name": "Acompte",
-      "url": "/app/acomptes/nouveau",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "Nouveau RDV",
-      "short_name": "RDV",
-      "url": "/app/rdv/nouveau",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }
