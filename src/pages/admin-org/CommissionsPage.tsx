@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Wallet, TrendingUp, Users, CheckCircle2, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { Wallet, TrendingUp, Users, CheckCircle2, ChevronDown, ChevronUp, Check, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
-import { PeriodFilter } from '../../components/common/PeriodFilter';
-import { DateRange, DATE_RANGE_ALL, isInDateRange } from '../../lib/dateFilter';
+import { DateRange, isInDateRange } from '../../lib/dateFilter';
 import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { CommissionEntry } from '../../lib/mockAdminOrg';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,8 +37,28 @@ export const CommissionsPage: React.FC = () => {
   const { t } = useTranslation('admin');
   const { commissions, markCommissionVersee } = useAuth();
   const [devise, setDevise] = useState<DeviseCode>(detectDevise());
-  const [period, setPeriod] = useState<DateRange>(DATE_RANGE_ALL);
   const [expandedCommercial, setExpandedCommercial] = useState<string | null>(null);
+
+  const lastMonths = getLastMonths(3);
+  const [selectedMonth, setSelectedMonth] = useState<string>(lastMonths[0].value);
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+
+  const period = useMemo((): DateRange => {
+    if (selectedMonth === 'custom') {
+      return {
+        preset: 'custom',
+        from: customFrom ? new Date(customFrom + 'T00:00:00') : null,
+        to: customTo ? new Date(customTo + 'T23:59:59') : null,
+      };
+    }
+    const [year, month] = selectedMonth.split('-').map(Number);
+    return {
+      preset: 'custom',
+      from: new Date(year, month - 1, 1, 0, 0, 0, 0),
+      to: new Date(year, month, 0, 23, 59, 59, 999),
+    };
+  }, [selectedMonth, customFrom, customTo]);
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
 
@@ -99,8 +118,51 @@ export const CommissionsPage: React.FC = () => {
         <CurrencyToggle value={devise} onChange={setDevise} />
       </div>
 
-      {/* Period Filter */}
-      <PeriodFilter value={period} onChange={setPeriod} />
+      {/* Filtre par mois */}
+      <div className="flex flex-wrap items-center gap-2">
+        {[...lastMonths].reverse().map(m => (
+          <button
+            key={m.value}
+            onClick={() => setSelectedMonth(m.value)}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+              selectedMonth === m.value
+                ? 'bg-gradient-faciloop text-white border-transparent shadow-sm'
+                : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
+            }`}
+          >
+            {m.label}
+          </button>
+        ))}
+        <button
+          onClick={() => setSelectedMonth('custom')}
+          className={`px-4 py-2 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 ${
+            selectedMonth === 'custom'
+              ? 'bg-gradient-faciloop text-white border-transparent shadow-sm'
+              : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
+          }`}
+        >
+          <CalendarDays className="w-3.5 h-3.5" />
+          Personnalisée
+        </button>
+
+        {selectedMonth === 'custom' && (
+          <div className="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+            <input
+              type="date"
+              value={customFrom}
+              onChange={e => setCustomFrom(e.target.value)}
+              className="h-9 px-3 rounded-xl border border-input bg-background text-xs text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+            />
+            <span className="text-xs text-muted-foreground font-bold">→</span>
+            <input
+              type="date"
+              value={customTo}
+              onChange={e => setCustomTo(e.target.value)}
+              className="h-9 px-3 rounded-xl border border-input bg-background text-xs text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+            />
+          </div>
+        )}
+      </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
