@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Prospect, MotifPerte, PipelineStepId, ModePaiement } from '../../types/crm';
+import { Prospect, MotifPerte, PipelineStepId, ModePaiement, ProspectSource } from '../../types/crm';
 import {
   DndContext,
   DragOverlay,
@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/core';
 import {
   Plus,
+  X,
   AlertTriangle,
   Building2,
   Lock,
@@ -46,6 +47,18 @@ import { useProspects } from '@/hooks/commercial/useProspects';
 import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
 import { GestionEtapesModal } from '@/components/common/GestionEtapesModal';
 import { toast } from 'sonner';
+
+const QA_SOURCES: { value: ProspectSource; label: string }[] = [
+  { value: 'prospection_directe', label: 'Prospection directe' },
+  { value: 'site_web', label: 'Site web' },
+  { value: 'recommandation', label: 'Recommandation' },
+  { value: 'reseaux_sociaux', label: 'Réseaux sociaux' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'evenement', label: 'Événement' },
+  { value: 'autre', label: 'Autre' },
+];
+const QA_SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
+const QA_PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 
 interface ColumnDef {
   id: PipelineStepId;
@@ -198,7 +211,7 @@ const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string; isEn?
 };
 
 // Droppable Column Component for Horizontal View
-const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePath?: string; activeCurrency?: Currency; isEn?: boolean }> = ({ col, prospects, basePath = '/app/prospects', activeCurrency = 'XOF', isEn = false }) => {
+const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePath?: string; activeCurrency?: Currency; isEn?: boolean; onAddProspect?: (stageId: string) => void }> = ({ col, prospects, basePath = '/app/prospects', activeCurrency = 'XOF', isEn = false, onAddProspect }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: col.id
   });
@@ -218,13 +231,24 @@ const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePat
           <col.icon className="w-4 h-4 text-muted-foreground" />
           <span className="text-xs sm:text-sm font-extrabold text-foreground truncate">{col.title}</span>
         </div>
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-black ${col.badgeBg}`}>
-          {prospects.length}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-black ${col.badgeBg}`}>
+            {prospects.length}
+          </span>
+          {onAddProspect && (
+            <button
+              onClick={() => onAddProspect(col.id)}
+              title={isEn ? 'Add prospect' : 'Ajouter un prospect'}
+              className="w-6 h-6 rounded-full bg-primary/10 text-primary hover:bg-primary/20 flex items-center justify-center transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Column Droppable Area */}
-      <div className="flex-1 space-y-3 min-h-[420px] relative">
+      <div className="flex-1 space-y-3 min-h-[420px] max-h-[calc(100vh-280px)] overflow-y-auto relative pr-1" style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(var(--border)) transparent' }}>
         {isOver && (
           <div className="absolute inset-0 z-20 rounded-2xl border-2 border-dashed border-primary bg-primary/10 backdrop-blur-sm flex flex-col items-center justify-center text-primary font-bold text-xs gap-2 animate-pulse">
             <Sparkles className="w-6 h-6 animate-spin-slow" />
@@ -253,7 +277,7 @@ function formatMoney(amount: number, curr: Currency): string {
 
 export const ProspectKanban: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { user, prospects, myProspects, commerciaux, updateProspectStatus, convertProspectToClient, orgOffers, currency, setCurrency } = useAuth();
+  const { user, prospects, myProspects, commerciaux, addProspect, updateProspectStatus, convertProspectToClient, orgOffers, currency, setCurrency } = useAuth();
   const { prospects: apiProspects, updatePipeline: apiUpdatePipeline } = useProspects();
   const { etapes, loading: etapesLoading, create: createEtape, update: updateEtape, remove: removeEtape, reorder: reorderEtapes } = useEtapesPipeline();
   const navigate = useNavigate();
@@ -293,6 +317,74 @@ export const ProspectKanban: React.FC = () => {
 
   const toggleStageExpand = (stageId: string) => {
     setExpandedStages(prev => ({ ...prev, [stageId]: !prev[stageId] }));
+  };
+
+  // Quick-add prospect modal
+  const [quickAddStage, setQuickAddStage] = useState<string | null>(null);
+  const [qaNom, setQaNom] = useState('');
+  const [qaPrenom, setQaPrenom] = useState('');
+  const [qaEntreprise, setQaEntreprise] = useState('');
+  const [qaTelephone, setQaTelephone] = useState('');
+  const [qaWhatsapp, setQaWhatsapp] = useState('');
+  const [qaEmail, setQaEmail] = useState('');
+  const [qaPays, setQaPays] = useState('Sénégal');
+  const [qaVille, setQaVille] = useState('');
+  const [qaAdresse, setQaAdresse] = useState('');
+  const [qaSecteur, setQaSecteur] = useState('');
+  const [qaSource, setQaSource] = useState<ProspectSource>('prospection_directe');
+  const [qaFormule, setQaFormule] = useState('');
+  const [qaBudget, setQaBudget] = useState('');
+  const [qaNbreEmployes, setQaNbreEmployes] = useState('');
+  const [qaSiteWeb, setQaSiteWeb] = useState('');
+  const [qaCommentaire, setQaCommentaire] = useState('');
+  const [qaRelance, setQaRelance] = useState('');
+  const [qaCommercialId, setQaCommercialId] = useState(commerciaux[0]?.id || '');
+  const [qaSaving, setQaSaving] = useState(false);
+
+  const resetQaForm = () => {
+    setQaNom(''); setQaPrenom(''); setQaEntreprise(''); setQaTelephone('');
+    setQaWhatsapp(''); setQaEmail(''); setQaPays('Sénégal'); setQaVille('');
+    setQaAdresse(''); setQaSecteur(''); setQaSource('prospection_directe');
+    setQaFormule(''); setQaBudget(''); setQaNbreEmployes(''); setQaSiteWeb('');
+    setQaCommentaire(''); setQaRelance(''); setQaCommercialId(commerciaux[0]?.id || '');
+  };
+
+  const handleQuickAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickAddStage || (!qaNom && !qaPrenom && !qaEntreprise)) return;
+    setQaSaving(true);
+    try {
+      const commercial = commerciaux.find(c => c.id === qaCommercialId);
+      await addProspect({
+        nom: qaNom || qaPrenom || qaEntreprise,
+        prenom: qaPrenom || undefined,
+        entreprise: qaEntreprise || qaNom || qaPrenom,
+        telephone: qaTelephone,
+        whatsapp: qaWhatsapp || undefined,
+        email: qaEmail || undefined,
+        pays: qaPays || undefined,
+        ville: qaVille || undefined,
+        adresse: qaAdresse || undefined,
+        secteur_activite: qaSecteur || undefined,
+        source: qaSource,
+        formule_envisagee: qaFormule || undefined,
+        budget_estime: qaBudget ? Number(qaBudget) : undefined,
+        nombre_employes: qaNbreEmployes ? Number(qaNbreEmployes) : undefined,
+        site_web: qaSiteWeb || undefined,
+        commentaire: qaCommentaire || undefined,
+        date_prochaine_relance: qaRelance || undefined,
+        statut_pipeline: quickAddStage,
+        commercial_id: qaCommercialId || undefined,
+        commercial_nom: commercial ? `${commercial.prenom} ${commercial.nom}` : undefined,
+      } as any);
+      toast.success(isEn ? 'Prospect added!' : 'Prospect ajouté !');
+      setQuickAddStage(null);
+      resetQaForm();
+    } catch {
+      toast.error(isEn ? 'Error adding prospect.' : "Erreur lors de l'ajout.");
+    } finally {
+      setQaSaving(false);
+    }
   };
 
   // Modal States
@@ -535,6 +627,13 @@ export const ProspectKanban: React.FC = () => {
                       <span className={`px-3 py-1 rounded-full text-xs font-black ${col.badgeBg}`}>
                         {colProspects.length}
                       </span>
+                      <button
+                        onClick={e => { e.stopPropagation(); setQuickAddStage(col.id); }}
+                        className="w-7 h-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-colors shrink-0"
+                        title={isEn ? 'Add prospect' : 'Ajouter un prospect'}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
                       {isExpanded ? (
                         <ChevronUp className="w-5 h-5 text-muted-foreground" />
                       ) : (
@@ -555,7 +654,10 @@ export const ProspectKanban: React.FC = () => {
                         {colProspects.length === 0 ? (
                           <KanbanEmptyState col={col} prospectsPath={prospectBasePath} isEn={isEn} />
                         ) : (
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                          <div
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[50vh] overflow-y-auto"
+                            style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(var(--border)) transparent' }}
+                          >
                             {colProspects.map((prospect) => (
                               <DraggableProspectCard key={prospect.id} prospect={prospect} basePath={prospectBasePath} activeCurrency={activeCurrency} />
                             ))}
@@ -581,10 +683,10 @@ export const ProspectKanban: React.FC = () => {
       ) : (
         /* VIEW MODE 2: HORIZONTAL KANBAN BOARD (DndContext) */
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x" style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(var(--border)) transparent' }}>
             {columns.map((col) => {
               const colProspects = effectiveProspects.filter(p => p.statut_pipeline === col.id);
-              return <DroppableColumn key={col.id} col={col} prospects={colProspects} basePath={prospectBasePath} activeCurrency={activeCurrency} isEn={isEn} />;
+              return <DroppableColumn key={col.id} col={col} prospects={colProspects} basePath={prospectBasePath} activeCurrency={activeCurrency} isEn={isEn} onAddProspect={setQuickAddStage} />;
             })}
           </div>
 
@@ -819,6 +921,195 @@ export const ProspectKanban: React.FC = () => {
                   Confirmer la conversion
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Quick-add prospect modal */}
+      <AnimatePresence>
+        {quickAddStage && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-lg bg-card border-t sm:border border-border/80 rounded-t-3xl sm:rounded-3xl shadow-2xl text-left relative flex flex-col max-h-[92vh] sm:max-h-[88vh]"
+            >
+              {/* Header — fixe */}
+              <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-3 shrink-0">
+                <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto sm:hidden mb-3" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-extrabold text-base text-foreground">{isEn ? 'New Prospect' : 'Nouveau prospect'}</h3>
+                    <p className="text-xs text-muted-foreground font-semibold mt-0.5">
+                      {isEn ? 'Stage:' : 'Étape :'} <span className="text-primary font-bold">{columns.find(c => c.id === quickAddStage)?.title || quickAddStage}</span>
+                    </p>
+                  </div>
+                  <button onClick={() => { setQuickAddStage(null); resetQaForm(); }} className="p-1.5 rounded-xl hover:bg-muted transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Formulaire — scrollable */}
+              <form onSubmit={handleQuickAdd} className="overflow-y-auto flex-1 px-5 sm:px-6 pb-5 sm:pb-6 space-y-4 text-xs"
+                style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(var(--border)) transparent' }}>
+
+                {/* Identité */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{isEn ? 'Identity' : 'Identité'}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block font-semibold mb-1">{isEn ? 'Last name' : 'Nom'}</label>
+                      <input type="text" value={qaNom} onChange={e => setQaNom(e.target.value)} placeholder="Diop"
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1">{isEn ? 'First name *' : 'Prénom *'}</label>
+                      <input type="text" required value={qaPrenom} onChange={e => setQaPrenom(e.target.value)} placeholder="Moussa"
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">{isEn ? 'Company' : 'Entreprise'}</label>
+                    <input type="text" value={qaEntreprise} onChange={e => setQaEntreprise(e.target.value)} placeholder="Dakar Tech Ltd"
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                </div>
+
+                {/* Contact */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Contact</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block font-semibold mb-1">{isEn ? 'Phone' : 'Téléphone'}</label>
+                      <input type="tel" value={qaTelephone} onChange={e => setQaTelephone(e.target.value)} placeholder="+221 77 123 45 67"
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1">WhatsApp</label>
+                      <input type="tel" value={qaWhatsapp} onChange={e => setQaWhatsapp(e.target.value)} placeholder="+221 77 123 45 67"
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block font-semibold mb-1">Email</label>
+                      <input type="email" value={qaEmail} onChange={e => setQaEmail(e.target.value)} placeholder="contact@entreprise.sn"
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Localisation */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{isEn ? 'Location' : 'Localisation'}</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block font-semibold mb-1">{isEn ? 'Country' : 'Pays'}</label>
+                      <select value={qaPays} onChange={e => setQaPays(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
+                        {QA_PAYS.map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1">{isEn ? 'City' : 'Ville'}</label>
+                      <input type="text" value={qaVille} onChange={e => setQaVille(e.target.value)} placeholder="Dakar"
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1">{isEn ? 'Address' : 'Adresse'}</label>
+                      <input type="text" value={qaAdresse} onChange={e => setQaAdresse(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pipeline */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Pipeline</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block font-semibold mb-1">{isEn ? 'Sector' : 'Secteur'}</label>
+                      <select value={qaSecteur} onChange={e => setQaSecteur(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
+                        <option value="">{isEn ? 'Select...' : 'Sélectionner...'}</option>
+                        {QA_SECTEURS.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1">Source</label>
+                      <select value={qaSource} onChange={e => setQaSource(e.target.value as ProspectSource)}
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
+                        {QA_SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                      </select>
+                    </div>
+                    {commerciaux.length > 0 && (
+                      <div className="col-span-2">
+                        <label className="block font-semibold mb-1">{isEn ? 'Assigned to' : 'Commercial'}</label>
+                        <select value={qaCommercialId} onChange={e => setQaCommercialId(e.target.value)}
+                          className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
+                          {commerciaux.map(c => <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>)}
+                        </select>
+                      </div>
+                    )}
+                    <div>
+                      <label className="block font-semibold mb-1">{isEn ? 'Target plan' : 'Formule envisagée'}</label>
+                      <select value={qaFormule} onChange={e => setQaFormule(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
+                        <option value="">{isEn ? 'None' : 'Aucune'}</option>
+                        {activeOrgOffers.map(o => <option key={o.id} value={o.nom}>{o.nom}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1">{isEn ? 'Budget (est.)' : 'Budget estimé'}</label>
+                      <input type="number" value={qaBudget} onChange={e => setQaBudget(e.target.value)} placeholder="500000"
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1">{isEn ? 'Employees' : 'Nb. employés'}</label>
+                      <input type="number" min="0" value={qaNbreEmployes} onChange={e => setQaNbreEmployes(e.target.value)} placeholder="50"
+                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Notes</p>
+                  <div>
+                    <label className="block font-semibold mb-1">{isEn ? 'Website' : 'Site web'}</label>
+                    <input type="url" value={qaSiteWeb} onChange={e => setQaSiteWeb(e.target.value)} placeholder="https://..."
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">{isEn ? 'Comment' : 'Commentaire'}</label>
+                    <textarea value={qaCommentaire} onChange={e => setQaCommentaire(e.target.value)} rows={2}
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">{isEn ? 'Next follow-up date' : 'Date prochaine relance'}</label>
+                    <input type="date" value={qaRelance} onChange={e => setQaRelance(e.target.value)}
+                      style={{ colorScheme: 'auto' }}
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-1">
+                  <button type="button" onClick={() => { setQuickAddStage(null); resetQaForm(); }}
+                    className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
+                    {isEn ? 'Cancel' : 'Annuler'}
+                  </button>
+                  <button type="submit" disabled={qaSaving || (!qaNom && !qaPrenom && !qaEntreprise)}
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                    {qaSaving
+                      ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      : <><Plus className="w-3.5 h-3.5" /> {isEn ? 'Add Prospect' : 'Ajouter le prospect'}</>
+                    }
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}

@@ -78,6 +78,7 @@ export const ProspectsListAdmin: React.FC = () => {
   const [fCommentaire, setFCommentaire] = useState('');
   const [fRelance, setFRelance] = useState('');
   const [fNbreEmployes, setFNbreEmployes] = useState('');
+  const [fSiteWeb, setFSiteWeb] = useState('');
 
   const [duplicateAlert, setDuplicateAlert] = useState(false);
 
@@ -101,6 +102,7 @@ export const ProspectsListAdmin: React.FC = () => {
   const [eNbreEmployes, setENbreEmployes] = useState('');
   const [eRelance, setERelance] = useState('');
   const [eCommentaire, setECommentaire] = useState('');
+  const [eSiteWeb, setESiteWeb] = useState('');
   const [editSaving, setEditSaving] = useState(false);
 
   const openEditProspect = (p: Prospect) => {
@@ -123,6 +125,7 @@ export const ProspectsListAdmin: React.FC = () => {
     setENbreEmployes(p.nombre_employes ? String(p.nombre_employes) : '');
     setERelance(p.date_prochaine_relance || '');
     setECommentaire(p.commentaire || '');
+    setESiteWeb(p.site_web || '');
   };
 
   const handleSaveEditProspect = async () => {
@@ -149,6 +152,7 @@ export const ProspectsListAdmin: React.FC = () => {
         budget_estime: eBudget ? Number(eBudget) : undefined,
         nombre_employes: eNbreEmployes ? Number(eNbreEmployes) : undefined,
         date_prochaine_relance: eRelance || undefined,
+        site_web: eSiteWeb || undefined,
         commentaire: eCommentaire || undefined,
       });
       toast.success(isEn ? 'Prospect updated.' : 'Prospect mis à jour.');
@@ -202,6 +206,7 @@ export const ProspectsListAdmin: React.FC = () => {
       formule_envisagee: fFormule,
       budget_estime: fBudget ? Number(fBudget) : undefined,
       nombre_employes: fNbreEmployes ? Number(fNbreEmployes) : undefined,
+      site_web: fSiteWeb || undefined,
       commentaire: fCommentaire || undefined,
       date_prochaine_relance: fRelance || undefined,
       statut_pipeline: fEtape,
@@ -221,7 +226,7 @@ export const ProspectsListAdmin: React.FC = () => {
     setFEmail(''); setFWhatsapp(''); setFPays('Sénégal'); setFVille('');
     setFAdresse(''); setFSecteur(''); setFSource('prospection_directe');
     setFCommercialId(commerciaux[0]?.id || ''); setFEtape('nouveau');
-    setFFormule(activeOrgOffers[0]?.nom || ''); setFBudget(''); setFNbreEmployes(''); setFCommentaire(''); setFRelance('');
+    setFFormule(activeOrgOffers[0]?.nom || ''); setFBudget(''); setFNbreEmployes(''); setFCommentaire(''); setFRelance(''); setFSiteWeb('');
     setDuplicateAlert(false);
   };
 
@@ -671,6 +676,12 @@ export const ProspectsListAdmin: React.FC = () => {
                 </div>
               </div>
               <div>
+                <label className="block font-semibold mb-1">{isEn ? 'Website' : 'Site web'}</label>
+                <input type="url" value={eSiteWeb} onChange={(e) => setESiteWeb(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+              </div>
+              <div>
                 <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.comment')}</label>
                 <textarea rows={2} value={eCommentaire} onChange={(e) => setECommentaire(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
@@ -849,6 +860,12 @@ export const ProspectsListAdmin: React.FC = () => {
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   {t('adminOrg.prospects.modal.sectionNotes')}
                 </h3>
+                <div>
+                  <label className="block font-semibold mb-1">{isEn ? 'Website' : 'Site web'}</label>
+                  <input type="url" value={fSiteWeb} onChange={(e) => setFSiteWeb(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
                 <div>
                   <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.comment')}</label>
                   <textarea value={fCommentaire} onChange={(e) => setFCommentaire(e.target.value)}

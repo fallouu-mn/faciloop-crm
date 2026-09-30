@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useRelances } from '../../hooks/commercial';
 import { toast } from 'sonner';
 import {
   Plus, CheckCircle2, X, Ban, Phone, MessageCircle, Mail, MapPin,
-  Clock, AlertTriangle, CalendarCheck, CalendarClock, Eye, Bell, Calendar,
+  Clock, AlertTriangle, CalendarCheck, CalendarClock, Eye, Bell, Calendar, Pencil,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +44,7 @@ export const RelancesPage: React.FC = () => {
   const { i18n } = useTranslation();
   const isEn = i18n.language === 'en';
   const { user, prospects, myProspects, commerciaux, relances, addRelance, completeRelance, cancelRelance } = useAuth();
+  const { updateRelance } = useRelances();
   const isAdmin = user?.role === 'admin_org' || user?.role === 'super_admin';
 
   const canalLabels: Record<RelanceCanal, string> = useMemo(() => ({
@@ -76,6 +78,15 @@ export const RelancesPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('toutes');
   const [filterCommercial, setFilterCommercial] = useState('');
   const [filterCanal, setFilterCanal] = useState('');
+
+  // Edit relance state
+  const [editRelanceId, setEditRelanceId] = useState<string | null>(null);
+  const [erDate, setErDate] = useState('');
+  const [erHeure, setErHeure] = useState('');
+  const [erCanal, setErCanal] = useState<RelanceCanal>('appel');
+  const [erMotif, setErMotif] = useState('');
+  const [erCommercialId, setErCommercialId] = useState('');
+  const [erSaving, setErSaving] = useState(false);
 
   // CDC 3.2: Filter base dataset based on user role
   const baseRelances = useMemo(() => {
@@ -141,6 +152,35 @@ export const RelancesPage: React.FC = () => {
     setFormCommercialId(commerciaux[0]?.id || '');
     toast.success(isEn ? 'Follow-up scheduled!' : 'Relance programmée !');
   };
+
+  function openEditRelance(rel: Relance) {
+    setEditRelanceId(rel.id);
+    setErDate(rel.date);
+    setErHeure(rel.heure || '');
+    setErCanal(rel.canal);
+    setErMotif(rel.motif || rel.commentaire || '');
+    setErCommercialId(rel.commercial_id || '');
+  }
+
+  async function handleSaveEditRelance(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editRelanceId) return;
+    setErSaving(true);
+    try {
+      await updateRelance(editRelanceId, {
+        date: erDate,
+        heure: erHeure || undefined,
+        canal: erCanal,
+        motif: erMotif,
+        commentaire: erMotif,
+        ...(isAdmin && erCommercialId ? { commercial_id: erCommercialId } : {}),
+      });
+      toast.success(isEn ? 'Follow-up updated!' : 'Relance mise à jour !');
+      setEditRelanceId(null);
+    } finally {
+      setErSaving(false);
+    }
+  }
 
   // ── date color
   function dateBadgeClass(date: string): string {
@@ -335,6 +375,13 @@ export const RelancesPage: React.FC = () => {
                   {isActionable && (
                     <>
                       <button
+                        onClick={() => openEditRelance(relance)}
+                        className="p-1.5 rounded-xl border border-input text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
+                        title={isEn ? 'Edit' : 'Modifier'}
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
                         onClick={() => { completeRelance(relance.id); toast.success(isEn ? 'Follow-up completed!' : 'Relance marquée effectuée !'); }}
                         className="px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-bold text-[11px] shadow hover:bg-emerald-600 flex items-center gap-1 transition-all"
                       >
@@ -477,6 +524,105 @@ export const RelancesPage: React.FC = () => {
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50"
               >
                 {isEn ? 'Confirm Follow-up' : 'Valider la relance'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal Édition Relance */}
+      {editRelanceId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md bg-card border border-border rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <h2 className="text-base font-bold text-foreground">
+                  {isEn ? 'Edit Follow-up' : 'Modifier la relance'}
+                </h2>
+              </div>
+              <button onClick={() => setEditRelanceId(null)} className="p-1 rounded-lg hover:bg-muted">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditRelance} className="space-y-3 text-xs">
+              {isAdmin && (
+                <div>
+                  <label className="block font-semibold mb-1">Commercial *</label>
+                  <select
+                    required
+                    value={erCommercialId}
+                    onChange={e => setErCommercialId(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  >
+                    <option value="">{isEn ? 'Select a sales rep' : 'Sélectionner un commercial'}</option>
+                    {commerciaux.map(c => (
+                      <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold mb-1 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-primary" />
+                    Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={erDate}
+                    onChange={e => setErDate(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-primary" />
+                    Heure
+                  </label>
+                  <input
+                    type="time"
+                    value={erHeure}
+                    onChange={e => setErHeure(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Canal *</label>
+                <select
+                  value={erCanal}
+                  onChange={e => setErCanal(e.target.value as RelanceCanal)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                >
+                  {(Object.keys(canalLabels) as RelanceCanal[]).map(c => (
+                    <option key={c} value={c}>{canalLabels[c]}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Motif / Commentaire *</label>
+                <input
+                  type="text"
+                  required
+                  value={erMotif}
+                  onChange={e => setErMotif(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={erSaving || !erDate || !erMotif || (isAdmin && !erCommercialId)}
+                className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50"
+              >
+                {erSaving ? (isEn ? 'Saving...' : 'Enregistrement...') : (isEn ? 'Save Changes' : 'Enregistrer les modifications')}
               </button>
             </form>
           </div>

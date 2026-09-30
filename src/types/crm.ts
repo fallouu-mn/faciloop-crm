@@ -104,6 +104,7 @@ export interface Prospect {
   budget_estime?: number;
   nbre_commerciaux?: number;
   nombre_employes?: number;
+  site_web?: string;
   commentaire?: string;
   motif_perte?: MotifPerte;
   date_prochaine_relance?: string;

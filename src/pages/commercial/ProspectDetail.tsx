@@ -62,7 +62,7 @@ export const ProspectDetail: React.FC = () => {
   const { user, prospects, interactions: authInteractions, addInteraction, convertProspectToClient, orgOffers, commerciaux } = useAuth();
   const { prospect: dbProspect } = useProspectDetail(id);
   const { interactions: apiInteractions, createInteraction: apiCreateInteraction } = useInteractions(id);
-  const { createRelance, completeRelance, deleteRelance } = useRelances();
+  const { createRelance, updateRelance, completeRelance, deleteRelance } = useRelances();
   const queryClient = useQueryClient();
 
   const { data: rawRelances = [], isLoading: relancesLoading } = useQuery({
@@ -108,13 +108,13 @@ export const ProspectDetail: React.FC = () => {
     budget_estime: string; nbre_commerciaux: string; nombre_employes: string;
     commentaire: string; pays: string; ville: string; adresse: string;
     commercial_id: string; statut_pipeline: string;
-    formule_envisagee: string; date_prochaine_relance: string;
+    formule_envisagee: string; date_prochaine_relance: string; site_web: string;
   }>({ nom: '', prenom: '', telephone: '', email: '', whatsapp: '',
       entreprise: '', secteur_activite: '', source: '',
       budget_estime: '', nbre_commerciaux: '', nombre_employes: '',
       commentaire: '', pays: '', ville: '', adresse: '',
       commercial_id: '', statut_pipeline: '',
-      formule_envisagee: '', date_prochaine_relance: '' });
+      formule_envisagee: '', date_prochaine_relance: '', site_web: '' });
 
   const startEdit = () => {
     if (!prospect) return;
@@ -138,6 +138,7 @@ export const ProspectDetail: React.FC = () => {
       statut_pipeline: prospect.statut_pipeline || '',
       formule_envisagee: prospect.formule_envisagee || '',
       date_prochaine_relance: prospect.date_prochaine_relance || '',
+      site_web: prospect.site_web || '',
     });
     setIsEditing(true);
   };
@@ -169,6 +170,7 @@ export const ProspectDetail: React.FC = () => {
         ville: editForm.ville || undefined,
         adresse: editForm.adresse || undefined,
         date_prochaine_relance: editForm.date_prochaine_relance || undefined,
+        site_web: editForm.site_web || undefined,
       });
       // If date_prochaine_relance changed and is new, auto-create a formal relance entry
       const newDrp = editForm.date_prochaine_relance;
@@ -204,6 +206,43 @@ export const ProspectDetail: React.FC = () => {
   const [rMotif, setRMotif] = useState('');
   const [rComment, setRComment] = useState('');
   const [rSaving, setRSaving] = useState(false);
+
+  // Edit relance modal state
+  const [editRelanceId, setEditRelanceId] = useState<string | null>(null);
+  const [erDate, setErDate] = useState('');
+  const [erHeure, setErHeure] = useState('');
+  const [erCanal, setErCanal] = useState<RelanceCanal>('appel');
+  const [erMotif, setErMotif] = useState('');
+  const [erComment, setErComment] = useState('');
+  const [erSaving, setErSaving] = useState(false);
+
+  const openEditRelance = (rel: any) => {
+    setEditRelanceId(rel.id);
+    setErDate(rel.date || '');
+    setErHeure(rel.heure || '');
+    setErCanal(rel.canal || 'appel');
+    setErMotif(rel.motif || '');
+    setErComment(rel.commentaire || '');
+  };
+
+  const handleSaveEditRelance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editRelanceId || !erDate) return;
+    setErSaving(true);
+    try {
+      await updateRelance(editRelanceId, {
+        date: erDate,
+        heure: erHeure || undefined,
+        canal: erCanal,
+        motif: erMotif || undefined,
+        commentaire: erComment || undefined,
+      });
+      queryClient.invalidateQueries({ queryKey: ['relances', 'prospect', id] });
+      setEditRelanceId(null);
+    } finally {
+      setErSaving(false);
+    }
+  };
 
   const handleCreateRelance = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -586,6 +625,13 @@ export const ProspectDetail: React.FC = () => {
                           </div>
                           {!isSynthetic && (
                             <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                onClick={() => openEditRelance(rel)}
+                                title={isEn ? 'Edit' : 'Modifier'}
+                                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
                               {!isDone && !isCancelled && (
                                 <button
                                   onClick={async () => { await completeRelance(rel.id); queryClient.invalidateQueries({ queryKey: ['relances', 'prospect', id] }); }}
@@ -773,6 +819,12 @@ export const ProspectDetail: React.FC = () => {
                       </div>
                     </div>
                     <div className="space-y-1">
+                      <label className="font-extrabold text-muted-foreground">{isEn ? 'Website' : 'Site web'}</label>
+                      <input type="url" value={editForm.site_web} onChange={e => setEditForm(f => ({...f, site_web: e.target.value}))}
+                        placeholder="https://..."
+                        className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                    </div>
+                    <div className="space-y-1">
                       <label className="font-extrabold text-muted-foreground">{isEn ? 'Notes' : 'Notes / Commentaire'}</label>
                       <textarea rows={3} value={editForm.commentaire} onChange={e => setEditForm(f => ({...f, commentaire: e.target.value}))}
                         className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none resize-none" />
@@ -819,6 +871,14 @@ export const ProspectDetail: React.FC = () => {
                         <div>
                           <span className="block text-muted-foreground font-extrabold text-[11px]">Email</span>
                           <span className="font-black text-foreground">{prospect.email || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Website' : 'Site web'}</span>
+                          {prospect.site_web ? (
+                            <a href={prospect.site_web} target="_blank" rel="noopener noreferrer" className="font-black text-primary hover:underline text-xs break-all">{prospect.site_web}</a>
+                          ) : (
+                            <span className="font-black text-foreground">—</span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1179,6 +1239,79 @@ export const ProspectDetail: React.FC = () => {
                     {rSaving
                       ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       : <><CalendarPlus className="w-3.5 h-3.5" /> {isEn ? 'Schedule' : 'Programmer'}</>
+                    }
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal — Modifier une relance */}
+      <AnimatePresence>
+        {editRelanceId && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-md bg-card border-t sm:border border-border/80 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 text-left relative"
+            >
+              <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto sm:hidden mb-1" />
+              <div className="flex items-center justify-between">
+                <h3 className="font-extrabold text-base text-foreground">{isEn ? 'Edit follow-up' : 'Modifier la relance'}</h3>
+                <button onClick={() => setEditRelanceId(null)} className="p-1.5 rounded-xl hover:bg-muted transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <form onSubmit={handleSaveEditRelance} className="space-y-3 text-xs">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-semibold mb-1">Date *</label>
+                    <input type="date" required value={erDate} onChange={e => setErDate(e.target.value)}
+                      style={{ colorScheme: 'auto' }}
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">{isEn ? 'Time' : 'Heure'}</label>
+                    <input type="time" value={erHeure} onChange={e => setErHeure(e.target.value)}
+                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{isEn ? 'Channel *' : 'Canal *'}</label>
+                  <select value={erCanal} onChange={e => setErCanal(e.target.value as RelanceCanal)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="appel">{isEn ? 'Phone call' : 'Appel téléphonique'}</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="email">Email</option>
+                    <option value="visite">{isEn ? 'Visit' : 'Visite'}</option>
+                    <option value="autre">{isEn ? 'Other' : 'Autre'}</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{isEn ? 'Purpose' : 'Motif'}</label>
+                  <input type="text" value={erMotif} onChange={e => setErMotif(e.target.value)}
+                    placeholder={isEn ? 'e.g. Proposal follow-up' : 'ex. Suivi offre commerciale'}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">{isEn ? 'Notes' : 'Commentaire'}</label>
+                  <textarea rows={2} value={erComment} onChange={e => setErComment(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button type="button" onClick={() => setEditRelanceId(null)}
+                    className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
+                    {isEn ? 'Cancel' : 'Annuler'}
+                  </button>
+                  <button type="submit" disabled={erSaving}
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                    {erSaving
+                      ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      : <><Save className="w-3.5 h-3.5" /> {isEn ? 'Save' : 'Enregistrer'}</>
                     }
                   </button>
                 </div>
