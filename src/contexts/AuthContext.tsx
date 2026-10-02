@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { UserRole, Organization, Commercial, Prospect, Relance, Interaction, NotificationItem, ClientFaciloop, Paiement, ActionLog, ActionLogType, ModePaiement, Commission, ObjectifCommercial, Offre } from '../types/crm';
 import { normalizePhoneNumber } from '../lib/phoneUtils';
@@ -62,6 +63,8 @@ export interface AuthContextType {
   updateProspectStatus: (id: string, newStep: string, motifPerte?: string) => void;
   reassignProspects: (prospectIds: string[], targetCommercialId: string, targetCommercialNom: string) => void;
   deleteProspect: (id: string) => void;
+  /** Recharge uniquement `prospects` depuis la base (synchronisation du cache TanStack Query vers le contexte). */
+  refreshProspects?: () => Promise<void>;
 
   addRelance: (r: Omit<Relance, 'id' | 'created_at' | 'organization_id'>) => void;
   completeRelance: (id: string) => void;
@@ -226,6 +229,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
   const [currency, setCurrency] = useState<string>('FCFA');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+
+  // Le contexte et TanStack Query gardent chacun leur propre cache de prospects.
+  // Chaque écriture faite ici invalide immédiatement le cache React Query
+  // (liste commerciale, kanban, fiche) : les vues basées sur React Query se
+  // mettent à jour sans attendre leur refetch des 3 s.
+  const queryClient = useQueryClient();
+  const invalidateProspectQueries = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['commercial', 'prospects'] });
+    queryClient.invalidateQueries({ queryKey: ['commercial', 'prospect'] });
+  }, [queryClient]);
 
   // Data state (initialized empty, fetched from Supabase)
   const [prospects, setProspects] = useState<Prospect[]>([]);
@@ -577,18 +590,97 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
-  // Polling notifications toutes les 30s
+  // ── Temps réel ───────────────────────────────────────────────────────────
+  // `prospects` n'était chargé qu'une seule fois au login, et le cache du
+  // contexte ne se synchronisait jamais avec celui de React Query : toute
+  // modification venue d'une autre session (attribution faite par l'admin,
+  // par un collègue…) restait invisible jusqu'à un rechargement complet de la
+  // page. On souscrit aux changements de la base pour tout appliquer
+  // sur-le-champ, sans attendre le polling.
+  useEffect(() => {
+    const orgId = user?.organizationId;
+    if (!orgId) return;
+
+    const onProspect = (row: Prospect) => {
+      setProspects(prev =>
+        prev.some(p => p.id === row.id) ? prev.map(p => (p.id === row.id ? row : p)) : [row, ...prev]
+      );
+      invalidateProspectQueries();
+    };
+
+    const onNotification = (
+      row: NotificationItem,
+      set: React.Dispatch<React.SetStateAction<NotificationItem[]>>
+    ) => {
+      set(prev =>
+        prev.some(n => n.id === row.id)
+          ? prev.map(n => (n.id === row.id ? row : n))
+          : [row, ...prev]
+      );
+    };
+
+    const channel = supabase
+      .channel(`org-realtime-${orgId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'prospects', filter: `organization_id=eq.${orgId}` },
+        payload => onProspect(payload.new as Prospect)
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'prospects', filter: `organization_id=eq.${orgId}` },
+        payload => onProspect(payload.new as Prospect)
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'prospects', filter: `organization_id=eq.${orgId}` },
+        payload => {
+          const id = (payload.old as { id?: string }).id;
+          if (id) setProspects(prev => prev.filter(p => p.id !== id));
+          invalidateProspectQueries();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications_commercial', filter: `organization_id=eq.${orgId}` },
+        payload => onNotification(payload.new as NotificationItem, setNotifications)
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'notifications_commercial', filter: `organization_id=eq.${orgId}` },
+        payload => onNotification(payload.new as NotificationItem, setNotifications)
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications_admin_commercial', filter: `organization_id=eq.${orgId}` },
+        payload => onNotification(payload.new as NotificationItem, setAdminNotifications)
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'notifications_admin_commercial', filter: `organization_id=eq.${orgId}` },
+        payload => onNotification(payload.new as NotificationItem, setAdminNotifications)
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.organizationId, invalidateProspectQueries]);
+
+  // Filet de sécurité : si le Realtime n'est pas activé sur une table, ce
+  // polling rattrape le retard (notifications toutes les 30s, prospects
+  // relus pour ne rien laisser passer).
   useEffect(() => {
     if (!user?.organizationId) return;
     const orgId = user.organizationId;
     const interval = setInterval(async () => {
       try {
-        const [notifs, adminNotifs] = await Promise.all([
+        const [notifs, adminNotifs, prospectsData] = await Promise.all([
           notificationsService.getNotifications(orgId),
           notificationsService.getAdminNotifications(orgId),
+          prospectsService.getProspects(orgId),
         ]);
         setNotifications(notifs);
         setAdminNotifications(adminNotifs);
+        setProspects(prospectsData);
       } catch {}
     }, 30000);
     return () => clearInterval(interval);
@@ -1217,6 +1309,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       setProspects(prev => [created, ...prev]);
+      invalidateProspectQueries();
 
       // Notification commercial instantanée
       if (created.commercial_id) {
@@ -1256,6 +1349,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const updated = await prospectsService.updateProspect(id, updates);
       setProspects(prev => prev.map(p => p.id === id ? updated : p));
+      invalidateProspectQueries();
     } catch (e) {
       console.error('Erreur mise à jour prospect:', e);
       throw e;
@@ -1279,6 +1373,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const updated = await prospectsService.updateProspect(id, updates);
       setProspects(prev => prev.map(p => p.id === id ? updated : p));
+      invalidateProspectQueries();
 
       // Notification Admin si vente conclue (Gagné)
       if (newStep === 'gagne' && user.organizationId) {
@@ -1330,6 +1425,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Synchronisation cache TanStack Query → contexte.
+  // Les mutations de `useProspects()` (liste commerciale, kanban, fiche)
+  // n'écrivaient que le cache React Query : le contexte — qui alimente la
+  // liste admin, les dashboards et le contrôle de doublons — restait périmé
+  // jusqu'au rechargement complet de la page.
+  const refreshProspects = async () => {
+    const orgId = user?.organizationId;
+    if (!orgId) return;
+    try {
+      setProspects(await prospectsService.getProspects(orgId));
+    } catch (e) {
+      console.error('Erreur rafraîchissement prospects:', e);
+    }
+  };
+
   const reassignProspects = async (prospectIds: string[], targetCommercialId: string, targetCommercialNom: string) => {
     if (!user) return;
 
@@ -1366,6 +1476,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           })
         )
       );
+      invalidateProspectQueries();
 
       addActionLog({
         utilisateur_id: user.id,
@@ -1392,6 +1503,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       await prospectsService.deleteProspect(id);
+      invalidateProspectQueries();
       if (user && target) {
         addActionLog({
           utilisateur_id: user.id,
@@ -1887,6 +1999,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateProspectStatus,
         reassignProspects,
         deleteProspect,
+        refreshProspects,
         addRelance,
         completeRelance,
         cancelRelance,

@@ -37,7 +37,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useProspectDetail, useInteractions, useRelances } from '@/hooks/commercial';
-import * as prospectsService from '../../services/prospects';
 import { getRelancesByProspect } from '../../services/relances';
 import { formatPhoneNumber, fullName, orFallback, formatDateWithTime, toDateTimeLocal, splitDateTimeLocal } from '../../utils/formatters';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
@@ -71,7 +70,7 @@ export const ProspectDetail: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, prospects, interactions: authInteractions, addInteraction, convertProspectToClient, orgOffers, commerciaux, deleteProspect } = useAuth();
+  const { user, prospects, interactions: authInteractions, addInteraction, convertProspectToClient, orgOffers, commerciaux, deleteProspect, updateProspect } = useAuth();
   const { prospect: dbProspect } = useProspectDetail(id);
   const { interactions: apiInteractions, createInteraction: apiCreateInteraction } = useInteractions(id);
   const { createRelance, updateRelance, completeRelance, deleteRelance } = useRelances();
@@ -216,7 +215,9 @@ export const ProspectDetail: React.FC = () => {
     try {
       const commercial = commerciaux.find(c => c.id === editForm.commercial_id);
       const prevDrp = prospect.date_prochaine_relance;
-      await prospectsService.updateProspect(prospect.id, {
+      // Passe par le contexte : met à jour `AuthContext.prospects` (liste admin,
+      // dashboards, doublons) au lieu d'écrire en base en contournant les caches.
+      await updateProspect(prospect.id, {
         nom: editForm.nom || undefined,
         prenom: editForm.prenom || undefined,
         telephone: editForm.telephone,
@@ -260,6 +261,9 @@ export const ProspectDetail: React.FC = () => {
           queryClient.invalidateQueries({ queryKey: ['relances', 'prospect', id] });
         } catch { /* silent — relance creation is best-effort */ }
       }
+      // Le contexte est à jour ; on invalide aussi le cache React Query
+      // (liste commerciale, kanban, fiche) au lieu d'attendre le polling des 3 s.
+      queryClient.invalidateQueries({ queryKey: ['commercial'] });
       toast.success(isEn ? 'Prospect updated!' : 'Prospect mis à jour !');
       setIsEditing(false);
     } catch (err: any) {

@@ -8,7 +8,7 @@ const AUTO_REFETCH_INTERVAL = 3000; // 3 secondes
 
 export function useProspects() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, refreshProspects } = useAuth();
 
   const organizationId = user?.organizationId || '';
   const commercialId = user?.role === 'commercial' ? user?.commercialId : undefined;
@@ -31,6 +31,9 @@ export function useProspects() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commercial'] });
       queryClient.refetchQueries({ queryKey: ['commercial'] });
+      // Le contexte (liste admin, dashboards, contrôle de doublons) a son
+      // propre cache : sans ça il restait périmé jusqu'au rechargement de page.
+      refreshProspects?.();
       toast.success('Prospect créé avec succès');
     },
     onError: (error: any) => {
@@ -44,6 +47,9 @@ export function useProspects() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commercial'] });
       queryClient.refetchQueries({ queryKey: ['commercial'] });
+      // Le contexte (liste admin, dashboards, contrôle de doublons) a son
+      // propre cache : sans ça il restait périmé jusqu'au rechargement de page.
+      refreshProspects?.();
       toast.success('Prospect mis à jour');
     },
     onError: (error: any) => {
@@ -56,6 +62,9 @@ export function useProspects() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commercial'] });
       queryClient.refetchQueries({ queryKey: ['commercial'] });
+      // Le contexte (liste admin, dashboards, contrôle de doublons) a son
+      // propre cache : sans ça il restait périmé jusqu'au rechargement de page.
+      refreshProspects?.();
       toast.success('Prospect supprimé');
     },
     onError: (error: any) => {
@@ -69,6 +78,9 @@ export function useProspects() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commercial'] });
       queryClient.refetchQueries({ queryKey: ['commercial'] });
+      // Le contexte (liste admin, dashboards, contrôle de doublons) a son
+      // propre cache : sans ça il restait périmé jusqu'au rechargement de page.
+      refreshProspects?.();
       toast.success('Étape du pipeline mise à jour');
     },
     onError: (error: any) => {
@@ -82,6 +94,9 @@ export function useProspects() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commercial'] });
       queryClient.refetchQueries({ queryKey: ['commercial'] });
+      // Le contexte (liste admin, dashboards, contrôle de doublons) a son
+      // propre cache : sans ça il restait périmé jusqu'au rechargement de page.
+      refreshProspects?.();
       toast.success('Prospect(s) réattribué(s) avec succès');
     },
     onError: (error: any) => {
@@ -95,6 +110,9 @@ export function useProspects() {
     onSuccess: (imported) => {
       queryClient.invalidateQueries({ queryKey: ['commercial'] });
       queryClient.refetchQueries({ queryKey: ['commercial'] });
+      // Le contexte (liste admin, dashboards, contrôle de doublons) a son
+      // propre cache : sans ça il restait périmé jusqu'au rechargement de page.
+      refreshProspects?.();
       toast.success(`${imported.length} prospect(s) importé(s) avec succès`);
     },
     onError: (error: any) => {
