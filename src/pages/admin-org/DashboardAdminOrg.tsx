@@ -24,7 +24,7 @@ import { usePlanLimits } from '../../hooks/usePlanLimits';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
-type PeriodFilter = 'mois' | 'trimestre' | 'annee' | 'personnalise';
+type PeriodFilter = 'aujourd_hui' | 'semaine' | 'mois' | 'annee' | 'personnalise';
 
 function getDateRange(
   period: PeriodFilter,
@@ -34,18 +34,23 @@ function getDateRange(
   const now = new Date();
   const y = now.getFullYear();
   const m = now.getMonth();
+  const d = now.getDate();
+  const today = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  if (period === 'aujourd_hui') {
+    return { start: today, end: today };
+  }
+  if (period === 'semaine') {
+    const day = now.getDay();
+    const mondayOffset = day === 0 ? -6 : 1 - day;
+    const monday = new Date(y, m, d + mondayOffset);
+    const sunday = new Date(y, m, d + mondayOffset + 6);
+    const fmt = (dt: Date) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+    return { start: fmt(monday), end: fmt(sunday) };
+  }
   if (period === 'mois') {
     const start = `${y}-${String(m + 1).padStart(2, '0')}-01`;
     const lastDay = new Date(y, m + 1, 0).getDate();
     const end = `${y}-${String(m + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-    return { start, end };
-  }
-  if (period === 'trimestre') {
-    const qStart = Math.floor(m / 3) * 3;
-    const qEnd = qStart + 2;
-    const start = `${y}-${String(qStart + 1).padStart(2, '0')}-01`;
-    const lastDay = new Date(y, qEnd + 1, 0).getDate();
-    const end = `${y}-${String(qEnd + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
     return { start, end };
   }
   if (period === 'annee') {
@@ -125,10 +130,11 @@ export const DashboardAdminOrg: React.FC = () => {
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', currency), currency);
 
   const PERIOD_LABELS: Record<PeriodFilter, string> = {
-    mois: t('adminOrg.dashboard.period.mois'),
-    trimestre: t('adminOrg.dashboard.period.trimestre'),
-    annee: t('adminOrg.dashboard.period.annee'),
-    personnalise: t('adminOrg.dashboard.period.personnalise'),
+    aujourd_hui: isEn ? "Today" : "Aujourd'hui",
+    semaine: isEn ? 'This week' : 'Cette semaine',
+    mois: isEn ? 'This month' : 'Ce mois',
+    annee: isEn ? 'This year' : 'Cette année',
+    personnalise: isEn ? 'Custom' : 'Personnalisée',
   };
 
   useEffect(() => {
@@ -250,7 +256,7 @@ export const DashboardAdminOrg: React.FC = () => {
       {/* Period Filter + Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-1 rounded-2xl bg-muted/80 p-1 border border-border/80 flex-wrap">
-          {(['mois', 'trimestre', 'annee', 'personnalise'] as PeriodFilter[]).map((p) => (
+          {(['aujourd_hui', 'semaine', 'mois', 'annee', 'personnalise'] as PeriodFilter[]).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}

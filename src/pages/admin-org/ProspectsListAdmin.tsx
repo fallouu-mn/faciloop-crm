@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource, PipelineStepId, Prospect } from '../../types/crm';
-import { formatPhoneNumber } from '../../lib/phoneUtils';
+import { formatPhoneNumber, displayPhoneNumber } from '../../lib/phoneUtils';
 import { useTranslation } from 'react-i18next';
 import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
+import { useSourcesConfig } from '@/hooks/useSourcesConfig';
 import {
   Users, Search, Plus, AlertTriangle, X, Calendar,
   ArrowRight, Eye, UserCheck, ArrowRightLeft, Trash2, Filter, Pencil, Save
@@ -23,15 +24,6 @@ function relanceDateColor(date?: string): string {
   return 'text-blue-500';
 }
 
-const SOURCES: { value: ProspectSource; label: string }[] = [
-  { value: 'prospection_directe', label: 'Prospection directe' },
-  { value: 'site_web', label: 'Site web' },
-  { value: 'recommandation', label: 'Recommandation' },
-  { value: 'reseaux_sociaux', label: 'Réseaux sociaux' },
-  { value: 'whatsapp', label: 'WhatsApp' },
-  { value: 'evenement', label: 'Événement' },
-  { value: 'autre', label: 'Autre' },
-];
 
 
 const PAYS_DEFAUT = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
@@ -44,6 +36,7 @@ export const ProspectsListAdmin: React.FC = () => {
   const { etapes } = useEtapesPipeline();
   const ETAPES = etapes.map(e => ({ value: e.nom as PipelineStepId, label: getEtapeLabel(e, isEn) }));
   const activeOrgOffers = orgOffers.filter(o => o.actif);
+  const { sources: sourcesConfig } = useSourcesConfig();
 
   const [search, setSearch] = useState('');
   const [filterStep, setFilterStep] = useState('all');
@@ -184,7 +177,7 @@ export const ProspectsListAdmin: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!fNom && !fEntreprise) || !fTelephone || !fPays || !fEtape) {
+    if ((!fNom && !fPrenom && !fEntreprise) || !fTelephone || !fPays || !fEtape) {
       if (!fEtape) {
         toast.error("L'étape pipeline est obligatoire");
       }
@@ -192,9 +185,9 @@ export const ProspectsListAdmin: React.FC = () => {
     }
     const commercial = commerciaux.find(c => c.id === fCommercialId);
     const res = await addProspect({
-      nom: fNom || fEntreprise,
-      prenom: fPrenom,
-      entreprise: fEntreprise || fNom,
+      nom: fNom || fPrenom || fEntreprise || '',
+      prenom: fPrenom || undefined,
+      entreprise: fEntreprise || fNom || fPrenom || '',
       telephone: fTelephone,
       email: fEmail || undefined,
       whatsapp: fWhatsapp || undefined,
@@ -243,8 +236,8 @@ export const ProspectsListAdmin: React.FC = () => {
     return prospects.filter(p => {
       if (hideClosedProspects && (p.statut_pipeline === 'gagne' || p.statut_pipeline === 'perdu')) return false;
       const matchSearch = !q ||
-        normalize(p.nom).includes(q) ||
-        normalize(p.entreprise).includes(q) ||
+        normalize(p.nom || '').includes(q) ||
+        normalize(p.entreprise || '').includes(q) ||
         p.telephone.includes(search);
       const matchStep = filterStep === 'all' || p.statut_pipeline === filterStep;
       const matchSource = filterSource === 'all' || p.source === filterSource;
@@ -364,7 +357,7 @@ export const ProspectsListAdmin: React.FC = () => {
           <select value={filterSource} onChange={(e) => setFilterSource(e.target.value)}
             className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground">
             <option value="all">{t('adminOrg.prospects.filterAll.sources')}</option>
-            {SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            {sourcesConfig.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
           <select value={filterCommercial} onChange={(e) => setFilterCommercial(e.target.value)}
             className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground">
@@ -423,10 +416,10 @@ export const ProspectsListAdmin: React.FC = () => {
                     onChange={() => handleSelectOne(p.id)} className="w-4 h-4 rounded accent-primary cursor-pointer" />
                 </td>
                 <td className="p-4">
-                  <div className="font-bold text-foreground">{p.prenom} {p.nom}</div>
-                  <div className="text-[11px] text-muted-foreground">{p.entreprise}</div>
+                  <div className="font-bold text-foreground">{p.prenom || p.nom ? `${p.prenom || ''} ${p.nom || ''}`.trim() : p.entreprise || p.telephone}</div>
+                  <div className="text-[11px] text-muted-foreground">{p.entreprise || '—'}</div>
                 </td>
-                <td className="p-4 font-medium text-foreground">{p.telephone}</td>
+                <td className="p-4 font-medium text-foreground">{displayPhoneNumber(p.telephone)}</td>
                 <td className="p-4">
                   <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold capitalize ${
                     p.statut_pipeline === 'gagne' ? 'bg-emerald-500/10 text-emerald-500' :
@@ -455,13 +448,6 @@ export const ProspectsListAdmin: React.FC = () => {
                     >
                       <Pencil className="w-3.5 h-3.5 text-primary" />
                     </button>
-                    <button
-                      onClick={() => handleDelete(p.id)}
-                      className="p-1.5 rounded-lg border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-colors"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
                 </td>
               </tr>
@@ -482,8 +468,8 @@ export const ProspectsListAdmin: React.FC = () => {
                 <input type="checkbox" checked={selectedIds.includes(p.id)}
                   onChange={() => handleSelectOne(p.id)} className="w-5 h-5 rounded accent-primary cursor-pointer shrink-0" />
                 <div>
-                  <h3 className="font-bold text-sm text-foreground">{p.prenom} {p.nom}</h3>
-                  <p className="text-xs text-muted-foreground">{p.entreprise}</p>
+                  <h3 className="font-bold text-sm text-foreground">{p.prenom || p.nom ? `${p.prenom || ''} ${p.nom || ''}`.trim() : p.entreprise || p.telephone}</h3>
+                  <p className="text-xs text-muted-foreground">{p.entreprise || '—'}</p>
                 </div>
               </div>
               <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${
@@ -495,7 +481,7 @@ export const ProspectsListAdmin: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center justify-between text-xs pl-8">
-              <span className="font-medium text-foreground">{p.telephone}</span>
+              <span className="font-medium text-foreground">{displayPhoneNumber(p.telephone)}</span>
               <span className="font-bold text-primary text-[11px]">{p.commercial_nom}</span>
             </div>
             {p.date_prochaine_relance && (
@@ -514,12 +500,6 @@ export const ProspectsListAdmin: React.FC = () => {
                 className="flex-1 py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5">
                 {t('adminOrg.prospects.openFile')} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-              <button
-                onClick={() => handleDelete(p.id)}
-                className="p-2 rounded-xl border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-colors shrink-0"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
             </div>
           </div>
         ))}
@@ -632,7 +612,7 @@ export const ProspectsListAdmin: React.FC = () => {
                   <label className="block font-semibold mb-1">Source</label>
                   <select value={eSource} onChange={(e) => setESource(e.target.value as ProspectSource)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                    {SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                    {sourcesConfig.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                   </select>
                 </div>
                 <div>
@@ -738,8 +718,8 @@ export const ProspectsListAdmin: React.FC = () => {
                       placeholder="Diop" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.firstName')} *</label>
-                    <input type="text" required value={fPrenom} onChange={(e) => setFPrenom(e.target.value)}
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.firstName')}</label>
+                    <input type="text" value={fPrenom} onChange={(e) => setFPrenom(e.target.value)}
                       placeholder="Moussa" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
@@ -818,7 +798,7 @@ export const ProspectsListAdmin: React.FC = () => {
                     <label className="block font-semibold mb-1">Source</label>
                     <select value={fSource} onChange={(e) => setFSource(e.target.value as ProspectSource)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                      {SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                      {sourcesConfig.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
                   </div>
                   <div>

@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { displayPhoneNumber } from '../../lib/phoneUtils';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSourcesConfig } from '@/hooks/useSourcesConfig';
 import { useEtapesPipeline, getEtapeLabelByNom, getEtapeLabel } from '@/hooks/useEtapesPipeline';
 import { Prospect, MotifPerte, RelanceCanal } from '../../types/crm';
 import { 
@@ -39,16 +41,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useProspectDetail, useInteractions, useRelances } from '@/hooks/commercial';
 import * as prospectsService from '../../services/prospects';
 import { getRelancesByProspect } from '../../services/relances';
+import { useProspectNotes } from '@/hooks/useProspectNotes';
 
-const SOURCES_DETAIL = [
-  { value: 'prospection_directe', label: 'Prospection directe' },
-  { value: 'site_web', label: 'Site web' },
-  { value: 'recommandation', label: 'Recommandation' },
-  { value: 'reseaux_sociaux', label: 'Réseaux sociaux' },
-  { value: 'whatsapp', label: 'WhatsApp' },
-  { value: 'evenement', label: 'Événement' },
-  { value: 'autre', label: 'Autre' },
-];
 const SECTEURS_DETAIL = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 const PAYS_DETAIL = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 
@@ -59,10 +53,11 @@ export const ProspectDetail: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, prospects, interactions: authInteractions, addInteraction, convertProspectToClient, orgOffers, commerciaux } = useAuth();
+  const { user, prospects, interactions: authInteractions, addInteraction, convertProspectToClient, deleteProspect, orgOffers, commerciaux } = useAuth();
   const { prospect: dbProspect } = useProspectDetail(id);
   const { interactions: apiInteractions, createInteraction: apiCreateInteraction } = useInteractions(id);
   const { createRelance, updateRelance, completeRelance, deleteRelance } = useRelances();
+  const { sources: sourcesConfig } = useSourcesConfig();
   const queryClient = useQueryClient();
 
   const { data: rawRelances = [], isLoading: relancesLoading } = useQuery({
@@ -95,13 +90,66 @@ export const ProspectDetail: React.FC = () => {
     }
     return sorted;
   }, [rawRelances, prospect]);
+
+  const plannedRdvs = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const items = prospectInteractions
+      .filter((i: any) => i.type === 'rdv' || i.type === 'demonstration')
+      .map((i: any) => {
+        let statut = i.statut;
+        if (statut === 'planifiee' && i.date < today) statut = 'en_retard';
+        else if (statut === 'planifiee') statut = 'prevue';
+        else if (statut === 'realisee') statut = 'realisee';
+        else if (statut === 'annulee') statut = 'annulee';
+        return {
+          id: `rdv-${i.id}`,
+          date: i.date,
+          heure: i.heure,
+          canal: (i.type === 'demonstration' ? 'autre' : 'visite') as any,
+          motif: i.commentaire || (i.type === 'demonstration' ? (isEn ? 'Demo' : 'Démonstration') : (isEn ? 'Meeting' : 'RDV')),
+          commentaire: i.commentaire,
+          statut,
+          _rdv: true,
+          _rdvType: i.type,
+        };
+      });
+
+    if (prospect?.statut_pipeline === 'rdv_programme' && items.length === 0) {
+      const rdvDate = prospect.date_prochaine_relance || today;
+      items.push({
+        id: `rdv-synthetic-pipeline-${prospect.id}`,
+        date: rdvDate,
+        heure: undefined as any,
+        canal: 'visite' as any,
+        motif: isEn ? 'Scheduled meeting' : 'RDV programmé',
+        commentaire: undefined as any,
+        statut: rdvDate < today ? 'en_retard' : 'prevue',
+        _rdv: true,
+        _rdvType: 'rdv',
+      });
+    }
+
+    return items;
+  }, [prospectInteractions, isEn, prospect]);
+
+  const allFollowUps = useMemo(() => {
+    return [...prospectRelances, ...plannedRdvs].sort((a, b) => a.date.localeCompare(b.date));
+  }, [prospectRelances, plannedRdvs]);
+
   const prospectsListPath = user?.role === 'admin_org' ? '/admin/prospects' : '/app/prospects';
   const clientsPath = user?.role === 'admin_org' ? '/admin/clients' : '/app/clients';
-  const [activeTab, setActiveTab] = useState<'timeline' | 'relances' | 'infos'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'relances' | 'notes' | 'infos'>('timeline');
+  const { notes, addNote, removeNote } = useProspectNotes(id);
+  const [noteText, setNoteText] = useState('');
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionFilter, setMentionFilter] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
+  const noteRef = React.useRef<HTMLTextAreaElement>(null);
 
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [editForm, setEditForm] = useState<{
     nom: string; prenom: string; telephone: string; email: string; whatsapp: string;
     entreprise: string; secteur_activite: string; source: string;
@@ -201,7 +249,7 @@ export const ProspectDetail: React.FC = () => {
   // New Relance Modal State
   const [isRelanceModalOpen, setIsRelanceModalOpen] = useState(false);
   const [rDate, setRDate] = useState('');
-  const [rHeure, setRHeure] = useState('');
+  const [rHeure, setRHeure] = useState('09:00');
   const [rCanal, setRCanal] = useState<RelanceCanal>('appel');
   const [rMotif, setRMotif] = useState('');
   const [rComment, setRComment] = useState('');
@@ -264,7 +312,7 @@ export const ProspectDetail: React.FC = () => {
       });
       queryClient.invalidateQueries({ queryKey: ['relances', 'prospect', id] });
       setIsRelanceModalOpen(false);
-      setRDate(''); setRHeure(''); setRCanal('appel'); setRMotif(''); setRComment('');
+      setRDate(''); setRHeure('09:00'); setRCanal('appel'); setRMotif(''); setRComment('');
     } finally {
       setRSaving(false);
     }
@@ -329,7 +377,8 @@ export const ProspectDetail: React.FC = () => {
   }
 
   // Generate Prospect Initials
-  const initials = `${prospect.prenom?.[0] || ''}${prospect.nom?.[0] || ''}`.toUpperCase() || 'P';
+  const displayName = prospect.prenom || prospect.nom ? `${prospect.prenom || ''} ${prospect.nom || ''}`.trim() : prospect.entreprise || prospect.telephone;
+  const initials = `${prospect.prenom?.[0] || ''}${prospect.nom?.[0] || ''}`.toUpperCase() || (prospect.entreprise?.[0] || prospect.telephone?.[0] || 'P').toUpperCase();
 
   const handleAddInteraction = (e: React.FormEvent) => {
     e.preventDefault();
@@ -383,7 +432,7 @@ export const ProspectDetail: React.FC = () => {
 
             <div className="space-y-0.5">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <h1 className="text-lg sm:text-xl font-black text-foreground">{prospect.prenom} {prospect.nom}</h1>
+                <h1 className="text-lg sm:text-xl font-black text-foreground">{displayName}</h1>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-primary/10 text-primary">
                   {getStageTitle(prospect.statut_pipeline)}
                 </span>
@@ -391,7 +440,7 @@ export const ProspectDetail: React.FC = () => {
               <p className="text-xs font-bold text-muted-foreground flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <span className="flex items-center gap-1">
                   <Building2 className="w-3.5 h-3.5 text-primary" />
-                  {prospect.entreprise}
+                  {prospect.entreprise || '—'}
                 </span>
                 <span>•</span>
                 <span>{prospect.secteur_activite || (isEn ? 'General' : 'Général')}</span>
@@ -447,7 +496,8 @@ export const ProspectDetail: React.FC = () => {
           <div className="relative flex gap-1 sm:gap-2 text-xs font-extrabold min-w-max">
             {[
               { id: 'timeline', label: `${isEn ? 'History' : 'Historique'} (${prospectInteractions.length})` },
-              { id: 'relances', label: `${isEn ? 'Follow-ups' : 'Relances'} (${prospectRelances.length})` },
+              { id: 'relances', label: `${isEn ? 'Follow-ups / Meetings' : 'Relances / RDV'} (${allFollowUps.length})` },
+              { id: 'notes', label: `Notes (${notes.length})` },
               { id: 'infos', label: isEn ? 'Information' : 'Informations' }
             ].map((t) => (
               <button
@@ -550,7 +600,7 @@ export const ProspectDetail: React.FC = () => {
             <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                  {isEn ? 'Scheduled Follow-ups' : 'Relances Programmées'}
+                  {isEn ? 'Follow-ups & Meetings' : 'Relances & RDV'}
                 </h3>
                 <button
                   onClick={() => setIsRelanceModalOpen(true)}
@@ -565,14 +615,15 @@ export const ProspectDetail: React.FC = () => {
                 <div className="flex items-center justify-center p-8">
                   <span className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                 </div>
-              ) : prospectRelances.length === 0 ? (
+              ) : allFollowUps.length === 0 ? (
                 <div className="p-6 sm:p-8 rounded-3xl border-2 border-dashed border-border text-center text-xs font-semibold text-muted-foreground">
-                  {isEn ? 'No follow-up scheduled for this prospect.' : 'Aucune relance programmée pour ce prospect.'}
+                  {isEn ? 'No follow-up or meeting scheduled for this prospect.' : 'Aucune relance ni RDV programmé pour ce prospect.'}
                 </div>
               ) : (
                 <div className="space-y-2.5">
-                  {prospectRelances.map((rel) => {
+                  {allFollowUps.map((rel) => {
                     const isSynthetic = !!(rel as any)._synthetic;
+                    const isRdv = !!(rel as any)._rdv;
                     const isDone = rel.statut === 'realisee';
                     const isCancelled = rel.statut === 'annulee';
                     const isLate = rel.statut === 'en_retard';
@@ -603,9 +654,16 @@ export const ProspectDetail: React.FC = () => {
                               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] ${statutColors[rel.statut as keyof typeof statutColors] || 'bg-muted text-muted-foreground'}`}>
                                 {statutLabels[rel.statut as keyof typeof statutLabels] || rel.statut}
                               </span>
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] bg-muted text-muted-foreground capitalize">
-                                {canalIcons[rel.canal]} {rel.canal}
-                              </span>
+                              {!isRdv && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] bg-muted text-muted-foreground capitalize">
+                                  {canalIcons[rel.canal]} {rel.canal}
+                                </span>
+                              )}
+                              {isRdv && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] bg-purple-500/10 text-purple-600">
+                                  {(rel as any)._rdvType === 'demonstration' ? (isEn ? 'Demo' : 'Démo') : 'RDV'}
+                                </span>
+                              )}
                               {/* {isSynthetic && (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] bg-amber-500/10 text-amber-600">
                                   {isEn ? 'From form' : 'Depuis le formulaire'}
@@ -623,7 +681,7 @@ export const ProspectDetail: React.FC = () => {
                               <p className="text-muted-foreground italic mt-1">{rel.commentaire}</p>
                             )}
                           </div>
-                          {!isSynthetic && (
+                          {!isSynthetic && !isRdv && (
                             <div className="flex items-center gap-1.5 shrink-0">
                               <button
                                 onClick={() => openEditRelance(rel)}
@@ -659,7 +717,147 @@ export const ProspectDetail: React.FC = () => {
             </div>
           )}
 
-          {/* Tab 3: Detailed Prospect Information Card */}
+          {/* Tab 3: Notes with @mentions */}
+          {activeTab === 'notes' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                  {isEn ? 'Internal Notes' : 'Notes internes'}
+                </h3>
+                <div className="relative">
+                  <textarea
+                    ref={noteRef}
+                    rows={3}
+                    value={noteText}
+                    onChange={e => {
+                      setNoteText(e.target.value);
+                      const val = e.target.value;
+                      const cursor = e.target.selectionStart;
+                      const before = val.slice(0, cursor);
+                      const atMatch = before.match(/@(\w*)$/);
+                      if (atMatch) {
+                        setShowMentions(true);
+                        setMentionFilter(atMatch[1].toLowerCase());
+                      } else {
+                        setShowMentions(false);
+                      }
+                    }}
+                    placeholder={isEn ? 'Write a note... Type @ to mention a colleague' : 'Écrire une note... Tapez @ pour mentionner un collègue'}
+                    className="w-full p-3 rounded-2xl border border-input bg-background text-xs font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none resize-none"
+                  />
+                  {showMentions && (
+                    <div className="absolute left-0 right-0 bottom-full mb-1 bg-card border border-border rounded-xl shadow-lg z-10 max-h-40 overflow-y-auto">
+                      {commerciaux
+                        .filter(c => `${c.prenom} ${c.nom}`.toLowerCase().includes(mentionFilter))
+                        .map(c => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => {
+                              const val = noteText;
+                              const cursor = noteRef.current?.selectionStart || val.length;
+                              const before = val.slice(0, cursor);
+                              const after = val.slice(cursor);
+                              const newBefore = before.replace(/@\w*$/, `@${c.prenom} ${c.nom} `);
+                              setNoteText(newBefore + after);
+                              setShowMentions(false);
+                              setTimeout(() => noteRef.current?.focus(), 0);
+                            }}
+                            className="w-full text-left px-3 py-2 text-xs font-semibold hover:bg-muted flex items-center gap-2"
+                          >
+                            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-black">
+                              {c.prenom?.[0]}{c.nom?.[0]}
+                            </span>
+                            {c.prenom} {c.nom}
+                          </button>
+                        ))}
+                      {commerciaux.filter(c => `${c.prenom} ${c.nom}`.toLowerCase().includes(mentionFilter)).length === 0 && (
+                        <p className="px-3 py-2 text-xs text-muted-foreground">{isEn ? 'No match' : 'Aucun résultat'}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    onClick={async () => {
+                      if (!noteText.trim()) return;
+                      setNoteSaving(true);
+                      const mentionedIds = commerciaux
+                        .filter(c => noteText.includes(`@${c.prenom} ${c.nom}`))
+                        .map(c => c.id);
+                      try {
+                        await addNote.mutateAsync({ contenu: noteText.trim(), mentionedUserIds: mentionedIds });
+                        setNoteText('');
+                        toast.success(isEn ? 'Note added!' : 'Note ajoutée !');
+                      } catch {
+                        toast.error(isEn ? 'Error adding note.' : "Erreur lors de l'ajout.");
+                      } finally {
+                        setNoteSaving(false);
+                      }
+                    }}
+                    disabled={!noteText.trim() || noteSaving}
+                    className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    {noteSaving ? (
+                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Plus className="w-3.5 h-3.5" />
+                    )}
+                    {isEn ? 'Add note' : 'Ajouter'}
+                  </button>
+                </div>
+              </div>
+
+              {notes.length === 0 ? (
+                <div className="p-6 sm:p-8 rounded-3xl border-2 border-dashed border-border text-center space-y-2">
+                  <MessageSquare className="w-8 h-8 text-muted-foreground mx-auto" />
+                  <p className="text-xs font-black text-foreground">
+                    {isEn ? 'No note yet.' : 'Aucune note pour le moment.'}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-semibold">
+                    {isEn ? 'Add internal notes and @mention colleagues to notify them.' : 'Ajoutez des notes internes et @mentionnez vos collègues pour les notifier.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {notes.map(note => (
+                    <div key={note.id} className="p-3.5 rounded-2xl border border-border bg-card shadow-sm text-xs">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-black shrink-0">
+                            {note.author_nom.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                          </span>
+                          <span className="font-bold text-foreground">{note.author_nom}</span>
+                          <span className="text-muted-foreground font-medium">
+                            {new Date(note.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        {note.author_id === user?.id && (
+                          <button
+                            onClick={() => removeNote.mutate(note.id)}
+                            className="p-1 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 shrink-0"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-foreground font-medium leading-relaxed whitespace-pre-wrap">
+                        {note.contenu.split(/(@\w+\s\w+)/g).map((part, i) =>
+                          part.startsWith('@') ? (
+                            <span key={i} className="font-bold text-primary">{part}</span>
+                          ) : (
+                            <span key={i}>{part}</span>
+                          )
+                        )}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tab 4: Detailed Prospect Information Card */}
           {activeTab === 'infos' && (
             <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
@@ -667,13 +865,22 @@ export const ProspectDetail: React.FC = () => {
                   {isEn ? 'Commercial Profile Summary' : "Fiche d'Identité Commerciale"}
                 </h3>
                 {!isEditing ? (
-                  <button
-                    onClick={startEdit}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-input text-xs font-bold text-foreground hover:bg-muted transition-all"
-                  >
-                    <Pencil className="w-3.5 h-3.5 text-primary" />
-                    {isEn ? 'Edit' : 'Modifier'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={startEdit}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-input text-xs font-bold text-foreground hover:bg-muted transition-all"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-primary" />
+                      {isEn ? 'Edit' : 'Modifier'}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteOpen(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-200 dark:border-red-800/40 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      {isEn ? 'Delete' : 'Supprimer'}
+                    </button>
+                  </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <button
@@ -770,7 +977,7 @@ export const ProspectDetail: React.FC = () => {
                         <label className="font-extrabold text-muted-foreground">{isEn ? 'Source' : 'Source'}</label>
                         <select value={editForm.source} onChange={e => setEditForm(f => ({...f, source: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
-                          {SOURCES_DETAIL.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                          {sourcesConfig.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
@@ -862,11 +1069,11 @@ export const ProspectDetail: React.FC = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Phone' : 'Téléphone'}</span>
-                          <span className="font-black text-foreground text-sm">{prospect.telephone}</span>
+                          <span className="font-black text-foreground text-sm">{displayPhoneNumber(prospect.telephone)}</span>
                         </div>
                         <div>
                           <span className="block text-muted-foreground font-extrabold text-[11px]">WhatsApp</span>
-                          <span className="font-black text-foreground">{prospect.whatsapp || '—'}</span>
+                          <span className="font-black text-foreground">{prospect.whatsapp ? displayPhoneNumber(prospect.whatsapp) : '—'}</span>
                         </div>
                         <div>
                           <span className="block text-muted-foreground font-extrabold text-[11px]">Email</span>
@@ -915,7 +1122,7 @@ export const ProspectDetail: React.FC = () => {
                         <div>
                           <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Acquisition Source' : "Source d'Acquisition"}</span>
                           <span className="font-black text-foreground capitalize">
-                            {SOURCES_DETAIL.find(s => s.value === prospect.source)?.label || prospect.source.replace(/_/g, ' ')}
+                            {sourcesConfig.find(s => s.value === prospect.source)?.label || prospect.source.replace(/_/g, ' ')}
                           </span>
                         </div>
                         <div>
@@ -1169,7 +1376,7 @@ export const ProspectDetail: React.FC = () => {
       <WhatsAppActionModal
         isOpen={isWhatsAppModalOpen}
         prospectId={prospect.id}
-        prospectNom={`${prospect.prenom} ${prospect.nom}`}
+        prospectNom={displayName}
         onClose={() => setIsWhatsAppModalOpen(false)}
       />
 
@@ -1320,6 +1527,43 @@ export const ProspectDetail: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Modal — Confirmer suppression */}
+      {confirmDeleteOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-sm bg-card border border-border rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <h3 className="font-extrabold text-base text-foreground">
+              {isEn ? 'Delete this prospect?' : 'Supprimer ce prospect ?'}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {isEn
+                ? `Are you sure you want to delete "${displayName}"? This action cannot be undone.`
+                : `Voulez-vous vraiment supprimer « ${displayName} » ? Cette action est irréversible.`}
+            </p>
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => setConfirmDeleteOpen(false)}
+                className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground transition-colors"
+              >
+                {isEn ? 'Cancel' : 'Annuler'}
+              </button>
+              <button
+                onClick={() => {
+                  deleteProspect(prospect.id);
+                  toast.success(isEn ? 'Prospect deleted.' : 'Prospect supprimé.');
+                  navigate(clientsPath.replace('clients', 'prospects'));
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition-colors"
+              >
+                {isEn ? 'Delete' : 'Supprimer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

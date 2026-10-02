@@ -1184,6 +1184,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAdminNotifications(prev => [{ ...adminNotif, id: `admin-notif-${Date.now()}`, created_at: new Date().toISOString() } as any, ...prev]);
       }
 
+      if (newStep === 'rdv_programme' && oldStep !== 'rdv_programme') {
+        try {
+          const rdvDate = target.date_prochaine_relance || new Date().toISOString().split('T')[0];
+          const created = await interactionsService.createInteraction({
+            prospect_id: id,
+            organization_id: user.organizationId,
+            commercial_id: target.commercial_id || (user.role === 'commercial' ? user.id : undefined),
+            type: 'rdv',
+            statut: 'planifiee',
+            date: rdvDate,
+            heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+            commentaire: `RDV programmé (pipeline)`,
+          });
+          setInteractions(prev => [created, ...prev]);
+        } catch { /* best-effort */ }
+      }
+
       const actionType = newStep === 'gagne' ? 'prospect_converted' : newStep === 'perdu' ? 'prospect_lost' : 'prospect_pipeline_move';
       addActionLog({
         utilisateur_id: user.id,

@@ -4,14 +4,7 @@ export type TenantStatut = 'actif' | 'inactif' | 'suspendu';
 export type UserRole = 'super_admin' | 'admin_org' | 'commercial';
 export type CommercialStatut = 'actif' | 'inactif';
 
-export type ProspectSource = 
-  | 'site_web' 
-  | 'prospection_directe' 
-  | 'recommandation' 
-  | 'reseaux_sociaux' 
-  | 'whatsapp' 
-  | 'evenement' 
-  | 'autre';
+export type ProspectSource = string;
 
 export type PipelineStepId = string;
 

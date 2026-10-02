@@ -1,9 +1,161 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Building2, Save, Upload, Globe, Phone, Mail, MapPin, Briefcase } from 'lucide-react';
+import { Building2, Save, Upload, Globe, Phone, Mail, MapPin, Briefcase, Plus, Trash2, Tag, Pencil, Check, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PinChangeSection } from '../../components/common/PinChangeSection';
+import { useSourcesConfig } from '@/hooks/useSourcesConfig';
+import { DEFAULT_SOURCES } from '@/services/sourcesConfig';
+
+const SourcesSection: React.FC = () => {
+  const { t, i18n } = useTranslation('admin');
+  const isEn = i18n.language?.startsWith('en');
+  const { sources, customRows, addSource, editSource, removeSource } = useSourcesConfig();
+
+  const [newValue, setNewValue] = useState('');
+  const [newLabel, setNewLabel] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editLabel, setEditLabel] = useState('');
+
+  const toSlug = (str: string) =>
+    str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+
+  const handleAdd = async () => {
+    const label = newLabel.trim();
+    if (!label) return;
+    const value = toSlug(label);
+    if (sources.some(s => s.value === value)) {
+      toast.error(isEn ? 'This source already exists.' : 'Cette source existe déjà.');
+      return;
+    }
+    try {
+      await addSource.mutateAsync({ value, label, ordre: sources.length });
+      setNewLabel('');
+      setNewValue('');
+      toast.success(isEn ? 'Source added!' : 'Source ajoutée !');
+    } catch {
+      toast.error(isEn ? 'Error adding source.' : "Erreur lors de l'ajout.");
+    }
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    if (!editLabel.trim()) return;
+    try {
+      await editSource.mutateAsync({ id, label: editLabel.trim() });
+      setEditingId(null);
+    } catch {
+      toast.error(isEn ? 'Error updating source.' : 'Erreur lors de la modification.');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await removeSource.mutateAsync(id);
+      toast.success(isEn ? 'Source deleted.' : 'Source supprimée.');
+    } catch {
+      toast.error(isEn ? 'Error deleting source.' : 'Erreur lors de la suppression.');
+    }
+  };
+
+  return (
+    <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
+      <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+        <Tag className="w-4 h-4 text-primary" />
+        {isEn ? 'Prospect Sources' : 'Sources de prospects'}
+      </h2>
+      <p className="text-xs text-muted-foreground">
+        {isEn
+          ? 'Manage the acquisition sources available in prospect forms. Default sources are always present.'
+          : "Gérez les sources d'acquisition disponibles dans les formulaires prospect. Les sources par défaut sont toujours présentes."}
+      </p>
+
+      {/* Default sources (read-only) */}
+      <div className="space-y-1.5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          {isEn ? 'Default sources' : 'Sources par défaut'}
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {DEFAULT_SOURCES.map(s => (
+            <span key={s.value} className="px-2.5 py-1 rounded-lg bg-muted text-xs font-semibold text-muted-foreground">
+              {s.label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Custom sources (editable) */}
+      <div className="space-y-2">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          {isEn ? 'Custom sources' : 'Sources personnalisées'}
+        </p>
+        {customRows.length === 0 ? (
+          <p className="text-xs text-muted-foreground italic">
+            {isEn ? 'No custom source yet.' : 'Aucune source personnalisée pour le moment.'}
+          </p>
+        ) : (
+          <div className="space-y-1.5">
+            {customRows.map(row => (
+              <div key={row.id} className="flex items-center gap-2 p-2 rounded-xl border border-border bg-background">
+                {editingId === row.id ? (
+                  <>
+                    <input
+                      value={editLabel}
+                      onChange={e => setEditLabel(e.target.value)}
+                      className="flex-1 p-1.5 rounded-lg border border-input bg-card text-xs font-medium focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                      autoFocus
+                    />
+                    <button onClick={() => handleSaveEdit(row.id)} className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20">
+                      <Check className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="flex-1 text-xs font-semibold text-foreground">{row.label}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">{row.value}</span>
+                    <button onClick={() => { setEditingId(row.id); setEditLabel(row.label); }} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => handleDelete(row.id)} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add new source */}
+      <div className="flex items-end gap-2">
+        <div className="flex-1 space-y-1">
+          <label className="text-xs font-semibold text-foreground">
+            {isEn ? 'New source' : 'Nouvelle source'}
+          </label>
+          <input
+            type="text"
+            value={newLabel}
+            onChange={e => setNewLabel(e.target.value)}
+            placeholder={isEn ? 'e.g. LinkedIn, Salon Dakar...' : 'ex. LinkedIn, Salon Dakar...'}
+            className="w-full p-2.5 rounded-xl border border-input bg-background text-xs font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none"
+            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAdd())}
+          />
+        </div>
+        <button
+          onClick={handleAdd}
+          disabled={!newLabel.trim() || addSource.isPending}
+          className="px-4 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5 transition-all"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          {isEn ? 'Add' : 'Ajouter'}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export const ParametresEntreprise: React.FC = () => {
   const { t } = useTranslation('admin');
@@ -218,6 +370,9 @@ export const ParametresEntreprise: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Sources de prospects */}
+        <SourcesSection />
 
         {/* Security — PIN change */}
         <PinChangeSection />

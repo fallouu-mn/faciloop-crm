@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource } from '../../types/crm';
 import { useEtapesPipeline, getEtapeLabelByNom } from '@/hooks/useEtapesPipeline';
-import { formatPhoneNumber } from '../../lib/phoneUtils';
+import { formatPhoneNumber, displayPhoneNumber } from '../../lib/phoneUtils';
 import {
   Users,
   Search,
@@ -23,6 +23,7 @@ import {
 import { toast } from 'sonner';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useProspects } from '@/hooks/commercial/useProspects';
+import { useSourcesConfig } from '@/hooks/useSourcesConfig';
 
 const PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
@@ -33,6 +34,7 @@ export const ProspectsList: React.FC = () => {
   const { user, myProspects, prospects, addProspect, deleteProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
   const { prospects: apiProspects, createProspect: apiCreateProspect, reassignProspects: apiReassignProspects } = useProspects();
   const { etapes } = useEtapesPipeline();
+  const { sources: sourcesConfig } = useSourcesConfig();
   const effectiveProspects = apiProspects.length > 0 ? apiProspects : myProspects;
   const [searchParams] = useSearchParams();
 
@@ -94,12 +96,12 @@ export const ProspectsList: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!newNom && !newEntreprise) || !newPhone || !newPays) return;
+    if ((!newNom && !newPrenom && !newEntreprise) || !newPhone || !newPays) return;
 
     const res = await addProspect({
-      nom: newNom || newEntreprise,
+      nom: newNom || newPrenom || newEntreprise || '',
       prenom: newPrenom || undefined,
-      entreprise: newEntreprise || newNom,
+      entreprise: newEntreprise || newNom || newPrenom || '',
       telephone: newPhone,
       whatsapp: newWhatsapp || undefined,
       email: newEmail || undefined,
@@ -204,8 +206,8 @@ export const ProspectsList: React.FC = () => {
   // CDC 3.2: Filtered strictly on myProspects for Commercial role, or all for Admin
   const filtered = myProspects.filter(p => {
     const matchSearch =
-      p.nom.toLowerCase().includes(search.toLowerCase()) ||
-      p.entreprise.toLowerCase().includes(search.toLowerCase()) ||
+      (p.nom || '').toLowerCase().includes(search.toLowerCase()) ||
+      (p.entreprise || '').toLowerCase().includes(search.toLowerCase()) ||
       p.telephone.includes(search);
     const matchStep = filterStep === 'all' || p.statut_pipeline === filterStep;
     const matchSource = filterSource === 'all' || p.source === filterSource;
@@ -349,14 +351,8 @@ export const ProspectsList: React.FC = () => {
             onChange={(e) => setFilterSource(e.target.value)}
             className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
           >
-            <option value="all">Toutes les sources</option>
-            <option value="site_web">Site Web</option>
-            <option value="prospection_directe">Prospection Directe</option>
-            <option value="recommandation">Recommandation</option>
-            <option value="reseaux_sociaux">Réseaux Sociaux</option>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="evenement">Événement</option>
-            <option value="autre">Autre</option>
+            <option value="all">{isEn ? 'All sources' : 'Toutes les sources'}</option>
+            {sourcesConfig.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
         </div>
       </div>
@@ -396,10 +392,10 @@ export const ProspectsList: React.FC = () => {
                     />
                   </td>
                   <td className="p-4 font-bold text-foreground">
-                    <div>{p.prenom} {p.nom}</div>
-                    <div className="text-[11px] font-normal text-muted-foreground">{p.entreprise}</div>
+                    <div>{p.prenom || p.nom ? `${p.prenom || ''} ${p.nom || ''}`.trim() : p.entreprise || p.telephone}</div>
+                    <div className="text-[11px] font-normal text-muted-foreground">{p.entreprise || '—'}</div>
                   </td>
-                  <td className="p-4 font-medium text-foreground">{p.telephone}</td>
+                  <td className="p-4 font-medium text-foreground">{displayPhoneNumber(p.telephone)}</td>
                   <td className="p-4">
                     <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold capitalize ${
                       p.statut_pipeline === 'gagne' ? 'bg-emerald-500/10 text-emerald-500' :
@@ -420,29 +416,6 @@ export const ProspectsList: React.FC = () => {
                         <Eye className="w-3.5 h-3.5" />
                         <span>Fiche</span>
                       </Link>
-                      {confirmDeleteId === p.id ? (
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            onClick={() => handleDelete(p.id)}
-                            className="px-2 py-1.5 rounded-lg bg-red-500 text-white text-[10px] font-bold hover:bg-red-600"
-                          >
-                            {isEn ? 'Confirm' : 'Confirmer'}
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="px-2 py-1.5 rounded-lg border border-input text-[10px] font-bold hover:bg-muted"
-                          >
-                            {isEn ? 'Cancel' : 'Annuler'}
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmDeleteId(p.id)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 dark:border-red-800/40 px-2.5 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
                     </div>
                   </td>
                 </tr>
@@ -467,8 +440,8 @@ export const ProspectsList: React.FC = () => {
                     className="w-5 h-5 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer shrink-0"
                   />
                   <div>
-                    <h3 className="font-extrabold text-sm text-foreground">{p.prenom} {p.nom}</h3>
-                    <p className="text-xs font-medium text-muted-foreground">{p.entreprise}</p>
+                    <h3 className="font-extrabold text-sm text-foreground">{p.prenom || p.nom ? `${p.prenom || ''} ${p.nom || ''}`.trim() : p.entreprise || p.telephone}</h3>
+                    <p className="text-xs font-medium text-muted-foreground">{p.entreprise || '—'}</p>
                   </div>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${
@@ -479,7 +452,7 @@ export const ProspectsList: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between text-xs text-muted-foreground pl-8">
-                <span className="font-medium text-foreground">{p.telephone}</span>
+                <span className="font-medium text-foreground">{displayPhoneNumber(p.telephone)}</span>
                 <span className="font-extrabold text-primary text-[11px]">{p.commercial_nom}</span>
               </div>
 
@@ -491,29 +464,6 @@ export const ProspectsList: React.FC = () => {
                   <span>{isEn ? 'Open Prospect Card' : 'Ouvrir Fiche Prospect'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
-                {confirmDeleteId === p.id ? (
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => handleDelete(p.id)}
-                      className="px-3 py-2 rounded-xl bg-red-500 text-white text-[10px] font-bold hover:bg-red-600 active:scale-95"
-                    >
-                      {isEn ? 'Confirm' : 'OK'}
-                    </button>
-                    <button
-                      onClick={() => setConfirmDeleteId(null)}
-                      className="px-3 py-2 rounded-xl border border-input text-[10px] font-bold hover:bg-muted active:scale-95"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setConfirmDeleteId(p.id)}
-                    className="px-3 py-2 rounded-xl border border-red-200 dark:border-red-800/40 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 active:scale-95 transition-all"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
               </div>
             </div>
           );
@@ -605,18 +555,18 @@ export const ProspectsList: React.FC = () => {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Last Name *' : 'Nom *'}</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'Last Name' : 'Nom'}</label>
                     <input type="text" value={newNom} onChange={(e) => setNewNom(e.target.value)}
                       placeholder="Diop" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'First Name *' : 'Prénom *'}</label>
-                    <input type="text" required value={newPrenom} onChange={(e) => setNewPrenom(e.target.value)}
+                    <label className="block font-semibold mb-1">{isEn ? 'First Name' : 'Prénom'}</label>
+                    <input type="text" value={newPrenom} onChange={(e) => setNewPrenom(e.target.value)}
                       placeholder="Moussa" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Company *' : 'Entreprise *'}</label>
+                  <label className="block font-semibold mb-1">{isEn ? 'Company' : 'Entreprise'}</label>
                   <input type="text" value={newEntreprise} onChange={(e) => setNewEntreprise(e.target.value)}
                     placeholder="Dakar Tech Ltd" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
@@ -739,7 +689,7 @@ export const ProspectsList: React.FC = () => {
               </div>
 
               <button type="submit"
-                disabled={(!newNom && !newEntreprise) || !newPhone || !newPays || duplicateAlert}
+                disabled={(!newNom && !newPrenom && !newEntreprise) || !newPhone || !newPays || duplicateAlert}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 {isEn ? 'Create Prospect' : 'Créer le prospect'}
               </button>

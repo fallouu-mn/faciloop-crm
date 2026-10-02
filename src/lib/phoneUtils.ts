@@ -31,3 +31,29 @@ export const formatPhoneNumber = (phone: string): string => {
 
   return cleaned;
 };
+
+export const displayPhoneNumber = (phone: string): string => {
+  if (!phone) return '';
+  const normalized = formatPhoneNumber(phone);
+
+  // +221 77 123 45 67
+  const sn = normalized.match(/^\+221(\d{2})(\d{3})(\d{2})(\d{2})$/);
+  if (sn) return `+221 ${sn[1]} ${sn[2]} ${sn[3]} ${sn[4]}`;
+
+  // +225 07 12 34 56 78 (Côte d'Ivoire)
+  const ci = normalized.match(/^\+225(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
+  if (ci) return `+225 ${ci[1]} ${ci[2]} ${ci[3]} ${ci[4]} ${ci[5]}`;
+
+  // +33 6 12 34 56 78 (France)
+  const fr = normalized.match(/^\+33(\d)(\d{2})(\d{2})(\d{2})(\d{2})$/);
+  if (fr) return `+33 ${fr[1]} ${fr[2]} ${fr[3]} ${fr[4]} ${fr[5]}`;
+
+  // Fallback: groupes de 2 après l'indicatif
+  const m = normalized.match(/^(\+\d{1,3})(\d+)$/);
+  if (m) {
+    const digits = m[2].match(/.{1,2}/g) || [];
+    return `${m[1]} ${digits.join(' ')}`;
+  }
+
+  return phone;
+};
