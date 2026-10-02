@@ -5,6 +5,7 @@ import { ClientFaciloop } from '../../types/crm';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
 import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
+import { formatPhoneNumber } from '../../utils/formatters';
 import { useTranslation } from 'react-i18next';
 import {
   Building2,
@@ -134,7 +135,8 @@ export const ClientsListAdmin: React.FC = () => {
       const matchSearch = !q ||
         normalize(c.entreprise).includes(q) ||
         normalize(c.nom_responsable).includes(q) ||
-        c.telephone.includes(search);
+        c.telephone.includes(search) ||
+        formatPhoneNumber(c.telephone).includes(search);
       const matchCompte = filterStatutCompte === 'all' || c.statut_compte === filterStatutCompte;
       const matchAbo = filterStatutAbo === 'all' || c.statut_abonnement === filterStatutAbo;
       const matchFormule = filterFormule === 'all' || c.formule_souscrite === filterFormule;
@@ -454,7 +456,7 @@ export const ClientsListAdmin: React.FC = () => {
               </div>
               <div className="flex items-center justify-between pt-2 border-t border-border/60 text-xs">
                 <div className="flex items-center gap-2">
-                  <a href={`tel:${client.telephone}`} className="p-1.5 rounded-lg bg-muted hover:bg-primary/10 transition-colors">
+                  <a href={`tel:${client.telephone}`} title={formatPhoneNumber(client.telephone)} className="p-1.5 rounded-lg bg-muted hover:bg-primary/10 transition-colors">
                     <Phone className="w-3.5 h-3.5 text-primary" />
                   </a>
                   {client.whatsapp && (
@@ -617,7 +619,7 @@ export const ClientsListAdmin: React.FC = () => {
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="space-y-1">
                       <span className="text-muted-foreground">Téléphone</span>
-                      <p className="font-medium text-foreground flex items-center gap-1"><Phone className="w-3 h-3" />{selectedClient.telephone}</p>
+                      <p className="font-medium text-foreground flex items-center gap-1"><Phone className="w-3 h-3" />{formatPhoneNumber(selectedClient.telephone)}</p>
                     </div>
                     <div className="space-y-1">
                       <span className="text-muted-foreground">Email</span>

@@ -39,8 +39,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useProspectDetail, useInteractions, useRelances } from '@/hooks/commercial';
 import * as prospectsService from '../../services/prospects';
 import { getRelancesByProspect } from '../../services/relances';
+import { formatPhoneNumber, fullName, orFallback, formatDateWithTime, toDateTimeLocal, splitDateTimeLocal } from '../../utils/formatters';
+import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
+import { sourceLabel } from '@/services/organizationSettings';
+import { CustomFieldsForm } from '@/components/common/CustomFieldsForm';
+import { MentionTextarea, extractMentionedCommerciaux } from '@/components/common/MentionTextarea';
+import * as notificationsService from '../../services/notifications';
+import type { CustomFieldValues, NotificationItem } from '../../types/crm';
 
-const SOURCES_DETAIL = [
+const SOURCES_DETAIL_FALLBACK = [
   { value: 'prospection_directe', label: 'Prospection directe' },
   { value: 'site_web', label: 'Site web' },
   { value: 'recommandation', label: 'Recommandation' },
@@ -56,10 +63,14 @@ export const ProspectDetail: React.FC = () => {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en');
   const { etapes } = useEtapesPipeline();
+  // Retour client n°6 : sources par défaut + sources custom de l'organisation.
+  // Retour client n°4 : schéma des champs dynamiques prospects.
+  const { sourceOptions, prospectFields } = useOrganizationSettings();
+  const SOURCES_DETAIL = sourceOptions.length ? sourceOptions : SOURCES_DETAIL_FALLBACK;
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, prospects, interactions: authInteractions, addInteraction, convertProspectToClient, orgOffers, commerciaux } = useAuth();
+  const { user, prospects, interactions: authInteractions, addInteraction, convertProspectToClient, orgOffers, commerciaux, deleteProspect } = useAuth();
   const { prospect: dbProspect } = useProspectDetail(id);
   const { interactions: apiInteractions, createInteraction: apiCreateInteraction } = useInteractions(id);
   const { createRelance, updateRelance, completeRelance, deleteRelance } = useRelances();
@@ -102,6 +113,8 @@ export const ProspectDetail: React.FC = () => {
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
+  // Retour client n°4 : valeurs des champs dynamiques en cours d'édition.
+  const [editCustom, setEditCustom] = useState<CustomFieldValues>({});
   const [editForm, setEditForm] = useState<{
     nom: string; prenom: string; telephone: string; email: string; whatsapp: string;
     entreprise: string; secteur_activite: string; source: string;
@@ -140,6 +153,7 @@ export const ProspectDetail: React.FC = () => {
       date_prochaine_relance: prospect.date_prochaine_relance || '',
       site_web: prospect.site_web || '',
     });
+    setEditCustom(prospect.custom_fields || {});
     setIsEditing(true);
   };
 
@@ -150,12 +164,12 @@ export const ProspectDetail: React.FC = () => {
       const commercial = commerciaux.find(c => c.id === editForm.commercial_id);
       const prevDrp = prospect.date_prochaine_relance;
       await prospectsService.updateProspect(prospect.id, {
-        nom: editForm.nom,
+        nom: editForm.nom || undefined,
         prenom: editForm.prenom || undefined,
         telephone: editForm.telephone,
         email: editForm.email || undefined,
         whatsapp: editForm.whatsapp || undefined,
-        entreprise: editForm.entreprise,
+        entreprise: editForm.entreprise || undefined,
         secteur_activite: editForm.secteur_activite || undefined,
         source: editForm.source as any,
         statut_pipeline: editForm.statut_pipeline as any,
@@ -171,6 +185,7 @@ export const ProspectDetail: React.FC = () => {
         adresse: editForm.adresse || undefined,
         date_prochaine_relance: editForm.date_prochaine_relance || undefined,
         site_web: editForm.site_web || undefined,
+        custom_fields: editCustom,
       });
       // If date_prochaine_relance changed and is new, auto-create a formal relance entry
       const newDrp = editForm.date_prochaine_relance;
@@ -178,8 +193,11 @@ export const ProspectDetail: React.FC = () => {
         try {
           await createRelance({
             prospect_id: prospect.id,
-            prospect_nom: `${editForm.prenom || ''} ${editForm.nom}`.trim(),
-            prospect_entreprise: editForm.entreprise,
+            prospect_nom: (() => {
+              const full = `${editForm.prenom || ''} ${editForm.nom || ''}`.trim();
+              return full || editForm.entreprise || prospect.telephone;
+            })(),
+            prospect_entreprise: editForm.entreprise || '',
             organization_id: prospect.organization_id,
             commercial_id: editForm.commercial_id || prospect.commercial_id,
             date: newDrp,
@@ -198,10 +216,24 @@ export const ProspectDetail: React.FC = () => {
     }
   };
 
+  // Retour client n°8 — Suppression du prospect depuis sa fiche (avec confirmation)
+  const handleDeleteProspect = () => {
+    const label = orFallback(prospect.entreprise, fullName(prospect, prospect.telephone));
+    const confirmed = window.confirm(
+      isEn
+        ? `Delete "${label}" permanently? This action cannot be undone.`
+        : `Supprimer « ${label} » définitivement ? Cette action est irréversible.`,
+    );
+    if (!confirmed) return;
+    deleteProspect(prospect.id);
+    toast.success(isEn ? 'Prospect deleted.' : 'Prospect supprimé.');
+    navigate(prospectsListPath);
+  };
+
   // New Relance Modal State
   const [isRelanceModalOpen, setIsRelanceModalOpen] = useState(false);
-  const [rDate, setRDate] = useState('');
-  const [rHeure, setRHeure] = useState('');
+  // Retour client n°10 : créneau horaire unique (date + heure) en un seul champ.
+  const [rDateTime, setRDateTime] = useState('');
   const [rCanal, setRCanal] = useState<RelanceCanal>('appel');
   const [rMotif, setRMotif] = useState('');
   const [rComment, setRComment] = useState('');
@@ -209,8 +241,8 @@ export const ProspectDetail: React.FC = () => {
 
   // Edit relance modal state
   const [editRelanceId, setEditRelanceId] = useState<string | null>(null);
-  const [erDate, setErDate] = useState('');
-  const [erHeure, setErHeure] = useState('');
+  // Retour client n°10 : créneau horaire unique (date + heure) en un seul champ.
+  const [erDateTime, setErDateTime] = useState('');
   const [erCanal, setErCanal] = useState<RelanceCanal>('appel');
   const [erMotif, setErMotif] = useState('');
   const [erComment, setErComment] = useState('');
@@ -218,8 +250,8 @@ export const ProspectDetail: React.FC = () => {
 
   const openEditRelance = (rel: any) => {
     setEditRelanceId(rel.id);
-    setErDate(rel.date || '');
-    setErHeure(rel.heure || '');
+    // Retour client n°10 : le créneau horaire unique reprend date + heure.
+    setErDateTime(toDateTimeLocal(rel.date, rel.heure));
     setErCanal(rel.canal || 'appel');
     setErMotif(rel.motif || '');
     setErComment(rel.commentaire || '');
@@ -227,12 +259,13 @@ export const ProspectDetail: React.FC = () => {
 
   const handleSaveEditRelance = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editRelanceId || !erDate) return;
+    const { date, heure } = splitDateTimeLocal(erDateTime);
+    if (!editRelanceId || !date) return;
     setErSaving(true);
     try {
       await updateRelance(editRelanceId, {
-        date: erDate,
-        heure: erHeure || undefined,
+        date,
+        heure,
         canal: erCanal,
         motif: erMotif || undefined,
         commentaire: erComment || undefined,
@@ -246,17 +279,18 @@ export const ProspectDetail: React.FC = () => {
 
   const handleCreateRelance = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!prospect || !rDate) return;
+    const { date, heure } = splitDateTimeLocal(rDateTime);
+    if (!prospect || !date) return;
     setRSaving(true);
     try {
       await createRelance({
         prospect_id: prospect.id,
-        prospect_nom: `${prospect.prenom || ''} ${prospect.nom}`.trim(),
-        prospect_entreprise: prospect.entreprise,
+        prospect_nom: fullName(prospect, ''),
+        prospect_entreprise: prospect.entreprise || '',
         organization_id: prospect.organization_id,
         commercial_id: prospect.commercial_id,
-        date: rDate,
-        heure: rHeure || undefined,
+        date,
+        heure,
         canal: rCanal,
         motif: rMotif || undefined,
         commentaire: rComment || undefined,
@@ -264,7 +298,7 @@ export const ProspectDetail: React.FC = () => {
       });
       queryClient.invalidateQueries({ queryKey: ['relances', 'prospect', id] });
       setIsRelanceModalOpen(false);
-      setRDate(''); setRHeure(''); setRCanal('appel'); setRMotif(''); setRComment('');
+      setRDateTime(''); setRCanal('appel'); setRMotif(''); setRComment('');
     } finally {
       setRSaving(false);
     }
@@ -342,6 +376,32 @@ export const ProspectDetail: React.FC = () => {
       commentaire: interComment,
       prochaine_action: interNextAction
     });
+
+    // Retour client n°2 : notifier chaque commercial mentionné via @
+    const mentioned = extractMentionedCommerciaux(interComment, commerciaux);
+    mentioned.forEach((c) => {
+      if (!c.id || c.id === user?.id) return;
+      const notif: Omit<NotificationItem, 'id' | 'created_at'> = {
+        organization_id: prospect.organization_id,
+        commercial_id: c.id,
+        type: 'mention',
+        titre: isEn ? 'You have been mentioned' : 'Vous avez été mentionné',
+        message: isEn
+          ? `${user ? `${user.prenom} ${user.nom}` : 'A sales rep'} mentioned you on the prospect ${fullName(prospect, prospect.telephone)}.`
+          : `${user ? `${user.prenom} ${user.nom}` : 'Un commercial'} vous a mentionné sur le prospect ${fullName(prospect, prospect.telephone)}.`,
+        lien: `/app/prospects/${prospect.id}`,
+        lue: false,
+      };
+      notificationsService.createNotification(notif).catch(() => {});
+    });
+    if (mentioned.length > 0) {
+      toast.info(
+        isEn
+          ? `${mentioned.length} sales rep${mentioned.length > 1 ? 's' : ''} notified.`
+          : `${mentioned.length} commercial${mentioned.length > 1 ? 's' : ''} notifié${mentioned.length > 1 ? 's' : ''}.`,
+      );
+    }
+
     setIsInterModalOpen(false);
     setInterComment('');
     setInterNextAction('');
@@ -383,7 +443,7 @@ export const ProspectDetail: React.FC = () => {
 
             <div className="space-y-0.5">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <h1 className="text-lg sm:text-xl font-black text-foreground">{prospect.prenom} {prospect.nom}</h1>
+                <h1 className="text-lg sm:text-xl font-black text-foreground">{fullName(prospect)}</h1>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-primary/10 text-primary">
                   {getStageTitle(prospect.statut_pipeline)}
                 </span>
@@ -391,7 +451,7 @@ export const ProspectDetail: React.FC = () => {
               <p className="text-xs font-bold text-muted-foreground flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <span className="flex items-center gap-1">
                   <Building2 className="w-3.5 h-3.5 text-primary" />
-                  {prospect.entreprise}
+                  {orFallback(prospect.entreprise)}
                 </span>
                 <span>•</span>
                 <span>{prospect.secteur_activite || (isEn ? 'General' : 'Général')}</span>
@@ -553,7 +613,11 @@ export const ProspectDetail: React.FC = () => {
                   {isEn ? 'Scheduled Follow-ups' : 'Relances Programmées'}
                 </h3>
                 <button
-                  onClick={() => setIsRelanceModalOpen(true)}
+                  onClick={() => {
+                    // Retour client n°10 : valeur par défaut du créneau horaire unique.
+                    setRDateTime(toDateTimeLocal(prospect?.date_prochaine_relance || new Date().toISOString().split('T')[0], '09:30'));
+                    setIsRelanceModalOpen(true);
+                  }}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all shadow-sm"
                 >
                   <CalendarPlus className="w-3.5 h-3.5" />
@@ -617,7 +681,7 @@ export const ProspectDetail: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-1 text-muted-foreground font-semibold">
                               <Clock className="w-3 h-3 text-primary shrink-0" />
-                              {rel.date}{rel.heure ? ` ${isEn ? 'at' : 'à'} ${rel.heure}` : ''}
+                              {formatDateWithTime(rel.date, rel.heure, isEn ? 'en' : 'fr')}
                             </div>
                             {rel.commentaire && (
                               <p className="text-muted-foreground italic mt-1">{rel.commentaire}</p>
@@ -667,13 +731,23 @@ export const ProspectDetail: React.FC = () => {
                   {isEn ? 'Commercial Profile Summary' : "Fiche d'Identité Commerciale"}
                 </h3>
                 {!isEditing ? (
-                  <button
-                    onClick={startEdit}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-input text-xs font-bold text-foreground hover:bg-muted transition-all"
-                  >
-                    <Pencil className="w-3.5 h-3.5 text-primary" />
-                    {isEn ? 'Edit' : 'Modifier'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={startEdit}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-input text-xs font-bold text-foreground hover:bg-muted transition-all"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-primary" />
+                      {isEn ? 'Edit' : 'Modifier'}
+                    </button>
+                    {/* Retour client n°8 : suppression du prospect depuis sa fiche */}
+                    <button
+                      onClick={handleDeleteProspect}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-input text-xs font-bold text-red-500 hover:bg-red-500/10 hover:border-red-500/30 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      {isEn ? 'Delete' : 'Supprimer'}
+                    </button>
+                  </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <button
@@ -770,7 +844,10 @@ export const ProspectDetail: React.FC = () => {
                         <label className="font-extrabold text-muted-foreground">{isEn ? 'Source' : 'Source'}</label>
                         <select value={editForm.source} onChange={e => setEditForm(f => ({...f, source: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
-                          {SOURCES_DETAIL.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                          {SOURCES_DETAIL.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, isEn)}</option>)}
+                          {!SOURCES_DETAIL.some(s => s.value === editForm.source) && (
+                            <option value={editForm.source}>{editForm.source.replace(/_/g, ' ')}</option>
+                          )}
                         </select>
                       </div>
                       <div className="space-y-1">
@@ -829,6 +906,14 @@ export const ProspectDetail: React.FC = () => {
                       <textarea rows={3} value={editForm.commentaire} onChange={e => setEditForm(f => ({...f, commentaire: e.target.value}))}
                         className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none resize-none" />
                     </div>
+
+                    {/* Retour client n°4 : champs dynamiques définis par l'Admin */}
+                    <CustomFieldsForm
+                      schema={prospectFields}
+                      values={editCustom}
+                      onChange={setEditCustom}
+                      isEn={isEn}
+                    />
                   </div>
                 ) : (
                   /* ── Mode lecture ── */
@@ -847,7 +932,7 @@ export const ProspectDetail: React.FC = () => {
                         </div>
                         <div>
                           <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Company' : 'Entreprise'}</span>
-                          <span className="font-black text-foreground">{prospect.entreprise}</span>
+                          <span className="font-black text-foreground">{orFallback(prospect.entreprise)}</span>
                         </div>
                         <div>
                           <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Industry / Sector' : "Secteur d'Activité"}</span>
@@ -862,7 +947,7 @@ export const ProspectDetail: React.FC = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Phone' : 'Téléphone'}</span>
-                          <span className="font-black text-foreground text-sm">{prospect.telephone}</span>
+                          <span className="font-black text-foreground text-sm">{formatPhoneNumber(prospect.telephone)}</span>
                         </div>
                         <div>
                           <span className="block text-muted-foreground font-extrabold text-[11px]">WhatsApp</span>
@@ -915,7 +1000,10 @@ export const ProspectDetail: React.FC = () => {
                         <div>
                           <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Acquisition Source' : "Source d'Acquisition"}</span>
                           <span className="font-black text-foreground capitalize">
-                            {SOURCES_DETAIL.find(s => s.value === prospect.source)?.label || prospect.source.replace(/_/g, ' ')}
+                            {(() => {
+                              const found = SOURCES_DETAIL.find(s => s.value === prospect.source);
+                              return found ? sourceLabel(found, isEn) : prospect.source.replace(/_/g, ' ');
+                            })()}
                           </span>
                         </div>
                         <div>
@@ -959,6 +1047,19 @@ export const ProspectDetail: React.FC = () => {
                       <div className="pt-3 border-t border-border/60">
                         <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Notes' : 'Notes / Commentaire'}</p>
                         <p className="text-foreground font-semibold leading-relaxed bg-muted/40 rounded-xl p-3">{prospect.commentaire}</p>
+                      </div>
+                    )}
+
+                    {/* Retour client n°4 : champs dynamiques en lecture seule */}
+                    {prospectFields.length > 0 && (
+                      <div className="pt-3 border-t border-border/60">
+                        <CustomFieldsForm
+                          schema={prospectFields}
+                          values={prospect.custom_fields || {}}
+                          onChange={() => {}}
+                          readOnly
+                          isEn={isEn}
+                        />
                       </div>
                     )}
                   </div>
@@ -1009,13 +1110,15 @@ export const ProspectDetail: React.FC = () => {
 
                 <div>
                   <label className="block font-bold mb-1 text-foreground">{isEn ? 'Report / Comment' : 'Compte-rendu / Commentaire'}</label>
-                  <textarea
+                  {/* Retour client n°2 : mention @ pour notifier un commercial */}
+                  <MentionTextarea
                     required
                     rows={3}
                     value={interComment}
-                    onChange={(e) => setInterComment(e.target.value)}
-                    placeholder={isEn ? "Key points discussed during exchange..." : "Points clés abordés lors de l'échange..."}
-                    className="w-full p-3 rounded-2xl border border-input bg-background font-semibold text-foreground"
+                    onChange={setInterComment}
+                    placeholder={isEn ? "Key points discussed during exchange... Type @ to notify a sales rep." : "Points clés abordés lors de l'échange... Tapez @ pour notifier un commercial."}
+                    className="rounded-2xl font-semibold"
+                    isEn={isEn}
                   />
                 </div>
 
@@ -1076,8 +1179,8 @@ export const ProspectDetail: React.FC = () => {
 
               <p className="text-xs text-muted-foreground font-semibold">
                 {isEn
-                  ? `Converting ${prospect.entreprise} to an official client.`
-                  : `Conversion de ${prospect.entreprise} en client officiel.`}
+                  ? `Converting ${orFallback(prospect.entreprise, fullName(prospect))} to an official client.`
+                  : `Conversion de ${orFallback(prospect.entreprise, fullName(prospect))} en client officiel.`}
               </p>
 
               <div className="space-y-3 text-xs">
@@ -1169,7 +1272,7 @@ export const ProspectDetail: React.FC = () => {
       <WhatsAppActionModal
         isOpen={isWhatsAppModalOpen}
         prospectId={prospect.id}
-        prospectNom={`${prospect.prenom} ${prospect.nom}`}
+        prospectNom={fullName(prospect)}
         onClose={() => setIsWhatsAppModalOpen(false)}
       />
 
@@ -1194,18 +1297,11 @@ export const ProspectDetail: React.FC = () => {
               </div>
 
               <form onSubmit={handleCreateRelance} className="space-y-3 text-xs">
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Date *' : 'Date *'}</label>
-                    <input type="date" required value={rDate} onChange={e => setRDate(e.target.value)}
-                      style={{ colorScheme: 'auto' }}
-                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
-                  </div>
-                  <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Time' : 'Heure'}</label>
-                    <input type="time" value={rHeure} onChange={e => setRHeure(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
-                  </div>
+                <div>
+                  <label className="block font-semibold mb-1">{isEn ? 'Date & Time *' : 'Date & Heure *'}</label>
+                  <input type="datetime-local" required value={rDateTime} onChange={e => setRDateTime(e.target.value)}
+                    style={{ colorScheme: 'auto' }}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
                 <div>
                   <label className="block font-semibold mb-1">{isEn ? 'Channel *' : 'Canal *'}</label>
@@ -1267,18 +1363,11 @@ export const ProspectDetail: React.FC = () => {
                 </button>
               </div>
               <form onSubmit={handleSaveEditRelance} className="space-y-3 text-xs">
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block font-semibold mb-1">Date *</label>
-                    <input type="date" required value={erDate} onChange={e => setErDate(e.target.value)}
-                      style={{ colorScheme: 'auto' }}
-                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
-                  </div>
-                  <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Time' : 'Heure'}</label>
-                    <input type="time" value={erHeure} onChange={e => setErHeure(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
-                  </div>
+                <div>
+                  <label className="block font-semibold mb-1">{isEn ? 'Date & Time *' : 'Date & Heure *'}</label>
+                  <input type="datetime-local" required value={erDateTime} onChange={e => setErDateTime(e.target.value)}
+                    style={{ colorScheme: 'auto' }}
+                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
                 <div>
                   <label className="block font-semibold mb-1">{isEn ? 'Channel *' : 'Canal *'}</label>

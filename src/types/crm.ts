@@ -13,6 +13,32 @@ export type ProspectSource =
   | 'evenement' 
   | 'autre';
 
+/**
+ * Retour client n°6 — les sources sont désormais extensibles.
+ * `ProspectSource` reste la liste des valeurs par défaut proposées partout,
+ * mais une organisation peut en ajouter d'autres (voir `organization_settings.custom_sources`),
+ * d'où le typage `string` de `Prospect.source`.
+ */
+export type SourceValue = string;
+
+/**
+ * Retour client n°4 — définition d'un champ personnalisé configuré par l'Admin.
+ * Stocké dans `organization_settings.prospect_custom_fields_schema` (JSONB).
+ */
+export interface CustomFieldDef {
+  /** clé technique persistée dans `prospects.custom_fields` */
+  key: string;
+  /** libellé affiché dans les formulaires et les fiches */
+  label: string;
+  type: 'text' | 'number' | 'date' | 'select';
+  /** valeurs possibles quand `type === 'select'` */
+  options?: string[];
+  required?: boolean;
+}
+
+/** Valeur d'un prospect pour ses champs dynamiques. */
+export type CustomFieldValues = Record<string, string | number | undefined>;
+
 export type PipelineStepId = string;
 
 export type MotifPerte = 
@@ -61,6 +87,21 @@ export interface Organization {
   created_at: string;
 }
 
+/**
+ * Retour client n°4 & n°6 — paramètres par organisation.
+ * Une seule ligne par org (contrainte UNIQUE sur `organization_id`).
+ */
+export interface OrganizationSettings {
+  id: string;
+  organization_id: string;
+  /** Schéma des champs dynamiques prospects. */
+  prospect_custom_fields_schema: CustomFieldDef[];
+  /** Sources ajoutées par l'Admin en plus des valeurs par défaut. */
+  custom_sources: string[];
+  created_at: string;
+  updated_at?: string;
+}
+
 export interface UserRoleRecord {
   id: string;
   user_id: string;
@@ -89,9 +130,10 @@ export interface Prospect {
   organization_id: string;
   commercial_id?: string;
   commercial_nom?: string;
-  nom: string;
+  /** Retour client n°5 : nom / prénom / entreprise ne sont plus obligatoires. */
+  nom?: string;
   prenom?: string;
-  entreprise: string;
+  entreprise?: string;
   telephone: string;
   whatsapp?: string;
   email?: string;
@@ -99,7 +141,7 @@ export interface Prospect {
   ville?: string;
   adresse?: string;
   secteur_activite?: string;
-  source: ProspectSource;
+  source: SourceValue;
   formule_envisagee?: string;
   budget_estime?: number;
   nbre_commerciaux?: number;
@@ -110,6 +152,8 @@ export interface Prospect {
   date_prochaine_relance?: string;
   date_derniere_interaction?: string;
   statut_pipeline: PipelineStepId;
+  /** Retour client n°4 : valeurs des champs dynamiques définis par l'organisation. */
+  custom_fields?: CustomFieldValues;
   created_at: string;
 }
 
@@ -134,6 +178,8 @@ export interface ClientFaciloop {
   fonctionnalites_activees?: string[];
   nombre_utilisateurs: number;
   derniere_connexion?: string;
+  /** Retour client n°4 : valeurs des champs dynamiques définis par l'organisation. */
+  custom_fields?: CustomFieldValues;
   created_at: string;
 }
 
@@ -166,6 +212,12 @@ export interface Relance {
   commentaire?: string;
   statut: RelanceStatut;
   created_at: string;
+  /**
+   * Retour client n°11 : relance "virtuelle" générée depuis la fiche prospect
+   * (date de prochaine relance / RDV programmé) et non stockée en base.
+   * Elle est affichée en lecture seule dans l'onglet Relances.
+   */
+  _synthetic?: boolean;
 }
 
 export interface Abonnement {

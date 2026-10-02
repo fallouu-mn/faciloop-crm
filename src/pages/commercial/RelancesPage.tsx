@@ -8,6 +8,9 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import {
+  fullName, orFallback, formatDateWithTime, toDateTimeLocal, splitDateTimeLocal,
+} from '../../utils/formatters';
 import type { Relance, RelanceStatut, RelanceCanal } from '../../types/crm';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -69,8 +72,8 @@ export const RelancesPage: React.FC = () => {
   const [selectedRelanceForView, setSelectedRelanceForView] = useState<Relance | null>(null);
   const [formProspectId, setFormProspectId] = useState('');
   const [formCommercialId, setFormCommercialId] = useState(commerciaux[0]?.id || '');
-  const [formDate, setFormDate] = useState(TODAY);
-  const [formHeure, setFormHeure] = useState('09:30');
+  // Retour client n°10 : créneau horaire unique (date + heure) en un seul champ.
+  const [formDateTime, setFormDateTime] = useState(`${TODAY}T09:30`);
   const [formCanal, setFormCanal] = useState<RelanceCanal>('whatsapp');
   const [formCommentaire, setFormCommentaire] = useState('');
 
@@ -81,18 +84,61 @@ export const RelancesPage: React.FC = () => {
 
   // Edit relance state
   const [editRelanceId, setEditRelanceId] = useState<string | null>(null);
-  const [erDate, setErDate] = useState('');
-  const [erHeure, setErHeure] = useState('');
+  // Retour client n°10 : créneau horaire unique (date + heure) en un seul champ.
+  const [erDateTime, setErDateTime] = useState('');
   const [erCanal, setErCanal] = useState<RelanceCanal>('appel');
   const [erMotif, setErMotif] = useState('');
   const [erCommercialId, setErCommercialId] = useState('');
   const [erSaving, setErSaving] = useState(false);
 
   // CDC 3.2: Filter base dataset based on user role
-  const baseRelances = useMemo(() => {
-    if (isAdmin) return relances;
-    return relances.filter(r => r.commercial_id === user?.id || r.commercial_id === user?.commercialId);
-  }, [relances, isAdmin, user]);
+  // Retour client n°11 : l'onglet Relances inclut aussi les prospects ayant une
+  // relance programmée (RDV programmé, à relancer, date de prochaine relance
+  // renseignée) même s'ils n'ont pas encore de ligne dans la table `relances`.
+  const baseRelances = useMemo<Relance[]>(() => {
+    const scopedRelances = isAdmin
+      ? relances
+      : relances.filter(r => r.commercial_id === user?.id || r.commercial_id === user?.commercialId);
+
+    const scopedProspects = isAdmin ? prospects : myProspects;
+
+    const synthetic: Relance[] = scopedProspects
+      .filter(p => {
+        if (p.statut_pipeline === 'gagne' || p.statut_pipeline === 'perdu') return false;
+        return !!p.date_prochaine_relance
+          || p.statut_pipeline === 'rdv_programme'
+          || p.statut_pipeline === 'a_relancer';
+      })
+      .map(p => {
+        const date = p.date_prochaine_relance || TODAY;
+        return { p, date };
+      })
+      // Pas de doublon si une relance réelle existe déjà pour ce prospect à cette date
+      .filter(({ p, date }) => !relances.some(r => r.prospect_id === p.id && r.date === date))
+      .map(({ p, date }): Relance => ({
+        id: `synthetic-${p.id}`,
+        organization_id: p.organization_id,
+        prospect_id: p.id,
+        commercial_id: p.commercial_id,
+        prospect_nom: fullName(p, orFallback(p.entreprise, p.telephone)),
+        prospect_entreprise: p.entreprise || '',
+        date,
+        canal: 'autre',
+        motif: p.statut_pipeline === 'rdv_programme'
+          ? (isEn ? 'Meeting scheduled' : 'RDV programmé')
+          : p.statut_pipeline === 'a_relancer'
+            ? (isEn ? 'To follow up' : 'À relancer')
+            : (isEn ? 'Next follow-up' : 'Prochaine relance'),
+        commentaire: isEn
+          ? 'Scheduled from the prospect file (read-only)'
+          : 'Programmé depuis la fiche prospect (lecture seule)',
+        statut: 'prevue',
+        created_at: p.created_at,
+        _synthetic: true,
+      }));
+
+    return [...scopedRelances, ...synthetic];
+  }, [relances, isAdmin, user, prospects, myProspects, isEn]);
 
   // ── KPI calculations
   const kpiAujourdhui = useMemo(() => baseRelances.filter(r => r.date === TODAY && (r.statut === 'prevue' || r.statut === 'en_retard')).length, [baseRelances]);
@@ -111,7 +157,9 @@ export const RelancesPage: React.FC = () => {
       if (activeTab === 'annulees' && r.statut !== 'annulee') return false;
 
       if (filterCommercial && r.commercial_id !== filterCommercial) return false;
-      if (filterCanal && r.canal !== filterCanal) return false;
+      // Les relances issues de la fiche prospect n'ont pas de canal réel :
+      // elles ne sont donc jamais rattachées à un filtre de canal.
+      if (filterCanal && (r._synthetic || r.canal !== filterCanal)) return false;
 
       return true;
     });
@@ -134,12 +182,15 @@ export const RelancesPage: React.FC = () => {
     e.preventDefault();
     const p = modalProspects.find(x => x.id === formProspectId);
     if (!p) return;
+    // Retour client n°10 : on découpe le créneau horaire unique en date + heure.
+    const { date, heure } = splitDateTimeLocal(formDateTime);
+    if (!date) return;
     addRelance({
       prospect_id: p.id,
-      prospect_nom: `${p.prenom || ''} ${p.nom}`.trim(),
-      prospect_entreprise: p.entreprise,
-      date: formDate,
-      heure: formHeure,
+      prospect_nom: fullName(p, ''),
+      prospect_entreprise: p.entreprise || '',
+      date,
+      heure,
       canal: formCanal,
       motif: formCommentaire,
       commentaire: formCommentaire,
@@ -155,8 +206,8 @@ export const RelancesPage: React.FC = () => {
 
   function openEditRelance(rel: Relance) {
     setEditRelanceId(rel.id);
-    setErDate(rel.date);
-    setErHeure(rel.heure || '');
+    // Retour client n°10 : le créneau horaire unique reprend date + heure.
+    setErDateTime(toDateTimeLocal(rel.date, rel.heure));
     setErCanal(rel.canal);
     setErMotif(rel.motif || rel.commentaire || '');
     setErCommercialId(rel.commercial_id || '');
@@ -165,11 +216,13 @@ export const RelancesPage: React.FC = () => {
   async function handleSaveEditRelance(e: React.FormEvent) {
     e.preventDefault();
     if (!editRelanceId) return;
+    const { date, heure } = splitDateTimeLocal(erDateTime);
+    if (!date) return;
     setErSaving(true);
     try {
       await updateRelance(editRelanceId, {
-        date: erDate,
-        heure: erHeure || undefined,
+        date,
+        heure,
         canal: erCanal,
         motif: erMotif,
         commentaire: erMotif,
@@ -329,7 +382,9 @@ export const RelancesPage: React.FC = () => {
         ) : (
           filtered.map(relance => {
             const eff = getEffectiveStatut(relance);
-            const isActionable = eff !== 'realisee' && eff !== 'annulee';
+            // Retour client n°11 : les relances issues de la fiche prospect sont en lecture seule.
+            const isSynthetic = !!relance._synthetic;
+            const isActionable = !isSynthetic && eff !== 'realisee' && eff !== 'annulee';
             const comm = isAdmin
               ? commerciaux.find(c => c.id === relance.commercial_id)
               : null;
@@ -344,24 +399,43 @@ export const RelancesPage: React.FC = () => {
                     ? 'border-emerald-500/30 opacity-75'
                     : eff === 'annulee'
                     ? 'border-border opacity-60'
+                    : isSynthetic
+                    ? 'border-dashed border-primary/40'
                     : 'border-border'
                 }`}
               >
                 <div className="space-y-1.5 text-xs min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-extrabold text-sm text-foreground truncate">{relance.prospect_nom}</span>
-                    <span className="text-muted-foreground truncate">({relance.prospect_entreprise})</span>
+                    <span className="font-extrabold text-sm text-foreground truncate">
+                      {relance.prospect_nom || orFallback(relance.prospect_entreprise)}
+                    </span>
+                    {relance.prospect_entreprise && (
+                      <span className="text-muted-foreground truncate">({relance.prospect_entreprise})</span>
+                    )}
                     {statutBadge(eff)}
+                    {isSynthetic && (
+                      <span
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold"
+                        title={isEn ? 'Scheduled from the prospect file' : 'Programmé depuis la fiche prospect'}
+                      >
+                        <CalendarClock className="w-3 h-3" />
+                        {isEn ? 'From prospect file' : 'Fiche prospect'}
+                      </span>
+                    )}
                   </div>
                   <p className="text-muted-foreground">{relance.commentaire || relance.motif}</p>
                   <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold">
                     <span className={`flex items-center gap-1 ${dateBadgeClass(relance.date)}`}>
                       <CalendarCheck className="w-3 h-3" />
-                      {relance.date}{relance.heure ? ` ${isEn ? 'at' : 'à'} ${relance.heure}` : ''}
+                      {formatDateWithTime(relance.date, relance.heure, isEn ? 'en' : 'fr')}
                     </span>
                     <span className="flex items-center gap-1 text-muted-foreground">
-                      {CANAL_ICONS[relance.canal]}
-                      {canalLabels[relance.canal]}
+                      {!isSynthetic && (
+                        <>
+                          {CANAL_ICONS[relance.canal]}
+                          {canalLabels[relance.canal]}
+                        </>
+                      )}
                     </span>
                     {comm && (
                       <span className="text-muted-foreground">
@@ -459,38 +533,24 @@ export const RelancesPage: React.FC = () => {
                   <option value="">Sélectionner un prospect</option>
                   {modalProspects.map(p => (
                     <option key={p.id} value={p.id}>
-                      {p.prenom} {p.nom} — {p.entreprise}
+                      {fullName(p)}{p.entreprise ? ` — ${p.entreprise}` : ''}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold mb-1 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-primary" />
-                    Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formDate}
-                    onChange={e => setFormDate(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-input bg-background text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-primary" />
-                    Heure
-                  </label>
-                  <input
-                    type="time"
-                    value={formHeure}
-                    onChange={e => setFormHeure(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
-                  />
-                </div>
+              <div>
+                <label className="block font-semibold mb-1 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-primary" />
+                  {isEn ? 'Date & Time *' : 'Date & Heure *'}
+                </label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={formDateTime}
+                  onChange={e => setFormDateTime(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
+                />
               </div>
 
               <div>
@@ -565,32 +625,18 @@ export const RelancesPage: React.FC = () => {
                   </select>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold mb-1 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-primary" />
-                    Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={erDate}
-                    onChange={e => setErDate(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-input bg-background text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-primary" />
-                    Heure
-                  </label>
-                  <input
-                    type="time"
-                    value={erHeure}
-                    onChange={e => setErHeure(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
-                  />
-                </div>
+              <div>
+                <label className="block font-semibold mb-1 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-primary" />
+                  {isEn ? 'Date & Time *' : 'Date & Heure *'}
+                </label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={erDateTime}
+                  onChange={e => setErDateTime(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-input bg-background text-sm font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
+                />
               </div>
 
               <div>
@@ -619,7 +665,7 @@ export const RelancesPage: React.FC = () => {
 
               <button
                 type="submit"
-                disabled={erSaving || !erDate || !erMotif || (isAdmin && !erCommercialId)}
+                disabled={erSaving || !erDateTime || !erMotif || (isAdmin && !erCommercialId)}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50"
               >
                 {erSaving ? (isEn ? 'Saving...' : 'Enregistrement...') : (isEn ? 'Save Changes' : 'Enregistrer les modifications')}
@@ -643,7 +689,8 @@ export const RelancesPage: React.FC = () => {
                     {isEn ? 'Follow-up Details' : 'Détails de la relance'}
                   </h2>
                   <p className="text-[11px] text-muted-foreground">
-                    {selectedRelanceForView.prospect_nom} — {selectedRelanceForView.prospect_entreprise}
+                    {selectedRelanceForView.prospect_nom || orFallback(selectedRelanceForView.prospect_entreprise)}
+                    {selectedRelanceForView.prospect_entreprise ? ` — ${selectedRelanceForView.prospect_entreprise}` : ''}
                   </p>
                 </div>
               </div>
@@ -668,7 +715,7 @@ export const RelancesPage: React.FC = () => {
                     {isEn ? 'Date & Time' : 'Date & Heure'}
                   </span>
                   <p className="font-bold text-foreground">
-                    {selectedRelanceForView.date} {selectedRelanceForView.heure ? `@ ${selectedRelanceForView.heure}` : ''}
+                    {formatDateWithTime(selectedRelanceForView.date, selectedRelanceForView.heure, isEn ? 'en' : 'fr')}
                   </p>
                 </div>
 

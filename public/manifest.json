@@ -1,6 +1,6 @@
 {
-  "name": "Faciloopro",
-  "short_name": "Faciloopro",
+  "name": "Faciloop PRO",
+  "short_name": "Faciloop PRO",
   "description": "CRM SaaS B2B multi-tenant pour TPE/PME — Pipeline commercial, relances, commissions",
   "start_url": "/login",
   "scope": "/",

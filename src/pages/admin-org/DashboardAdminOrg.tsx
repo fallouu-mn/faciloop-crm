@@ -24,7 +24,7 @@ import { usePlanLimits } from '../../hooks/usePlanLimits';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
-type PeriodFilter = 'mois' | 'trimestre' | 'annee' | 'personnalise';
+type PeriodFilter = 'aujourdhui' | 'semaine' | 'mois' | 'annee' | 'personnalise';
 
 function getDateRange(
   period: PeriodFilter,
@@ -34,18 +34,24 @@ function getDateRange(
   const now = new Date();
   const y = now.getFullYear();
   const m = now.getMonth();
-  if (period === 'mois') {
-    const start = `${y}-${String(m + 1).padStart(2, '0')}-01`;
-    const lastDay = new Date(y, m + 1, 0).getDate();
-    const end = `${y}-${String(m + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-    return { start, end };
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  if (period === 'aujourdhui') {
+    const d = `${y}-${pad(m + 1)}-${pad(now.getDate())}`;
+    return { start: d, end: d };
   }
-  if (period === 'trimestre') {
-    const qStart = Math.floor(m / 3) * 3;
-    const qEnd = qStart + 2;
-    const start = `${y}-${String(qStart + 1).padStart(2, '0')}-01`;
-    const lastDay = new Date(y, qEnd + 1, 0).getDate();
-    const end = `${y}-${String(qEnd + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  if (period === 'semaine') {
+    // Semaine civile du lundi au dimanche
+    const day = (now.getDay() + 6) % 7; // 0 = lundi
+    const monday = new Date(y, m, now.getDate() - day);
+    const sunday = new Date(y, m, now.getDate() - day + 6);
+    const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    return { start: fmt(monday), end: fmt(sunday) };
+  }
+  if (period === 'mois') {
+    const start = `${y}-${pad(m + 1)}-01`;
+    const lastDay = new Date(y, m + 1, 0).getDate();
+    const end = `${y}-${pad(m + 1)}-${pad(lastDay)}`;
     return { start, end };
   }
   if (period === 'annee') {
@@ -125,8 +131,9 @@ export const DashboardAdminOrg: React.FC = () => {
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', currency), currency);
 
   const PERIOD_LABELS: Record<PeriodFilter, string> = {
+    aujourdhui: t('adminOrg.dashboard.period.aujourdhui'),
+    semaine: t('adminOrg.dashboard.period.semaine'),
     mois: t('adminOrg.dashboard.period.mois'),
-    trimestre: t('adminOrg.dashboard.period.trimestre'),
     annee: t('adminOrg.dashboard.period.annee'),
     personnalise: t('adminOrg.dashboard.period.personnalise'),
   };
@@ -250,7 +257,7 @@ export const DashboardAdminOrg: React.FC = () => {
       {/* Period Filter + Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-1 rounded-2xl bg-muted/80 p-1 border border-border/80 flex-wrap">
-          {(['mois', 'trimestre', 'annee', 'personnalise'] as PeriodFilter[]).map((p) => (
+          {(['aujourdhui', 'semaine', 'mois', 'annee', 'personnalise'] as PeriodFilter[]).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}

@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Building2, Save, Upload, Globe, Phone, Mail, MapPin, Briefcase } from 'lucide-react';
+import { Building2, Save, Upload, Globe, Phone, Mail, MapPin, Briefcase, ListChecks, Tags } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PinChangeSection } from '../../components/common/PinChangeSection';
+import {
+  CustomFieldsSchemaEditor,
+  CustomSourcesEditor,
+} from '../../components/common/CustomFieldsForm';
+import { useOrganizationSettings } from '../../hooks/useOrganizationSettings';
+import type { CustomFieldDef } from '../../types/crm';
 
 export const ParametresEntreprise: React.FC = () => {
-  const { t } = useTranslation('admin');
+  const { t, i18n } = useTranslation('admin');
+  const isEn = i18n.language?.startsWith('en');
   const { user, currentOrg, currency, setCurrency, updateOrganization } = useAuth();
   const [nom, setNom] = useState(currentOrg?.nom || '');
   const [pays, setPays] = useState(currentOrg?.pays || '');
@@ -17,6 +24,45 @@ export const ParametresEntreprise: React.FC = () => {
   const [siteWeb, setSiteWeb] = useState(currentOrg?.site_web || '');
   const [secteur, setSecteur] = useState(currentOrg?.secteur || '');
   const [logoPreview, setLogoPreview] = useState<string | null>(currentOrg?.logo_url || null);
+
+  // ── Retours client n°4 & n°6 : champs dynamiques + sources custom ──
+  const {
+    settings,
+    saveProspectFields,
+    saveCustomSources,
+  } = useOrganizationSettings();
+  const [schemaDraft, setSchemaDraft] = useState<CustomFieldDef[]>(prospectFields);
+  const [sourcesDraft, setSourcesDraft] = useState<string[]>(settings?.custom_sources ?? []);
+  const [fieldsSaving, setFieldsSaving] = useState(false);
+  const [sourcesSaving, setSourcesSaving] = useState(false);
+
+  useEffect(() => {
+    if (!settings) return;
+    setSchemaDraft(settings.prospect_custom_fields_schema ?? []);
+    setSourcesDraft(settings.custom_sources ?? []);
+  }, [settings]);
+
+  const saveFields = async () => {
+    setFieldsSaving(true);
+    try {
+      await saveProspectFields(schemaDraft);
+    } catch {
+      /* toast géré par le hook */
+    } finally {
+      setFieldsSaving(false);
+    }
+  };
+
+  const saveSources = async () => {
+    setSourcesSaving(true);
+    try {
+      await saveCustomSources(sourcesDraft);
+    } catch {
+      /* toast géré par le hook */
+    } finally {
+      setSourcesSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (!currentOrg) return;
@@ -230,6 +276,60 @@ export const ParametresEntreprise: React.FC = () => {
           <span>{t('adminOrg.parametres.saveBtn')}</span>
         </button>
       </form>
+
+      {/* ── Retour client n°4 — Champs prospects dynamiques ── */}
+      <section className="p-5 rounded-2xl border border-border bg-card space-y-4">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <ListChecks className="w-4 h-4 text-primary" />
+            {isEn ? 'Custom prospect fields' : 'Champs prospects personnalisés'}
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            {isEn
+              ? 'Define the extra fields your team fills in for every prospect. They appear on prospect forms and files.'
+              : 'Définissez les champs complémentaires à renseigner pour chaque prospect. Ils apparaissent sur les formulaires et les fiches prospects.'}
+          </p>
+        </div>
+
+        <CustomFieldsSchemaEditor schema={schemaDraft} onChange={setSchemaDraft} isEn={isEn} />
+
+        <button
+          type="button"
+          onClick={saveFields}
+          disabled={fieldsSaving}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all disabled:opacity-50"
+        >
+          <Save className="w-3.5 h-3.5" />
+          {fieldsSaving ? (isEn ? 'Saving…' : 'Enregistrement…') : (isEn ? 'Save fields' : 'Enregistrer les champs')}
+        </button>
+      </section>
+
+      {/* ── Retour client n°6 — Sources de prospect personnalisées ── */}
+      <section className="p-5 rounded-2xl border border-border bg-card space-y-4">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Tags className="w-4 h-4 text-primary" />
+            {isEn ? 'Custom acquisition sources' : "Sources d'acquisition personnalisées"}
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            {isEn
+              ? 'These sources are added to the default list and offered everywhere a source is chosen.'
+              : 'Ces sources s’ajoutent à la liste par défaut et sont proposées partout où l’on choisit une source.'}
+          </p>
+        </div>
+
+        <CustomSourcesEditor sources={sourcesDraft} onChange={setSourcesDraft} isEn={isEn} />
+
+        <button
+          type="button"
+          onClick={saveSources}
+          disabled={sourcesSaving}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all disabled:opacity-50"
+        >
+          <Save className="w-3.5 h-3.5" />
+          {sourcesSaving ? (isEn ? 'Saving…' : 'Enregistrement…') : (isEn ? 'Save sources' : 'Enregistrer les sources')}
+        </button>
+      </section>
     </div>
   );
 };

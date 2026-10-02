@@ -89,8 +89,8 @@ export const DemoAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (!p) return;
     const newClient: ClientFaciloop = {
       id: `demo-cl-${Date.now()}`, organization_id: DEMO_ORG_ID, prospect_id: prospectId,
-      commercial_id: p.commercial_id, entreprise: p.entreprise || p.nom,
-      nom_responsable: `${p.prenom || ''} ${p.nom}`.trim(), telephone: p.telephone,
+      commercial_id: p.commercial_id, entreprise: p.entreprise || p.nom || '—',
+      nom_responsable: `${p.prenom || ''} ${p.nom || ''}`.trim() || p.entreprise || '—', telephone: p.telephone,
       formule_souscrite: formule, statut_compte: 'actif', statut_abonnement: 'actif',
       montant_paye: p.budget_estime || 150000, nombre_utilisateurs: 5,
       created_at: new Date().toISOString(),

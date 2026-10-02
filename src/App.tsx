@@ -1,7 +1,7 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { usePwaUpdate } from './hooks/usePwaUpdate';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner';
 import { AppLayout } from './components/layout/AppLayout';
@@ -65,11 +65,54 @@ function AppWithPwa() {
   );
 }
 
+/** Retour client n°9 — titre SEO dynamique (org + page) par rapport au `<title>` statique. */
+const PAGE_TITLES: { match: RegExp; label: string }[] = [
+  { match: /\/dashboard/, label: 'Tableau de bord' },
+  { match: /\/prospects\/[^/]+/, label: 'Fiche prospect' },
+  { match: /\/prospects/, label: 'Prospects' },
+  { match: /\/pipeline/, label: 'Pipeline' },
+  { match: /\/relances/, label: 'Relances' },
+  { match: /\/clients/, label: 'Clients' },
+  { match: /\/equipe/, label: 'Équipe commerciale' },
+  { match: /\/objectifs/, label: 'Objectifs' },
+  { match: /\/gains/, label: 'Mes gains' },
+  { match: /\/notifications/, label: 'Notifications' },
+  { match: /\/parametres/, label: 'Paramètres' },
+  { match: /\/import-export/, label: 'Import / Export' },
+  { match: /\/journal/, label: "Journal d'activités" },
+  { match: /\/abonnements/, label: 'Abonnements' },
+  { match: /\/paiements/, label: 'Paiements' },
+  { match: /\/commissions/, label: 'Commissions' },
+  { match: /\/organisations/, label: 'Organisations' },
+  { match: /\/facturation/, label: 'Facturation' },
+  { match: /\/profil/, label: 'Profil' },
+];
+
+function DocumentTitle() {
+  const { pathname } = useLocation();
+  const { currentOrg } = useAuth();
+
+  useEffect(() => {
+    const page = PAGE_TITLES.find((p) => p.match.test(pathname))?.label;
+    const suffix = 'Faciloop PRO';
+    document.title = page
+      ? currentOrg?.nom
+        ? `${page} — ${currentOrg.nom} | ${suffix}`
+        : `${page} | ${suffix}`
+      : currentOrg?.nom
+        ? `${currentOrg.nom} | ${suffix}`
+        : suffix;
+  }, [pathname, currentOrg?.nom]);
+
+  return null;
+}
+
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <AppWithPwa />
+        <DocumentTitle />
         <Routes>
           {/* Public & Authentication Routes */}
           <Route path="/" element={<LandingPage />} />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { formatPhoneNumber } from '../../lib/phoneUtils';
+import { normalizePhoneNumber } from '../../lib/phoneUtils';
 import {
   Plus,
   X,
@@ -32,9 +32,9 @@ export const GlobalFab: React.FC = () => {
   // Phone input formatting & duplicate scan
   const handlePhoneChange = (val: string) => {
     setTelephone(val);
-    const formatted = formatPhoneNumber(val);
+    const formatted = normalizePhoneNumber(val);
     if (formatted.length >= 8) {
-      const exists = prospects.some(p => formatPhoneNumber(p.telephone) === formatted);
+      const exists = prospects.some(p => normalizePhoneNumber(p.telephone) === formatted);
       setDuplicateAlert(exists);
     } else {
       setDuplicateAlert(false);
@@ -43,12 +43,12 @@ export const GlobalFab: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nom || !telephone) return;
+    if (!telephone) return;
 
-    const formattedPhone = formatPhoneNumber(telephone);
+    const formattedPhone = normalizePhoneNumber(telephone);
 
     const res = addProspect({
-      nom: nom,
+      nom: nom || entreprise || (isEn ? 'Unknown' : 'Inconnu'),
       entreprise: entreprise || (isEn ? 'Individual Company' : 'Entreprise Individuelle'),
       telephone: formattedPhone,
       source: 'prospection_directe',

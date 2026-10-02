@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { UserRole, Organization, Commercial, Prospect, Relance, Interaction, NotificationItem, ClientFaciloop, Paiement, ActionLog, ActionLogType, ModePaiement, Commission, ObjectifCommercial, Offre } from '../types/crm';
-import { formatPhoneNumber } from '../lib/phoneUtils';
+import { normalizePhoneNumber } from '../lib/phoneUtils';
+import { fullName, orFallback } from '../utils/formatters';
 import { OrgOffer, ObjectifCommercialAdmin, CommissionEntry } from '../lib/mockAdminOrg';
 
 import * as prospectsService from '../services/prospects';
@@ -1088,9 +1089,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addProspect = async (newP: Omit<Prospect, 'id' | 'created_at' | 'organization_id'>): Promise<{ success: boolean; duplicate?: boolean; prospect?: Prospect }> => {
     if (!user) return { success: false };
 
-    const formattedPhone = formatPhoneNumber(newP.telephone);
+    const formattedPhone = normalizePhoneNumber(newP.telephone);
     const isDuplicate = prospects.some(
-      p => formatPhoneNumber(p.telephone) === formattedPhone
+      p => normalizePhoneNumber(p.telephone) === formattedPhone
     );
 
     if (isDuplicate) {
@@ -1115,7 +1116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           commercial_id: created.commercial_id,
           type: 'nouveau_prospect',
           titre: 'Nouveau prospect attribué',
-          message: `Le prospect ${created.entreprise || created.nom} vous a été attribué.`,
+          message: `Le prospect ${orFallback(created.entreprise, fullName(created))} vous a été attribué.`,
           lien: `/app/prospects/${created.id}`,
           lue: false,
         };
@@ -1130,7 +1131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         action: 'Création d\'un prospect',
         entite_type: 'prospect',
         entite_id: created.id,
-        cible: created.entreprise || `${created.prenom || ''} ${created.nom}`,
+        cible: orFallback(created.entreprise, fullName(created)),
         nouvelle_valeur: `Source: ${created.source} · Étape: ${created.statut_pipeline}`,
         date: new Date().toISOString().split('T')[0],
         heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
@@ -1176,7 +1177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           organization_id: user.organizationId,
           type: 'vente',
           titre: 'Vente réalisée ! 🎉',
-          message: `${user.prenom} ${user.nom} a conclu la vente avec ${target.entreprise || target.nom}.`,
+          message: `${user.prenom} ${user.nom} a conclu la vente avec ${orFallback(target.entreprise, fullName(target))}.`,
           lien: '/admin/prospects',
           lue: false,
         };
@@ -1192,7 +1193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         action: `Pipeline: ${oldStep} → ${newStep}`,
         entite_type: 'prospect',
         entite_id: id,
-        cible: target.entreprise || `${target.prenom || ''} ${target.nom}`,
+        cible: orFallback(target.entreprise, fullName(target)),
         ancienne_valeur: oldStep,
         nouvelle_valeur: newStep,
         date: new Date().toISOString().split('T')[0],
@@ -1273,7 +1274,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           action: 'Suppression d\'un prospect',
           entite_type: 'prospect',
           entite_id: id,
-          cible: target.entreprise || `${target.prenom || ''} ${target.nom}`,
+          cible: orFallback(target.entreprise, fullName(target)),
           date: new Date().toISOString().split('T')[0],
           heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
         });
@@ -1596,7 +1597,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         prospect_id: p.id,
         commercial_id: p.commercial_id || user.id,
         entreprise: p.entreprise,
-        nom_responsable: `${p.prenom || ''} ${p.nom}`.trim(),
+        nom_responsable: fullName(p, p.entreprise || '—'),
         telephone: p.telephone,
         whatsapp: p.whatsapp,
         email: p.email,
@@ -1615,7 +1616,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         organization_id: p.organization_id,
         client_id: newClient.id,
         commercial_id: p.commercial_id || user.id,
-        entreprise: p.entreprise || `${p.prenom || ''} ${p.nom}`.trim(),
+        entreprise: p.entreprise || fullName(p),
         montant_attendu: montant,
         montant_paye: montant,
         montant_restant: 0,
@@ -1663,7 +1664,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         action: 'Conversion prospect en client',
         entite_type: 'prospect',
         entite_id: prospectId,
-        cible: p.entreprise || `${p.prenom || ''} ${p.nom}`,
+        cible: orFallback(p.entreprise, fullName(p)),
         ancienne_valeur: `Prospect — ${p.statut_pipeline}`,
         nouvelle_valeur: `Client actif — ${formule}`,
         date: logDate,
@@ -1676,7 +1677,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         action: 'Création d\'un compte client',
         entite_type: 'client',
         entite_id: newClient.id,
-        cible: p.entreprise,
+        cible: orFallback(p.entreprise, fullName(p)),
         nouvelle_valeur: `Formule: ${formule} — ${freq}`,
         date: logDate,
         heure: logHeure,
@@ -1688,7 +1689,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         action: 'Création d\'un abonnement',
         entite_type: 'abonnement',
         entite_id: newClient.id,
-        cible: p.entreprise,
+        cible: orFallback(p.entreprise, fullName(p)),
         nouvelle_valeur: `${formule} — ${freq} — ${montant.toLocaleString('fr-FR')} FCFA`,
         date: logDate,
         heure: logHeure,
@@ -1700,7 +1701,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         action: 'Paiement reçu',
         entite_type: 'paiement',
         entite_id: newPaiement.id,
-        cible: p.entreprise,
+        cible: orFallback(p.entreprise, fullName(p)),
         nouvelle_valeur: `${montant.toLocaleString('fr-FR')} FCFA — ${modePaiement}`,
         date: logDate,
         heure: logHeure,

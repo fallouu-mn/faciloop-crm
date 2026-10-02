@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
-import { ProspectSource } from '../../types/crm';
+import { ProspectSource, SourceValue, CustomFieldValues } from '../../types/crm';
+import { CustomFieldsForm } from '../../components/common/CustomFieldsForm';
 import { useEtapesPipeline, getEtapeLabelByNom } from '@/hooks/useEtapesPipeline';
-import { formatPhoneNumber } from '../../lib/phoneUtils';
+import { normalizePhoneNumber } from '../../lib/phoneUtils';
+import { formatPhoneNumber } from '../../utils/formatters';
 import {
   Users,
   Search,
@@ -23,6 +25,8 @@ import {
 import { toast } from 'sonner';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useProspects } from '@/hooks/commercial/useProspects';
+import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
+import { usedSourceOptions, sourceLabel, matchExistingSource, slugifyFieldKey } from '@/services/organizationSettings';
 
 const PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
@@ -35,6 +39,11 @@ export const ProspectsList: React.FC = () => {
   const { etapes } = useEtapesPipeline();
   const effectiveProspects = apiProspects.length > 0 ? apiProspects : myProspects;
   const [searchParams] = useSearchParams();
+
+  // Retour client n°6 : sources par défaut + sources custom de l'organisation.
+  // Retour client n°4 : schéma des champs dynamiques prospects.
+  const { sourceOptions, prospectFields } = useOrganizationSettings();
+  const allSourceOptions = [...sourceOptions, ...usedSourceOptions(sourceOptions, prospects)];
 
   const [search, setSearch] = useState<string>('');
   const [filterStep, setFilterStep] = useState<string>(searchParams.get('statut') || 'all');
@@ -62,11 +71,12 @@ export const ProspectsList: React.FC = () => {
   const [newVille, setNewVille] = useState<string>('');
   const [newAdresse, setNewAdresse] = useState<string>('');
   const [newSecteur, setNewSecteur] = useState<string>('');
-  const [newSource, setNewSource] = useState<ProspectSource>('prospection_directe');
+  const [newSource, setNewSource] = useState<SourceValue>('prospection_directe');
   const [newFormule, setNewFormule] = useState<string>('');
   const [newBudget, setNewBudget] = useState<string>('');
   const [newNbreCommerciaux, setNewNbreCommerciaux] = useState<string>('');
   const [newCommentaire, setNewCommentaire] = useState<string>('');
+  const [newCustomFields, setNewCustomFields] = useState<CustomFieldValues>({});
   const [newRelance, setNewRelance] = useState<string>('');
 
   const [duplicateAlert, setDuplicateAlert] = useState<boolean>(false);
@@ -75,9 +85,9 @@ export const ProspectsList: React.FC = () => {
   // Phone input duplicate checker (checks across whole org using formatPhoneNumber)
   const handlePhoneChange = (val: string) => {
     setNewPhone(val);
-    const formatted = formatPhoneNumber(val);
+    const formatted = normalizePhoneNumber(val);
     if (formatted.length >= 8) {
-      const exists = prospects.some(p => formatPhoneNumber(p.telephone) === formatted);
+      const exists = prospects.some(p => normalizePhoneNumber(p.telephone) === formatted);
       setDuplicateAlert(exists);
     } else {
       setDuplicateAlert(false);
@@ -89,17 +99,29 @@ export const ProspectsList: React.FC = () => {
     setNewWhatsapp(''); setNewEmail(''); setNewPays('Sénégal'); setNewVille('');
     setNewAdresse(''); setNewSecteur(''); setNewSource('prospection_directe');
     setNewFormule(''); setNewBudget(''); setNewCommentaire(''); setNewRelance('');
+    setNewCustomFields({});
     setDuplicateAlert(false);
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!newNom && !newEntreprise) || !newPhone || !newPays) return;
+    // Retour client n°5 : nom / prénom / entreprise ne sont plus obligatoires.
+    // Seul un champ de contact (téléphone) doit rester renseigné.
+    if (!newPhone || !newPays) return;
+
+    // Retour client n°4 : les champs dynamiques marqués « obligatoire » bloquent la création.
+    const missingRequired = prospectFields.some(
+      f => f.required && String(newCustomFields[f.key] ?? '').trim() === '',
+    );
+    if (missingRequired) {
+      toast.error(isEn ? 'Please fill in all required custom fields.' : 'Veuillez renseigner tous les champs personnalisés obligatoires.');
+      return;
+    }
 
     const res = await addProspect({
-      nom: newNom || newEntreprise,
+      nom: newNom || undefined,
       prenom: newPrenom || undefined,
-      entreprise: newEntreprise || newNom,
+      entreprise: newEntreprise || undefined,
       telephone: newPhone,
       whatsapp: newWhatsapp || undefined,
       email: newEmail || undefined,
@@ -113,6 +135,7 @@ export const ProspectsList: React.FC = () => {
       nbre_commerciaux: newNbreCommerciaux ? Number(newNbreCommerciaux) : undefined,
       commentaire: newCommentaire || undefined,
       date_prochaine_relance: newRelance || undefined,
+      custom_fields: Object.keys(newCustomFields).length ? newCustomFields : undefined,
       statut_pipeline: 'nouveau',
       commercial_id: user?.id,
       commercial_nom: user ? `${user.prenom} ${user.nom}` : undefined
@@ -134,7 +157,7 @@ export const ProspectsList: React.FC = () => {
   const handleExportCSV = () => {
     const csvHeaders = 'Nom;Prenom;Entreprise;Telephone;WhatsApp;Email;Pays;Ville;Source;Etape_Pipeline;Formule;Budget_Estime\n';
     const csvRows = myProspects
-      .map(p => `"${p.nom}";"${p.prenom || ''}";"${p.entreprise}";"${p.telephone}";"${p.whatsapp || ''}";"${p.email || ''}";"${p.pays || ''}";"${p.ville || ''}";"${p.source}";"${p.statut_pipeline}";"${p.formule_envisagee || ''}";"${p.budget_estime || ''}"`)
+      .map(p => `"${p.nom || ''}";"${p.prenom || ''}";"${p.entreprise || ''}";"${p.telephone}";"${p.whatsapp || ''}";"${p.email || ''}";"${p.pays || ''}";"${p.ville || ''}";"${p.source}";"${p.statut_pipeline}";"${p.formule_envisagee || ''}";"${p.budget_estime || ''}"`)
       .join('\n');
 
     const blob = new Blob([csvHeaders + csvRows], { type: 'text/csv;charset=utf-8;' });
@@ -176,14 +199,18 @@ export const ProspectsList: React.FC = () => {
         const prenom = prenomIdx !== -1 ? parts[prenomIdx] : '';
         const entreprise = entrepriseIdx !== -1 ? parts[entrepriseIdx] : parts[1] || '';
         const telephone = phoneIdx !== -1 ? parts[phoneIdx] : parts[2] || '';
-        const source = (sourceIdx !== -1 ? parts[sourceIdx] : 'prospection_directe') as ProspectSource;
+        const rawSource = sourceIdx !== -1 ? parts[sourceIdx] : '';
+        // Source libre du CSV → valeur connue si possible, sinon slug (retour n°6)
+        const matched = matchExistingSource(rawSource, sourceOptions);
+        const source: SourceValue =
+          matched || (rawSource ? slugifyFieldKey(rawSource) : 'prospection_directe');
 
         if (!telephone) { skipped++; continue; }
 
         const res = await addProspect({
-          nom: nom || entreprise,
+          nom: nom || entreprise || undefined,
           prenom: prenom || undefined,
-          entreprise: entreprise || nom,
+          entreprise: entreprise || nom || undefined,
           telephone,
           source: source || 'prospection_directe',
           statut_pipeline: 'nouveau',
@@ -204,9 +231,11 @@ export const ProspectsList: React.FC = () => {
   // CDC 3.2: Filtered strictly on myProspects for Commercial role, or all for Admin
   const filtered = myProspects.filter(p => {
     const matchSearch =
-      p.nom.toLowerCase().includes(search.toLowerCase()) ||
-      p.entreprise.toLowerCase().includes(search.toLowerCase()) ||
-      p.telephone.includes(search);
+      (p.nom || '').toLowerCase().includes(search.toLowerCase()) ||
+      (p.prenom || '').toLowerCase().includes(search.toLowerCase()) ||
+      (p.entreprise || '').toLowerCase().includes(search.toLowerCase()) ||
+      p.telephone.includes(search) ||
+      formatPhoneNumber(p.telephone).includes(search);
     const matchStep = filterStep === 'all' || p.statut_pipeline === filterStep;
     const matchSource = filterSource === 'all' || p.source === filterSource;
     return matchSearch && matchStep && matchSource;
@@ -349,14 +378,10 @@ export const ProspectsList: React.FC = () => {
             onChange={(e) => setFilterSource(e.target.value)}
             className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
           >
-            <option value="all">Toutes les sources</option>
-            <option value="site_web">Site Web</option>
-            <option value="prospection_directe">Prospection Directe</option>
-            <option value="recommandation">Recommandation</option>
-            <option value="reseaux_sociaux">Réseaux Sociaux</option>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="evenement">Événement</option>
-            <option value="autre">Autre</option>
+            <option value="all">{isEn ? 'All sources' : 'Toutes les sources'}</option>
+            {allSourceOptions.map(s => (
+              <option key={s.value} value={s.value}>{sourceLabel(s, isEn)}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -396,10 +421,10 @@ export const ProspectsList: React.FC = () => {
                     />
                   </td>
                   <td className="p-4 font-bold text-foreground">
-                    <div>{p.prenom} {p.nom}</div>
-                    <div className="text-[11px] font-normal text-muted-foreground">{p.entreprise}</div>
+                    <div>{fullName(p)}</div>
+                    <div className="text-[11px] font-normal text-muted-foreground">{orFallback(p.entreprise)}</div>
                   </td>
-                  <td className="p-4 font-medium text-foreground">{p.telephone}</td>
+                  <td className="p-4 font-medium text-foreground">{formatPhoneNumber(p.telephone)}</td>
                   <td className="p-4">
                     <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold capitalize ${
                       p.statut_pipeline === 'gagne' ? 'bg-emerald-500/10 text-emerald-500' :
@@ -409,7 +434,10 @@ export const ProspectsList: React.FC = () => {
                       {getEtapeLabelByNom(p.statut_pipeline, etapes, isEn)}
                     </span>
                   </td>
-                  <td className="p-4 capitalize text-muted-foreground">{p.source.replace('_', ' ')}</td>
+                  <td className="p-4 capitalize text-muted-foreground">{(() => {
+                    const opt = allSourceOptions.find(s => s.value === p.source);
+                    return opt ? sourceLabel(opt, isEn) : p.source.replace(/[_-]+/g, ' ');
+                  })()}</td>
                   <td className="p-4 font-semibold text-primary">{p.commercial_nom || 'Non attribué'}</td>
                   <td className="p-4 text-right">
                     <div className="inline-flex items-center gap-1.5">
@@ -467,8 +495,8 @@ export const ProspectsList: React.FC = () => {
                     className="w-5 h-5 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer shrink-0"
                   />
                   <div>
-                    <h3 className="font-extrabold text-sm text-foreground">{p.prenom} {p.nom}</h3>
-                    <p className="text-xs font-medium text-muted-foreground">{p.entreprise}</p>
+                    <h3 className="font-extrabold text-sm text-foreground">{fullName(p)}</h3>
+                    <p className="text-xs font-medium text-muted-foreground">{orFallback(p.entreprise)}</p>
                   </div>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${
@@ -479,7 +507,7 @@ export const ProspectsList: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between text-xs text-muted-foreground pl-8">
-                <span className="font-medium text-foreground">{p.telephone}</span>
+                <span className="font-medium text-foreground">{formatPhoneNumber(p.telephone)}</span>
                 <span className="font-extrabold text-primary text-[11px]">{p.commercial_nom}</span>
               </div>
 
@@ -605,18 +633,18 @@ export const ProspectsList: React.FC = () => {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Last Name *' : 'Nom *'}</label>
+                    <label className="block font-semibold mb-1">{isEn ? 'Last Name' : 'Nom'}</label>
                     <input type="text" value={newNom} onChange={(e) => setNewNom(e.target.value)}
                       placeholder="Diop" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'First Name *' : 'Prénom *'}</label>
-                    <input type="text" required value={newPrenom} onChange={(e) => setNewPrenom(e.target.value)}
+                    <label className="block font-semibold mb-1">{isEn ? 'First Name' : 'Prénom'}</label>
+                    <input type="text" value={newPrenom} onChange={(e) => setNewPrenom(e.target.value)}
                       placeholder="Moussa" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Company *' : 'Entreprise *'}</label>
+                  <label className="block font-semibold mb-1">{isEn ? 'Company' : 'Entreprise'}</label>
                   <input type="text" value={newEntreprise} onChange={(e) => setNewEntreprise(e.target.value)}
                     placeholder="Dakar Tech Ltd" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
@@ -688,15 +716,9 @@ export const ProspectsList: React.FC = () => {
                   </div>
                   <div>
                     <label className="block font-semibold mb-1">{isEn ? 'Source' : 'Source'}</label>
-                    <select value={newSource} onChange={(e) => setNewSource(e.target.value as ProspectSource)}
+                    <select value={newSource} onChange={(e) => setNewSource(e.target.value as SourceValue)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                      <option value="prospection_directe">{isEn ? 'Direct Outreach' : 'Prospection directe'}</option>
-                      <option value="site_web">{isEn ? 'Website' : 'Site web'}</option>
-                      <option value="recommandation">{isEn ? 'Referral' : 'Recommandation'}</option>
-                      <option value="reseaux_sociaux">{isEn ? 'Social Media' : 'Réseaux sociaux'}</option>
-                      <option value="whatsapp">WhatsApp</option>
-                      <option value="evenement">{isEn ? 'Event' : 'Événement'}</option>
-                      <option value="autre">{isEn ? 'Other' : 'Autre'}</option>
+                      {sourceOptions.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, isEn)}</option>)}
                     </select>
                   </div>
                   <div>
@@ -738,8 +760,16 @@ export const ProspectsList: React.FC = () => {
                 </div>
               </div>
 
+              {/* Retour client n°4 : champs dynamiques définis par l'Admin */}
+              <CustomFieldsForm
+                schema={prospectFields}
+                values={newCustomFields}
+                onChange={setNewCustomFields}
+                isEn={isEn}
+              />
+
               <button type="submit"
-                disabled={(!newNom && !newEntreprise) || !newPhone || !newPays || duplicateAlert}
+                disabled={!newPhone || !newPays || duplicateAlert}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 {isEn ? 'Create Prospect' : 'Créer le prospect'}
               </button>

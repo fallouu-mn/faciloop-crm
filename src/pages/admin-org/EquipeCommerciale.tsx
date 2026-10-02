@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserPlus, UserCheck, Shield, X, Check, Mail, Phone, MessageSquare, Power, AlertTriangle, Pencil, Trash2, Save } from 'lucide-react';
+import { formatPhoneNumber } from '../../utils/formatters';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -161,7 +162,7 @@ export const EquipeCommerciale: React.FC = () => {
                   </div>
                 </td>
                 <td className="p-4 text-muted-foreground font-medium">{comm.email}</td>
-                <td className="p-4 font-semibold text-foreground">{comm.telephone}</td>
+                <td className="p-4 font-semibold text-foreground">{formatPhoneNumber(comm.telephone)}</td>
                 <td className="p-4">
                   <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
                     comm.statut === 'actif' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
@@ -239,7 +240,7 @@ export const EquipeCommerciale: React.FC = () => {
                 >
                   <Phone className="w-4 h-4 text-primary" />
                 </a>
-                <span className="font-bold text-foreground text-xs">{comm.telephone}</span>
+                <span className="font-bold text-foreground text-xs">{formatPhoneNumber(comm.telephone)}</span>
               </div>
 
               <div className="flex items-center gap-1.5">

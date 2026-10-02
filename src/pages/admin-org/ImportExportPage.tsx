@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePlanLimits } from '../../hooks/usePlanLimits';
-import { formatPhoneNumber } from '../../lib/phoneUtils';
+import { normalizePhoneNumber } from '../../lib/phoneUtils';
 import { 
   FileSpreadsheet, 
   Download, 
@@ -72,7 +72,7 @@ export const ImportExportPage: React.FC = () => {
     const sourceIdx = rawHeaders.findIndex(h => h.includes('source') || h.includes('canal') || h.includes('origine'));
     const commentIdx = rawHeaders.findIndex(h => h.includes('comment') || h.includes('note') || h.includes('desc'));
 
-    const existingPhones = new Set(prospects.map(p => formatPhoneNumber(p.telephone)));
+    const existingPhones = new Set(prospects.map(p => normalizePhoneNumber(p.telephone)));
 
     const rows: ParsedProspectRow[] = [];
 
@@ -87,7 +87,7 @@ export const ImportExportPage: React.FC = () => {
       const sourceVal = sourceIdx !== -1 ? parts[sourceIdx] : 'prospection_directe';
       const commentVal = commentIdx !== -1 ? parts[commentIdx] : 'Importé via fichier CSV';
 
-      const formattedPhone = formatPhoneNumber(phoneVal);
+      const formattedPhone = normalizePhoneNumber(phoneVal);
       const isDuplicate = existingPhones.has(formattedPhone);
 
       rows.push({
@@ -204,7 +204,7 @@ export const ImportExportPage: React.FC = () => {
       csvRows = prospects
         .map(
           p =>
-            `"${p.nom}";"${p.prenom || ''}";"${p.entreprise}";"${p.telephone}";"${p.source}";"${p.statut_pipeline}";"${p.budget_estime || 0}";"${p.commercial_nom || ''}"`
+            `"${p.nom || ''}";"${p.prenom || ''}";"${p.entreprise || ''}";"${p.telephone}";"${p.source}";"${p.statut_pipeline}";"${p.budget_estime || 0}";"${p.commercial_nom || ''}"`
         )
         .join('\n');
     } else {

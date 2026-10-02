@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Prospect, MotifPerte, PipelineStepId, ModePaiement, ProspectSource } from '../../types/crm';
+import { Prospect, MotifPerte, PipelineStepId, ModePaiement, SourceValue } from '../../types/crm';
 import {
   DndContext,
   DragOverlay,
@@ -44,11 +44,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProspects } from '@/hooks/commercial/useProspects';
+import { formatPhoneNumber, fullName, orFallback } from '../../utils/formatters';
 import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
+import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
+import { sourceLabel } from '@/services/organizationSettings';
 import { GestionEtapesModal } from '@/components/common/GestionEtapesModal';
 import { toast } from 'sonner';
 
-const QA_SOURCES: { value: ProspectSource; label: string }[] = [
+const QA_SOURCES_FALLBACK: { value: string; label: string }[] = [
   { value: 'prospection_directe', label: 'Prospection directe' },
   { value: 'site_web', label: 'Site web' },
   { value: 'recommandation', label: 'Recommandation' },
@@ -85,6 +88,14 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; a
     data: { prospect }
   });
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
+  const isEnCard = i18n.language?.startsWith('en');
+  // Retour client n°6 : affiche le libellé (défaut ou custom) plutôt que la clé brute.
+  const { sourceOptions } = useOrganizationSettings();
+  const sourceOpt = sourceOptions.find(s => s.value === prospect.source);
+  const sourceDisplay = sourceOpt
+    ? sourceLabel(sourceOpt, isEnCard)
+    : prospect.source.replace(/[_-]+/g, ' ');
 
   const style = transform
     ? {
@@ -114,14 +125,16 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; a
             </div>
             <div>
               <span className="font-extrabold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
-                <span>{prospect.prenom} {prospect.nom}</span>
+                <span>{fullName(prospect)}</span>
                 <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
               </span>
 
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-bold mt-0.5">
-                <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="truncate max-w-[150px]">{prospect.entreprise}</span>
-              </div>
+              {prospect.entreprise && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-bold mt-0.5">
+                  <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span className="truncate max-w-[150px]">{prospect.entreprise}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -138,13 +151,13 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; a
 
           <span className="text-xs font-bold text-muted-foreground capitalize flex items-center gap-1 shrink-0">
             <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
-            {prospect.source.replace('_', ' ')}
+            {sourceDisplay}
           </span>
         </div>
 
         {/* Card Footer */}
         <div className="flex items-center justify-between pt-2.5 border-t border-border/60 text-xs">
-          <span className="text-muted-foreground font-bold">Tel: {prospect.telephone}</span>
+          <span className="text-muted-foreground font-bold">Tel: {formatPhoneNumber(prospect.telephone)}</span>
           <span className="font-extrabold text-foreground bg-muted px-2 py-0.5 rounded-md">{prospect.commercial_nom || 'Moi'}</span>
         </div>
       </motion.div>
@@ -280,6 +293,9 @@ export const ProspectKanban: React.FC = () => {
   const { user, prospects, myProspects, commerciaux, addProspect, updateProspectStatus, convertProspectToClient, orgOffers, currency, setCurrency } = useAuth();
   const { prospects: apiProspects, updatePipeline: apiUpdatePipeline } = useProspects();
   const { etapes, loading: etapesLoading, create: createEtape, update: updateEtape, remove: removeEtape, reorder: reorderEtapes } = useEtapesPipeline();
+  // Retour client n°6 : sources par défaut + sources custom de l'organisation.
+  const { sourceOptions } = useOrganizationSettings();
+  const QA_SOURCES = sourceOptions.length ? sourceOptions : QA_SOURCES_FALLBACK;
   const navigate = useNavigate();
 
   const isEn = i18n.language?.startsWith('en');
@@ -331,7 +347,7 @@ export const ProspectKanban: React.FC = () => {
   const [qaVille, setQaVille] = useState('');
   const [qaAdresse, setQaAdresse] = useState('');
   const [qaSecteur, setQaSecteur] = useState('');
-  const [qaSource, setQaSource] = useState<ProspectSource>('prospection_directe');
+  const [qaSource, setQaSource] = useState<SourceValue>('prospection_directe');
   const [qaFormule, setQaFormule] = useState('');
   const [qaBudget, setQaBudget] = useState('');
   const [qaNbreEmployes, setQaNbreEmployes] = useState('');
@@ -351,14 +367,15 @@ export const ProspectKanban: React.FC = () => {
 
   const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quickAddStage || (!qaNom && !qaPrenom && !qaEntreprise)) return;
+    // Retour client n°5 : identité optionnelle, un champ de contact suffit.
+    if (!quickAddStage || !qaTelephone) return;
     setQaSaving(true);
     try {
       const commercial = commerciaux.find(c => c.id === qaCommercialId);
       await addProspect({
-        nom: qaNom || qaPrenom || qaEntreprise,
+        nom: qaNom || qaEntreprise || undefined,
         prenom: qaPrenom || undefined,
-        entreprise: qaEntreprise || qaNom || qaPrenom,
+        entreprise: qaEntreprise || qaNom || undefined,
         telephone: qaTelephone,
         whatsapp: qaWhatsapp || undefined,
         email: qaEmail || undefined,
@@ -674,8 +691,8 @@ export const ProspectKanban: React.FC = () => {
           <DragOverlay>
             {activeProspect ? (
               <div className="w-72 p-4 rounded-2xl border-2 border-primary bg-card shadow-2xl space-y-3 opacity-90 scale-105">
-                <div className="font-extrabold text-sm text-foreground">{activeProspect.prenom} {activeProspect.nom}</div>
-                <div className="text-xs font-bold text-primary">{activeProspect.entreprise}</div>
+                <div className="font-extrabold text-sm text-foreground">{fullName(activeProspect)}</div>
+                {activeProspect.entreprise && <div className="text-xs font-bold text-primary">{activeProspect.entreprise}</div>}
               </div>
             ) : null}
           </DragOverlay>
@@ -683,7 +700,10 @@ export const ProspectKanban: React.FC = () => {
       ) : (
         /* VIEW MODE 2: HORIZONTAL KANBAN BOARD (DndContext) */
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="flex gap-4 overflow-x-auto pb-4 snap-x" style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(var(--border)) transparent' }}>
+          <div
+            className="flex gap-4 overflow-x-auto overflow-y-hidden pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-primary/20"
+            style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(var(--primary) / 0.35) transparent' }}
+          >
             {columns.map((col) => {
               const colProspects = effectiveProspects.filter(p => p.statut_pipeline === col.id);
               return <DroppableColumn key={col.id} col={col} prospects={colProspects} basePath={prospectBasePath} activeCurrency={activeCurrency} isEn={isEn} onAddProspect={setQuickAddStage} />;
@@ -693,8 +713,8 @@ export const ProspectKanban: React.FC = () => {
           <DragOverlay>
             {activeProspect ? (
               <div className="w-72 p-4 rounded-2xl border-2 border-primary bg-card shadow-2xl space-y-3 opacity-90 scale-105">
-                <div className="font-extrabold text-sm text-foreground">{activeProspect.prenom} {activeProspect.nom}</div>
-                <div className="text-xs font-bold text-primary">{activeProspect.entreprise}</div>
+                <div className="font-extrabold text-sm text-foreground">{fullName(activeProspect)}</div>
+                {activeProspect.entreprise && <div className="text-xs font-bold text-primary">{activeProspect.entreprise}</div>}
               </div>
             ) : null}
           </DragOverlay>
@@ -805,8 +825,8 @@ export const ProspectKanban: React.FC = () => {
                 const prospect = effectiveProspects.find(p => p.id === pendingProspectId);
                 return prospect ? (
                   <div className="p-3 rounded-xl bg-muted/40 border border-border space-y-1">
-                    <p className="text-xs font-bold text-foreground">{prospect.entreprise || `${prospect.prenom} ${prospect.nom}`}</p>
-                    <p className="text-[10px] text-muted-foreground">{prospect.telephone} · {prospect.pays}{prospect.ville ? `, ${prospect.ville}` : ''}</p>
+                    <p className="text-xs font-bold text-foreground">{orFallback(prospect.entreprise, fullName(prospect))}</p>
+                    <p className="text-[10px] text-muted-foreground">{formatPhoneNumber(prospect.telephone)} · {prospect.pays}{prospect.ville ? `, ${prospect.ville}` : ''}</p>
                   </div>
                 ) : null;
               })()}
@@ -967,8 +987,8 @@ export const ProspectKanban: React.FC = () => {
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                     </div>
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'First name *' : 'Prénom *'}</label>
-                      <input type="text" required value={qaPrenom} onChange={e => setQaPrenom(e.target.value)} placeholder="Moussa"
+                      <label className="block font-semibold mb-1">{isEn ? 'First name' : 'Prénom'}</label>
+                      <input type="text" value={qaPrenom} onChange={e => setQaPrenom(e.target.value)} placeholder="Moussa"
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                     </div>
                   </div>
@@ -984,7 +1004,7 @@ export const ProspectKanban: React.FC = () => {
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Contact</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'Phone' : 'Téléphone'}</label>
+                      <label className="block font-semibold mb-1">{isEn ? 'Phone *' : 'Téléphone *'}</label>
                       <input type="tel" value={qaTelephone} onChange={e => setQaTelephone(e.target.value)} placeholder="+221 77 123 45 67"
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                     </div>
@@ -1039,9 +1059,9 @@ export const ProspectKanban: React.FC = () => {
                     </div>
                     <div>
                       <label className="block font-semibold mb-1">Source</label>
-                      <select value={qaSource} onChange={e => setQaSource(e.target.value as ProspectSource)}
+                      <select value={qaSource} onChange={e => setQaSource(e.target.value as SourceValue)}
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
-                        {QA_SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                        {QA_SOURCES.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, isEn)}</option>)}
                       </select>
                     </div>
                     {commerciaux.length > 0 && (
@@ -1101,7 +1121,7 @@ export const ProspectKanban: React.FC = () => {
                     className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
                     {isEn ? 'Cancel' : 'Annuler'}
                   </button>
-                  <button type="submit" disabled={qaSaving || (!qaNom && !qaPrenom && !qaEntreprise)}
+                  <button type="submit" disabled={qaSaving || !qaTelephone}
                     className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
                     {qaSaving
                       ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

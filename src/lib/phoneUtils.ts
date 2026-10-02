@@ -1,33 +1,9 @@
 /**
- * Normalizes phone numbers to standard E.164 international format.
- * Defaults to +221 (Senegal) for 9-digit local numbers starting with 7.
- * Removes spaces, dashes, parentheses and double zeros.
+ * Retour client n°3 — séparation claire des deux opérations téléphone :
+ *
+ * - `normalizePhoneNumber` : E.164 sans espace → écriture en base / détection de doublons.
+ * - `formatPhoneNumber`    : groupage visuel (`+221 77 123 45 67`) → rendu uniquement.
+ *
+ * Les deux vivent dans `src/utils/formatters.ts` (source de vérité).
  */
-export const formatPhoneNumber = (phone: string): string => {
-  if (!phone) return '';
-  
-  // Remove spaces, dashes, parentheses
-  let cleaned = phone.trim().replace(/[\s\-\(\)]/g, '');
-
-  // Convert 00221... to +221...
-  if (cleaned.startsWith('00')) {
-    cleaned = '+' + cleaned.slice(2);
-  }
-
-  // If 9 digits starting with 7 (e.g. 771234567), prefix with +221
-  if (/^7[05678]\d{7}$/.test(cleaned)) {
-    cleaned = '+221' + cleaned;
-  }
-
-  // If 9 digits without leading + or country code
-  if (!cleaned.startsWith('+') && cleaned.length === 9) {
-    cleaned = '+221' + cleaned;
-  }
-
-  // Add leading + if missing for international numbers
-  if (!cleaned.startsWith('+') && cleaned.length >= 8) {
-    cleaned = '+' + cleaned;
-  }
-
-  return cleaned;
-};
+export { normalizePhoneNumber, formatPhoneNumber } from '../utils/formatters';

@@ -1,9 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { ProspectSource, PipelineStepId, Prospect } from '../../types/crm';
-import { formatPhoneNumber } from '../../lib/phoneUtils';
+import { ProspectSource, SourceValue, PipelineStepId, Prospect } from '../../types/crm';
+import { normalizePhoneNumber } from '../../lib/phoneUtils';
+import { formatPhoneNumber, fullName, orFallback } from '../../utils/formatters';
 import { useTranslation } from 'react-i18next';
 import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
+import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
+import { usedSourceOptions } from '@/services/organizationSettings';
+import { CustomFieldsForm } from '@/components/common/CustomFieldsForm';
+import type { CustomFieldValues } from '../../types/crm';
 import {
   Users, Search, Plus, AlertTriangle, X, Calendar,
   ArrowRight, Eye, UserCheck, ArrowRightLeft, Trash2, Filter, Pencil, Save
@@ -23,7 +28,7 @@ function relanceDateColor(date?: string): string {
   return 'text-blue-500';
 }
 
-const SOURCES: { value: ProspectSource; label: string }[] = [
+const SOURCES_FALLBACK: { value: string; label: string }[] = [
   { value: 'prospection_directe', label: 'Prospection directe' },
   { value: 'site_web', label: 'Site web' },
   { value: 'recommandation', label: 'Recommandation' },
@@ -44,6 +49,14 @@ export const ProspectsListAdmin: React.FC = () => {
   const { etapes } = useEtapesPipeline();
   const ETAPES = etapes.map(e => ({ value: e.nom as PipelineStepId, label: getEtapeLabel(e, isEn) }));
   const activeOrgOffers = orgOffers.filter(o => o.actif);
+  // Retour client n°6 : sources par défaut + sources custom de l'organisation
+  // + valeurs déjà présentes en base (jamais masquées dans un filtre/select).
+  // Retour client n°4 : schéma des champs dynamiques prospects.
+  const { sourceOptions, prospectFields } = useOrganizationSettings();
+  const SOURCES = [
+    ...(sourceOptions.length ? sourceOptions : SOURCES_FALLBACK),
+    ...usedSourceOptions(sourceOptions.length ? sourceOptions : SOURCES_FALLBACK, prospects),
+  ];
 
   const [search, setSearch] = useState('');
   const [filterStep, setFilterStep] = useState('all');
@@ -70,7 +83,7 @@ export const ProspectsListAdmin: React.FC = () => {
   const [fVille, setFVille] = useState('');
   const [fAdresse, setFAdresse] = useState('');
   const [fSecteur, setFSecteur] = useState('');
-  const [fSource, setFSource] = useState<ProspectSource>('prospection_directe');
+  const [fSource, setFSource] = useState<SourceValue>('prospection_directe');
   const [fCommercialId, setFCommercialId] = useState(commerciaux[0]?.id || '');
   const [fEtape, setFEtape] = useState<PipelineStepId>('nouveau');
   const [fFormule, setFFormule] = useState(activeOrgOffers[0]?.nom || '');
@@ -79,6 +92,7 @@ export const ProspectsListAdmin: React.FC = () => {
   const [fRelance, setFRelance] = useState('');
   const [fNbreEmployes, setFNbreEmployes] = useState('');
   const [fSiteWeb, setFSiteWeb] = useState('');
+  const [fCustomFields, setFCustomFields] = useState<CustomFieldValues>({});
 
   const [duplicateAlert, setDuplicateAlert] = useState(false);
 
@@ -94,7 +108,7 @@ export const ProspectsListAdmin: React.FC = () => {
   const [eVille, setEVille] = useState('');
   const [eAdresse, setEAdresse] = useState('');
   const [eSecteur, setESecteur] = useState('');
-  const [eSource, setESource] = useState<ProspectSource>('prospection_directe');
+  const [eSource, setESource] = useState<SourceValue>('prospection_directe');
   const [eEtape, setEEtape] = useState<PipelineStepId>('nouveau');
   const [eCommercialId, setECommercialId] = useState('');
   const [eFormule, setEFormule] = useState('');
@@ -103,13 +117,14 @@ export const ProspectsListAdmin: React.FC = () => {
   const [eRelance, setERelance] = useState('');
   const [eCommentaire, setECommentaire] = useState('');
   const [eSiteWeb, setESiteWeb] = useState('');
+  const [eCustomFields, setECustomFields] = useState<CustomFieldValues>({});
   const [editSaving, setEditSaving] = useState(false);
 
   const openEditProspect = (p: Prospect) => {
     setEditingProspect(p);
-    setENom(p.nom);
+    setENom(p.nom || '');
     setEPrenom(p.prenom || '');
-    setEEntreprise(p.entreprise);
+    setEEntreprise(p.entreprise || '');
     setETelephone(p.telephone);
     setEEmail(p.email || '');
     setEWhatsapp(p.whatsapp || '');
@@ -126,6 +141,7 @@ export const ProspectsListAdmin: React.FC = () => {
     setERelance(p.date_prochaine_relance || '');
     setECommentaire(p.commentaire || '');
     setESiteWeb(p.site_web || '');
+    setECustomFields(p.custom_fields || {});
   };
 
   const handleSaveEditProspect = async () => {
@@ -134,9 +150,9 @@ export const ProspectsListAdmin: React.FC = () => {
     try {
       const commercial = commerciaux.find(c => c.id === eCommercialId);
       await updateProspect(editingProspect.id, {
-        nom: eNom,
+        nom: eNom || undefined,
         prenom: ePrenom || undefined,
-        entreprise: eEntreprise,
+        entreprise: eEntreprise || undefined,
         telephone: eTelephone,
         email: eEmail || undefined,
         whatsapp: eWhatsapp || undefined,
@@ -154,6 +170,7 @@ export const ProspectsListAdmin: React.FC = () => {
         date_prochaine_relance: eRelance || undefined,
         site_web: eSiteWeb || undefined,
         commentaire: eCommentaire || undefined,
+        custom_fields: eCustomFields,
       });
       toast.success(isEn ? 'Prospect updated.' : 'Prospect mis à jour.');
       setEditingProspect(null);
@@ -173,9 +190,9 @@ export const ProspectsListAdmin: React.FC = () => {
 
   const handlePhoneChange = (val: string) => {
     setFTelephone(val);
-    const formatted = formatPhoneNumber(val);
+    const formatted = normalizePhoneNumber(val);
     if (formatted.length >= 8) {
-      const exists = prospects.some(p => formatPhoneNumber(p.telephone) === formatted);
+      const exists = prospects.some(p => normalizePhoneNumber(p.telephone) === formatted);
       setDuplicateAlert(exists);
     } else {
       setDuplicateAlert(false);
@@ -184,17 +201,29 @@ export const ProspectsListAdmin: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!fNom && !fEntreprise) || !fTelephone || !fPays || !fEtape) {
+    // Retour client n°5 : nom / prénom / entreprise optionnels.
+    // Seul un champ de contact (téléphone) doit rester renseigné.
+    if (!fTelephone || !fPays || !fEtape) {
       if (!fEtape) {
         toast.error("L'étape pipeline est obligatoire");
+      } else if (!fTelephone) {
+        toast.error(isEn ? 'A contact detail (phone) is required' : 'Un champ de contact (téléphone) est obligatoire');
       }
+      return;
+    }
+    // Retour client n°4 : champs dynamiques obligatoires.
+    const missingRequired = prospectFields.some(
+      f => f.required && String(fCustomFields[f.key] ?? '').trim() === '',
+    );
+    if (missingRequired) {
+      toast.error(isEn ? 'Please fill in all required custom fields.' : 'Veuillez renseigner tous les champs personnalisés obligatoires.');
       return;
     }
     const commercial = commerciaux.find(c => c.id === fCommercialId);
     const res = await addProspect({
-      nom: fNom || fEntreprise,
-      prenom: fPrenom,
-      entreprise: fEntreprise || fNom,
+      nom: fNom || fEntreprise || undefined,
+      prenom: fPrenom || undefined,
+      entreprise: fEntreprise || fNom || undefined,
       telephone: fTelephone,
       email: fEmail || undefined,
       whatsapp: fWhatsapp || undefined,
@@ -210,6 +239,7 @@ export const ProspectsListAdmin: React.FC = () => {
       commentaire: fCommentaire || undefined,
       date_prochaine_relance: fRelance || undefined,
       statut_pipeline: fEtape,
+      custom_fields: Object.keys(fCustomFields).length ? fCustomFields : undefined,
       commercial_id: fCommercialId,
       commercial_nom: commercial ? `${commercial.prenom} ${commercial.nom}` : undefined,
     });
@@ -227,6 +257,7 @@ export const ProspectsListAdmin: React.FC = () => {
     setFAdresse(''); setFSecteur(''); setFSource('prospection_directe');
     setFCommercialId(commerciaux[0]?.id || ''); setFEtape('nouveau');
     setFFormule(activeOrgOffers[0]?.nom || ''); setFBudget(''); setFNbreEmployes(''); setFCommentaire(''); setFRelance(''); setFSiteWeb('');
+    setFCustomFields({});
     setDuplicateAlert(false);
   };
 
@@ -243,8 +274,9 @@ export const ProspectsListAdmin: React.FC = () => {
     return prospects.filter(p => {
       if (hideClosedProspects && (p.statut_pipeline === 'gagne' || p.statut_pipeline === 'perdu')) return false;
       const matchSearch = !q ||
-        normalize(p.nom).includes(q) ||
-        normalize(p.entreprise).includes(q) ||
+        normalize(p.nom || '').includes(q) ||
+        normalize(p.prenom || '').includes(q) ||
+        normalize(p.entreprise || '').includes(q) ||
         p.telephone.includes(search);
       const matchStep = filterStep === 'all' || p.statut_pipeline === filterStep;
       const matchSource = filterSource === 'all' || p.source === filterSource;
@@ -423,10 +455,10 @@ export const ProspectsListAdmin: React.FC = () => {
                     onChange={() => handleSelectOne(p.id)} className="w-4 h-4 rounded accent-primary cursor-pointer" />
                 </td>
                 <td className="p-4">
-                  <div className="font-bold text-foreground">{p.prenom} {p.nom}</div>
-                  <div className="text-[11px] text-muted-foreground">{p.entreprise}</div>
+                  <div className="font-bold text-foreground">{fullName(p)}</div>
+                  <div className="text-[11px] text-muted-foreground">{orFallback(p.entreprise)}</div>
                 </td>
-                <td className="p-4 font-medium text-foreground">{p.telephone}</td>
+                <td className="p-4 font-medium text-foreground">{formatPhoneNumber(p.telephone)}</td>
                 <td className="p-4">
                   <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold capitalize ${
                     p.statut_pipeline === 'gagne' ? 'bg-emerald-500/10 text-emerald-500' :
@@ -436,7 +468,10 @@ export const ProspectsListAdmin: React.FC = () => {
                     {p.statut_pipeline.replace(/_/g, ' ')}
                   </span>
                 </td>
-                <td className="p-4 capitalize text-muted-foreground">{p.source.replace(/_/g, ' ')}</td>
+                <td className="p-4 capitalize text-muted-foreground">{(() => {
+                  const opt = SOURCES.find(s => s.value === p.source);
+                  return opt ? opt.label : p.source.replace(/[_-]+/g, ' ');
+                })()}</td>
                 <td className="p-4 font-semibold text-primary">{p.commercial_nom || t('adminOrg.prospects.unassigned')}</td>
                 <td className={`p-4 text-[11px] ${relanceDateColor(p.date_prochaine_relance)}`}>
                   {p.date_prochaine_relance || '—'}
@@ -482,8 +517,8 @@ export const ProspectsListAdmin: React.FC = () => {
                 <input type="checkbox" checked={selectedIds.includes(p.id)}
                   onChange={() => handleSelectOne(p.id)} className="w-5 h-5 rounded accent-primary cursor-pointer shrink-0" />
                 <div>
-                  <h3 className="font-bold text-sm text-foreground">{p.prenom} {p.nom}</h3>
-                  <p className="text-xs text-muted-foreground">{p.entreprise}</p>
+                  <h3 className="font-bold text-sm text-foreground">{fullName(p)}</h3>
+                  <p className="text-xs text-muted-foreground">{orFallback(p.entreprise)}</p>
                 </div>
               </div>
               <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${
@@ -495,7 +530,7 @@ export const ProspectsListAdmin: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center justify-between text-xs pl-8">
-              <span className="font-medium text-foreground">{p.telephone}</span>
+              <span className="font-medium text-foreground">{formatPhoneNumber(p.telephone)}</span>
               <span className="font-bold text-primary text-[11px]">{p.commercial_nom}</span>
             </div>
             {p.date_prochaine_relance && (
@@ -630,8 +665,9 @@ export const ProspectsListAdmin: React.FC = () => {
                 </div>
                 <div>
                   <label className="block font-semibold mb-1">Source</label>
-                  <select value={eSource} onChange={(e) => setESource(e.target.value as ProspectSource)}
+                  <select value={eSource} onChange={(e) => setESource(e.target.value as SourceValue)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    {!SOURCES.some(s => s.value === eSource) && <option value={eSource}>{eSource.replace(/_/g, ' ')}</option>}
                     {SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                   </select>
                 </div>
@@ -686,6 +722,14 @@ export const ProspectsListAdmin: React.FC = () => {
                 <textarea rows={2} value={eCommentaire} onChange={(e) => setECommentaire(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
               </div>
+
+              {/* Retour client n°4 : champs dynamiques définis par l'Admin */}
+              <CustomFieldsForm
+                schema={prospectFields}
+                values={eCustomFields}
+                onChange={setECustomFields}
+                isEn={isEn}
+              />
             </div>
 
             <div className="flex gap-2 pt-1">
@@ -738,8 +782,8 @@ export const ProspectsListAdmin: React.FC = () => {
                       placeholder="Diop" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.firstName')} *</label>
-                    <input type="text" required value={fPrenom} onChange={(e) => setFPrenom(e.target.value)}
+                    <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.firstName')}</label>
+                    <input type="text" value={fPrenom} onChange={(e) => setFPrenom(e.target.value)}
                       placeholder="Moussa" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
@@ -816,7 +860,7 @@ export const ProspectsListAdmin: React.FC = () => {
                   </div>
                   <div>
                     <label className="block font-semibold mb-1">Source</label>
-                    <select value={fSource} onChange={(e) => setFSource(e.target.value as ProspectSource)}
+                    <select value={fSource} onChange={(e) => setFSource(e.target.value as SourceValue)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                       {SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
@@ -880,8 +924,17 @@ export const ProspectsListAdmin: React.FC = () => {
                 </div>
               </div>
 
+              {/* Retour client n°4 : champs dynamiques définis par l'Admin */}
+              <CustomFieldsForm
+                schema={prospectFields}
+                values={fCustomFields}
+                onChange={setFCustomFields}
+                isEn={isEn}
+              />
+
               <button type="submit"
-                className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all">
+                disabled={!fTelephone || duplicateAlert}
+                className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 {t('adminOrg.prospects.modal.createBtn')}
               </button>
             </form>
