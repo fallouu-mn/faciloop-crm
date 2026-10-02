@@ -261,7 +261,7 @@ const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePat
       </div>
 
       {/* Column Droppable Area */}
-      <div className="flex-1 space-y-3 min-h-[420px] max-h-[calc(100vh-280px)] overflow-y-auto relative pr-1" style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(var(--border)) transparent' }}>
+      <div className="flex-1 space-y-3 min-h-[420px] max-h-[calc(100vh-280px)] overflow-y-auto relative pr-1 scrollbar-visible">
         {isOver && (
           <div className="absolute inset-0 z-20 rounded-2xl border-2 border-dashed border-primary bg-primary/10 backdrop-blur-sm flex flex-col items-center justify-center text-primary font-bold text-xs gap-2 animate-pulse">
             <Sparkles className="w-6 h-6 animate-spin-slow" />
@@ -672,8 +672,7 @@ export const ProspectKanban: React.FC = () => {
                           <KanbanEmptyState col={col} prospectsPath={prospectBasePath} isEn={isEn} />
                         ) : (
                           <div
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[50vh] overflow-y-auto"
-                            style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(var(--border)) transparent' }}
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[50vh] overflow-y-auto scrollbar-visible"
                           >
                             {colProspects.map((prospect) => (
                               <DraggableProspectCard key={prospect.id} prospect={prospect} basePath={prospectBasePath} activeCurrency={activeCurrency} />
@@ -974,8 +973,7 @@ export const ProspectKanban: React.FC = () => {
               </div>
 
               {/* Formulaire — scrollable */}
-              <form onSubmit={handleQuickAdd} className="overflow-y-auto flex-1 px-5 sm:px-6 pb-5 sm:pb-6 space-y-4 text-xs"
-                style={{ scrollbarWidth: 'thin', scrollbarColor: 'hsl(var(--border)) transparent' }}>
+              <form onSubmit={handleQuickAdd} className="overflow-y-auto flex-1 px-5 sm:px-6 pb-5 sm:pb-6 space-y-4 text-xs scrollbar-visible">
 
                 {/* Identité */}
                 <div className="space-y-2">

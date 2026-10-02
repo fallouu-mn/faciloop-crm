@@ -88,7 +88,12 @@ ALTER TABLE prospects ALTER COLUMN entreprise DROP NOT NULL;
 -- POINT 6 — la colonne source passe de l'ENUM `source_prospect` à TEXT
 -- pour accepter les mots-clés ajoutés par l'Admin dans
 -- organization_settings.custom_sources.
+--   `DROP DEFAULT` est indispensable : PostgreSQL ne sait pas convertir
+--   automatiquement un default d'enum en text, l'ALTER échouerait sinon.
 -- ---------------------------------------------------------------------
+ALTER TABLE prospects
+  ALTER COLUMN source DROP DEFAULT;
+
 ALTER TABLE prospects
   ALTER COLUMN source TYPE TEXT USING source::TEXT;
 
