@@ -20,7 +20,6 @@ import {
   Download,
   Upload,
   FileSpreadsheet,
-  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -80,7 +79,6 @@ export const ProspectsList: React.FC = () => {
   const [newRelance, setNewRelance] = useState<string>('');
 
   const [duplicateAlert, setDuplicateAlert] = useState<boolean>(false);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Phone input duplicate checker (checks across whole org using formatPhoneNumber)
   const handlePhoneChange = (val: string) => {
@@ -267,12 +265,6 @@ export const ProspectsList: React.FC = () => {
     setIsReassignModalOpen(false);
   };
 
-  const handleDelete = async (id: string) => {
-    await deleteProspect(id);
-    setConfirmDeleteId(null);
-    toast.success(isEn ? 'Prospect deleted.' : 'Prospect supprimé.');
-  };
-
   const isAdminRole = user?.role === 'admin_org' || user?.role === 'super_admin';
 
   return (
@@ -448,29 +440,6 @@ export const ProspectsList: React.FC = () => {
                         <Eye className="w-3.5 h-3.5" />
                         <span>Fiche</span>
                       </Link>
-                      {confirmDeleteId === p.id ? (
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            onClick={() => handleDelete(p.id)}
-                            className="px-2 py-1.5 rounded-lg bg-red-500 text-white text-[10px] font-bold hover:bg-red-600"
-                          >
-                            {isEn ? 'Confirm' : 'Confirmer'}
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="px-2 py-1.5 rounded-lg border border-input text-[10px] font-bold hover:bg-muted"
-                          >
-                            {isEn ? 'Cancel' : 'Annuler'}
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmDeleteId(p.id)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 dark:border-red-800/40 px-2.5 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
                     </div>
                   </td>
                 </tr>
@@ -519,29 +488,6 @@ export const ProspectsList: React.FC = () => {
                   <span>{isEn ? 'Open Prospect Card' : 'Ouvrir Fiche Prospect'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
-                {confirmDeleteId === p.id ? (
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => handleDelete(p.id)}
-                      className="px-3 py-2 rounded-xl bg-red-500 text-white text-[10px] font-bold hover:bg-red-600 active:scale-95"
-                    >
-                      {isEn ? 'Confirm' : 'OK'}
-                    </button>
-                    <button
-                      onClick={() => setConfirmDeleteId(null)}
-                      className="px-3 py-2 rounded-xl border border-input text-[10px] font-bold hover:bg-muted active:scale-95"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setConfirmDeleteId(p.id)}
-                    className="px-3 py-2 rounded-xl border border-red-200 dark:border-red-800/40 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 active:scale-95 transition-all"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
               </div>
             </div>
           );

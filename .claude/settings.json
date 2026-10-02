@@ -2,6 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(node -e ' *)",
+      "Bash(git cherry-pick *)",
+      "Bash(git stash *)",
+      "Bash(git checkout *)",
       "Bash(supabase migration *)"
     ]
   }

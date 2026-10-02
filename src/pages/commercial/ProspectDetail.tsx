@@ -675,7 +675,7 @@ export const ProspectDetail: React.FC = () => {
                 <button
                   onClick={() => {
                     // Retour client n°10 : valeur par défaut du créneau horaire unique.
-                    setRDateTime(toDateTimeLocal(prospect?.date_prochaine_relance || new Date().toISOString().split('T')[0], '09:30'));
+                    setRDateTime(toDateTimeLocal(prospect?.date_prochaine_relance || new Date().toISOString().split('T')[0], '09:00'));
                     setIsRelanceModalOpen(true);
                   }}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all shadow-sm"

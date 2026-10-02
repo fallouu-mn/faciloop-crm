@@ -11,7 +11,7 @@ import { CustomFieldsForm } from '@/components/common/CustomFieldsForm';
 import type { CustomFieldValues } from '../../types/crm';
 import {
   Users, Search, Plus, AlertTriangle, X, Calendar,
-  ArrowRight, Eye, UserCheck, ArrowRightLeft, Trash2, Filter, Pencil, Save
+  ArrowRight, Eye, UserCheck, ArrowRightLeft, Filter, Pencil, Save
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -261,13 +261,6 @@ export const ProspectsListAdmin: React.FC = () => {
     setDuplicateAlert(false);
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm(t('adminOrg.prospects.deleteConfirm'))) {
-      deleteProspect(id);
-      setSelectedIds(prev => prev.filter(i => i !== id));
-    }
-  };
-
   // Use all org prospects (not myProspects which is scoped to current user)
   const filtered = useMemo(() => {
     const q = normalize(search);
@@ -490,13 +483,6 @@ export const ProspectsListAdmin: React.FC = () => {
                     >
                       <Pencil className="w-3.5 h-3.5 text-primary" />
                     </button>
-                    <button
-                      onClick={() => handleDelete(p.id)}
-                      className="p-1.5 rounded-lg border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-colors"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
                 </td>
               </tr>
@@ -549,12 +535,6 @@ export const ProspectsListAdmin: React.FC = () => {
                 className="flex-1 py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5">
                 {t('adminOrg.prospects.openFile')} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-              <button
-                onClick={() => handleDelete(p.id)}
-                className="p-2 rounded-xl border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-colors shrink-0"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
             </div>
           </div>
         ))}
