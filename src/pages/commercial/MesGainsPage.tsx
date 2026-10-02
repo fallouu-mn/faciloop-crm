@@ -116,7 +116,10 @@ export function MesGainsPage() {
 
   // Group by month
   const gainsByMonth = useMemo(() => {
-    const grouped: Record<string, { ca: number; gain: number; count: number; items: CommissionEntry[] }> = {};
+    // Type réel de `myCommissions` (union de la branche API et de la branche mock),
+    // plus large que `CommissionEntry.periodicite`.
+    type GainsItem = (typeof myCommissions)[number];
+    const grouped: Record<string, { ca: number; gain: number; count: number; items: GainsItem[] }> = {};
 
     myCommissions.forEach((c) => {
       const mk = getMonthKey(c.dateVente);

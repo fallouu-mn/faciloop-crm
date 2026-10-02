@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Bell, TrendingDown, UserX, AlertCircle, CalendarX2,
   UserMinus, Ban, Target, AlertTriangle, CheckCheck,
-  UserPlus, CreditCard, Trophy, Inbox,
+  UserPlus, CreditCard, Trophy, Inbox, CalendarClock,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../lib/utils';
@@ -42,6 +42,8 @@ const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; ring
   paiement_recu:            { icon: CreditCard,   color: 'bg-emerald-500',ring: 'ring-emerald-500/30' },
   objectif_atteint:         { icon: Trophy,       color: 'bg-emerald-500',ring: 'ring-emerald-500/30' },
   relance:                  { icon: Bell,         color: 'bg-amber-500',  ring: 'ring-amber-500/30' },
+  relances_jour_admin:      { icon: CalendarClock,color: 'bg-amber-500',  ring: 'ring-amber-500/30' },
+  relances_retard_admin:    { icon: AlertTriangle,color: 'bg-red-500',    ring: 'ring-red-500/30' },
   alerte:                   { icon: AlertCircle,  color: 'bg-rose-500',   ring: 'ring-rose-500/30' },
   prospect:                 { icon: UserPlus,     color: 'bg-blue-500',   ring: 'ring-blue-500/30' },
   paiement:                 { icon: CreditCard,   color: 'bg-emerald-500',ring: 'ring-emerald-500/30' },

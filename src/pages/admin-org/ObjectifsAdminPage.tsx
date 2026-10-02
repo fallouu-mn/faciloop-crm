@@ -22,7 +22,7 @@ function getMonthRange(): { start: string; end: string } {
 
 export const ObjectifsAdminPage: React.FC = () => {
   const { t } = useTranslation('admin');
-  const { objectifs, addObjectif, deleteObjectif, commerciaux, paiements, clients, prospects } = useAuth();
+  const { objectifs, addObjectif, updateObjectif, deleteObjectif, commerciaux, paiements, clients, prospects } = useAuth();
 
   const PERIODE_LABELS: Record<string, string> = {
     hebdomadaire: t('adminOrg.objectifs.period.hebdomadaire'),

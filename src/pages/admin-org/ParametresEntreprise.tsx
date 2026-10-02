@@ -28,6 +28,7 @@ export const ParametresEntreprise: React.FC = () => {
   // ── Retours client n°4 & n°6 : champs dynamiques + sources custom ──
   const {
     settings,
+    prospectFields,
     saveProspectFields,
     saveCustomSources,
   } = useOrganizationSettings();

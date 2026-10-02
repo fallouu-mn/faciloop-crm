@@ -26,6 +26,7 @@ export const NotificationsPage: React.FC = () => {
     if (!isEn) return titre;
     if (titre === 'Relance en retard') return 'Overdue Follow-up';
     if (titre === 'Nouveau prospect attribué') return 'New prospect assigned';
+    if (titre === 'Relance prévue aujourd\'hui') return 'Follow-up today';
     if (titre === 'Relance aujourd\'hui') return 'Follow-up today';
     return titre;
   };

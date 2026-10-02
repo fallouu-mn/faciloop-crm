@@ -5,7 +5,7 @@ import { ProspectSource, SourceValue, CustomFieldValues } from '../../types/crm'
 import { CustomFieldsForm } from '../../components/common/CustomFieldsForm';
 import { useEtapesPipeline, getEtapeLabelByNom } from '@/hooks/useEtapesPipeline';
 import { normalizePhoneNumber } from '../../lib/phoneUtils';
-import { formatPhoneNumber } from '../../utils/formatters';
+import { formatPhoneNumber, fullName, orFallback } from '../../utils/formatters';
 import {
   Users,
   Search,

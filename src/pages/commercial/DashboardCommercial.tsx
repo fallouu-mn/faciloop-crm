@@ -103,9 +103,14 @@ export const DashboardCommercial: React.FC = () => {
 
   // ─── Backend-ready: all metrics computed from context data ───
   const metrics = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
     const totalProspects = myProspects.length;
-    const relancesEnRetard = myRelances.filter(r => r.statut === 'en_retard').length;
-    const relancesAujourdhui = myRelances.filter(r => r.date === new Date().toISOString().split('T')[0]).length;
+    // Dérivé de la date (comme RelancesPage.getEffectiveStatut) : le statut
+    // `en_retard` n'est jamais persisté par l'application.
+    const relancesEnRetard = myRelances.filter(r =>
+      r.date < today && r.statut !== 'realisee' && r.statut !== 'annulee'
+    ).length;
+    const relancesAujourdhui = myRelances.filter(r => r.date === today).length;
     const ventesConclues = myProspects.filter(p => p.statut_pipeline === 'gagne').length;
     const tauxConversion = totalProspects > 0 ? Math.round((ventesConclues / totalProspects) * 100) : 0;
 

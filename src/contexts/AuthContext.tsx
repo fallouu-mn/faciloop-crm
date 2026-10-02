@@ -594,6 +594,115 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(interval);
   }, [user?.organizationId]);
 
+  // ─── Notifications de relances (rappel du jour / retard) ───────────────
+  // La edge function `auto-notifications` ne dispose d'aucun cron : rien ne
+  // l'appelle, donc `relance_rappel` / `relance_retard` n'étaient jamais
+  // produits. On les génère ici au chargement, de façon idempotente grâce au
+  // dédoublonnage sur `type + message` (commercial) et `type + jour` (admin).
+  useEffect(() => {
+    const orgId = user?.organizationId;
+    if (!orgId || isLoading) return;
+    if (relances.length === 0) return;
+
+    const today = new Date().toISOString().split('T')[0];
+
+    const relevant = relances.filter(r =>
+      !r._synthetic &&
+      r.date <= today &&
+      r.statut !== 'realisee' &&
+      r.statut !== 'annulee'
+    );
+    if (relevant.length === 0) return;
+
+    const label = (r: Relance) =>
+      r.prospect_nom && r.prospect_entreprise
+        ? `${r.prospect_nom} (${r.prospect_entreprise})`
+        : r.prospect_nom || r.prospect_entreprise || 'Prospect';
+
+    // ── Commercial : ses propres relances (la RLS n'autorise que les siennes)
+    if (user?.role === 'commercial' && user.commercialId) {
+      const commercialId = user.commercialId;
+      const mine = relevant.filter(r => r.commercial_id === commercialId);
+      const known = new Set(notifications.map(n => `${n.type}|${n.message}`));
+      const created: NotificationItem[] = [];
+
+      for (const r of mine) {
+        const late = r.date < today;
+        const type = late ? 'relance_retard' : 'relance_rappel';
+        const titre = late ? 'Relance en retard' : "Relance prévue aujourd'hui";
+        const message = late
+          ? `La relance du ${r.date} pour ${label(r)} n'a pas été effectuée`
+          : `Relance du ${r.date} : ${label(r)} — ${r.canal}${r.heure ? ` à ${r.heure}` : ''}`;
+
+        const key = `${type}|${message}`;
+        if (known.has(key)) continue;
+        known.add(key);
+
+        const notif: Omit<NotificationItem, 'id' | 'created_at'> = {
+          organization_id: orgId,
+          commercial_id: commercialId,
+          type,
+          titre,
+          message,
+          lien: '/app/relances',
+          lue: false,
+        };
+        notificationsService.createNotification(notif).catch(() => {});
+        created.push({
+          ...notif,
+          id: `relance-${r.id}-${type}`,
+          created_at: new Date().toISOString(),
+        } as NotificationItem);
+      }
+
+      if (created.length > 0) setNotifications(prev => [...created, ...prev]);
+    }
+
+    // ── Admin org : une alerte globale par jour ────────────────────────────
+    // La page /admin/notifications lit `notifications_admin_commercial`.
+    if (user?.role === 'admin_org') {
+      const alreadyToday = (type: string) =>
+        adminNotifications.some(n => n.type === type && n.created_at?.slice(0, 10) === today);
+
+      const pushAdminNotif = (type: string, titre: string, message: string) => {
+        if (alreadyToday(type)) return;
+        const notif = {
+          organization_id: orgId,
+          type,
+          titre,
+          message,
+          lien: '/admin/relances',
+          lue: false,
+        };
+        notificationsService.createAdminNotification(notif).catch(() => {});
+        setAdminNotifications(prev => ([{
+          ...notif,
+          id: `${type}-${today}`,
+          created_at: new Date().toISOString(),
+        } as NotificationItem, ...prev]));
+      };
+
+      const todayCount = relevant.filter(r => r.date === today).length;
+      const overdueCount = relevant.filter(r => r.date < today).length;
+
+      if (todayCount > 0) {
+        pushAdminNotif(
+          'relances_jour_admin',
+          'Relances du jour',
+          `${todayCount} relance(s) prévue(s) aujourd'hui dans l'équipe`,
+        );
+      }
+      if (overdueCount > 0) {
+        pushAdminNotif(
+          'relances_retard_admin',
+          'Relances en retard',
+          `${overdueCount} relance(s) non effectuée(s) par l'équipe`,
+        );
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isLoading, relances, notifications, adminNotifications]);
+
   // Rafraîchir le profil utilisateur depuis la BDD
   const refreshUser = useCallback(async () => {
     if (!user) return;
