@@ -5,7 +5,9 @@
       "Bash(git cherry-pick *)",
       "Bash(git stash *)",
       "Bash(git checkout *)",
-      "Bash(supabase migration *)"
+      "Bash(supabase migration *)",
+      "Bash(xxd -l 200 -s +0 src/pages/admin-org/ParametresEntreprise.tsx)",
+      "Bash(xxd)"
     ]
   }
 }

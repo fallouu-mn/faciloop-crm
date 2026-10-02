@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Building2, Save, Upload, Globe, Phone, Mail, MapPin, Briefcase, ListChecks, Tags } from 'lucide-react';
+import { Building2, Save, Upload, Globe, Phone, Mail, MapPin, Briefcase, Tags, Plus, X, Pencil, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PinChangeSection } from '../../components/common/PinChangeSection';
-import {
-  CustomFieldsSchemaEditor,
-  CustomSourcesEditor,
-} from '../../components/common/CustomFieldsForm';
-import { useOrganizationSettings } from '../../hooks/useOrganizationSettings';
-import type { CustomFieldDef } from '../../types/crm';
+import { useSourcesConfig } from '../../hooks/useSourcesConfig';
+import { DEFAULT_SOURCES } from '../../services/sourcesConfig';
 
 export const ParametresEntreprise: React.FC = () => {
   const { t, i18n } = useTranslation('admin');
@@ -25,45 +21,11 @@ export const ParametresEntreprise: React.FC = () => {
   const [secteur, setSecteur] = useState(currentOrg?.secteur || '');
   const [logoPreview, setLogoPreview] = useState<string | null>(currentOrg?.logo_url || null);
 
-  // ── Retours client n°4 & n°6 : champs dynamiques + sources custom ──
-  const {
-    settings,
-    prospectFields,
-    saveProspectFields,
-    saveCustomSources,
-  } = useOrganizationSettings();
-  const [schemaDraft, setSchemaDraft] = useState<CustomFieldDef[]>(prospectFields);
-  const [sourcesDraft, setSourcesDraft] = useState<string[]>(settings?.custom_sources ?? []);
-  const [fieldsSaving, setFieldsSaving] = useState(false);
-  const [sourcesSaving, setSourcesSaving] = useState(false);
-
-  useEffect(() => {
-    if (!settings) return;
-    setSchemaDraft(settings.prospect_custom_fields_schema ?? []);
-    setSourcesDraft(settings.custom_sources ?? []);
-  }, [settings]);
-
-  const saveFields = async () => {
-    setFieldsSaving(true);
-    try {
-      await saveProspectFields(schemaDraft);
-    } catch {
-      /* toast géré par le hook */
-    } finally {
-      setFieldsSaving(false);
-    }
-  };
-
-  const saveSources = async () => {
-    setSourcesSaving(true);
-    try {
-      await saveCustomSources(sourcesDraft);
-    } catch {
-      /* toast géré par le hook */
-    } finally {
-      setSourcesSaving(false);
-    }
-  };
+  // ── Retour client n°6 : sources custom (table sources_custom) ──
+  const { sources: allSources, customRows, addSource, editSource, removeSource } = useSourcesConfig();
+  const [newSourceLabel, setNewSourceLabel] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingLabel, setEditingLabel] = useState('');
 
   useEffect(() => {
     if (!currentOrg) return;
@@ -266,6 +228,114 @@ export const ParametresEntreprise: React.FC = () => {
           </div>
         </div>
 
+        {/* ── Retour client n°6 — Sources de prospect personnalisees ── */}
+        <div className="p-5 rounded-2xl border border-border bg-card/50 space-y-4">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Tags className="w-4 h-4 text-primary" />
+            {isEn ? "Acquisition sources" : "Sources d'acquisition"}
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            {isEn
+              ? 'Default sources are read-only. Add your own custom sources below.'
+              : 'Les sources par défaut sont en lecture seule. Ajoutez vos propres sources ci-dessous.'}
+          </p>
+        </div>
+
+        {/* Sources par défaut (lecture seule) */}
+        <div className="flex flex-wrap gap-1.5">
+          {DEFAULT_SOURCES.map(s => (
+            <span key={s.value} className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-[11px] font-medium">
+              {s.label}
+            </span>
+          ))}
+        </div>
+
+        {/* Sources custom */}
+        {customRows.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-bold text-foreground uppercase tracking-wider">
+              {isEn ? 'Your sources' : 'Vos sources'}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {customRows.map(row => (
+                <span key={row.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold">
+                  {editingId === row.id ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editingLabel}
+                        onChange={e => setEditingLabel(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (editingLabel.trim()) {
+                              editSource.mutate({ id: row.id, label: editingLabel.trim() });
+                              setEditingId(null);
+                            }
+                          }
+                          if (e.key === 'Escape') setEditingId(null);
+                        }}
+                        className="w-24 bg-transparent border-b border-primary text-[11px] font-bold outline-none"
+                        autoFocus
+                      />
+                      <button type="button" onClick={() => { if (editingLabel.trim()) { editSource.mutate({ id: row.id, label: editingLabel.trim() }); setEditingId(null); } }}>
+                        <Check className="w-3 h-3 text-emerald-500" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {row.label}
+                      <button type="button" onClick={() => { setEditingId(row.id); setEditingLabel(row.label); }}>
+                        <Pencil className="w-3 h-3 opacity-50 hover:opacity-100 transition-opacity" />
+                      </button>
+                      <button type="button" onClick={() => removeSource.mutate(row.id)} className="hover:text-red-500 transition-colors">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </>
+                  )}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Ajouter une source */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newSourceLabel}
+            onChange={e => setNewSourceLabel(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const label = newSourceLabel.trim();
+                if (!label) return;
+                const slug = label.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+                addSource.mutate({ value: slug, label });
+                setNewSourceLabel('');
+              }
+            }}
+            placeholder={isEn ? 'Ex: Trade fair' : 'Ex : Salon professionnel'}
+            className="flex-1 p-2.5 rounded-xl border border-input bg-background text-xs font-medium text-foreground focus:ring-2 focus:ring-primary/50"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const label = newSourceLabel.trim();
+              if (!label) return;
+              const slug = label.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+              addSource.mutate({ value: slug, label });
+              setNewSourceLabel('');
+            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            {isEn ? 'Add' : 'Ajouter'}
+          </button>
+        </div>
+        </div>
+
         {/* Security — PIN change */}
         <PinChangeSection />
 
@@ -277,60 +347,6 @@ export const ParametresEntreprise: React.FC = () => {
           <span>{t('adminOrg.parametres.saveBtn')}</span>
         </button>
       </form>
-
-      {/* ── Retour client n°4 — Champs prospects dynamiques ── */}
-      <section className="p-5 rounded-2xl border border-border bg-card space-y-4">
-        <div>
-          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <ListChecks className="w-4 h-4 text-primary" />
-            {isEn ? 'Custom prospect fields' : 'Champs prospects personnalisés'}
-          </h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            {isEn
-              ? 'Define the extra fields your team fills in for every prospect. They appear on prospect forms and files.'
-              : 'Définissez les champs complémentaires à renseigner pour chaque prospect. Ils apparaissent sur les formulaires et les fiches prospects.'}
-          </p>
-        </div>
-
-        <CustomFieldsSchemaEditor schema={schemaDraft} onChange={setSchemaDraft} isEn={isEn} />
-
-        <button
-          type="button"
-          onClick={saveFields}
-          disabled={fieldsSaving}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all disabled:opacity-50"
-        >
-          <Save className="w-3.5 h-3.5" />
-          {fieldsSaving ? (isEn ? 'Saving…' : 'Enregistrement…') : (isEn ? 'Save fields' : 'Enregistrer les champs')}
-        </button>
-      </section>
-
-      {/* ── Retour client n°6 — Sources de prospect personnalisées ── */}
-      <section className="p-5 rounded-2xl border border-border bg-card space-y-4">
-        <div>
-          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Tags className="w-4 h-4 text-primary" />
-            {isEn ? 'Custom acquisition sources' : "Sources d'acquisition personnalisées"}
-          </h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            {isEn
-              ? 'These sources are added to the default list and offered everywhere a source is chosen.'
-              : 'Ces sources s’ajoutent à la liste par défaut et sont proposées partout où l’on choisit une source.'}
-          </p>
-        </div>
-
-        <CustomSourcesEditor sources={sourcesDraft} onChange={setSourcesDraft} isEn={isEn} />
-
-        <button
-          type="button"
-          onClick={saveSources}
-          disabled={sourcesSaving}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all disabled:opacity-50"
-        >
-          <Save className="w-3.5 h-3.5" />
-          {sourcesSaving ? (isEn ? 'Saving…' : 'Enregistrement…') : (isEn ? 'Save sources' : 'Enregistrer les sources')}
-        </button>
-      </section>
     </div>
   );
 };
