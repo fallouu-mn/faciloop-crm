@@ -5,7 +5,7 @@ import { ProspectSource, SourceValue, CustomFieldValues } from '../../types/crm'
 import { CustomFieldsForm } from '../../components/common/CustomFieldsForm';
 import { useEtapesPipeline, getEtapeLabelByNom } from '@/hooks/useEtapesPipeline';
 import { normalizePhoneNumber } from '../../lib/phoneUtils';
-import { formatPhoneNumber, fullName, orFallback } from '../../utils/formatters';
+import { formatPhoneNumber, fullName, orFallback, PAYS } from '../../utils/formatters';
 import {
   Users,
   Search,
@@ -27,7 +27,6 @@ import { useProspects } from '@/hooks/commercial/useProspects';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { usedSourceOptions, sourceLabel, matchExistingSource, slugifyFieldKey } from '@/services/organizationSettings';
 
-const PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
 export const ProspectsList: React.FC = () => {

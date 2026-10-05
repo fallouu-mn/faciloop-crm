@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource, SourceValue, PipelineStepId, Prospect } from '../../types/crm';
 import { normalizePhoneNumber } from '../../lib/phoneUtils';
-import { formatPhoneNumber, fullName, orFallback } from '../../utils/formatters';
+import { formatPhoneNumber, fullName, orFallback, PAYS } from '../../utils/formatters';
 import { useTranslation } from 'react-i18next';
 import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
@@ -39,7 +39,6 @@ const SOURCES_FALLBACK: { value: string; label: string }[] = [
 ];
 
 
-const PAYS_DEFAUT = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
 export const ProspectsListAdmin: React.FC = () => {
@@ -184,7 +183,7 @@ export const ProspectsListAdmin: React.FC = () => {
   // Dynamic pays options from real data
   const paysOptions = useMemo(() => {
     const fromData = [...new Set(prospects.map(p => p.pays).filter(Boolean))] as string[];
-    const merged = [...new Set([...PAYS_DEFAUT, ...fromData])];
+    const merged = [...new Set([...PAYS, ...fromData])];
     return merged.sort();
   }, [prospects]);
 

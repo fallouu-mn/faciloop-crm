@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { PinChangeSection } from '../../components/common/PinChangeSection';
 import { useSourcesConfig } from '../../hooks/useSourcesConfig';
 import { DEFAULT_SOURCES } from '../../services/sourcesConfig';
+import { PAYS } from '../../utils/formatters';
 
 export const ParametresEntreprise: React.FC = () => {
   const { t, i18n } = useTranslation('admin');
@@ -156,17 +157,7 @@ export const ParametresEntreprise: React.FC = () => {
                 onChange={(e) => setPays(e.target.value)}
                 className="w-full p-3 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               >
-                <option value="Sénégal">Sénégal</option>
-                <option value="Côte d'Ivoire">Côte d'Ivoire</option>
-                <option value="Mali">Mali</option>
-                <option value="Burkina Faso">Burkina Faso</option>
-                <option value="Guinée">Guinée</option>
-                <option value="Cameroun">Cameroun</option>
-                <option value="Bénin">Bénin</option>
-                <option value="Togo">Togo</option>
-                <option value="Niger">Niger</option>
-                <option value="France">France</option>
-                <option value="Autre">Autre</option>
+                {PAYS.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
             <div>

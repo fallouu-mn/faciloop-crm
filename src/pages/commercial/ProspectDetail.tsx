@@ -38,7 +38,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useProspectDetail, useInteractions, useRelances } from '@/hooks/commercial';
 import { getRelancesByProspect } from '../../services/relances';
-import { formatPhoneNumber, fullName, orFallback, formatDateWithTime, toDateTimeLocal, splitDateTimeLocal } from '../../utils/formatters';
+import { formatPhoneNumber, fullName, orFallback, formatDateWithTime, toDateTimeLocal, splitDateTimeLocal, PAYS } from '../../utils/formatters';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { sourceLabel } from '@/services/organizationSettings';
 import { CustomFieldsForm } from '@/components/common/CustomFieldsForm';
@@ -57,7 +57,6 @@ const SOURCES_DETAIL_FALLBACK = [
   { value: 'autre', label: 'Autre' },
 ];
 const SECTEURS_DETAIL = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
-const PAYS_DETAIL = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 
 export const ProspectDetail: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -1032,7 +1031,7 @@ export const ProspectDetail: React.FC = () => {
                         <label className="font-extrabold text-muted-foreground">{isEn ? 'Country' : 'Pays'}</label>
                         <select value={editForm.pays} onChange={e => setEditForm(f => ({...f, pays: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
-                          {PAYS_DETAIL.map(p => <option key={p} value={p}>{p}</option>)}
+                          {PAYS.map(p => <option key={p} value={p}>{p}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">

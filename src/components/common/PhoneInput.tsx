@@ -36,6 +36,26 @@ const COUNTRY_GROUPS: CountryGroup[] = [
     name: 'Afrique Centrale',
     countries: [
       { code: 'CM', name: 'Cameroun', flag: '🇨🇲', dialCode: '237' },
+      { code: 'CG', name: 'Congo', flag: '🇨🇬', dialCode: '242' },
+      { code: 'CD', name: 'Congo (RDC)', flag: '🇨🇩', dialCode: '243' },
+      { code: 'GA', name: 'Gabon', flag: '🇬🇦', dialCode: '241' },
+    ],
+  },
+  {
+    name: 'Afrique du Nord',
+    countries: [
+      { code: 'MA', name: 'Maroc', flag: '🇲🇦', dialCode: '212' },
+      { code: 'TN', name: 'Tunisie', flag: '🇹🇳', dialCode: '216' },
+      { code: 'DZ', name: 'Algérie', flag: '🇩🇿', dialCode: '213' },
+    ],
+  },
+  {
+    name: 'Afrique de l\'Est',
+    countries: [
+      { code: 'RW', name: 'Rwanda', flag: '🇷🇼', dialCode: '250' },
+      { code: 'UG', name: 'Ouganda', flag: '🇺🇬', dialCode: '256' },
+      { code: 'KE', name: 'Kenya', flag: '🇰🇪', dialCode: '254' },
+      { code: 'TZ', name: 'Tanzanie', flag: '🇹🇿', dialCode: '255' },
     ],
   },
   {
@@ -44,6 +64,7 @@ const COUNTRY_GROUPS: CountryGroup[] = [
       { code: 'FR', name: 'France', flag: '🇫🇷', dialCode: '33' },
       { code: 'BE', name: 'Belgique', flag: '🇧🇪', dialCode: '32' },
       { code: 'CH', name: 'Suisse', flag: '🇨🇭', dialCode: '41' },
+      { code: 'GB', name: 'Royaume-Uni', flag: '🇬🇧', dialCode: '44' },
       { code: 'ES', name: 'Espagne', flag: '🇪🇸', dialCode: '34' },
       { code: 'PT', name: 'Portugal', flag: '🇵🇹', dialCode: '351' },
     ],

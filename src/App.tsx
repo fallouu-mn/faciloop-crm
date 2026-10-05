@@ -94,7 +94,7 @@ function DocumentTitle() {
 
   useEffect(() => {
     const page = PAGE_TITLES.find((p) => p.match.test(pathname))?.label;
-    const suffix = 'Faciloop PRO';
+    const suffix = 'Faciloopro';
     document.title = page
       ? currentOrg?.nom
         ? `${page} — ${currentOrg.nom} | ${suffix}`
