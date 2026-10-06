@@ -5,7 +5,7 @@
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
 import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate, CacheFirst, NetworkFirst } from 'workbox-strategies';
+import { CacheFirst, NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
@@ -17,13 +17,14 @@ clientsClaim();
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
-// API REST Supabase : StaleWhileRevalidate
+// API REST Supabase : NetworkFirst (donnees toujours fraiches)
 registerRoute(
   ({ url }: { url: URL }) => url.hostname.includes('supabase.co') && url.pathname.startsWith('/rest/'),
-  new StaleWhileRevalidate({
+  new NetworkFirst({
     cacheName: 'supabase-api-cache',
+    networkTimeoutSeconds: 5,
     plugins: [
-      new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 60 * 60 }),
+      new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 60 * 5 }),
       new CacheableResponsePlugin({ statuses: [0, 200] }),
     ],
   })

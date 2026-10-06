@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { UserPlus, UserCheck, Shield, X, Check, Mail, Phone, MessageSquare, Power, AlertTriangle, Pencil, Trash2, Save } from 'lucide-react';
+import { UserPlus, UserCheck, Shield, X, Check, Mail, Phone, MessageSquare, Power, AlertTriangle, Pencil, Trash2, Save, Loader2 } from 'lucide-react';
 import { formatPhoneNumber } from '../../utils/formatters';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,6 +22,10 @@ export const EquipeCommerciale: React.FC = () => {
   const [telephone, setTelephone] = useState<string>('');
   const [addLoading, setAddLoading] = useState<boolean>(false);
   const [addError, setAddError] = useState<string | null>(null);
+
+  // Delete confirmation
+  const [deletingComm, setDeletingComm] = useState<Commercial | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -53,10 +57,18 @@ export const EquipeCommerciale: React.FC = () => {
     }
   };
 
-  const handleDelete = (comm: Commercial) => {
-    if (!window.confirm(isEn ? `Delete ${comm.prenom} ${comm.nom}? This action is irreversible.` : `Supprimer ${comm.prenom} ${comm.nom} ? Cette action est irréversible.`)) return;
-    deleteCommercial(comm.id);
-    toast.success(isEn ? 'Sales rep deleted.' : 'Commercial supprimé.');
+  const handleDeleteConfirm = async () => {
+    if (!deletingComm) return;
+    setDeleteLoading(true);
+    try {
+      await deleteCommercial(deletingComm.id);
+      toast.success(isEn ? 'Sales rep deleted.' : 'Commercial supprimé.');
+    } catch {
+      toast.error(isEn ? 'Delete failed.' : 'Erreur lors de la suppression.');
+    } finally {
+      setDeleteLoading(false);
+      setDeletingComm(null);
+    }
   };
 
   const toggleStatus = (id: string) => {
@@ -186,7 +198,7 @@ export const EquipeCommerciale: React.FC = () => {
                       <Pencil className="w-3.5 h-3.5 text-primary" />
                     </button>
                     <button
-                      onClick={() => handleDelete(comm)}
+                      onClick={() => setDeletingComm(comm)}
                       className="p-1.5 rounded-lg border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-all"
                       title={isEn ? 'Delete' : 'Supprimer'}
                     >
@@ -262,7 +274,7 @@ export const EquipeCommerciale: React.FC = () => {
                   <Power className="w-3.5 h-3.5" />
                 </button>
                 <button
-                  onClick={() => handleDelete(comm)}
+                  onClick={() => setDeletingComm(comm)}
                   className="p-2 rounded-xl border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-all"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -327,6 +339,54 @@ export const EquipeCommerciale: React.FC = () => {
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingComm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-card border border-border rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 font-sans">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-foreground">
+                  {isEn ? 'Delete sales rep' : 'Supprimer le commercial'}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {isEn ? 'This action is irreversible' : 'Cette action est irreversible'}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm text-foreground">
+              {isEn
+                ? <>Are you sure you want to delete <span className="font-bold">{deletingComm.prenom} {deletingComm.nom}</span>?</>
+                : <>Voulez-vous supprimer <span className="font-bold">{deletingComm.prenom} {deletingComm.nom}</span> ?</>
+              }
+            </p>
+
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setDeletingComm(null)}
+                className="flex-1 py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground transition-colors"
+              >
+                {isEn ? 'Cancel' : 'Annuler'}
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleteLoading}
+                className="flex-1 py-3 rounded-xl bg-destructive text-white text-xs font-bold hover:bg-destructive/90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              >
+                {deleteLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <><Trash2 className="w-3.5 h-3.5" /> {isEn ? 'Delete' : 'Supprimer'}</>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

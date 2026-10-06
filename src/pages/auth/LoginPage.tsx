@@ -65,6 +65,8 @@ export const LoginPage: React.FC = () => {
           );
         } else if (session.orgStatut === 'en_attente') {
           navigate('/pending-activation');
+        } else if (session.orgStatut === 'expire') {
+          navigate('/expired');
         } else if (session.orgStatut === 'suspendu' || session.orgStatut === 'inactif') {
           navigate('/suspended');
         } else {
@@ -94,6 +96,8 @@ export const LoginPage: React.FC = () => {
           );
         } else if (session.orgStatut === 'en_attente') {
           navigate('/pending-activation');
+        } else if (session.orgStatut === 'expire') {
+          navigate('/expired');
         } else if (session.orgStatut === 'suspendu' || session.orgStatut === 'inactif') {
           navigate('/suspended');
         } else {

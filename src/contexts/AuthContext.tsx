@@ -523,6 +523,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
+      // Abonnement expiré (activation sans abonnement avec date de fin dépassée)
+      if (
+        orgData.statut_abonnement === 'en_attente' &&
+        orgData.date_fin_abonnement &&
+        new Date(orgData.date_fin_abonnement) < new Date(new Date().toISOString().split('T')[0])
+      ) {
+        sess.orgStatut = 'expire';
+        setUser(sess);
+        await supabase.auth.signOut();
+        return;
+      }
+
       setCurrentOrg({
         id: orgData.id,
         nom: orgData.nom,
@@ -563,6 +575,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearTimeout(timer);
       timer = setTimeout(async () => {
         await supabase.auth.signOut();
+        queryClient.clear();
         setUser(null);
         setCurrentOrg(null);
         window.location.href = '/login';
@@ -895,6 +908,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return sess;
           }
 
+          // Abonnement expiré (activation sans abonnement avec date de fin dépassée)
+          if (
+            orgData.statut_abonnement === 'en_attente' &&
+            orgData.date_fin_abonnement &&
+            new Date(orgData.date_fin_abonnement) < new Date(new Date().toISOString().split('T')[0])
+          ) {
+            sess.orgStatut = 'expire';
+            setUser(sess);
+            await supabase.auth.signOut();
+            return sess;
+          }
+
           setCurrentOrg({
             id: orgData.id,
             nom: orgData.nom,
@@ -935,6 +960,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     localStorage.removeItem('faciloop_test_session');
     await supabase.auth.signOut();
+    queryClient.clear();
     setUser(null);
     setCurrentOrg(null);
   };

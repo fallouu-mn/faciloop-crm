@@ -6,7 +6,7 @@ import './index.css';
 import './i18n';
 import './i18n/config';
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 30 * 1000,
