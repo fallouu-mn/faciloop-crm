@@ -230,12 +230,10 @@ export const ParametresEntreprise: React.FC = () => {
               <label className="block font-semibold mb-1">{t('adminOrg.parametres.phone')}</label>
               <div className="relative">
                 <Phone className="w-3.5 h-3.5 absolute left-3 top-3.5 text-muted-foreground" />
-                <input
-                  type="tel"
+                <PhoneInput
                   value={telephone}
-                  onChange={(e) => setTelephone(e.target.value)}
-                  className="w-full pl-9 pr-3 p-3 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50"
-                />
+                  onChange={(val) => setTelephone(val)}
+                  className="w-full pl-9 pr-3 p-3 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
               </div>
             </div>
             <div>

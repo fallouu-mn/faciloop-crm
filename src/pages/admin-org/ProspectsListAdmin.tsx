@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource, SourceValue, PipelineStepId, Prospect } from '../../types/crm';
 import { normalizePhoneNumber } from '../../lib/phoneUtils';
 import { formatPhoneNumber, fullName, orFallback } from '../../utils/formatters';
+import { PhoneInput } from '../../components/common/PhoneInput';
 import { useTranslation } from 'react-i18next';
 import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
@@ -619,13 +620,17 @@ export const ProspectsListAdmin: React.FC = () => {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.phone')}</label>
-                  <input type="tel" value={eTelephone} onChange={(e) => setETelephone(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  <PhoneInput
+                    value={eTelephone}
+                    onChange={(val) => setETelephone(val)}
+                  />
                 </div>
                 <div>
                   <label className="block font-semibold mb-1">WhatsApp</label>
-                  <input type="tel" value={eWhatsapp} onChange={(e) => setEWhatsapp(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                  <PhoneInput
+                    value={eWhatsapp}
+                    onChange={(val) => setEWhatsapp(val)}
+                  />
                 </div>
               </div>
               <div>
@@ -802,13 +807,17 @@ export const ProspectsListAdmin: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="block font-semibold mb-1">{t('adminOrg.prospects.modal.phone')}</label>
-                    <input type="tel" value={fTelephone} onChange={(e) => handlePhoneChange(e.target.value)}
-                      placeholder="+221 77 123 45 67" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    <PhoneInput
+                      value={fTelephone}
+                      onChange={(val) => setFTelephone(val)}
+                    />
                   </div>
                   <div>
                     <label className="block font-semibold mb-1">WhatsApp</label>
-                    <input type="tel" value={fWhatsapp} onChange={(e) => setFWhatsapp(e.target.value)}
-                      placeholder="+221 77 123 45 67" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    <PhoneInput
+                      value={fWhatsapp}
+                      onChange={(val) => setFWhatsapp(val)}
+                    />
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block font-semibold mb-1">Email</label>

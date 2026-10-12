@@ -144,13 +144,9 @@ export const GlobalFab: React.FC = () => {
 
                 <div>
                   <label className="block font-bold text-foreground mb-1">{isEn ? 'Primary Phone *' : 'Téléphone Principal *'}</label>
-                  <input
-                    type="tel"
-                    required
+                  <PhoneInput
                     value={telephone}
-                    onChange={(e) => handlePhoneChange(e.target.value)}
-                    placeholder={isEn ? "77 123 45 67 or +221..." : "77 123 45 67 ou +221..."}
-                    className="w-full p-3 rounded-2xl border border-input bg-background font-semibold focus:ring-2 focus:ring-primary/50 text-foreground"
+                    onChange={(val) => setTelephone(val)}
                   />
                 </div>
 

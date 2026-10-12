@@ -6,6 +6,7 @@ import { CustomFieldsForm } from '../../components/common/CustomFieldsForm';
 import { useEtapesPipeline, getEtapeLabelByNom } from '@/hooks/useEtapesPipeline';
 import { normalizePhoneNumber } from '../../lib/phoneUtils';
 import { formatPhoneNumber, fullName, orFallback } from '../../utils/formatters';
+import { PhoneInput } from '../../components/common/PhoneInput';
 import {
   Users,
   Search,
@@ -658,13 +659,19 @@ export const ProspectsList: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="block font-semibold mb-1">{isEn ? 'Phone *' : 'Téléphone *'}</label>
-                    <input type="tel" value={newPhone} onChange={(e) => handlePhoneChange(e.target.value)}
-                      placeholder="+221 77 123 45 67" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    <PhoneInput
+                      value={newPhone}
+                      onChange={(val) => setNewPhone(val)}
+                      placeholder="+221 77 123 45 67"
+                    />
                   </div>
                   <div>
                     <label className="block font-semibold mb-1">WhatsApp</label>
-                    <input type="tel" value={newWhatsapp} onChange={(e) => setNewWhatsapp(e.target.value)}
-                      placeholder="+221 77 123 45 67" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                    <PhoneInput
+                      value={newWhatsapp}
+                      onChange={(val) => setNewWhatsapp(val)}
+                      placeholder="+221 77 123 45 67"
+                    />
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block font-semibold mb-1">Email</label>

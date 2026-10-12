@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { usePlanLimits } from '../../hooks/usePlanLimits';
 import { Commercial } from '../../types/crm';
+import { PhoneInput } from '../../components/common/PhoneInput';
 
 export const EquipeCommerciale: React.FC = () => {
   const { t, i18n } = useTranslation('admin');
@@ -307,9 +308,12 @@ export const EquipeCommerciale: React.FC = () => {
               </div>
               <div>
                 <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.phone')}</label>
-                <input type="tel" required value={telephone} onChange={(e) => setTelephone(e.target.value)}
+                <PhoneInput
+                  value={telephone}
+                  onChange={(val) => setTelephone(val)}
                   placeholder="+33 6 12 34 56 78"
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                  disabled={false}
+                />
               </div>
 
               {addError && (
@@ -365,8 +369,11 @@ export const EquipeCommerciale: React.FC = () => {
               </div>
               <div>
                 <label className="block font-semibold mb-1">{t('adminOrg.equipe.modal.phone')}</label>
-                <input type="tel" value={editTelephone} onChange={(e) => setEditTelephone(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                <PhoneInput
+                  value={editTelephone}
+                  onChange={(val) => setEditTelephone(val)}
+                  disabled={false}
+                />
               </div>
             </div>
 

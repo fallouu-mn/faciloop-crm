@@ -6,6 +6,7 @@ import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
 import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
 import { formatPhoneNumber } from '../../utils/formatters';
+import { PhoneInput } from '../../components/common/PhoneInput';
 import { useTranslation } from 'react-i18next';
 import {
   Building2,
@@ -535,7 +536,9 @@ export const ClientsListAdmin: React.FC = () => {
                   </div>
                   <div>
                     <label className="block font-semibold mb-1">Téléphone</label>
-                    <input type="tel" value={editTelephone} onChange={(e) => setEditTelephone(e.target.value)}
+                    <PhoneInput
+                      value={editTelephone}
+                      onChange={(val) => setEditTelephone(val)}
                       className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                   </div>
                   <div>
@@ -564,7 +567,9 @@ export const ClientsListAdmin: React.FC = () => {
                   </div>
                   <div>
                     <label className="block font-semibold mb-1">WhatsApp</label>
-                    <input type="tel" value={editWhatsapp} onChange={(e) => setEditWhatsapp(e.target.value)}
+                    <PhoneInput
+                      value={editWhatsapp}
+                      onChange={(val) => setEditWhatsapp(val)}
                       className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                   </div>
                   <div>

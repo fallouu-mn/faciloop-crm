@@ -14,6 +14,7 @@ import {
   useDroppable,
   useDraggable
 } from '@dnd-kit/core';
+import { PhoneInput } from '../../components/common/PhoneInput';
 import {
   Plus,
   X,
@@ -1003,13 +1004,19 @@ export const ProspectKanban: React.FC = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block font-semibold mb-1">{isEn ? 'Phone *' : 'Téléphone *'}</label>
-                      <input type="tel" value={qaTelephone} onChange={e => setQaTelephone(e.target.value)} placeholder="+221 77 123 45 67"
-                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                      <PhoneInput
+                        value={qaTelephone}
+                        onChange={(val) => setQaTelephone(val)}
+                        placeholder="+221 77 123 45 67"
+                      />
                     </div>
                     <div>
                       <label className="block font-semibold mb-1">WhatsApp</label>
-                      <input type="tel" value={qaWhatsapp} onChange={e => setQaWhatsapp(e.target.value)} placeholder="+221 77 123 45 67"
-                        className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                      <PhoneInput
+                        value={qaWhatsapp}
+                        onChange={(val) => setQaWhatsapp(val)}
+                        placeholder="+221 77 123 45 67"
+                      />
                     </div>
                     <div className="col-span-2">
                       <label className="block font-semibold mb-1">Email</label>

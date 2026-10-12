@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { supabase } from '../../lib/supabase';
 import { refreshPlatformSettings } from '../../hooks/usePlatformSettings';
 import { PinChangeSection } from '../../components/common/PinChangeSection';
+import { PhoneInput } from '../../components/common/PhoneInput';
 
 interface PlatformSettings {
   nom_plateforme: string;
@@ -151,10 +152,9 @@ export const ParametresSuperAdmin: React.FC = () => {
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
               <Phone className="h-3 w-3" /> {t('parametres.labelWhatsapp')}
             </label>
-            <input
-              type="tel"
+            <PhoneInput
               value={form.whatsapp_support}
-              onChange={(e) => update('whatsapp_support', e.target.value)}
+              onChange={(val) => update('whatsapp_support', val)}
               placeholder="+221 77 000 00 00"
               className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
             />

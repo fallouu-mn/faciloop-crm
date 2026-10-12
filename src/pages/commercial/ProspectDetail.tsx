@@ -1012,13 +1012,17 @@ export const ProspectDetail: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <label className="font-extrabold text-muted-foreground">{isEn ? 'Phone' : 'Téléphone'}</label>
-                        <input value={editForm.telephone} onChange={e => setEditForm(f => ({...f, telephone: e.target.value}))}
-                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                        <PhoneInput
+                          value={editForm.telephone}
+                          onChange={(val) => setEditForm(f => ({...f, telephone: val}))}
+                        />
                       </div>
                       <div className="space-y-1">
                         <label className="font-extrabold text-muted-foreground">WhatsApp</label>
-                        <input value={editForm.whatsapp} onChange={e => setEditForm(f => ({...f, whatsapp: e.target.value}))}
-                          className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                        <PhoneInput
+                          value={editForm.whatsapp}
+                          onChange={(val) => setEditForm(f => ({...f, whatsapp: val}))}
+                        />
                       </div>
                       <div className="sm:col-span-2 space-y-1">
                         <label className="font-extrabold text-muted-foreground">Email</label>

@@ -9,6 +9,7 @@ import { supabase } from '../../lib/supabase';
 import { FormuleConfig, getFormules, getOfferPrice } from '../../services/formulesSaas';
 import { useTranslation } from 'react-i18next';
 import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
+import { PhoneInput } from '../../components/common/PhoneInput';
 
 const PERIODICITES_CODES = ['mensuel', 'trimestriel', 'annuel'] as const;
 
@@ -806,14 +807,11 @@ export const OrganisationsList: React.FC = () => {
                 </div>
                 <div className="space-y-1.5 mb-2">
                   <label className="text-xs font-medium text-foreground">Numéro de téléphone</label>
-                  <input
-                    type="tel"
-                    required
-                    value={adminTelephone}
-                    onChange={(e) => setAdminTelephone(e.target.value)}
-                    placeholder="+221 77 000 00 00"
-                    className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
-                  />
+                  <PhoneInput
+                  value={adminTelephone}
+                  onChange={(val) => setAdminTelephone(val)}
+                  placeholder="+221 77 000 00 00"
+                  className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" />
                   <p className="text-[10px] text-muted-foreground">Utilisé comme identifiant de connexion</p>
                 </div>
               </div>
