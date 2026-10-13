@@ -20,7 +20,13 @@
     "myObjectives": "My Objectives",
     "followUps": "Follow-ups",
     "notifications": "Notifications",
-    "myProfile": "My Profile"
+    "myProfile": "My Profile",
+    "openMenu": "Open menu",
+    "createAccount": "Create my account"
+  },
+  "logoutModal": {
+    "title": "Log out",
+    "message": "Do you really want to log out of your Faciloopro workspace?"
   },
   "sidebar": {
     "overview": "Overview",

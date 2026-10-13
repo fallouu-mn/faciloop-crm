@@ -13,25 +13,17 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isDemoMode = location.pathname.startsWith('/demo');
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
 
-  const isEn = i18n.language?.startsWith('en');
-
   const confirmLogout = () => {
     logout();
     setShowLogoutModal(false);
     navigate('/login', { replace: true });
-  };
-
-  const getRoleTitle = () => {
-    if (user?.role === 'super_admin') return isEn ? 'Faciloop Admin' : 'Administration Faciloop';
-    if (user?.role === 'admin_org') return isEn ? 'Faciloop Management' : 'Direction Faciloop';
-    return isEn ? 'Faciloop Sales' : 'Commercial Faciloop';
   };
 
   return (
@@ -42,7 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
           <button
             onClick={onOpenMobileMenu}
             className="rounded-xl p-2 text-muted-foreground hover:bg-muted hover:text-foreground md:hidden active:scale-95 transition-all"
-            aria-label="Ouvrir le menu"
+            aria-label={t('nav.openMenu')}
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -63,13 +55,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
               className="rounded-xl px-3 py-2 text-xs font-extrabold text-primary border border-primary/30 hover:bg-primary/10 transition-all active:scale-95 flex items-center gap-1.5"
             >
               <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Créer mon compte</span>
+              <span className="hidden sm:inline">{t('nav.createAccount')}</span>
             </Link>
           ) : (
             <button
               onClick={() => setShowLogoutModal(true)}
               className="rounded-xl p-2.5 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-all active:scale-95 flex items-center justify-center"
-              title="Se déconnecter"
+              title={t('logout')}
             >
               <LogOut className="h-5 w-5" />
             </button>
@@ -94,11 +86,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
                 <div className="p-2.5 rounded-2xl bg-rose-500/10">
                   <LogOut className="w-6 h-6 text-rose-500" />
                 </div>
-                <span>Déconnexion</span>
+                <span>{t('logoutModal.title')}</span>
               </div>
 
               <p className="text-xs sm:text-sm text-muted-foreground font-semibold leading-relaxed">
-                Voulez-vous vraiment vous déconnecter de votre espace Faciloopro ?
+                {t('logoutModal.message')}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-2 pt-2">
@@ -106,13 +98,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenMobileMenu }) => {
                   onClick={() => setShowLogoutModal(false)}
                   className="w-full sm:w-1/2 py-3 rounded-2xl border border-input text-xs font-bold text-foreground hover:bg-muted transition-all active:scale-95"
                 >
-                  Annuler
+                  {t('cancel')}
                 </button>
                 <button
                   onClick={confirmLogout}
                   className="w-full sm:w-1/2 py-3 rounded-2xl bg-rose-500 text-white text-xs font-extrabold hover:bg-rose-600 shadow-lg shadow-rose-500/25 transition-all active:scale-95"
                 >
-                  Se déconnecter
+                  {t('logout')}
                 </button>
               </div>
             </motion.div>

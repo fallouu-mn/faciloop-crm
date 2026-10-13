@@ -20,7 +20,13 @@
     "myObjectives": "Mes Objectifs",
     "followUps": "Relances",
     "notifications": "Notifications",
-    "myProfile": "Mon Profil"
+    "myProfile": "Mon Profil",
+    "openMenu": "Ouvrir le menu",
+    "createAccount": "Créer mon compte"
+  },
+  "logoutModal": {
+    "title": "Déconnexion",
+    "message": "Voulez-vous vraiment vous déconnecter de votre espace Faciloopro ?"
   },
   "sidebar": {
     "overview": "Pilotage",
