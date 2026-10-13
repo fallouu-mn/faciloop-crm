@@ -234,7 +234,7 @@
       "renewal": "Renouvellement"
     },
     "abonnements": {
-      "title": "Offres Abonnement",
+      "title": "Ofis Abonnement",
       "subtitle": "Maane offres yi wax kood yi",
       "addBtn": "Jëkk offre",
       "period": {
@@ -303,7 +303,7 @@
       }
     },
     "commissions": {
-      "title": "Commissions",
+      "title": "Komis yi",
       "badge": "Fey Variable",
       "subtitle": "Taal commissions yi commercial yi — 5% weer, 8% trimestre, 10% déé",
       "periodLabel": "Période :",
@@ -384,7 +384,7 @@
       "select": "Wàll"
     },
     "importExport": {
-      "title": "Import / Export Données (CSV & Excel)",
+      "title": "Import / Export Daata (CSV & Excel)",
       "subtitle": "Importe listes kiliyã, attribue yépp ak far dobb",
       "export": {
         "title": "Exporte données CSV",

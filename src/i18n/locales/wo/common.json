@@ -13,7 +13,7 @@
   "loading": "Yéwénna...",
   "logout": "Génn",
   "nav": {
-    "dashboard": "Tablita bi",
+    "dashboard": "Tableau xibaar bi",
     "myProspects": "Kiliyã yu naa",
     "customerJourney": "Yoonu klijã",
     "myEarnings": "Gains yu naa",
@@ -26,7 +26,7 @@
   },
   "logoutModal": {
     "title": "Génn",
-    "message": "Dëgg na nga bëgg génn ci sa espace Faciloopro ?"
+    "message": "Dagga nga bëgg génn ci sa espace Faciloopro ?"
   },
   "sidebar": {
     "overview": "Toppantandiku",
@@ -42,7 +42,7 @@
     "commissions": "Komis yi",
     "administration": "Administration",
     "actionLog": "Lijente",
-    "importExport": "Import / Export",
+    "importExport": "Importel / Exportel",
     "settings": "Parameetar yi",
     "alerts": "Yëgal yi",
     "navigationMenu": "Menu yoon",
