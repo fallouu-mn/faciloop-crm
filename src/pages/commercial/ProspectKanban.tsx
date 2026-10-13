@@ -83,19 +83,17 @@ function resolveIcon(name: string): React.ComponentType<{ className?: string }> 
 }
 
 // Stylized Draggable Prospect Card Component
-const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; activeCurrency?: Currency }> = ({ prospect, basePath = '/app/prospects', activeCurrency = 'XOF' }) => {
+const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; activeCurrency?: Currency; lng?: string }> = ({ prospect, basePath = '/app/prospects', activeCurrency = 'XOF', lng = 'fr' }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: prospect.id,
     data: { prospect }
   });
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
-  const isEnCard = i18n.language?.startsWith('en');
   // Retour client n°6 : affiche le libellé (défaut ou custom) plutôt que la clé brute.
   const { sourceOptions } = useOrganizationSettings();
   const sourceOpt = sourceOptions.find(s => s.value === prospect.source);
   const sourceDisplay = sourceOpt
-    ? sourceLabel(sourceOpt, isEnCard)
+    ? sourceLabel(sourceOpt, lng === 'en')
     : prospect.source.replace(/[_-]+/g, ' ');
 
   const style = transform
@@ -166,16 +164,16 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; a
   );
 };
 
-const getColumnEmptyText = (col: ColumnDef, isEn: boolean): string => {
-  return isEn ? `No prospect in "${col.title}"` : `Aucun prospect dans « ${col.title} »`;
+const getColumnEmptyText = (col: ColumnDef, lng: string): string => {
+  return lng === 'en' ? `No prospect in "${col.title}"` : `Aucun prospect dans « ${col.title} »`;
 };
 
-const getColumnEmptyHint = (col: ColumnDef, isEn: boolean): string => {
-  return isEn ? 'Drag and drop prospects here' : 'Glissez-déposez des prospects ici';
+const getColumnEmptyHint = (col: ColumnDef, lng: string): string => {
+  return lng === 'en' ? 'Drag and drop prospects here' : 'Glissez-déposez des prospects ici';
 };
 
 // Vertical Droppable Zone (wraps each stage in vertical view for DnD)
-const VerticalDropZone: React.FC<{ col: ColumnDef; isExpanded: boolean; isEn: boolean; children: React.ReactNode }> = ({ col, isExpanded, isEn, children }) => {
+const VerticalDropZone: React.FC<{ col: ColumnDef; isExpanded: boolean; lng: string; children: React.ReactNode }> = ({ col, isExpanded, lng, children }) => {
   const { setNodeRef, isOver } = useDroppable({ id: col.id });
 
   return (
@@ -188,7 +186,7 @@ const VerticalDropZone: React.FC<{ col: ColumnDef; isExpanded: boolean; isEn: bo
       {isOver && !isExpanded && (
         <div className="p-3 bg-primary/10 text-center text-xs font-bold text-primary animate-pulse flex items-center justify-center gap-2">
           <Sparkles className="w-4 h-4" />
-          {isEn ? `Drop here to move to "${col.title}"` : `Déposer ici pour déplacer vers « ${col.title} »`}
+          {lng === 'en' ? `Drop here to move to "${col.title}"` : `Déposer ici pour déplacer vers « ${col.title} »`}
         </div>
       )}
       {children}
@@ -197,7 +195,7 @@ const VerticalDropZone: React.FC<{ col: ColumnDef; isExpanded: boolean; isEn: bo
 };
 
 // Onboarding Empty State Component per Column
-const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string; isEn?: boolean }> = ({ col, prospectsPath = '/app/prospects', isEn = false }) => {
+const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string; lng?: string }> = ({ col, prospectsPath = '/app/prospects', lng = 'fr' }) => {
   const IconComponent = col.icon;
   return (
     <div className="h-40 sm:h-44 rounded-2xl border-2 border-dashed border-border/70 bg-card/30 flex flex-col items-center justify-center p-4 text-center space-y-2 group hover:border-primary/40 transition-colors">
@@ -205,9 +203,9 @@ const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string; isEn?
         <IconComponent className="w-5 h-5" />
       </div>
       <div className="space-y-0.5">
-        <h4 className="text-xs font-extrabold text-foreground">{getColumnEmptyText(col, isEn)}</h4>
+        <h4 className="text-xs font-extrabold text-foreground">{getColumnEmptyText(col, lng)}</h4>
         <p className="text-xs text-muted-foreground font-semibold leading-tight max-w-[180px] mx-auto">
-          {getColumnEmptyHint(col, isEn)}
+          {getColumnEmptyHint(col, lng)}
         </p>
       </div>
 
@@ -217,7 +215,7 @@ const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string; isEn?
           className="mt-1 inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary/10 text-primary text-xs font-black hover:bg-primary/20 transition-all"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>{isEn ? 'Create prospect' : 'Créer un prospect'}</span>
+          <span>{lng === 'en' ? 'Create prospect' : 'Créer un prospect'}</span>
         </Link>
       )}
     </div>
@@ -225,7 +223,7 @@ const KanbanEmptyState: React.FC<{ col: ColumnDef; prospectsPath?: string; isEn?
 };
 
 // Droppable Column Component for Horizontal View
-const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePath?: string; activeCurrency?: Currency; isEn?: boolean; onAddProspect?: (stageId: string) => void }> = ({ col, prospects, basePath = '/app/prospects', activeCurrency = 'XOF', isEn = false, onAddProspect }) => {
+const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePath?: string; activeCurrency?: Currency; lng?: string; onAddProspect?: (stageId: string) => void }> = ({ col, prospects, basePath = '/app/prospects', activeCurrency = 'XOF', lng = 'fr', onAddProspect }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: col.id
   });
@@ -252,7 +250,7 @@ const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePat
           {onAddProspect && (
             <button
               onClick={() => onAddProspect(col.id)}
-              title={isEn ? 'Add prospect' : 'Ajouter un prospect'}
+              title={lng === 'en' ? 'Add prospect' : 'Ajouter un prospect'}
               className="w-6 h-6 rounded-full bg-primary/10 text-primary hover:bg-primary/20 flex items-center justify-center transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -266,14 +264,14 @@ const DroppableColumn: React.FC<{ col: ColumnDef; prospects: Prospect[]; basePat
         {isOver && (
           <div className="absolute inset-0 z-20 rounded-2xl border-2 border-dashed border-primary bg-primary/10 backdrop-blur-sm flex flex-col items-center justify-center text-primary font-bold text-xs gap-2 animate-pulse">
             <Sparkles className="w-6 h-6 animate-spin-slow" />
-            <span>{isEn ? 'Drop here to update stage ✨' : "Déposer ici pour mettre à jour l'étape ✨"}</span>
+            <span>{lng === 'en' ? 'Drop here to update stage ✨' : "Déposer ici pour mettre à jour l'étape ✨"}</span>
           </div>
         )}
 
         {prospects.length === 0 ? (
-          <KanbanEmptyState col={col} prospectsPath={basePath} isEn={isEn} />
+          <KanbanEmptyState col={col} prospectsPath={basePath} lng={lng} />
         ) : (
-          prospects.map((p) => <DraggableProspectCard key={p.id} prospect={p} basePath={basePath} activeCurrency={activeCurrency} />)
+          prospects.map((p) => <DraggableProspectCard key={p.id} prospect={p} basePath={basePath} activeCurrency={activeCurrency} lng={lng} />)
         )}
       </div>
     </div>
@@ -395,11 +393,11 @@ export const ProspectKanban: React.FC = () => {
         commercial_id: qaCommercialId || undefined,
         commercial_nom: commercial ? `${commercial.prenom} ${commercial.nom}` : undefined,
       } as any);
-      toast.success(isEn ? 'Prospect added!' : 'Prospect ajouté !');
+      toast.success(lng === 'en' ? 'Prospect added!' : 'Prospect ajouté !');
       setQuickAddStage(null);
       resetQaForm();
     } catch {
-      toast.error(isEn ? 'Error adding prospect.' : "Erreur lors de l'ajout.");
+      toast.error(lng === 'en' ? 'Error adding prospect.' : "Erreur lors de l'ajout.");
     } finally {
       setQaSaving(false);
     }
@@ -503,7 +501,7 @@ export const ProspectKanban: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[300px]">
         <div className="text-sm text-muted-foreground font-semibold animate-pulse">
-          {isEn ? 'Loading pipeline...' : 'Chargement du pipeline...'}
+          {lng === 'en' ? 'Loading pipeline...' : 'Chargement du pipeline...'}
         </div>
       </div>
     );
@@ -516,7 +514,7 @@ export const ProspectKanban: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
-              {isEn ? 'Customer Journey' : 'Parcours Client'}
+              {lng === 'en' ? 'Customer Journey' : 'Parcours Client'}
             </h1>
             {isAdmin ? (
               <select
@@ -531,12 +529,12 @@ export const ProspectKanban: React.FC = () => {
               </select>
             ) : (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-black flex items-center gap-1">
-                <Lock className="w-3 h-3" /> {isEn ? 'Personal Portfolio' : 'Portefeuille Personnel'}
+                <Lock className="w-3 h-3" /> {lng === 'en' ? 'Personal Portfolio' : 'Portefeuille Personnel'}
               </span>
             )}
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold mt-0.5">
-            {isEn 
+            {lng === 'en' 
               ? 'Ergonomic vertical or horizontal board view of your customer journey'
               : 'Suivi ergonomique vertical ou tableau horizontal de votre parcours client'}
           </p>
@@ -565,10 +563,10 @@ export const ProspectKanban: React.FC = () => {
             <button
               onClick={() => setEtapesModalOpen(true)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-2xl border border-border/80 bg-muted/80 text-xs font-extrabold text-foreground hover:bg-muted transition-all shrink-0"
-              title={isEn ? 'Manage pipeline stages' : 'Gérer les étapes'}
+              title={lng === 'en' ? 'Manage pipeline stages' : 'Gérer les étapes'}
             >
               <Settings2 className="w-4 h-4" />
-              <span className="hidden sm:inline">{isEn ? 'Stages' : 'Étapes'}</span>
+              <span className="hidden sm:inline">{lng === 'en' ? 'Stages' : 'Étapes'}</span>
             </button>
           )}
 
@@ -582,10 +580,10 @@ export const ProspectKanban: React.FC = () => {
                   ? 'bg-gradient-faciloop text-white shadow-md'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
-              title={isEn ? "Horizontal Multi-Column Board View" : "Vue Tableau Horizontale Multi-Colonnes"}
+              title={lng === 'en' ? "Horizontal Multi-Column Board View" : "Vue Tableau Horizontale Multi-Colonnes"}
             >
               <Columns className="w-4 h-4" />
-              <span className="hidden sm:inline">{isEn ? 'Horizontal' : 'Horizontale'}</span>
+              <span className="hidden sm:inline">{lng === 'en' ? 'Horizontal' : 'Horizontale'}</span>
             </button>
 
             <button
@@ -595,10 +593,10 @@ export const ProspectKanban: React.FC = () => {
                   ? 'bg-gradient-faciloop text-white shadow-md'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
-              title={isEn ? "Vertical Stage-by-Stage View (Ideal on Mobile)" : "Vue Étape par Étape Verticale (Idéale sur Mobile)"}
+              title={lng === 'en' ? "Vertical Stage-by-Stage View (Ideal on Mobile)" : "Vue Étape par Étape Verticale (Idéale sur Mobile)"}
             >
               <List className="w-4 h-4" />
-              <span>{isEn ? 'Vertical' : 'Verticale'}</span>
+              <span>{lng === 'en' ? 'Vertical' : 'Verticale'}</span>
             </button>
           </div>
 
@@ -622,7 +620,7 @@ export const ProspectKanban: React.FC = () => {
               const isExpanded = expandedStages[col.id] ?? true;
 
               return (
-                <VerticalDropZone key={col.id} col={col} isExpanded={isExpanded} isEn={isEn}>
+                <VerticalDropZone key={col.id} col={col} isExpanded={isExpanded} lng={lng}>
                   {/* Stage Header Banner */}
                   <button
                     onClick={() => toggleStageExpand(col.id)}
@@ -648,7 +646,7 @@ export const ProspectKanban: React.FC = () => {
                       <button
                         onClick={e => { e.stopPropagation(); setQuickAddStage(col.id); }}
                         className="w-7 h-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-colors shrink-0"
-                        title={isEn ? 'Add prospect' : 'Ajouter un prospect'}
+                        title={lng === 'en' ? 'Add prospect' : 'Ajouter un prospect'}
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -670,13 +668,13 @@ export const ProspectKanban: React.FC = () => {
                         className="border-t border-border/60 p-4 sm:p-5 bg-muted/20"
                       >
                         {colProspects.length === 0 ? (
-                          <KanbanEmptyState col={col} prospectsPath={prospectBasePath} isEn={isEn} />
+                          <KanbanEmptyState col={col} prospectsPath={prospectBasePath} lng={lng} />
                         ) : (
                           <div
                             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[50vh] overflow-y-auto scrollbar-visible"
                           >
                             {colProspects.map((prospect) => (
-                              <DraggableProspectCard key={prospect.id} prospect={prospect} basePath={prospectBasePath} activeCurrency={activeCurrency} />
+                              <DraggableProspectCard key={prospect.id} prospect={prospect} basePath={prospectBasePath} activeCurrency={activeCurrency} lng={lng} />
                             ))}
                           </div>
                         )}
@@ -706,7 +704,7 @@ export const ProspectKanban: React.FC = () => {
           >
             {columns.map((col) => {
               const colProspects = effectiveProspects.filter(p => p.statut_pipeline === col.id);
-              return <DroppableColumn key={col.id} col={col} prospects={colProspects} basePath={prospectBasePath} activeCurrency={activeCurrency} isEn={isEn} onAddProspect={setQuickAddStage} />;
+              return <DroppableColumn key={col.id} col={col} prospects={colProspects} basePath={prospectBasePath} activeCurrency={activeCurrency} lng={lng} onAddProspect={setQuickAddStage} />;
             })}
           </div>
 
@@ -793,7 +791,7 @@ export const ProspectKanban: React.FC = () => {
           prospectCountByEtape={Object.fromEntries(
             etapes.map(e => [e.nom, effectiveProspects.filter(p => p.statut_pipeline === e.nom).length])
           )}
-          isEn={isEn}
+          isEn={lng === 'en'}
         />
       )}
 
@@ -962,9 +960,9 @@ export const ProspectKanban: React.FC = () => {
                 <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto sm:hidden mb-3" />
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-extrabold text-base text-foreground">{isEn ? 'New Prospect' : 'Nouveau prospect'}</h3>
+                    <h3 className="font-extrabold text-base text-foreground">{lng === 'en' ? 'New Prospect' : 'Nouveau prospect'}</h3>
                     <p className="text-xs text-muted-foreground font-semibold mt-0.5">
-                      {isEn ? 'Stage:' : 'Étape :'} <span className="text-primary font-bold">{columns.find(c => c.id === quickAddStage)?.title || quickAddStage}</span>
+                      {lng === 'en' ? 'Stage:' : 'Étape :'} <span className="text-primary font-bold">{columns.find(c => c.id === quickAddStage)?.title || quickAddStage}</span>
                     </p>
                   </div>
                   <button onClick={() => { setQuickAddStage(null); resetQaForm(); }} className="p-1.5 rounded-xl hover:bg-muted transition-colors">
@@ -978,21 +976,21 @@ export const ProspectKanban: React.FC = () => {
 
                 {/* Identité */}
                 <div className="space-y-2">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{isEn ? 'Identity' : 'Identité'}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{lng === 'en' ? 'Identity' : 'Identité'}</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'Last name' : 'Nom'}</label>
+                      <label className="block font-semibold mb-1">{lng === 'en' ? 'Last name' : 'Nom'}</label>
                       <input type="text" value={qaNom} onChange={e => setQaNom(e.target.value)} placeholder="Diop"
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                     </div>
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'First name' : 'Prénom'}</label>
+                      <label className="block font-semibold mb-1">{lng === 'en' ? 'First name' : 'Prénom'}</label>
                       <input type="text" value={qaPrenom} onChange={e => setQaPrenom(e.target.value)} placeholder="Moussa"
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                     </div>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Company' : 'Entreprise'}</label>
+                    <label className="block font-semibold mb-1">{lng === 'en' ? 'Company' : 'Entreprise'}</label>
                     <input type="text" value={qaEntreprise} onChange={e => setQaEntreprise(e.target.value)} placeholder="Dakar Tech Ltd"
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
@@ -1003,7 +1001,7 @@ export const ProspectKanban: React.FC = () => {
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Contact</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'Phone *' : 'Téléphone *'}</label>
+                      <label className="block font-semibold mb-1">{lng === 'en' ? 'Phone *' : 'Téléphone *'}</label>
                       <PhoneInput
                         value={qaTelephone}
                         onChange={(val) => setQaTelephone(val)}
@@ -1028,22 +1026,22 @@ export const ProspectKanban: React.FC = () => {
 
                 {/* Localisation */}
                 <div className="space-y-2">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{isEn ? 'Location' : 'Localisation'}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{lng === 'en' ? 'Location' : 'Localisation'}</p>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'Country' : 'Pays'}</label>
+                      <label className="block font-semibold mb-1">{lng === 'en' ? 'Country' : 'Pays'}</label>
                       <select value={qaPays} onChange={e => setQaPays(e.target.value)}
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
                         {QA_PAYS.map(p => <option key={p} value={p}>{p}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'City' : 'Ville'}</label>
+                      <label className="block font-semibold mb-1">{lng === 'en' ? 'City' : 'Ville'}</label>
                       <input type="text" value={qaVille} onChange={e => setQaVille(e.target.value)} placeholder="Dakar"
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                     </div>
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'Address' : 'Adresse'}</label>
+                      <label className="block font-semibold mb-1">{lng === 'en' ? 'Address' : 'Adresse'}</label>
                       <input type="text" value={qaAdresse} onChange={e => setQaAdresse(e.target.value)}
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                     </div>
@@ -1055,10 +1053,10 @@ export const ProspectKanban: React.FC = () => {
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Pipeline</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'Sector' : 'Secteur'}</label>
+                      <label className="block font-semibold mb-1">{lng === 'en' ? 'Sector' : 'Secteur'}</label>
                       <select value={qaSecteur} onChange={e => setQaSecteur(e.target.value)}
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
-                        <option value="">{isEn ? 'Select...' : 'Sélectionner...'}</option>
+                        <option value="">{lng === 'en' ? 'Select...' : 'Sélectionner...'}</option>
                         {QA_SECTEURS.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
@@ -1066,12 +1064,12 @@ export const ProspectKanban: React.FC = () => {
                       <label className="block font-semibold mb-1">Source</label>
                       <select value={qaSource} onChange={e => setQaSource(e.target.value as SourceValue)}
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
-                        {QA_SOURCES.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, isEn)}</option>)}
+                        {QA_SOURCES.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, lng === 'en')}</option>)}
                       </select>
                     </div>
                     {commerciaux.length > 0 && (
                       <div className="col-span-2">
-                        <label className="block font-semibold mb-1">{isEn ? 'Assigned to' : 'Commercial'}</label>
+                        <label className="block font-semibold mb-1">{lng === 'en' ? 'Assigned to' : 'Commercial'}</label>
                         <select value={qaCommercialId} onChange={e => setQaCommercialId(e.target.value)}
                           className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
                           {commerciaux.map(c => <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>)}
@@ -1079,20 +1077,20 @@ export const ProspectKanban: React.FC = () => {
                       </div>
                     )}
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'Target plan' : 'Formule envisagée'}</label>
+                      <label className="block font-semibold mb-1">{lng === 'en' ? 'Target plan' : 'Formule envisagée'}</label>
                       <select value={qaFormule} onChange={e => setQaFormule(e.target.value)}
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
-                        <option value="">{isEn ? 'None' : 'Aucune'}</option>
+                        <option value="">{lng === 'en' ? 'None' : 'Aucune'}</option>
                         {activeOrgOffers.map(o => <option key={o.id} value={o.nom}>{o.nom}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'Budget (est.)' : 'Budget estimé'}</label>
+                      <label className="block font-semibold mb-1">{lng === 'en' ? 'Budget (est.)' : 'Budget estimé'}</label>
                       <input type="number" value={qaBudget} onChange={e => setQaBudget(e.target.value)} placeholder="500000"
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                     </div>
                     <div>
-                      <label className="block font-semibold mb-1">{isEn ? 'Employees' : 'Nb. employés'}</label>
+                      <label className="block font-semibold mb-1">{lng === 'en' ? 'Employees' : 'Nb. employés'}</label>
                       <input type="number" min="0" value={qaNbreEmployes} onChange={e => setQaNbreEmployes(e.target.value)} placeholder="50"
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                     </div>
@@ -1103,17 +1101,17 @@ export const ProspectKanban: React.FC = () => {
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Notes</p>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Website' : 'Site web'}</label>
+                    <label className="block font-semibold mb-1">{lng === 'en' ? 'Website' : 'Site web'}</label>
                     <input type="url" value={qaSiteWeb} onChange={e => setQaSiteWeb(e.target.value)} placeholder="https://..."
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Comment' : 'Commentaire'}</label>
+                    <label className="block font-semibold mb-1">{lng === 'en' ? 'Comment' : 'Commentaire'}</label>
                     <textarea value={qaCommentaire} onChange={e => setQaCommentaire(e.target.value)} rows={2}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Next follow-up date' : 'Date prochaine relance'}</label>
+                    <label className="block font-semibold mb-1">{lng === 'en' ? 'Next follow-up date' : 'Date prochaine relance'}</label>
                     <input type="date" value={qaRelance} onChange={e => setQaRelance(e.target.value)}
                       style={{ colorScheme: 'auto' }}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
@@ -1124,13 +1122,13 @@ export const ProspectKanban: React.FC = () => {
                 <div className="flex gap-2 pt-1">
                   <button type="button" onClick={() => { setQuickAddStage(null); resetQaForm(); }}
                     className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
-                    {isEn ? 'Cancel' : 'Annuler'}
+                    {lng === 'en' ? 'Cancel' : 'Annuler'}
                   </button>
                   <button type="submit" disabled={qaSaving || !qaTelephone}
                     className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
                     {qaSaving
                       ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      : <><Plus className="w-3.5 h-3.5" /> {isEn ? 'Add Prospect' : 'Ajouter le prospect'}</>
+                      : <><Plus className="w-3.5 h-3.5" /> {lng === 'en' ? 'Add Prospect' : 'Ajouter le prospect'}</>
                     }
                   </button>
                 </div>
