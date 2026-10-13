@@ -54,10 +54,13 @@
       "addBtn": "Ajouter un commercial",
       "col": {
         "salesRep": "Commercial",
+        "email": "Email",
         "phone": "Téléphone",
         "status": "Statut",
         "action": "Action"
       },
+      "statusActive": "Actif",
+      "statusInactive": "Inactif",
       "activate": "Activer",
       "deactivate": "Désactiver",
       "edit": "Modifier",

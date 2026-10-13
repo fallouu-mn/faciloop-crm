@@ -148,7 +148,7 @@ export const EquipeCommerciale: React.FC = () => {
           <thead className="border-b border-border/80 bg-muted/60 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="p-4">{t('adminOrg.equipe.col.salesRep')}</th>
-              <th className="p-4">Email</th>
+              <th className="p-4">{t('adminOrg.equipe.col.email', 'Email')}</th>
               <th className="p-4">{t('adminOrg.equipe.col.phone')}</th>
               <th className="p-4">{t('adminOrg.equipe.col.status')}</th>
               <th className="p-4 text-right">{t('adminOrg.equipe.col.action')}</th>
@@ -171,7 +171,7 @@ export const EquipeCommerciale: React.FC = () => {
                   <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
                     comm.statut === 'actif' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
                   }`}>
-                    {comm.statut}
+                    {comm.statut === 'actif' ? t('adminOrg.equipe.statusActive', 'Actif') : t('adminOrg.equipe.statusInactive', 'Inactif')}
                   </span>
                 </td>
                 <td className="p-4 text-right">
@@ -222,7 +222,7 @@ export const EquipeCommerciale: React.FC = () => {
               <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${
                 comm.statut === 'actif' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
               }`}>
-                {comm.statut}
+                {comm.statut === 'actif' ? t('adminOrg.equipe.statusActive', 'Actif') : t('adminOrg.equipe.statusInactive', 'Inactif')}
               </span>
             </div>
 

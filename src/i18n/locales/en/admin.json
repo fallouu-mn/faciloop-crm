@@ -54,10 +54,13 @@
       "addBtn": "+ Add Sales Rep",
       "col": {
         "salesRep": "Sales Rep",
+        "email": "Email",
         "phone": "Phone",
         "status": "Status",
         "action": "Action"
       },
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
       "activate": "Activate",
       "deactivate": "Desactivate",
       "edit": "Edit",
