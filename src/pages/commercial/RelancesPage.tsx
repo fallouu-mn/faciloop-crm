@@ -199,7 +199,7 @@ export const RelancesPage: React.FC = () => {
     setFormProspectId('');
     setFormCommentaire('');
     setFormCommercialId(commerciaux[0]?.id || '');
-    toast.success(isEn ? 'Follow-up scheduled!' : 'Relance programmée !');
+    toast.success(lng === 'en' ? 'Follow-up scheduled!' : 'Relance programmée !');
   };
 
   function openEditRelance(rel: Relance) {
@@ -226,7 +226,7 @@ export const RelancesPage: React.FC = () => {
         commentaire: erMotif,
         ...(isAdmin && erCommercialId ? { commercial_id: erCommercialId } : {}),
       });
-      toast.success(isEn ? 'Follow-up updated!' : 'Relance mise à jour !');
+      toast.success(lng === 'en' ? 'Follow-up updated!' : 'Relance mise à jour !');
       setEditRelanceId(null);
     } finally {
       setErSaving(false);
@@ -245,22 +245,22 @@ export const RelancesPage: React.FC = () => {
     switch (eff) {
       case 'en_retard': return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold">
-          <AlertTriangle className="w-3 h-3" /> {isEn ? 'Overdue' : 'En retard'}
+          <AlertTriangle className="w-3 h-3" /> {lng === 'en' ? 'Overdue' : 'En retard'}
         </span>
       );
       case 'prevue': return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-bold">
-          <Clock className="w-3 h-3" /> {isEn ? 'Scheduled' : 'Prévue'}
+          <Clock className="w-3 h-3" /> {lng === 'en' ? 'Scheduled' : 'Prévue'}
         </span>
       );
       case 'realisee': return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold">
-          <CheckCircle2 className="w-3 h-3" /> {isEn ? 'Completed' : 'Réalisée'}
+          <CheckCircle2 className="w-3 h-3" /> {lng === 'en' ? 'Completed' : 'Réalisée'}
         </span>
       );
       case 'annulee': return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
-          <Ban className="w-3 h-3" /> {isEn ? 'Cancelled' : 'Annulée'}
+          <Ban className="w-3 h-3" /> {lng === 'en' ? 'Cancelled' : 'Annulée'}
         </span>
       );
     }
@@ -273,10 +273,10 @@ export const RelancesPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-            {isEn ? 'Follow-ups' : 'Relances'}
+            {lng === 'en' ? 'Follow-ups' : 'Relances'}
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-medium">
-            {isEn ? 'Track and manage prospect follow-ups' : 'Suivez et gérez vos relances prospects'}
+            {lng === 'en' ? 'Track and manage prospect follow-ups' : 'Suivez et gérez vos relances prospects'}
           </p>
         </div>
         <button
@@ -284,31 +284,31 @@ export const RelancesPage: React.FC = () => {
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
         >
           <Plus className="h-4 w-4" />
-          <span>{isEn ? '+ Schedule Follow-up' : 'Programmer une relance'}</span>
+          <span>{lng === 'en' ? '+ Schedule Follow-up' : 'Programmer une relance'}</span>
         </button>
       </div>
 
       {/* ── KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3.5 space-y-1">
-          <p className="text-[11px] font-bold text-amber-600 uppercase tracking-wide">{isEn ? 'TODAY' : "AUJOURD'HUI"}</p>
+          <p className="text-[11px] font-bold text-amber-600 uppercase tracking-wide">{lng === 'en' ? 'TODAY' : "AUJOURD'HUI"}</p>
           <p className="text-2xl font-black text-amber-600">{kpiAujourdhui}</p>
-          <p className="text-[10px] text-muted-foreground">{isEn ? 'Scheduled follow-ups' : 'Relances prévues'}</p>
+          <p className="text-[10px] text-muted-foreground">{lng === 'en' ? 'Scheduled follow-ups' : 'Relances prévues'}</p>
         </div>
         <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-3.5 space-y-1">
-          <p className="text-[11px] font-bold text-red-500 uppercase tracking-wide">{isEn ? 'OVERDUE' : 'EN RETARD'}</p>
+          <p className="text-[11px] font-bold text-red-500 uppercase tracking-wide">{lng === 'en' ? 'OVERDUE' : 'EN RETARD'}</p>
           <p className="text-2xl font-black text-red-500">{kpiEnRetard}</p>
-          <p className="text-[10px] text-muted-foreground">{isEn ? 'Pending / Missed' : 'Non réalisées'}</p>
+          <p className="text-[10px] text-muted-foreground">{lng === 'en' ? 'Pending / Missed' : 'Non réalisées'}</p>
         </div>
         <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 space-y-1">
-          <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wide">{isEn ? 'THIS MONTH' : 'CE MOIS'}</p>
+          <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wide">{lng === 'en' ? 'THIS MONTH' : 'CE MOIS'}</p>
           <p className="text-2xl font-black text-emerald-600">{kpiRealiseesMois}</p>
-          <p className="text-[10px] text-muted-foreground">{isEn ? 'Completed' : 'Réalisées'}</p>
+          <p className="text-[10px] text-muted-foreground">{lng === 'en' ? 'Completed' : 'Réalisées'}</p>
         </div>
         <div className="rounded-2xl border border-blue-500/30 bg-blue-500/5 p-3.5 space-y-1">
-          <p className="text-[11px] font-bold text-blue-500 uppercase tracking-wide">{isEn ? 'THIS WEEK' : 'CETTE SEMAINE'}</p>
+          <p className="text-[11px] font-bold text-blue-500 uppercase tracking-wide">{lng === 'en' ? 'THIS WEEK' : 'CETTE SEMAINE'}</p>
           <p className="text-2xl font-black text-blue-500">{kpiAVenir}</p>
-          <p className="text-[10px] text-muted-foreground">{isEn ? 'Upcoming (7d)' : 'À venir (7j)'}</p>
+          <p className="text-[10px] text-muted-foreground">{lng === 'en' ? 'Upcoming (7d)' : 'À venir (7j)'}</p>
         </div>
       </div>
 
@@ -352,7 +352,7 @@ export const RelancesPage: React.FC = () => {
               onChange={e => setFilterCommercial(e.target.value)}
               className="h-8 px-2.5 rounded-lg border border-input bg-card text-xs font-medium text-foreground focus:ring-2 focus:ring-primary/40"
             >
-              <option value="">{isEn ? 'All sales reps' : 'Tous les commerciaux'}</option>
+              <option value="">{lng === 'en' ? 'All sales reps' : 'Tous les commerciaux'}</option>
               {commerciaux.filter(c => c.statut === 'actif').map(c => (
                 <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
               ))}
@@ -363,7 +363,7 @@ export const RelancesPage: React.FC = () => {
             onChange={e => setFilterCanal(e.target.value)}
             className="h-8 px-2.5 rounded-lg border border-input bg-card text-xs font-medium text-foreground focus:ring-2 focus:ring-primary/40"
           >
-            <option value="">{isEn ? 'All channels' : 'Tous les canaux'}</option>
+            <option value="">{lng === 'en' ? 'All channels' : 'Tous les canaux'}</option>
             {(Object.keys(canalLabels) as RelanceCanal[]).map(c => (
               <option key={c} value={c}>{canalLabels[c]}</option>
             ))}
@@ -375,7 +375,7 @@ export const RelancesPage: React.FC = () => {
       <div className="space-y-2.5">
         {filtered.length === 0 ? (
           <div className="py-12 text-center rounded-2xl border border-dashed border-border text-muted-foreground text-sm">
-            {isEn ? 'No follow-up for this filter.' : 'Aucune relance pour ce filtre.'}
+            {lng === 'en' ? 'No follow-up for this filter.' : 'Aucune relance pour ce filtre.'}
           </div>
         ) : (
           filtered.map(relance => {
@@ -414,10 +414,10 @@ export const RelancesPage: React.FC = () => {
                     {isSynthetic && (
                       <span
                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold"
-                        title={isEn ? 'Scheduled from the prospect file' : 'Programmé depuis la fiche prospect'}
+                        title={lng === 'en' ? 'Scheduled from the prospect file' : 'Programmé depuis la fiche prospect'}
                       >
                         <CalendarClock className="w-3 h-3" />
-                        {isEn ? 'From prospect file' : 'Fiche prospect'}
+                        {lng === 'en' ? 'From prospect file' : 'Fiche prospect'}
                       </span>
                     )}
                   </div>
@@ -425,7 +425,7 @@ export const RelancesPage: React.FC = () => {
                   <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold">
                     <span className={`flex items-center gap-1 ${dateBadgeClass(relance.date)}`}>
                       <CalendarCheck className="w-3 h-3" />
-                      {formatDateWithTime(relance.date, relance.heure, isEn ? 'en' : 'fr')}
+                      {formatDateWithTime(relance.date, relance.heure, lng === 'en' ? 'en' : 'fr')}
                     </span>
                     <span className="flex items-center gap-1 text-muted-foreground">
                       {!isSynthetic && (
@@ -449,23 +449,23 @@ export const RelancesPage: React.FC = () => {
                       <button
                         onClick={() => openEditRelance(relance)}
                         className="p-1.5 rounded-xl border border-input text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
-                        title={isEn ? 'Edit' : 'Modifier'}
+                        title={lng === 'en' ? 'Edit' : 'Modifier'}
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => { completeRelance(relance.id); toast.success(isEn ? 'Follow-up completed!' : 'Relance marquée effectuée !'); }}
+                        onClick={() => { completeRelance(relance.id); toast.success(lng === 'en' ? 'Follow-up completed!' : 'Relance marquée effectuée !'); }}
                         className="px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-bold text-[11px] shadow hover:bg-emerald-600 flex items-center gap-1 transition-all"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>{isEn ? 'Complete' : 'Effectuée'}</span>
+                        <span>{lng === 'en' ? 'Complete' : 'Effectuée'}</span>
                       </button>
                       <button
-                        onClick={() => { cancelRelance(relance.id); toast.success(isEn ? 'Follow-up cancelled.' : 'Relance annulée.'); }}
+                        onClick={() => { cancelRelance(relance.id); toast.success(lng === 'en' ? 'Follow-up cancelled.' : 'Relance annulée.'); }}
                         className="px-3 py-1.5 rounded-xl border border-input text-[11px] font-bold text-muted-foreground hover:text-red-500 hover:border-red-500/50 flex items-center gap-1 transition-all"
                       >
                         <Ban className="w-3.5 h-3.5" />
-                        <span>{isEn ? 'Cancel' : 'Annuler'}</span>
+                        <span>{lng === 'en' ? 'Cancel' : 'Annuler'}</span>
                       </button>
                     </>
                   )}
@@ -474,7 +474,7 @@ export const RelancesPage: React.FC = () => {
                     className="px-3 py-1.5 rounded-xl border border-input text-[11px] font-bold text-foreground hover:bg-muted flex items-center gap-1 transition-all"
                   >
                     <Eye className="w-3.5 h-3.5 text-primary" />
-                    <span>{isEn ? 'View' : 'Voir'}</span>
+                    <span>{lng === 'en' ? 'View' : 'Voir'}</span>
                   </button>
                 </div>
               </div>
@@ -493,7 +493,7 @@ export const RelancesPage: React.FC = () => {
                   <Bell className="w-4 h-4" />
                 </div>
                 <h2 className="text-base font-bold text-foreground">
-                  {isEn ? 'Schedule a Follow-up' : 'Programmer une relance'}
+                  {lng === 'en' ? 'Schedule a Follow-up' : 'Programmer une relance'}
                 </h2>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg hover:bg-muted">
@@ -520,7 +520,7 @@ export const RelancesPage: React.FC = () => {
               )}
               <div>
                 <label className="block font-semibold mb-1">
-                  {isEn ? 'Prospect' : 'Prospect à relancer'} *
+                  {lng === 'en' ? 'Prospect' : 'Prospect à relancer'} *
                 </label>
                 <select
                   required
@@ -540,7 +540,7 @@ export const RelancesPage: React.FC = () => {
               <div>
                 <label className="block font-semibold mb-1 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-primary" />
-                  {isEn ? 'Date & Time *' : 'Date & Heure *'}
+                  {lng === 'en' ? 'Date & Time *' : 'Date & Heure *'}
                 </label>
                 <input
                   type="datetime-local"
@@ -581,7 +581,7 @@ export const RelancesPage: React.FC = () => {
                 disabled={!formProspectId || !formCommentaire || (isAdmin && !formCommercialId)}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50"
               >
-                {isEn ? 'Confirm Follow-up' : 'Valider la relance'}
+                {lng === 'en' ? 'Confirm Follow-up' : 'Valider la relance'}
               </button>
             </form>
           </div>
@@ -598,7 +598,7 @@ export const RelancesPage: React.FC = () => {
                   <Pencil className="w-4 h-4" />
                 </div>
                 <h2 className="text-base font-bold text-foreground">
-                  {isEn ? 'Edit Follow-up' : 'Modifier la relance'}
+                  {lng === 'en' ? 'Edit Follow-up' : 'Modifier la relance'}
                 </h2>
               </div>
               <button onClick={() => setEditRelanceId(null)} className="p-1 rounded-lg hover:bg-muted">
@@ -616,7 +616,7 @@ export const RelancesPage: React.FC = () => {
                     onChange={e => setErCommercialId(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   >
-                    <option value="">{isEn ? 'Select a sales rep' : 'Sélectionner un commercial'}</option>
+                    <option value="">{lng === 'en' ? 'Select a sales rep' : 'Sélectionner un commercial'}</option>
                     {commerciaux.map(c => (
                       <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
                     ))}
@@ -626,7 +626,7 @@ export const RelancesPage: React.FC = () => {
               <div>
                 <label className="block font-semibold mb-1 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-primary" />
-                  {isEn ? 'Date & Time *' : 'Date & Heure *'}
+                  {lng === 'en' ? 'Date & Time *' : 'Date & Heure *'}
                 </label>
                 <input
                   type="datetime-local"
@@ -666,7 +666,7 @@ export const RelancesPage: React.FC = () => {
                 disabled={erSaving || !erDateTime || !erMotif || (isAdmin && !erCommercialId)}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50"
               >
-                {erSaving ? (isEn ? 'Saving...' : 'Enregistrement...') : (isEn ? 'Save Changes' : 'Enregistrer les modifications')}
+                {erSaving ? (lng === 'en' ? 'Saving...' : 'Enregistrement...') : (lng === 'en' ? 'Save Changes' : 'Enregistrer les modifications')}
               </button>
             </form>
           </div>
@@ -684,7 +684,7 @@ export const RelancesPage: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-foreground">
-                    {isEn ? 'Follow-up Details' : 'Détails de la relance'}
+                    {lng === 'en' ? 'Follow-up Details' : 'Détails de la relance'}
                   </h2>
                   <p className="text-[11px] text-muted-foreground">
                     {selectedRelanceForView.prospect_nom || orFallback(selectedRelanceForView.prospect_entreprise)}
@@ -702,7 +702,7 @@ export const RelancesPage: React.FC = () => {
 
             <div className="space-y-3 text-xs">
               <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/60">
-                <span className="font-semibold text-muted-foreground">{isEn ? 'Status:' : 'Statut :'}</span>
+                <span className="font-semibold text-muted-foreground">{lng === 'en' ? 'Status:' : 'Statut :'}</span>
                 <div>{statutBadge(getEffectiveStatut(selectedRelanceForView))}</div>
               </div>
 
@@ -710,17 +710,17 @@ export const RelancesPage: React.FC = () => {
                 <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 space-y-1">
                   <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
                     <Calendar className="w-3 h-3 text-primary" />
-                    {isEn ? 'Date & Time' : 'Date & Heure'}
+                    {lng === 'en' ? 'Date & Time' : 'Date & Heure'}
                   </span>
                   <p className="font-bold text-foreground">
-                    {formatDateWithTime(selectedRelanceForView.date, selectedRelanceForView.heure, isEn ? 'en' : 'fr')}
+                    {formatDateWithTime(selectedRelanceForView.date, selectedRelanceForView.heure, lng === 'en' ? 'en' : 'fr')}
                   </p>
                 </div>
 
                 <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 space-y-1">
                   <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
                     <MessageCircle className="w-3 h-3 text-primary" />
-                    {isEn ? 'Channel' : 'Canal'}
+                    {lng === 'en' ? 'Channel' : 'Canal'}
                   </span>
                   <p className="font-bold text-foreground flex items-center gap-1">
                     {CANAL_ICONS[selectedRelanceForView.canal]}
@@ -730,18 +730,18 @@ export const RelancesPage: React.FC = () => {
               </div>
 
               <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 space-y-1">
-                <span className="text-[10px] font-bold text-muted-foreground">{isEn ? 'Note / Motif:' : 'Motif / Commentaire :'}</span>
+                <span className="text-[10px] font-bold text-muted-foreground">{lng === 'en' ? 'Note / Motif:' : 'Motif / Commentaire :'}</span>
                 <p className="font-medium text-foreground whitespace-pre-wrap">
-                  {selectedRelanceForView.commentaire || selectedRelanceForView.motif || (isEn ? 'No note specified' : 'Aucun commentaire spécifié')}
+                  {selectedRelanceForView.commentaire || selectedRelanceForView.motif || (lng === 'en' ? 'No note specified' : 'Aucun commentaire spécifié')}
                 </p>
               </div>
 
               <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-muted-foreground">{isEn ? 'Sales Rep:' : 'Commercial responsable :'}</span>
+                <span className="text-[10px] font-bold text-muted-foreground">{lng === 'en' ? 'Sales Rep:' : 'Commercial responsable :'}</span>
                 <span className="font-bold text-foreground">
                   {commerciaux.find(c => c.id === selectedRelanceForView.commercial_id)
                     ? `${commerciaux.find(c => c.id === selectedRelanceForView.commercial_id)?.prenom} ${commerciaux.find(c => c.id === selectedRelanceForView.commercial_id)?.nom}`
-                    : (isEn ? 'Commercial' : 'Commercial')}
+                    : (lng === 'en' ? 'Commercial' : 'Commercial')}
                 </span>
               </div>
             </div>
@@ -751,13 +751,13 @@ export const RelancesPage: React.FC = () => {
                 to={`/${isAdmin ? 'admin' : 'app'}/prospects/${selectedRelanceForView.prospect_id}`}
                 className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white font-bold text-xs shadow-md text-center hover:opacity-95 transition-all"
               >
-                {isEn ? 'Open Prospect File' : 'Ouvrir fiche prospect'}
+                {lng === 'en' ? 'Open Prospect File' : 'Ouvrir fiche prospect'}
               </Link>
               <button
                 onClick={() => setSelectedRelanceForView(null)}
                 className="px-4 py-2.5 rounded-xl border border-input text-xs font-bold text-muted-foreground hover:bg-muted transition-colors"
               >
-                {isEn ? 'Close' : 'Fermer'}
+                {lng === 'en' ? 'Close' : 'Fermer'}
               </button>
             </div>
           </div>
