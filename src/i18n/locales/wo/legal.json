@@ -1,0 +1,111 @@
+{
+  "privacy": {
+    "title": "Politique confidentialité",
+    "lastUpdate": "Dernière màj : septembre 2026",
+    "sections": {
+      "intro": {
+        "title": "Introduction",
+        "text": "Faciloop, édité par Digit'Advisor, s'engage protéger vie privée utilisateurs. Cette politique décrit données persos collectées, pourquoi et comment on les utilise."
+      },
+      "dataCollected": {
+        "title": "Données collectées",
+        "text": "On collecte seulement données nécessaires service :",
+        "items": [
+          "Prénom et nom",
+          "Numéro téléphone (identifiant connexion)",
+          "Nom entreprise et info commerciales",
+          "Données activité : prospects, clients, pipeline, paiements",
+          "Données techniques : type appareil, langue, préférences affichage"
+        ]
+      },
+      "purpose": {
+        "title": "Finalités traitement",
+        "text": "Vos données utilisées exclusivement pour :",
+        "items": [
+          "Permettre accès compte et authentification",
+          "Gérer activité commerciale (prospects, clients, pipeline, paiements)",
+          "Synchroniser données entre appareils",
+          "Envoyer notifications et rappels relances",
+          "Améliorer service et corriger bugs"
+        ]
+      },
+      "storage": {
+        "title": "Stockage et sécurité",
+        "text": "Données stockées sécurisé sur serveurs Supabase (hébergés UE). Communications chiffrées HTTPS. Votre PIN hashé et pas lu par nos équipes."
+      },
+      "retention": {
+        "title": "Durée conservation",
+        "text": "Données conservées tant que compte actif. Si suppression compte, toutes données persos supprimées 30j. Données anonymisées peuvent être conservées stats."
+      },
+      "rights": {
+        "title": "Vos droits",
+        "text": "Conformément RGPD et lois applicables, vous avez droits :",
+        "items": [
+          "Droit accès : consulter vos données persos",
+          "Droit rectification : modifier infos depuis app",
+          "Droit effacement : supprimer compte et toutes données",
+          "Droit portabilité : exporter données CSV",
+          "Droit opposition : vous opposer traitement données"
+        ]
+      },
+      "cookies": {
+        "title": "Cookies et stockage local",
+        "text": "Faciloop n'utilise pas cookies pub ni traceurs tiers. localStorage utilisé seulement fonctionnement app (préférences interface, thème). Données techniques strictement nécessaires et exemptées consentement directive ePrivacy."
+      },
+      "contact": {
+        "title": "Contact",
+        "text": "Pour question données persos, contactez-nous."
+      }
+    }
+  },
+  "terms": {
+    "title": "Conditions Générales Utilisation",
+    "lastUpdate": "Dernière màj : septembre 2026",
+    "sections": {
+      "object": {
+        "title": "Objet",
+        "text": "Ces CGU régissent accès et utilisation Faciloop, édité par Digit'Advisor. Faciloop est CRM SaaS B2B multi-tenant pour TPE/PME gestion pipeline commercial, prospects, clients et paiements."
+      },
+      "access": {
+        "title": "Accès service",
+        "text": "Accès Faciloop nécessite création compte avec téléphone valide et PIN 6 chiffres. App accessible navigateur web et PWA. Connexion internet nécessaire."
+      },
+      "account": {
+        "title": "Compte utilisateur",
+        "text": "Vous responsable confidentialité identifiants (téléphone et PIN). Toute activité depuis votre compte sous votre responsabilité. Si suspicion usage non autorisé, contactez-nous immédiatement."
+      },
+      "usage": {
+        "title": "Utilisation service",
+        "text": "Vous engagez utiliser Faciloop conformément sa finalité : gestion activité commerciale. Interdit utiliser service fins illégales, tenter accès données autres users/orgs, ou compromettre sécurité plateforme."
+      },
+      "subscription": {
+        "title": "Abonnement et tarification",
+        "text": "Faciloop propose différentes formules abonnement payantes (mensuel, trimestriel, annuel). Tarifs affichés dans app et site web. Abonnement activé après validation admin. Modalités paiement communiquées via WhatsApp ou email."
+      },
+      "ip": {
+        "title": "Propriété intellectuelle",
+        "text": "Tout contenu Faciloop (code source, design, textes, logos, icônes) propriété exclusive Digit'Advisor. Toute reproduction, modification ou distribution sans autorisation écrite interdite."
+      },
+      "liability": {
+        "title": "Responsabilité",
+        "text": "Faciloop fourni \"en l'état\". Digit'Advisor s'efforce assurer dispo et fiabilité service, mais ne peut garantir dispo ininterrompue. Si perte données dysfonctionnement, responsabilité limitée montant abonnement en cours."
+      },
+      "termination": {
+        "title": "Résiliation",
+        "text": "Vous pouvez demander suppression compte à tout moment contactant support. Suppression = effacement définitif données persos. Digit'Advisor se réserve droit suspendre/supprimer compte si violation CGU."
+      },
+      "law": {
+        "title": "Droit applicable",
+        "text": "CGU soumises droit sénégalais. En cas litige, tribunaux Dakar compétents, sauf disposition légale contraire."
+      },
+      "contact": {
+        "title": "Contact",
+        "text": "Pour question : contact@digitadvisor.sn ou WhatsApp +221 77 630 82 66. Digit'Advisor - www.digitadvisor.sn"
+      }
+    }
+  },
+  "footer": {
+    "privacy": "Confidentialité",
+    "terms": "CGU"
+  }
+}

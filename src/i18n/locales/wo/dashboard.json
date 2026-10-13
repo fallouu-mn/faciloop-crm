@@ -1,0 +1,18 @@
+{
+  "title": "Tey ak Yéene Commercial",
+  "welcome": "Nanga def, {{name}}",
+  "space": "Espace Commercial",
+  "subtitle": "Sa yàggle yi tey, woote yi ak sa yàmm liggéey tey",
+  "kpis": {
+    "myProspects": "Kiliyã Yiyam",
+    "todayRelances": "Woote Tey",
+    "overdueRelances": "Woote yi Bët",
+    "revenue": "CA Yàdd",
+    "earnings": "Fey Yiyam",
+    "conversion": "Taux Conversion"
+  },
+  "prioritiesTitle": "Sa Yàggle yi Tey",
+  "viewAllRelances": "Gis woote yiyam yépp",
+  "weeklySales": "CA Buyaa Jàpp",
+  "salesTrend": "Tendance ventes ci 7 fan"
+}

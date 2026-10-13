@@ -5,7 +5,7 @@ export const LanguageToggle: React.FC<{ className?: string }> = ({ className = '
   const { i18n } = useTranslation();
   const currentLang = i18n.language || 'fr';
 
-  const changeLang = (lang: 'fr' | 'en') => {
+  const changeLang = (lang: 'fr' | 'en' | 'wo') => {
     i18n.changeLanguage(lang);
     localStorage.setItem('i18nextLng', lang);
   };
@@ -38,6 +38,19 @@ export const LanguageToggle: React.FC<{ className?: string }> = ({ className = '
       >
         <span className="text-[11px]">🇬🇧</span>
         <span>EN</span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => changeLang('wo')}
+        className={`px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${
+          currentLang.startsWith('wo')
+            ? 'bg-gradient-faciloop text-white font-black shadow-md'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+        }`}
+      >
+        <span className="text-[11px]">🇸🇳</span>
+        <span>WO</span>
       </button>
     </div>
   );

@@ -1,0 +1,15 @@
+{
+  "appName": "Faciloop Sales",
+  "welcome": "Dalal ak jamm, {{name}}",
+  "search": "Wérante...",
+  "export": "Exporte CSV",
+  "import": "Importe CSV",
+  "actions": "Jëf yiy am",
+  "save": "Denc",
+  "cancel": "Bàyyi",
+  "delete": "Far",
+  "edit": "Soppi",
+  "status": "Melokaan",
+  "loading": "Yéwénna...",
+  "logout": "Génn"
+}

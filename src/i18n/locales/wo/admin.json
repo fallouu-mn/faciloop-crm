@@ -1,0 +1,399 @@
+{
+  "adminTitle": "Super-Admin Dashboard",
+  "adminSubtitle": "Vue globale de la plateforme SaaS Multi-Tenant",
+  "orgTitle": "Direction {{name}}",
+  "orgSubtitle": "Vue d'ensemble de l'activité commerciale globale et performance d'équipe",
+  "teamTitle": "Gestion de l'Équipe Commerciale",
+  "teamSubtitle": "Gérez l'accès des commerciaux de votre entreprise",
+  "addSalesRep": "+ Ajouter un commercial",
+  "actions": {
+    "importCsv": "Import CSV",
+    "newRep": "Nouveau Commercial"
+  },
+  "adminOrg": {
+    "dashboard": {
+      "greeting": "Nanga def",
+      "subtitle": "Vue d'ensemble de l'activité commerciale globale et performance d'équipe",
+      "managementPrefix": "Direction",
+      "period": {
+        "aujourdhui": "Tey",
+        "semaine": "Fan ji",
+        "mois": "Weer ji",
+        "trimestre": "Trimestre ji",
+        "annee": "Déé ji",
+        "personnalise": "Bu jëm"
+      },
+      "customPeriod": "Weer bu jëm",
+      "from": "Ka",
+      "to": "Ka",
+      "newSalesRep": "Commercial bu bées",
+      "totalProspects": "Kiliyã Yépp",
+      "activeClients": "Kood yi Seen",
+      "conversionRate": "Taux Conversion",
+      "revenue": "Chiffre d'Affaires",
+      "leaderboard": "Classement & Performance",
+      "manageTeam": "Maane mbootay →",
+      "col": {
+        "commercial": "Commercial",
+        "prospects": "Kiliyã",
+        "sales": "Jàpp",
+        "revenue": "CA Seen",
+        "convRate": "Taux Conv."
+      },
+      "noActiveSalesRep": "Kulu commercial bu seen",
+      "compareChart": "Comparaison Volume & Ventes",
+      "viewAllProspects": "Gis kiliyã yépp",
+      "byFormule": "Répartition par formule",
+      "bySector": "Répartition par secteur",
+      "client": "kood",
+      "clients": "kood"
+    },
+    "equipe": {
+      "title": "Gestion de l'Équipe Commerciale",
+      "subtitle": "Gérez l'accès des commerciaux de votre entreprise",
+      "addBtn": "Ajouter un commercial",
+      "col": {
+        "salesRep": "Commercial",
+        "phone": "Telfon",
+        "status": "Melokaan",
+        "action": "Jëf"
+      },
+      "activate": "Àddina",
+      "deactivate": "Taw",
+      "modal": {
+        "title": "Créer un Compte Commercial",
+        "firstName": "Tur",
+        "lastName": "Sant",
+        "email": "Email Professionnel",
+        "phone": "Telfon Mobaayl",
+        "createBtn": "Créer l'accès commercial",
+        "errorDefault": "Bugg ci bind commercial bi"
+      }
+    },
+    "objectifs": {
+      "title": "Jubluwaay Commercial",
+      "subtitle": "Def ak taal jubluwaay yi kulu commercial",
+      "defineBtn": "Def jubluwaa",
+      "kpi": {
+        "tracked": "Commercial yi taal",
+        "defined": "Jubluwaay yi def",
+        "avgRate": "Taux atteinte moyen"
+      },
+      "types": {
+        "ca": "Chiffre d'affaires",
+        "ventes": "Nombro jàpp",
+        "prospects": "Kiliyã bind"
+      },
+      "caEncaisse": "CA encaissé",
+      "ventes": "Jàpp",
+      "period": {
+        "hebdomadaire": "Fanukaay",
+        "mensuel": "Weerukaay",
+        "trimestriel": "Trimestriel",
+        "annuel": "Dééukaay"
+      },
+      "modal": {
+        "title": "Def Jubluwaa",
+        "commercial": "Commercial *",
+        "type": "Type jubluwaa *",
+        "target": "Valeur cible *",
+        "periodType": "Type période",
+        "startDate": "Date dékk *",
+        "endDate": "Date bàyyi *",
+        "cancel": "Bàyyi",
+        "submit": "Def jubluwaa"
+      },
+      "empty": "Kulu jubluwaa teey def. Daanu \"Def jubluwaa\" ngir àddina.",
+      "toast": "Jubluwaa def ak ndaw !",
+      "deleteTitle": "Far jubluwaa"
+    },
+    "prospects": {
+      "title": "Kiliyã",
+      "adminView": "Vue Admin",
+      "subtitle": "Maane kiliyã yi organisasyon bi",
+      "newBtn": "Kiliyã bu bées",
+      "reassignBtn": "Soppi commercial",
+      "search": "Wérante tur, kéwél wala telfon...",
+      "resetFilters": "Soppi filtre yi",
+      "filterAll": {
+        "stages": "Étapes yépp",
+        "sources": "Sources yépp",
+        "commercials": "Commercial yépp",
+        "countries": "Pey yépp"
+      },
+      "hideClosedToggle": "Far kiliyã yi jàpp / jolof",
+      "col": {
+        "prospect": "Kiliyã / Kéwél",
+        "phone": "Telfon",
+        "stage": "Étap",
+        "source": "Source",
+        "commercial": "Commercial",
+        "followUp": "Woote ngir",
+        "actions": "Jëf"
+      },
+      "empty": "Kulu kiliyã bañ a filtre yi.",
+      "emptyMobile": "Kulu kiliyã bañ.",
+      "unassigned": "Kulu commercial",
+      "openFile": "Ubbi Fiche",
+      "relanceLabel": "Woote :",
+      "deleteConfirm": "Far kiliyã ba ba baax ?",
+      "modal": {
+        "title": "Kiliyã bu bées",
+        "sectionId": "Nit",
+        "sectionContact": "Kontak",
+        "sectionLocation": "Adrès",
+        "sectionPipeline": "Commercial & Pipeline",
+        "sectionNotes": "Xibaar & Woote",
+        "lastName": "Sant",
+        "firstName": "Tur",
+        "company": "Kéwél",
+        "phone": "Telfon *",
+        "country": "Péy *",
+        "city": "Sig",
+        "address": "Adrès",
+        "sector": "Secteur",
+        "select": "— Wàll —",
+        "assignedTo": "Commercial wone *",
+        "pipelineStage": "Étap pipeline *",
+        "targetPlan": "Formule wax",
+        "budget": "Budget wax (FCFA)",
+        "comment": "Xibaar",
+        "commentPlaceholder": "Xibaar yi kër...",
+        "followUpDate": "Date woote ngir",
+        "createBtn": "Bind kiliyã",
+        "duplicate": "Telfon bi nekk ci organisasyon !"
+      },
+      "reassignModal": {
+        "title": "Soppi Commercial",
+        "cancel": "Bàyyi",
+        "confirm": "Fagaru"
+      },
+      "toast": {
+        "created": "Kiliyã bind ak ndaw !",
+        "reassigned": "kiliyã yi soppi !"
+      }
+    },
+    "clients": {
+      "title": "Kood Yiyam",
+      "convertedTag": "Kiliyã yi jàpp",
+      "subtitle": "Kood yi ci jàpp kiliyã — abonnement ak kood yi seen",
+      "kpi": {
+        "total": "Kood yépp",
+        "active": "Kood seen",
+        "revenue": "CA yépp",
+        "renewals": "Renouvellement (30f)"
+      },
+      "search": "Wérante kéwél, masla wala telfon...",
+      "resetFilters": "Soppi filtre yi",
+      "col": {
+        "company": "Kéwél",
+        "manager": "Masla",
+        "plan": "Formule",
+        "status": "Melokaan",
+        "subscription": "Abonnement",
+        "renewal": "Renouvellement",
+        "inactivity": "Inactivité",
+        "actions": "Jëf"
+      },
+      "empty": "Kulu kood bañ. Kood yi ñëw ci jàpp kiliyã.",
+      "emptyMobile": "Kulu kood bañ.",
+      "details": "Détails",
+      "clientFile": "Fiche Kood",
+      "close": "Bàq",
+      "renewalIn": "Renouvellement ci",
+      "inactiveSince": "Inactif si",
+      "days": "fan",
+      "expired": "Fete",
+      "renewal": "Renouvellement"
+    },
+    "abonnements": {
+      "title": "Offres Abonnement",
+      "subtitle": "Maane offres yi wax kood yi",
+      "addBtn": "Jëkk offre",
+      "period": {
+        "mensuel": "weer",
+        "trimestriel": "trimestre",
+        "annuel": "déé"
+      },
+      "periodShort": {
+        "mensuel": "weer",
+        "trimestriel": "trim.",
+        "annuel": "déé"
+      },
+      "status": {
+        "active": "Seen",
+        "inactive": "Taaw"
+      },
+      "pricing": "Tarification (FCFA)",
+      "offerActive": "Offre seen",
+      "edit": "Soppi",
+      "modal": {
+        "createTitle": "Bind offre",
+        "editTitle": "Soppi offre",
+        "name": "Tur offre *",
+        "description": "Description",
+        "cancel": "Bàyyi",
+        "save": "Denc",
+        "create": "Bind offre"
+      },
+      "empty": {
+        "title": "Kulu offre teey bind",
+        "subtitle": "Bind sa première offre ngir àddina jàpp kiliyã",
+        "btn": "Bind offre"
+      },
+      "toast": {
+        "created": "Offre bind ak ndaw",
+        "updated": "Offre soppi ak ndaw",
+        "deleted": "Offre far"
+      }
+    },
+    "paiements": {
+      "title": "Taal Fey & Facture",
+      "badge": "Comptabilité SaaS",
+      "subtitle": "Taro fey abonnement ak téru PDF",
+      "downloadReleve": "Relevé",
+      "kpi": {
+        "collected": "Total Seen",
+        "transactions": "Transactions",
+        "subscriptions": "abonnement yi bind"
+      },
+      "filterAll": "Yépp moyne",
+      "list": "Liste Transactions",
+      "col": {
+        "ref": "Réf. Facture",
+        "company": "Kéwél Kood",
+        "amount": "Montant Seen",
+        "mode": "Moyen Règlement",
+        "transactionRef": "Réf. Transaction",
+        "status": "Melokaan",
+        "invoice": "Facture PDF"
+      },
+      "downloadPdf": "PDF",
+      "downloadInvoice": "Téru Facture PDF",
+      "modes": {
+        "card": "Carte (Stripe)",
+        "transfer": "Virement"
+      }
+    },
+    "commissions": {
+      "title": "Commissions",
+      "badge": "Fey Variable",
+      "subtitle": "Taal commissions yi commercial yi — 5% weer, 8% trimestre, 10% déé",
+      "periodLabel": "Période :",
+      "allPeriods": "Périodes yépp",
+      "kpi": {
+        "toVerify": "Total ngir fey",
+        "revenue": "CA Yàdd",
+        "salesReps": "Commercial",
+        "sales": "Jàpp"
+      },
+      "detailTitle": "Détail par Commercial",
+      "salesCount": "jàpp",
+      "caLabel": "CA:",
+      "toPay": "ngir fey",
+      "markPaid": "Mark fey",
+      "paid": "Seen ✓",
+      "empty": "Kulu commission periode ji"
+    },
+    "journal": {
+      "title": "Journal Aktivité",
+      "badge": "Audit Log",
+      "subtitle": "Taro yépp jëf yi ak operasyon yi users yi",
+      "events": "événement",
+      "search": "Wérante jëf, user wala cible...",
+      "filters": {
+        "all": "Jëf yépp",
+        "prospect": "Kiliyã",
+        "client": "Kood",
+        "offer": "Offres & Abonnements",
+        "payment": "Fey",
+        "objectif": "Jubluwaay",
+        "org": "Organisation"
+      },
+      "element": "Élément :",
+      "empty": {
+        "title": "Kulu événement bañ",
+        "subtitle": "Soppi sa filtre yi ngir gis taro."
+      }
+    },
+    "notifications": {
+      "title": "Xibaar",
+      "subtitle": "Alerte ak événéments organisasyon bi",
+      "markAllRead": "Mark yépp jas",
+      "filters": {
+        "toutes": "Yépp",
+        "non_lues": "Kulu jas",
+        "activite": "Aktivité",
+        "paiements": "Fey",
+        "clients": "Kood",
+        "objectifs": "Jubluwaay"
+      },
+      "emptyAll": "Kulu xibaar",
+      "emptyUnread": "Kulu xibaar kulu jas"
+    },
+    "parametres": {
+      "title": "Paramètres Kéwél",
+      "subtitle": "Info générales, kontak ak préférences organisasyon bi",
+      "saved": "Paramètres denc ak ndaw !",
+      "sections": {
+        "visual": "Identité visuelle",
+        "general": "Info générales",
+        "contact": "Kontak"
+      },
+      "changeLogo": "Soppi logo",
+      "companyName": "Tur kéwél *",
+      "sector": "Secteur",
+      "currency": "Devise défaut",
+      "country": "Péy",
+      "city": "Sig",
+      "address": "Adrès bu benn",
+      "addressPlaceholder": "Numéro, rue, quartier...",
+      "phone": "Telfon",
+      "email": "Email pro",
+      "website": "Site web",
+      "websitePlaceholder": "https://...",
+      "saveBtn": "Denc changements",
+      "select": "Wàll"
+    },
+    "importExport": {
+      "title": "Import / Export Données (CSV & Excel)",
+      "subtitle": "Importe listes kiliyã, attribue yépp ak far dobb",
+      "export": {
+        "title": "Exporte données CSV",
+        "prospects": "Exporte Prospects",
+        "clients": "Exporte Kood Faciloop",
+        "prospectsSubtitle": "CSV pret ak colonnes CRM",
+        "clientsSubtitle": "CSV complet ak formules ak montants"
+      },
+      "import": {
+        "title": "Importe liste kiliyã (CSV)",
+        "subtitle": "Accepte virgule (,) ak point-virgule (;)",
+        "assignTo": "Attribue liste :",
+        "dropzone": "Drop ton CSV ici",
+        "browseBtn": "Wàll fichiers",
+        "changeBtn": "Soppi CSV",
+        "fileLoaded": "Fichier chargé :",
+        "parsing": "Analyse CSV & scan dobb...",
+        "success": "Importation jàpp !",
+        "importedPrefix": "kiliyã yi import ak attribue",
+        "duplicatesIgnored": "doblons far",
+        "preview": "Résumé preview :",
+        "ready": "pret",
+        "attribution": "Attribution :",
+        "validateBtn": "Valide import",
+        "successBtn": "Kiliyã import !"
+      },
+      "col": {
+        "name": "Tur / Kontak",
+        "company": "Kéwél",
+        "phone": "Telfon",
+        "source": "Source",
+        "dupStatus": "Statut Anti-Doblon"
+      },
+      "status": {
+        "ready": "✓ Pret",
+        "duplicate": "⚠️ Doblon (Far)"
+      }
+    }
+  }
+}

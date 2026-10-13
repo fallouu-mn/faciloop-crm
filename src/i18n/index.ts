@@ -22,6 +22,17 @@ import enAdmin from './locales/en/admin.json';
 import enClients from './locales/en/clients.json';
 import enSuperAdmin from './locales/en/superAdmin.json';
 
+// Wolof Locales
+import woCommon from './locales/wo/common.json';
+import woAuth from './locales/wo/auth.json';
+import woDashboard from './locales/wo/dashboard.json';
+import woLanding from './locales/wo/landing.json';
+import woSales from './locales/wo/sales.json';
+import woAdmin from './locales/wo/admin.json';
+import woClients from './locales/wo/clients.json';
+import woSuperAdmin from './locales/wo/superAdmin.json';
+import woLegal from './locales/wo/legal.json';
+
 export const NAMESPACES = [
   'common',
   'auth',
@@ -57,6 +68,17 @@ const resources = {
     superAdmin: enSuperAdmin,
     legal: frLegal,
   },
+  wo: {
+    common: woCommon,
+    auth: woAuth,
+    dashboard: woDashboard,
+    landing: woLanding,
+    sales: woSales,
+    admin: woAdmin,
+    clients: woClients,
+    superAdmin: woSuperAdmin,
+    legal: woLegal,
+  },
 };
 
 const getInitialLanguage = (): string => {
@@ -67,6 +89,9 @@ const getInitialLanguage = (): string => {
     const navLang = window.navigator.language || (window.navigator as any).userLanguage || '';
     if (navLang.toLowerCase().startsWith('en')) {
       return 'en';
+    }
+    if (navLang.toLowerCase().startsWith('wo')) {
+      return 'wo';
     }
   }
 
