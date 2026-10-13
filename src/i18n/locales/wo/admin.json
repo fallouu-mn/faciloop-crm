@@ -1,20 +1,20 @@
 {
-  "adminTitle": "Super-Admin Dashboard",
-  "adminSubtitle": "Vue globale de la plateforme SaaS Multi-Tenant",
-  "orgTitle": "Direction {{name}}",
-  "orgSubtitle": "Vue d'ensemble de l'activité commerciale globale et performance d'équipe",
+  "adminTitle": "Tablita Super-Admin",
+  "adminSubtitle": "Seetlu yu yàkkamti platform SaaS Multi-Tenant bi",
+  "orgTitle": "Toppantandiku {{name}}",
+  "orgSubtitle": "Seetlu liggéey lémb ak jubluwaay mbootay",
   "teamTitle": "Saytu Mbootay Commercial bi",
   "teamSubtitle": "Saytul dugguk commercial yi ci sa këru liggéey",
   "addSalesRep": "+ Yokk commercial",
   "actions": {
     "importCsv": "Import CSV",
-    "newRep": "Nouveau Commercial"
+    "newRep": "Commercial bu bees"
   },
   "adminOrg": {
     "dashboard": {
       "greeting": "Nanga def",
-      "subtitle": "Vue d'ensemble de l'activité commerciale globale et performance d'équipe",
-      "managementPrefix": "Direction",
+      "subtitle": "Seetlu liggéey lémb ak jubluwaay mbootay",
+      "managementPrefix": "Toppantandiku",
       "period": {
         "aujourdhui": "Tey",
         "semaine": "Fan ji",
@@ -30,21 +30,21 @@
       "totalProspects": "Kiliyã Yépp",
       "activeClients": "Kood yi Seen",
       "conversionRate": "Taux Conversion",
-      "revenue": "Chiffre d'Affaires",
-      "leaderboard": "Classement & Performance",
+      "revenue": "Alala",
+      "leaderboard": "Wàccalu jubluwaay",
       "manageTeam": "Maane mbootay →",
       "col": {
         "commercial": "Commercial",
         "prospects": "Kiliyã",
         "sales": "Jàpp",
         "revenue": "CA Seen",
-        "convRate": "Taux Conv."
+        "convRate": "Yoon wu beddil"
       },
       "noActiveSalesRep": "Kulu commercial bu seen",
-      "compareChart": "Comparaison Volume & Ventes",
+      "compareChart": "Noppi Volume ak Tëral",
       "viewAllProspects": "Gis kiliyã yépp",
-      "byFormule": "Répartition par formule",
-      "bySector": "Répartition par secteur",
+      "byFormule": "Yéewal ci formule",
+      "bySector": "Yéewal ci sekteur",
       "client": "kood",
       "clients": "kood"
     },
@@ -104,26 +104,26 @@
       "kpi": {
         "tracked": "Commercial yi taal",
         "defined": "Jubluwaay yi def",
-        "avgRate": "Taux atteinte moyen"
+        "avgRate": "Jubluwaay yu mesures"
       },
       "types": {
-        "ca": "Chiffre d'affaires",
+        "ca": "Alala",
         "ventes": "Nombro jàpp",
         "prospects": "Kiliyã bind"
       },
-      "caEncaisse": "CA encaissé",
+      "caEncaisse": "Alala nëbbna",
       "ventes": "Jàpp",
       "period": {
         "hebdomadaire": "Fanukaay",
         "mensuel": "Weerukaay",
-        "trimestriel": "Trimestriel",
+        "trimestriel": "Atmeer",
         "annuel": "Dééukaay"
       },
       "modal": {
         "title": "Def Jubluwaa",
         "commercial": "Commercial *",
         "type": "Type jubluwaa *",
-        "target": "Valeur cible *",
+        "target": "Njool njaay *",
         "periodType": "Type période",
         "startDate": "Date dékk *",
         "endDate": "Date bàyyi *",
@@ -136,7 +136,7 @@
     },
     "prospects": {
       "title": "Kiliyã",
-      "adminView": "Vue Admin",
+      "adminView": "Seetlu Admin",
       "subtitle": "Maane kiliyã yi organisasyon bi",
       "newBtn": "Kiliyã bu bées",
       "reassignBtn": "Soppi commercial",
@@ -218,20 +218,20 @@
         "plan": "Formule",
         "status": "Melokaan",
         "subscription": "Abonnement",
-        "renewal": "Renouvellement",
-        "inactivity": "Inactivité",
+        "renewal": "Yeesal",
+        "inactivity": "Amul liggéey",
         "actions": "Jëf"
       },
       "empty": "Kulu kood bañ. Kood yi ñëw ci jàpp kiliyã.",
       "emptyMobile": "Kulu kood bañ.",
-      "details": "Détails",
+      "details": "Xibaar",
       "clientFile": "Fiche Kood",
       "close": "Bàq",
       "renewalIn": "Renouvellement ci",
       "inactiveSince": "Inactif si",
       "days": "fan",
       "expired": "Fete",
-      "renewal": "Renouvellement"
+      "renewal": "Yeesal"
     },
     "abonnements": {
       "title": "Ofis Abonnement",
@@ -244,14 +244,14 @@
       },
       "periodShort": {
         "mensuel": "weer",
-        "trimestriel": "trim.",
+        "trimestriel": "atm.",
         "annuel": "déé"
       },
       "status": {
         "active": "Seen",
         "inactive": "Taaw"
       },
-      "pricing": "Tarification (FCFA)",
+      "pricing": "Njool (FCFA)",
       "offerActive": "Offre seen",
       "edit": "Soppi",
       "modal": {
@@ -276,9 +276,9 @@
     },
     "paiements": {
       "title": "Taal Fey & Facture",
-      "badge": "Comptabilité SaaS",
+      "badge": "Kompta SaaS",
       "subtitle": "Taro fey abonnement ak téru PDF",
-      "downloadReleve": "Relevé",
+      "downloadReleve": "Relevë",
       "kpi": {
         "collected": "Total Seen",
         "transactions": "Transactions",
@@ -287,13 +287,13 @@
       "filterAll": "Yépp moyne",
       "list": "Liste Transactions",
       "col": {
-        "ref": "Réf. Facture",
+        "ref": "N° Faktur",
         "company": "Kéwél Kood",
         "amount": "Montant Seen",
         "mode": "Moyen Règlement",
-        "transactionRef": "Réf. Transaction",
+        "transactionRef": "N° Transaction",
         "status": "Melokaan",
-        "invoice": "Facture PDF"
+        "invoice": "Faktur PDF"
       },
       "downloadPdf": "PDF",
       "downloadInvoice": "Téru Facture PDF",
@@ -306,7 +306,7 @@
       "title": "Komis yi",
       "badge": "Fey Variable",
       "subtitle": "Taal commissions yi commercial yi — 5% weer, 8% trimestre, 10% déé",
-      "periodLabel": "Période :",
+      "periodLabel": "Atmeer :",
       "allPeriods": "Périodes yépp",
       "kpi": {
         "toVerify": "Total ngir fey",
@@ -314,9 +314,9 @@
         "salesReps": "Commercial",
         "sales": "Jàpp"
       },
-      "detailTitle": "Détail par Commercial",
+      "detailTitle": "Xibaar ci Commercial",
       "salesCount": "jàpp",
-      "caLabel": "CA:",
+      "caLabel": "Alala :",
       "toPay": "ngir fey",
       "markPaid": "Mark fey",
       "paid": "Seen ✓",
@@ -324,7 +324,7 @@
     },
     "journal": {
       "title": "Journal Aktivité",
-      "badge": "Audit Log",
+      "badge": "Lijente",
       "subtitle": "Taro yépp jëf yi ak operasyon yi users yi",
       "events": "événement",
       "search": "Wérante jëf, user wala cible...",
@@ -332,12 +332,12 @@
         "all": "Jëf yépp",
         "prospect": "Kiliyã",
         "client": "Kood",
-        "offer": "Offres & Abonnements",
+        "offer": "Ofis ak Abonnement",
         "payment": "Fey",
         "objectif": "Jubluwaay",
-        "org": "Organisation"
+        "org": "Organisasyon"
       },
-      "element": "Élément :",
+      "element": "Benn :",
       "empty": {
         "title": "Kulu événement bañ",
         "subtitle": "Soppi sa filtre yi ngir gis taro."
@@ -364,7 +364,7 @@
       "subtitle": "Info générales, kontak ak préférences organisasyon bi",
       "saved": "Paramètres denc ak ndaw !",
       "sections": {
-        "visual": "Identité visuelle",
+        "visual": "Ndiim gi",
         "general": "Info générales",
         "contact": "Kontak"
       },
@@ -375,7 +375,7 @@
       "country": "Péy",
       "city": "Sig",
       "address": "Adrès bu benn",
-      "addressPlaceholder": "Numéro, rue, quartier...",
+      "addressPlaceholder": "Nùmmero, rue, këtur...",
       "phone": "Telfon",
       "email": "Email pro",
       "website": "Site web",
@@ -400,14 +400,14 @@
         "dropzone": "Drop ton CSV ici",
         "browseBtn": "Wàll fichiers",
         "changeBtn": "Soppi CSV",
-        "fileLoaded": "Fichier chargé :",
+        "fileLoaded": "Fichier denc na :",
         "parsing": "Analyse CSV & scan dobb...",
         "success": "Importation jàpp !",
         "importedPrefix": "kiliyã yi import ak attribue",
         "duplicatesIgnored": "doblons far",
         "preview": "Résumé preview :",
         "ready": "pret",
-        "attribution": "Attribution :",
+        "attribution": "Nëbb ci :",
         "validateBtn": "Valide import",
         "successBtn": "Kiliyã import !"
       },
