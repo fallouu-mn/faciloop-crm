@@ -290,7 +290,7 @@ function formatMoney(amount: number, curr: Currency): string {
 }
 
 export const ProspectKanban: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('sales');
   const { user, prospects, myProspects, commerciaux, addProspect, updateProspectStatus, convertProspectToClient, orgOffers, currency, setCurrency } = useAuth();
   const { prospects: apiProspects, updatePipeline: apiUpdatePipeline } = useProspects();
   const { etapes, loading: etapesLoading, create: createEtape, update: updateEtape, remove: removeEtape, reorder: reorderEtapes } = useEtapesPipeline();
@@ -299,13 +299,13 @@ export const ProspectKanban: React.FC = () => {
   const QA_SOURCES = sourceOptions.length ? sourceOptions : QA_SOURCES_FALLBACK;
   const navigate = useNavigate();
 
-  const isEn = i18n.language?.startsWith('en');
+  const lng = i18n.language || 'fr';
   const isAdmin = user?.role === 'admin_org' || user?.role === 'super_admin';
   const [etapesModalOpen, setEtapesModalOpen] = useState(false);
 
   const columns: ColumnDef[] = etapes.map((e, idx) => ({
     id: e.nom,
-    title: `${idx + 1}. ${getEtapeLabel(e, isEn)}`,
+    title: `${idx + 1}. ${getEtapeLabel(e, lng)}`,
     color: e.couleur,
     badgeBg: e.badge_bg,
     icon: resolveIcon(e.icone),

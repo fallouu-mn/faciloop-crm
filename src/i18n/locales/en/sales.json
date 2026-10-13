@@ -20,5 +20,28 @@
   "relancesSubtitle": "Never miss an opportunity to engage with your prospects",
   "addRelance": "+ Schedule a Follow-up",
   "markCompleted": "Mark completed",
-  "viewProspect": "View prospect"
+  "viewProspect": "View prospect",
+  "canal": {
+    "appel": "Call",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "visite": "Visit",
+    "autre": "Other"
+  },
+  "relances": {
+    "tabs": {
+      "toutes": "All",
+      "aujourd_hui": "Today",
+      "en_retard": "Overdue",
+      "a_venir": "Upcoming",
+      "realisees": "Completed",
+      "annulees": "Cancelled"
+    },
+    "motif": {
+      "rdv_programme": "Meeting scheduled",
+      "a_relancer": "To follow up",
+      "prochaine_relance": "Next follow-up",
+      "synthetic_comment": "Scheduled from the prospect file (read-only)"
+    }
+  }
 }

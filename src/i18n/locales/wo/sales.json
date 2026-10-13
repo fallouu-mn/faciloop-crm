@@ -20,5 +20,28 @@
   "relancesSubtitle": "Bul lekk fukki kiliyã yi gis wala woo",
   "addRelance": "+ Jëkk woote",
   "markCompleted": "Mark jàpp",
-  "viewProspect": "Gis kiliyã"
+  "viewProspect": "Gis kiliyã",
+  "canal": {
+    "appel": "Appel",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "visite": "Visite",
+    "autre": "Autre"
+  },
+  "relances": {
+    "tabs": {
+      "toutes": "Yépp",
+      "aujourd_hui": "Tey",
+      "en_retard": "Bët",
+      "a_venir": "Ngir",
+      "realisees": "Jàpp",
+      "annulees": "Bàyyi"
+    },
+    "motif": {
+      "rdv_programme": "RDV am",
+      "a_relancer": "Yéewal woote",
+      "prochaine_relance": "Woote ngir",
+      "synthetic_comment": "Programmé depuis la fiche prospect (lecture seule)"
+    }
+  }
 }

@@ -44,28 +44,28 @@ type Tab = 'toutes' | 'aujourd_hui' | 'en_retard' | 'a_venir' | 'realisees' | 'a
 // ─── component ────────────────────────────────────────────────────────────────
 
 export const RelancesPage: React.FC = () => {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language === 'en';
+  const { t, i18n } = useTranslation('sales');
+  const lng = i18n.language || 'fr';
   const { user, prospects, myProspects, commerciaux, relances, addRelance, completeRelance, cancelRelance } = useAuth();
   const { updateRelance } = useRelances();
   const isAdmin = user?.role === 'admin_org' || user?.role === 'super_admin';
 
   const canalLabels: Record<RelanceCanal, string> = useMemo(() => ({
-    appel:    isEn ? 'Call' : 'Appel',
+    appel:    t('sales.canal.appel', 'Appel'),
     whatsapp: 'WhatsApp',
-    email:    'Email',
-    visite:   isEn ? 'Visit' : 'Visite',
-    autre:    isEn ? 'Other' : 'Autre',
-  }), [isEn]);
+    email:    t('sales.canal.email', 'Email'),
+    visite:   t('sales.canal.visite', 'Visite'),
+    autre:    t('sales.canal.autre', 'Autre'),
+  }), [t, lng]);
 
   const tabLabels: Record<Tab, string> = useMemo(() => ({
-    toutes:      isEn ? 'All' : 'Toutes',
-    aujourd_hui: isEn ? 'Today' : "Aujourd'hui",
-    en_retard:   isEn ? 'Overdue' : 'En retard',
-    a_venir:     isEn ? 'Upcoming' : 'À venir',
-    realisees:   isEn ? 'Completed' : 'Réalisées',
-    annulees:    isEn ? 'Cancelled' : 'Annulées',
-  }), [isEn]);
+    toutes:      t('sales.relances.tabs.toutes', 'Toutes'),
+    aujourd_hui: t('sales.relances.tabs.aujourd_hui', "Aujourd'hui"),
+    en_retard:   t('sales.relances.tabs.en_retard', 'En retard'),
+    a_venir:     t('sales.relances.tabs.a_venir', 'À venir'),
+    realisees:   t('sales.relances.tabs.realisees', 'Réalisées'),
+    annulees:    t('sales.relances.tabs.annulees', 'Annulées'),
+  }), [t, lng]);
 
   // Modal form state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -125,20 +125,18 @@ export const RelancesPage: React.FC = () => {
         date,
         canal: 'autre',
         motif: p.statut_pipeline === 'rdv_programme'
-          ? (isEn ? 'Meeting scheduled' : 'RDV programmé')
+          ? t('sales.relances.motif.rdv_programme', 'RDV programmé')
           : p.statut_pipeline === 'a_relancer'
-            ? (isEn ? 'To follow up' : 'À relancer')
-            : (isEn ? 'Next follow-up' : 'Prochaine relance'),
-        commentaire: isEn
-          ? 'Scheduled from the prospect file (read-only)'
-          : 'Programmé depuis la fiche prospect (lecture seule)',
+            ? t('sales.relances.motif.a_relancer', 'À relancer')
+            : t('sales.relances.motif.prochaine_relance', 'Prochaine relance'),
+        commentaire: t('sales.relances.motif.synthetic_comment', 'Programmé depuis la fiche prospect (lecture seule)'),
         statut: 'prevue',
         created_at: p.created_at,
         _synthetic: true,
       }));
 
     return [...scopedRelances, ...synthetic];
-  }, [relances, isAdmin, user, prospects, myProspects, isEn]);
+  }, [relances, isAdmin, user, prospects, myProspects, t, lng]);
 
   // ── KPI calculations
   const kpiAujourdhui = useMemo(() => baseRelances.filter(r => r.date === TODAY && (r.statut === 'prevue' || r.statut === 'en_retard')).length, [baseRelances]);

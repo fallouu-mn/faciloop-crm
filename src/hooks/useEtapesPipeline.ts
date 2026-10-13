@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import * as etapesService from '@/services/etapesPipeline';
 import type { EtapePipeline } from '@/services/etapesPipeline';
+import { useTranslation } from 'react-i18next';
 
 export type { EtapePipeline };
 
@@ -20,15 +21,33 @@ const DEFAULT_LABELS_EN: Record<string, string> = {
   perdu: 'Lost',
 };
 
-export function getEtapeLabel(etape: EtapePipeline, isEn: boolean): string {
-  if (isEn && DEFAULT_LABELS_EN[etape.nom]) return DEFAULT_LABELS_EN[etape.nom];
+export function getEtapeLabel(etape: EtapePipeline, lng: string): string {
+  if (lng === 'en' && DEFAULT_LABELS_EN[etape.nom]) return DEFAULT_LABELS_EN[etape.nom];
+  if (lng === 'wo') {
+    // Labels Wolof pour les étapes du pipeline
+    const labelsWo: Record<string, string> = {
+      nouveau: 'Bu bées',
+      a_contacter: 'Yéenal',
+      contacte: 'Yéen',
+      interesse: 'Gëm ñi',
+      rdv_programme: 'RDV am',
+      demo_realisee: 'Demo jàpp',
+      essai_en_cours: 'Essai li daw',
+      proposition: 'Proposition',
+      paiement_att: 'Fey bi ngir',
+      gagne: 'Kiliyã jàpp',
+      a_relancer: 'Yéewal woote',
+      perdu: 'Jolof',
+    };
+    if (labelsWo[etape.nom]) return labelsWo[etape.nom];
+  }
   return etape.label;
 }
 
-export function getEtapeLabelByNom(nom: string, etapes: EtapePipeline[], isEn: boolean): string {
+export function getEtapeLabelByNom(nom: string, etapes: EtapePipeline[], lng: string): string {
   const etape = etapes.find(e => e.nom === nom);
   if (!etape) return nom.replace(/_/g, ' ');
-  return getEtapeLabel(etape, isEn);
+  return getEtapeLabel(etape, lng);
 }
 
 export function useEtapesPipeline() {
