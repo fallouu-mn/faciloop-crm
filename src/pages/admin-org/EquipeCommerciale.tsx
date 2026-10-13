@@ -10,8 +10,7 @@ import { Commercial } from '../../types/crm';
 import { PhoneInput } from '../../components/common/PhoneInput';
 
 export const EquipeCommerciale: React.FC = () => {
-  const { t, i18n } = useTranslation('admin');
-  const isEn = i18n.language?.startsWith('en');
+  const { t } = useTranslation('admin');
   const { commerciaux: team, addCommercial, toggleCommercialStatus, updateCommercial, deleteCommercial } = useAuth();
   const { canAddCommercial, activeCommerciaux, plan, formuleCode } = usePlanLimits();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -45,42 +44,39 @@ export const EquipeCommerciale: React.FC = () => {
     setEditSaving(true);
     try {
       await updateCommercial(editingId, { nom: editNom, prenom: editPrenom, email: editEmail, telephone: editTelephone });
-      toast.success(isEn ? 'Sales rep updated.' : 'Commercial mis à jour.');
+      toast.success(t('adminOrg.equipe.updated'));
       setEditingId(null);
     } catch {
-      toast.error(isEn ? 'Update failed.' : 'Erreur lors de la mise à jour.');
+      toast.error(t('adminOrg.equipe.updateFailed'));
     } finally {
       setEditSaving(false);
     }
   };
 
   const handleDelete = (comm: Commercial) => {
-    if (!window.confirm(isEn ? `Delete ${comm.prenom} ${comm.nom}? This action is irreversible.` : `Supprimer ${comm.prenom} ${comm.nom} ? Cette action est irréversible.`)) return;
+    if (!window.confirm(t('adminOrg.equipe.deleteConfirm', { name: `${comm.prenom} ${comm.nom}` }))) return;
     deleteCommercial(comm.id);
-    toast.success(isEn ? 'Sales rep deleted.' : 'Commercial supprimé.');
+    toast.success(t('adminOrg.equipe.deleted'));
   };
 
   const toggleStatus = (id: string) => {
     const comm = team.find(c => c.id === id);
     toggleCommercialStatus(id);
-    const newStatus = comm?.statut === 'actif' ? 'désactivé' : 'activé';
-    toast.success(`Commercial ${newStatus} avec succès.`);
+    const statusKey = comm?.statut === 'actif' ? 'statusDeactivated' : 'statusActivated';
+    toast.success(t('adminOrg.equipe.statusChanged', { status: t(`adminOrg.equipe.${statusKey}`) }));
   };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canAddCommercial) {
-      setAddError(isEn
-        ? `Limit reached (${plan.maxCommerciaux} sales reps on ${plan.label}).`
-        : `Limite atteinte (${plan.maxCommerciaux} commerciaux sur ${plan.label}).`
-      );
+      setAddError(t('adminOrg.equipe.limitReached', { max: plan.maxCommerciaux, plan: plan.label }));
       return;
     }
     setAddError(null);
     setAddLoading(true);
     try {
       await addCommercial({ nom, prenom, email, telephone, statut: 'actif' });
-      toast.success(`Commercial ${prenom} ${nom} créé avec succès !`);
+      toast.success(t('adminOrg.equipe.created', { name: `${prenom} ${nom}` }));
       setIsModalOpen(false);
       setNom(''); setPrenom(''); setEmail(''); setTelephone('');
     } catch (err: any) {
@@ -108,10 +104,7 @@ export const EquipeCommerciale: React.FC = () => {
         <button
           onClick={() => {
             if (!canAddCommercial) {
-              toast.error(isEn
-                ? `Limit reached (${plan.maxCommerciaux} sales reps on ${plan.label}). Upgrade your plan to add more.`
-                : `Limite atteinte (${plan.maxCommerciaux} commerciaux sur ${plan.label}). Passez à une offre supérieure pour en ajouter.`
-              );
+              toast.error(t('adminOrg.equipe.limitReachedUpgrade', { max: plan.maxCommerciaux, plan: plan.label }));
               return;
             }
             setIsModalOpen(true);
@@ -132,9 +125,7 @@ export const EquipeCommerciale: React.FC = () => {
         <div className="flex items-center gap-3 p-3 rounded-xl border border-amber-300/50 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-700/30">
           <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
           <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
-            {isEn
-              ? `You have reached the limit of ${plan.maxCommerciaux} active sales reps on the ${plan.label} plan. Upgrade to add more.`
-              : `Vous avez atteint la limite de ${plan.maxCommerciaux} commerciaux actifs sur l'offre ${plan.label}. Passez à une offre supérieure pour en ajouter.`}
+            {t('adminOrg.equipe.limitBanner', { max: plan.maxCommerciaux, plan: plan.label })}
           </p>
         </div>
       )}
@@ -182,14 +173,14 @@ export const EquipeCommerciale: React.FC = () => {
                     <button
                       onClick={() => openEdit(comm)}
                       className="p-1.5 rounded-lg border border-input hover:bg-muted transition-all"
-                      title={isEn ? 'Edit' : 'Modifier'}
+                      title={t('adminOrg.equipe.edit')}
                     >
                       <Pencil className="w-3.5 h-3.5 text-primary" />
                     </button>
                     <button
                       onClick={() => handleDelete(comm)}
                       className="p-1.5 rounded-lg border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-all"
-                      title={isEn ? 'Delete' : 'Supprimer'}
+                      title={t('adminOrg.equipe.delete')}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -237,7 +228,7 @@ export const EquipeCommerciale: React.FC = () => {
                 <a
                   href={`tel:${comm.telephone}`}
                   className="p-2 rounded-xl border border-input text-foreground font-bold hover:bg-muted transition-all"
-                  title="Appeler"
+                  title={t('adminOrg.equipe.call')}
                 >
                   <Phone className="w-4 h-4 text-primary" />
                 </a>
@@ -248,7 +239,7 @@ export const EquipeCommerciale: React.FC = () => {
                 <button
                   onClick={() => openEdit(comm)}
                   className="p-2 rounded-xl border border-input hover:bg-muted transition-all"
-                  title={isEn ? 'Edit' : 'Modifier'}
+                  title={t('adminOrg.equipe.edit')}
                 >
                   <Pencil className="w-3.5 h-3.5 text-primary" />
                 </button>
@@ -342,7 +333,7 @@ export const EquipeCommerciale: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
                 <Pencil className="w-4 h-4 text-primary" />
-                {isEn ? 'Edit sales rep' : 'Modifier le commercial'}
+                {t('adminOrg.equipe.editTitle')}
               </h2>
               <button onClick={() => setEditingId(null)} className="p-1 rounded-lg hover:bg-muted">
                 <X className="w-5 h-5" />
@@ -380,13 +371,13 @@ export const EquipeCommerciale: React.FC = () => {
             <div className="flex gap-2 pt-1">
               <button onClick={() => setEditingId(null)}
                 className="flex-1 py-3 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
-                {isEn ? 'Cancel' : 'Annuler'}
+                {t('adminOrg.equipe.cancel')}
               </button>
               <button onClick={handleSaveEdit} disabled={editSaving}
                 className="flex-1 py-3 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
                 {editSaving
                   ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  : <><Save className="w-3.5 h-3.5" /> {isEn ? 'Save' : 'Enregistrer'}</>
+                  : <><Save className="w-3.5 h-3.5" /> {t('adminOrg.equipe.save')}</>
                 }
               </button>
             </div>

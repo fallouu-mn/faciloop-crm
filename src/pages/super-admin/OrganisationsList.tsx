@@ -177,7 +177,7 @@ export const OrganisationsList: React.FC = () => {
     if (error) {
       setActivError(error.message);
       setActivLoading(false);
-      toast.error(`Erreur lors de l'activation : ${error.message}`);
+      toast.error(t('organisations.toast.activateError', { message: error.message }));
       return;
     }
 
@@ -189,8 +189,8 @@ export const OrganisationsList: React.FC = () => {
     setActivatingOrg(null);
     toast.success(
       activSansAbonnement
-        ? `Organisation "${activatingOrg.nom}" activée sans abonnement.`
-        : `Organisation "${activatingOrg.nom}" activée avec succès !`
+        ? t('organisations.toast.activatedNoSub', { name: activatingOrg.nom })
+        : t('organisations.toast.activated', { name: activatingOrg.nom })
     );
   };
 
@@ -214,11 +214,11 @@ export const OrganisationsList: React.FC = () => {
       } : tenant));
       toast.success(
         newStatut === 'suspendu'
-          ? `Organisation "${target?.nom}" suspendue.`
-          : `Organisation "${target?.nom}" réactivée !`
+          ? t('organisations.toast.suspended', { name: target?.nom ?? '' })
+          : t('organisations.toast.reactivated', { name: target?.nom ?? '' })
       );
     } else {
-      toast.error(`Erreur : ${error.message}`);
+      toast.error(t('organisations.toast.error', { message: error.message }));
     }
   };
 
@@ -289,7 +289,7 @@ export const OrganisationsList: React.FC = () => {
       .single();
 
     if (error || !data) {
-      toast.error(`Erreur lors de la création : ${error?.message}`);
+      toast.error(t('organisations.toast.createError', { message: error?.message ?? '' }));
       setCreateLoading(false);
       return;
     }
@@ -299,7 +299,7 @@ export const OrganisationsList: React.FC = () => {
     // 2. Créer le compte admin_org via l'edge function
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Session expirée');
+      if (!session) throw new Error(t('organisations.sessionExpired'));
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-admin-org`, {
         method: 'POST',
@@ -318,11 +318,11 @@ export const OrganisationsList: React.FC = () => {
       });
 
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Erreur création compte admin');
+      if (!response.ok) throw new Error(result.error || t('organisations.adminAccountError'));
 
-      toast.success(`Organisation "${nomOrg}" créée et identifiants envoyés à ${adminEmail} !`);
+      toast.success(t('organisations.toast.created', { name: nomOrg, email: adminEmail }));
     } catch (err: any) {
-      toast.warning(`Organisation créée mais erreur compte admin : ${err.message}`);
+      toast.warning(t('organisations.toast.adminAccountWarning', { message: err.message }));
     }
 
     setIsCreateModalOpen(false);
@@ -638,7 +638,7 @@ export const OrganisationsList: React.FC = () => {
                 type="text"
                 value={activSecteur}
                 onChange={(e) => setActivSecteur(e.target.value)}
-                placeholder="Ex: Finance, Agriculture, Santé…"
+                placeholder={t('organisations.sectorPlaceholder')}
                 className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
               />
             </div>
@@ -659,15 +659,15 @@ export const OrganisationsList: React.FC = () => {
                   <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${activSansAbonnement ? 'translate-x-5' : 'translate-x-0.5'}`} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Activer sans abonnement</p>
-                  <p className="text-xs text-muted-foreground">L'org peut se connecter mais ne compte pas dans les revenus</p>
+                  <p className="text-sm font-medium text-foreground">{t('organisations.withoutSubToggleActivate')}</p>
+                  <p className="text-xs text-muted-foreground">{t('organisations.withoutSubHint')}</p>
                 </div>
               </label>
 
               {activSansAbonnement ? (
                 <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-1">
-                  <p className="text-xs font-semibold text-amber-600">Accès sans abonnement actif</p>
-                  <p className="text-xs text-muted-foreground">Statut compte : <span className="font-medium text-foreground">Actif</span> — Statut abonnement : <span className="font-medium text-foreground">En attente</span> — Prix : <span className="font-medium text-foreground">0</span></p>
+                  <p className="text-xs font-semibold text-amber-600">{t('organisations.withoutSubAccessTitle')}</p>
+                  <p className="text-xs text-muted-foreground">{t('organisations.accountStatusPrefix')} <span className="font-medium text-foreground">{t('status.actif')}</span> — {t('organisations.subStatusPrefix')} <span className="font-medium text-foreground">{t('status.en_attente')}</span> — {t('organisations.pricePrefix')} <span className="font-medium text-foreground">0</span></p>
                 </div>
               ) : activeFormules.length > 0 ? (
                 <>
@@ -773,56 +773,56 @@ export const OrganisationsList: React.FC = () => {
                   required
                   value={nomOrg}
                   onChange={(e) => setNomOrg(e.target.value)}
-                  placeholder="Ex: Sénégal Distribution SA"
+                  placeholder={t('organisations.createModal.labelNamePlaceholder')}
                   className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                 />
               </div>
 
               {/* Responsable */}
               <div className="pt-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Responsable / Admin</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t('organisations.createModal.responsableSection')}</p>
                 <div className="grid grid-cols-2 gap-2 mb-2">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-foreground">Prénom</label>
+                    <label className="text-xs font-medium text-foreground">{t('organisations.createModal.labelFirstName')}</label>
                     <input
                       type="text"
                       required
                       value={adminPrenom}
                       onChange={(e) => setAdminPrenom(e.target.value)}
-                      placeholder="Prénom"
+                      placeholder={t('organisations.createModal.labelFirstName')}
                       className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-foreground">Nom</label>
+                    <label className="text-xs font-medium text-foreground">{t('organisations.createModal.labelLastName')}</label>
                     <input
                       type="text"
                       required
                       value={adminNom}
                       onChange={(e) => setAdminNom(e.target.value)}
-                      placeholder="Nom"
+                      placeholder={t('organisations.createModal.labelLastName')}
                       className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-2">
-                  <label className="text-xs font-medium text-foreground">Numéro de téléphone</label>
+                  <label className="text-xs font-medium text-foreground">{t('organisations.createModal.labelPhoneNumber')}</label>
                   <PhoneInput
                   value={adminTelephone}
                   onChange={(val) => setAdminTelephone(val)}
                   placeholder="+221 77 000 00 00"
                   className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" />
-                  <p className="text-[10px] text-muted-foreground">Utilisé comme identifiant de connexion</p>
+                  <p className="text-[10px] text-muted-foreground">{t('organisations.createModal.phoneHint')}</p>
                 </div>
               </div>
               {/* Secteur */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">Secteur d'activité</label>
+                <label className="text-sm font-medium text-foreground">{t('organisations.createModal.labelSector')}</label>
                 <input
                   type="text"
                   value={createSecteur}
                   onChange={(e) => setCreateSecteur(e.target.value)}
-                  placeholder="Ex: Finance, Agriculture, Santé…"
+                  placeholder={t('organisations.sectorPlaceholder')}
                   className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                 />
               </div>
@@ -840,15 +840,15 @@ export const OrganisationsList: React.FC = () => {
                   <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${createSansAbonnement ? 'translate-x-5' : 'translate-x-0.5'}`} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Créer sans abonnement</p>
-                  <p className="text-xs text-muted-foreground">L'org peut se connecter mais ne compte pas dans les revenus</p>
+                  <p className="text-sm font-medium text-foreground">{t('organisations.withoutSubToggleCreate')}</p>
+                  <p className="text-xs text-muted-foreground">{t('organisations.withoutSubHint')}</p>
                 </div>
               </label>
 
               {createSansAbonnement ? (
                 <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-1">
-                  <p className="text-xs font-semibold text-amber-600">Accès sans abonnement actif</p>
-                  <p className="text-xs text-muted-foreground">Statut compte : <span className="font-medium text-foreground">Actif</span> — Statut abonnement : <span className="font-medium text-foreground">En attente</span> — Prix : <span className="font-medium text-foreground">0</span></p>
+                  <p className="text-xs font-semibold text-amber-600">{t('organisations.withoutSubAccessTitle')}</p>
+                  <p className="text-xs text-muted-foreground">{t('organisations.accountStatusPrefix')} <span className="font-medium text-foreground">{t('status.actif')}</span> — {t('organisations.subStatusPrefix')} <span className="font-medium text-foreground">{t('status.en_attente')}</span> — {t('organisations.pricePrefix')} <span className="font-medium text-foreground">0</span></p>
                 </div>
               ) : (
                 <>

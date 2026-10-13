@@ -111,7 +111,35 @@
       "labelPeriod": "Période",
       "labelAdminEmail": "Email Admin *",
       "labelAdminPhone": "Téléphone Admin *",
-      "firstMonthBadge": "Prix 1er mois"
+      "firstMonthBadge": "Prix 1er mois",
+      "labelNamePlaceholder": "Ex: Sénégal Distribution SA",
+      "responsableSection": "Responsable / Admin",
+      "labelFirstName": "Prénom",
+      "labelLastName": "Nom",
+      "labelPhoneNumber": "Numéro de téléphone",
+      "phoneHint": "Utilisé comme identifiant de connexion",
+      "labelSector": "Secteur d'activité"
+    },
+    "sectorPlaceholder": "Ex: Finance, Agriculture, Santé…",
+    "withoutSubToggleActivate": "Activer sans abonnement",
+    "withoutSubToggleCreate": "Créer sans abonnement",
+    "withoutSubHint": "L'org peut se connecter mais ne compte pas dans les revenus",
+    "withoutSubAccessTitle": "Accès sans abonnement actif",
+    "accountStatusPrefix": "Statut compte :",
+    "subStatusPrefix": "Statut abonnement :",
+    "pricePrefix": "Prix :",
+    "sessionExpired": "Session expirée",
+    "adminAccountError": "Erreur création compte admin",
+    "toast": {
+      "activateError": "Erreur lors de l'activation : {{message}}",
+      "activatedNoSub": "Organisation \"{{name}}\" activée sans abonnement.",
+      "activated": "Organisation \"{{name}}\" activée avec succès !",
+      "suspended": "Organisation \"{{name}}\" suspendue.",
+      "reactivated": "Organisation \"{{name}}\" réactivée !",
+      "error": "Erreur : {{message}}",
+      "createError": "Erreur lors de la création : {{message}}",
+      "created": "Organisation \"{{name}}\" créée et identifiants envoyés à {{email}} !",
+      "adminAccountWarning": "Organisation créée mais erreur compte admin : {{message}}"
     }
   },
   "facturation": {
@@ -143,7 +171,8 @@
     "statusActif": "Actif",
     "statusExpire": "Expiré",
     "statusSuspendu": "Suspendu",
-    "statusInactif": "Inactif"
+    "statusInactif": "Inactif",
+    "toastExport": "Export CSV téléchargé !"
   },
   "abonnements": {
     "title": "Abonnements",
@@ -186,8 +215,29 @@
       "labelQuarterly": "Forfait trimestriel *",
       "labelAnnual": "Forfait annuel *",
       "autoDiscount": "Remise auto : -{{pct}}%",
-      "createBtn": "Créer l'offre"
-    }
+      "createBtn": "Créer l'offre",
+      "labelNamePlaceholder": "Ex: Starter, Pro, Enterprise...",
+      "labelDescPlaceholder": "Ex: Pour les grandes entreprises"
+    },
+    "toast": {
+      "updated": "Formule \"{{code}}\" mise à jour !",
+      "updateError": "Erreur lors de la mise à jour : {{message}}",
+      "activated": "Formule \"{{code}}\" activée !",
+      "deactivated": "Formule \"{{code}}\" désactivée.",
+      "error": "Erreur : {{message}}",
+      "created": "Formule \"{{name}}\" créée avec succès !",
+      "createError": "Erreur lors de la création : {{message}}"
+    },
+    "descriptions": {
+      "Pro": "Idéal pour les petites équipes commerciales",
+      "pro": "Idéal pour les petites équipes commerciales",
+      "Business": "Pour les entreprises en croissance",
+      "business": "Pour les entreprises en croissance",
+      "Premium": "Solution complète pour les grandes organisations",
+      "premium": "Solution complète pour les grandes organisations"
+    },
+    "descPlaceholder": "Description de l'offre...",
+    "unknownError": "Erreur inconnue"
   },
   "detail": {
     "notFound": "Organisation introuvable.",
@@ -223,7 +273,9 @@
     "labelStartDate": "Date de début",
     "labelEndDate": "Date de fin",
     "saveBtn": "Enregistrer les modifications",
-    "savedBtn": "Modifications enregistrées"
+    "savedBtn": "Modifications enregistrées",
+    "toastUpdated": "Organisation mise à jour avec succès !",
+    "toastSaveError": "Erreur lors de la sauvegarde : {{message}}"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -245,6 +297,23 @@
     "labelWhatsapp": "WhatsApp support",
     "supportHint": "Affiché aux utilisateurs dont l'organisation est suspendue ou en attente d'activation.",
     "saveBtn": "Enregistrer",
-    "savedBtn": "Paramètres enregistrés"
+    "savedBtn": "Paramètres enregistrés",
+    "toastSaved": "Paramètres de la plateforme sauvegardés !",
+    "toastSaveError": "Erreur lors de la sauvegarde : {{message}}"
+  },
+  "stats": {
+    "title": "Statistiques Plateforme",
+    "subtitle": "Métriques globales et performance SaaS",
+    "kpiRevenue": "Revenus",
+    "kpiPeriod": "période sélectionnée",
+    "kpiActiveOrgs": "Orgs Actives",
+    "kpiInvoices": "Factures",
+    "unpaidRate": "Taux Impayé",
+    "revenueTrend": "Évolution des Revenus",
+    "noDataPeriod": "Aucune donnée sur cette période",
+    "topTenants": "Top Tenants",
+    "distribution": "Répartition par Formule",
+    "tenant_one": "tenant",
+    "tenant_other": "tenants"
   }
 }

@@ -10,8 +10,7 @@ interface PlanGateProps {
 }
 
 export function PlanGate({ feature, children }: PlanGateProps) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en');
+  const { t } = useTranslation('common');
   const { hasFeature, getRequiredPlan, plan } = usePlanLimits();
 
   if (hasFeature(feature)) {
@@ -19,16 +18,7 @@ export function PlanGate({ feature, children }: PlanGateProps) {
   }
 
   const requiredPlan = getRequiredPlan(feature);
-
-  const featureLabels: Record<PlanFeature, { fr: string; en: string }> = {
-    objectifs_equipe: { fr: 'Objectifs d\'équipe', en: 'Team objectives' },
-    journal_actions: { fr: 'Journal des actions', en: 'Action audit log' },
-    import_csv: { fr: 'Import CSV & dédoublonnage', en: 'CSV Import & deduplication' },
-    stats_avancees: { fr: 'Statistiques avancées', en: 'Advanced analytics' },
-    rapports_personnalises: { fr: 'Rapports personnalisés', en: 'Custom reports' },
-  };
-
-  const label = isEn ? featureLabels[feature].en : featureLabels[feature].fr;
+  const label = t(`planGate.feature.${feature}`);
 
   return (
     <div className="space-y-4 sm:space-y-6 font-sans">
@@ -38,26 +28,22 @@ export function PlanGate({ feature, children }: PlanGateProps) {
         </div>
 
         <h2 className="text-lg sm:text-xl font-bold text-foreground">
-          {isEn ? `${label} — ${requiredPlan} plan required` : `${label} — Offre ${requiredPlan} requise`}
+          {t('planGate.planRequired', { label, plan: requiredPlan })}
         </h2>
 
         <p className="mt-2 text-sm text-muted-foreground max-w-md">
-          {isEn
-            ? `This feature is available starting from the ${requiredPlan} plan. You are currently on the ${plan.label} plan.`
-            : `Cette fonctionnalité est disponible à partir de l'offre ${requiredPlan}. Vous êtes actuellement sur l'offre ${plan.label}.`}
+          {t('planGate.availFrom', { plan: requiredPlan, current: plan.label })}
         </p>
 
         <a
           href={`https://wa.me/221711387878?text=${encodeURIComponent(
-            isEn
-              ? `Hello, I would like to upgrade from ${plan.label} to ${requiredPlan}.`
-              : `Bonjour, je souhaite passer de l'offre ${plan.label} à l'offre ${requiredPlan}.`
+            t('planGate.upgradeMsg', { from: plan.label, to: requiredPlan })
           )}`}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
         >
-          <span>{isEn ? `Upgrade to ${requiredPlan}` : `Passer à l'offre ${requiredPlan}`}</span>
+          <span>{t('planGate.upgradeLink', { plan: requiredPlan })}</span>
           <ArrowUpRight className="h-4 w-4" />
         </a>
       </div>

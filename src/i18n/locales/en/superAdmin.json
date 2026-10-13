@@ -111,7 +111,35 @@
       "labelPeriod": "Period",
       "labelAdminEmail": "Admin Email *",
       "labelAdminPhone": "Admin Phone *",
-      "firstMonthBadge": "1st month price"
+      "firstMonthBadge": "1st month price",
+      "labelNamePlaceholder": "Ex: Sénégal Distribution SA",
+      "responsableSection": "Manager / Admin",
+      "labelFirstName": "First name",
+      "labelLastName": "Last name",
+      "labelPhoneNumber": "Phone number",
+      "phoneHint": "Used as login identifier",
+      "labelSector": "Business sector"
+    },
+    "sectorPlaceholder": "Ex: Finance, Agriculture, Health…",
+    "withoutSubToggleActivate": "Activate without subscription",
+    "withoutSubToggleCreate": "Create without subscription",
+    "withoutSubHint": "The org can log in but doesn't count in revenue",
+    "withoutSubAccessTitle": "Access without active subscription",
+    "accountStatusPrefix": "Account status:",
+    "subStatusPrefix": "Subscription status:",
+    "pricePrefix": "Price:",
+    "sessionExpired": "Session expired",
+    "adminAccountError": "Admin account creation error",
+    "toast": {
+      "activateError": "Activation error: {{message}}",
+      "activatedNoSub": "Organization \"{{name}}\" activated without subscription.",
+      "activated": "Organization \"{{name}}\" activated successfully!",
+      "suspended": "Organization \"{{name}}\" suspended.",
+      "reactivated": "Organization \"{{name}}\" reactivated!",
+      "error": "Error: {{message}}",
+      "createError": "Creation error: {{message}}",
+      "created": "Organization \"{{name}}\" created and credentials sent to {{email}}!",
+      "adminAccountWarning": "Organization created but admin account error: {{message}}"
     }
   },
   "facturation": {
@@ -143,7 +171,8 @@
     "statusActif": "Active",
     "statusExpire": "Expired",
     "statusSuspendu": "Suspended",
-    "statusInactif": "Inactive"
+    "statusInactif": "Inactive",
+    "toastExport": "CSV export downloaded!"
   },
   "abonnements": {
     "title": "Subscriptions",
@@ -186,8 +215,29 @@
       "labelQuarterly": "Quarterly package *",
       "labelAnnual": "Annual package *",
       "autoDiscount": "Auto discount: -{{pct}}%",
-      "createBtn": "Create plan"
-    }
+      "createBtn": "Create plan",
+      "labelNamePlaceholder": "Ex: Starter, Pro, Enterprise...",
+      "labelDescPlaceholder": "Ex: For large companies"
+    },
+    "toast": {
+      "updated": "Plan \"{{code}}\" updated!",
+      "updateError": "Error while updating: {{message}}",
+      "activated": "Plan \"{{code}}\" activated!",
+      "deactivated": "Plan \"{{code}}\" deactivated.",
+      "error": "Error: {{message}}",
+      "created": "Plan \"{{name}}\" created successfully!",
+      "createError": "Error while creating: {{message}}"
+    },
+    "descriptions": {
+      "Pro": "Ideal for small sales teams",
+      "pro": "Ideal for small sales teams",
+      "Business": "For growing companies",
+      "business": "For growing companies",
+      "Premium": "Complete solution for large organizations",
+      "premium": "Complete solution for large organizations"
+    },
+    "descPlaceholder": "Offer description...",
+    "unknownError": "Unknown error"
   },
   "detail": {
     "notFound": "Organization not found.",
@@ -223,7 +273,9 @@
     "labelStartDate": "Start date",
     "labelEndDate": "End date",
     "saveBtn": "Save changes",
-    "savedBtn": "Changes saved"
+    "savedBtn": "Changes saved",
+    "toastUpdated": "Organization updated successfully!",
+    "toastSaveError": "Save error: {{message}}"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -245,6 +297,23 @@
     "labelWhatsapp": "Support WhatsApp",
     "supportHint": "Shown to users whose organization is suspended or pending activation.",
     "saveBtn": "Save",
-    "savedBtn": "Settings saved"
+    "savedBtn": "Settings saved",
+    "toastSaved": "Platform settings saved!",
+    "toastSaveError": "Save error: {{message}}"
+  },
+  "stats": {
+    "title": "Platform Statistics",
+    "subtitle": "Global metrics and SaaS performance",
+    "kpiRevenue": "Revenue",
+    "kpiPeriod": "selected period",
+    "kpiActiveOrgs": "Active Orgs",
+    "kpiInvoices": "Invoices",
+    "unpaidRate": "Unpaid Rate",
+    "revenueTrend": "Revenue Trend",
+    "noDataPeriod": "No data during this period",
+    "topTenants": "Top Tenants",
+    "distribution": "Distribution by Plan",
+    "tenant_one": "tenant",
+    "tenant_other": "tenants"
   }
 }

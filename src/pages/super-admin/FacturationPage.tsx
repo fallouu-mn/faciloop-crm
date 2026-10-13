@@ -113,7 +113,7 @@ export const FacturationPage: React.FC = () => {
       statutLabel(o.statut_abonnement),
     ]);
     downloadCsv(`paiements_abonnements_${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
-    toast.success('Export CSV téléchargé !');
+    toast.success(t('facturation.toastExport'));
   };
 
   if (loading) {

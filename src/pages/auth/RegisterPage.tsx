@@ -13,10 +13,8 @@ import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
-  const { t, i18n } = useTranslation('auth');
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
-
-  const lng = i18n.language || 'fr';
 
   const [prenom, setPrenom] = useState<string>('');
   const [nom, setNom] = useState<string>('');
@@ -43,32 +41,32 @@ export const RegisterPage: React.FC = () => {
     setErrorMsg(null);
 
     if (!prenom.trim() || !nom.trim()) {
-      setErrorMsg(lng === 'en' ? 'Please enter your first and last name' : 'Veuillez renseigner votre prénom et votre nom');
+      setErrorMsg(t('errors.nameRequired'));
       return;
     }
 
     if (!entreprise.trim()) {
-      setErrorMsg(lng === 'en' ? 'Company name is required' : "Le nom de votre entreprise est indispensable");
+      setErrorMsg(t('errors.companyRequired'));
       return;
     }
 
     if (!phone || phone.length < 9) {
-      setErrorMsg(lng === 'en' ? 'Please enter a valid phone number' : 'Veuillez entrer un numéro de téléphone valide');
+      setErrorMsg(t('errors.invalidPhone'));
       return;
     }
 
     if (pin.length < 6) {
-      setErrorMsg(lng === 'en' ? 'PIN code must contain exactly 6 digits' : 'Le code secret doit comporter exactement 6 chiffres');
+      setErrorMsg(t('errors.pinLength'));
       return;
     }
 
     if (pin !== confirmPin) {
-      setErrorMsg(lng === 'en' ? 'The two PIN codes do not match' : 'Les deux codes secrets ne correspondent pas');
+      setErrorMsg(t('errors.pinsDoNotMatch'));
       return;
     }
 
     if (!acceptTerms) {
-      setErrorMsg(lng === 'en' ? 'Please accept the Terms of Service' : "Veuillez accepter les Conditions Générales d'Utilisation");
+      setErrorMsg(t('errors.acceptTerms'));
       return;
     }
 
@@ -109,9 +107,9 @@ export const RegisterPage: React.FC = () => {
 
       if (response && !response.ok) {
         if (response.status === 409) {
-          setErrorMsg(lng === 'en' ? 'This phone number is already registered' : 'Ce numéro de téléphone est déjà enregistré');
+          setErrorMsg(t('errors.phoneAlreadyRegistered'));
         } else {
-          setErrorMsg(result?.error || (lng === 'en' ? 'Registration failed. Please try again.' : "L'inscription a échoué. Veuillez réessayer."));
+          setErrorMsg(result?.error || t('errors.registrationFailed'));
         }
         setLoading(false);
         return;
@@ -130,7 +128,7 @@ export const RegisterPage: React.FC = () => {
       navigate('/pending-activation', { state: registrationData });
     } catch (err) {
       console.error('Registration error:', err);
-      setErrorMsg(lng === 'en' ? 'An unexpected error occurred' : 'Une erreur inattendue est survenue');
+      setErrorMsg(t('errors.unexpected'));
     } finally {
       setLoading(false);
     }
@@ -148,10 +146,10 @@ export const RegisterPage: React.FC = () => {
             <FaciloopBrand className="h-12 w-auto" />
           </div>
           <h1 className="text-xl font-medium text-foreground">
-            {lng === 'en' ? 'Create your account' : 'Créer votre compte'}
+            {t('register.title')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {lng === 'en' ? 'Sign up and manage your sales activity easily' : 'Inscrivez-vous et gérez votre activité simplement'}
+            {t('register.subtitle')}
           </p>
         </div>
 
@@ -161,7 +159,7 @@ export const RegisterPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">
-                {lng === 'en' ? 'First Name *' : 'Prénom *'}
+                {t('register.firstName')}
               </label>
               <input
                 type="text"
@@ -175,7 +173,7 @@ export const RegisterPage: React.FC = () => {
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">
-                {lng === 'en' ? 'Last Name *' : 'Nom *'}
+                {t('register.lastName')}
               </label>
               <input
                 type="text"
@@ -192,26 +190,26 @@ export const RegisterPage: React.FC = () => {
           {/* Entreprise */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">
-              {lng === 'en' ? 'Company Name *' : 'Nom de votre entreprise *'}
+              {t('register.companyLabel')}
             </label>
             <input
               type="text"
               required
               value={entreprise}
               onChange={(e) => setEntreprise(e.target.value)}
-              placeholder={lng === 'en' ? "E.g.: Salon Aminata, Boutique Diallo..." : "Ex : Salon Aminata, Boutique Diallo..."}
+              placeholder={t('register.companyPlaceholder')}
               disabled={loading}
               className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none disabled:opacity-50 transition-all"
             />
             <p className="text-xs text-muted-foreground">
-              {lng === 'en' ? 'Required to access subscription plans' : 'Indispensable pour accéder aux abonnements'}
+              {t('register.companyHint')}
             </p>
           </div>
 
           {/* Téléphone */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">
-              {lng === 'en' ? 'Phone Number *' : 'Téléphone *'}
+              {t('register.phoneLabel')}
             </label>
             <PhoneInput
               value={phone}
@@ -221,30 +219,6 @@ export const RegisterPage: React.FC = () => {
             />
           </div>
 
-          {/* Code parrainage */}
-          {/* <div className="space-y-2">
-            <button
-              type="button"
-              onClick={() => setShowParrainage(!showParrainage)}
-              className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
-            >
-              <Gift className="h-4 w-4" />
-              <span>{lng === 'en' ? 'Do you have a referral code?' : 'Vous avez un code de parrainage ?'}</span>
-              {showParrainage ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-            </button>
-
-            {showParrainage && (
-              <input
-                type="text"
-                value={codeParrainage}
-                onChange={(e) => setCodeParrainage(e.target.value.toUpperCase())}
-                placeholder="Ex : ABC123"
-                disabled={loading}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm uppercase focus:outline-none focus:ring-2 focus:ring-ring text-foreground disabled:opacity-50"
-              />
-            )}
-          </div> */}
-
           {/* Code secret */}
           <PinInput
             value={codeDigits}
@@ -252,10 +226,10 @@ export const RegisterPage: React.FC = () => {
             showPin={showCode}
             onToggleShow={() => setShowCode(!showCode)}
             disabled={loading}
-            label={lng === 'en' ? 'Secret PIN code (6 digits) *' : 'Code secret (6 chiffres) *'}
+            label={t('register.pinLabel')}
           />
           <p className="text-xs text-muted-foreground text-center -mt-1">
-            {lng === 'en' ? 'This code will be used to log into your account' : 'Ce code vous servira à vous connecter'}
+            {t('register.pinHint')}
           </p>
 
           {/* Confirmation code */}
@@ -266,17 +240,17 @@ export const RegisterPage: React.FC = () => {
                 showPin={showConfirmCode}
                 onToggleShow={() => setShowConfirmCode(!showConfirmCode)}
                 disabled={loading}
-                label={lng === 'en' ? 'Confirm PIN code *' : 'Confirmez le code *'}
+                label={t('register.confirmPinLabel')}
               />
             <div className="flex items-center justify-center gap-1.5">
               {pinsMatch && (
                 <span className="flex items-center gap-1 text-xs text-emerald-600">
-                  <CheckCircle className="h-3.5 w-3.5" /> {lng === 'en' ? 'PIN codes match' : 'Codes identiques'}
+                  <CheckCircle className="h-3.5 w-3.5" /> {t('register.pinsMatch')}
                 </span>
               )}
               {pinsMismatch && (
                 <span className="flex items-center gap-1 text-xs text-destructive">
-                  <XCircle className="h-3.5 w-3.5" /> {lng === 'en' ? 'PIN codes do not match' : 'Les codes ne correspondent pas'}
+                  <XCircle className="h-3.5 w-3.5" /> {t('register.pinsMismatch')}
                 </span>
               )}
             </div>
@@ -293,10 +267,10 @@ export const RegisterPage: React.FC = () => {
               className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer mt-0.5"
             />
             <label htmlFor="acceptTerms" className="text-xs text-muted-foreground cursor-pointer leading-relaxed">
-              {lng === 'en' ? 'I accept the ' : "J'accepte les "}
-              <button type="button" onClick={() => setLegalModal('terms')} className="text-primary hover:underline">{lng === 'en' ? 'Terms of Service' : 'Conditions Générales'}</button>
-              {lng === 'en' ? ' and the ' : ' et la '}
-              <button type="button" onClick={() => setLegalModal('privacy')} className="text-primary hover:underline">{lng === 'en' ? 'Privacy Policy' : 'Politique de Confidentialité'}</button>.
+              {t('register.acceptTerms')}
+              <button type="button" onClick={() => setLegalModal('terms')} className="text-primary hover:underline">{t('register.termsLink')}</button>
+              {t('register.and')}
+              <button type="button" onClick={() => setLegalModal('privacy')} className="text-primary hover:underline">{t('register.privacyLink')}</button>.
             </label>
           </div>
 
@@ -310,7 +284,7 @@ export const RegisterPage: React.FC = () => {
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                <span>{lng === 'en' ? 'Sign Up and Continue' : "S'inscrire et continuer"}</span>
+                <span>{t('register.registerButton')}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -320,9 +294,9 @@ export const RegisterPage: React.FC = () => {
         {/* Footer */}
         <div className="px-6 py-4 text-center">
           <p className="text-sm text-muted-foreground">
-            {lng === 'en' ? 'Already have an account? ' : 'Déjà un compte ? '}
+            {t('register.alreadyAccount')}
             <Link to="/login" className="text-primary hover:underline">
-              {lng === 'en' ? 'Log in' : 'Se connecter'}
+              {t('register.loginLink')}
             </Link>
           </p>
         </div>

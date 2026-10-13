@@ -111,7 +111,35 @@
       "labelPeriod": "Période",
       "labelAdminEmail": "Email Admin *",
       "labelAdminPhone": "Telfon Admin *",
-      "firstMonthBadge": "Prix 1er weer"
+      "firstMonthBadge": "Prix 1er weer",
+      "labelNamePlaceholder": "Jëm ci : Sénégal Distribution SA",
+      "responsableSection": "Masla / Admin",
+      "labelFirstName": "Tur",
+      "labelLastName": "Sant",
+      "labelPhoneNumber": "Nimro ak telfon",
+      "phoneHint": "Ñu jëfandikoo ngir duggu ci kood wi",
+      "labelSector": "Xët wiñu jëf"
+    },
+    "sectorPlaceholder": "Jëm ci : Xeej, Suuf, Sàmm…",
+    "withoutSubToggleActivate": "Àddina, abonnement amul",
+    "withoutSubToggleCreate": "Bind, abonnement amul",
+    "withoutSubHint": "Org bi mën na duggu, te du këysee ci revenus yi",
+    "withoutSubAccessTitle": "Duggu, abonnement bu seen amul",
+    "accountStatusPrefix": "Melokaan kood :",
+    "subStatusPrefix": "Melokaan abonnement :",
+    "pricePrefix": "Njëg :",
+    "sessionExpired": "Session bi fete na",
+    "adminAccountError": "Bugg ci bind kood admin bi",
+    "toast": {
+      "activateError": "Bugg ci àddina bi : {{message}}",
+      "activatedNoSub": "Organisation {{name}} àddin na, abonnement amul.",
+      "activated": "Organisation {{name}} àddin na !",
+      "suspended": "Organisation {{name}} taw na.",
+      "reactivated": "Organisation {{name}} àddin naat !",
+      "error": "Njumte : {{message}}",
+      "createError": "Bugg ci bind bi : {{message}}",
+      "created": "Organisation {{name}} bind na, duggu bi yónnee na ci {{email}} !",
+      "adminAccountWarning": "Organisation bind na, te bugg ci kood admin bi : {{message}}"
     }
   },
   "facturation": {
@@ -143,7 +171,8 @@
     "statusActif": "Seen",
     "statusExpire": "Fete",
     "statusSuspendu": "Taw",
-    "statusInactif": "Taaw"
+    "statusInactif": "Taaw",
+    "toastExport": "Export CSV yénnu na !"
   },
   "abonnements": {
     "title": "Abonnements",
@@ -186,8 +215,29 @@
       "labelQuarterly": "Forfait trimestriel *",
       "labelAnnual": "Forfait annuel *",
       "autoDiscount": "Remise auto : -{{pct}}%",
-      "createBtn": "Bind offre"
-    }
+      "createBtn": "Bind offre",
+      "labelNamePlaceholder": "Jëm ci : Starter, Pro, Enterprise...",
+      "labelDescPlaceholder": "Jëm ci : Ngir entreprise yi mag"
+    },
+    "toast": {
+      "updated": "Formule {{code}} soppiku na !",
+      "updateError": "Njumte ci soppi bi : {{message}}",
+      "activated": "Formule {{code}} àddin na !",
+      "deactivated": "Formule {{code}} taw na.",
+      "error": "Njumte : {{message}}",
+      "created": "Formule {{name}} bind na !",
+      "createError": "Bugg ci bind bi : {{message}}"
+    },
+    "descriptions": {
+      "Pro": "Baax na ngir commercial yiy ndaw yi",
+      "pro": "Baax na ngir commercial yiy ndaw yi",
+      "Business": "Ngir entreprise yi dafay gànnaar",
+      "business": "Ngir entreprise yi dafay gànnaar",
+      "Premium": "Yoon bu néew ak lépp ngir organisation yi mag",
+      "premium": "Yoon bu néew ak lépp ngir organisation yi mag"
+    },
+    "descPlaceholder": "Description bu offre bi...",
+    "unknownError": "Njumte buñ xam"
   },
   "detail": {
     "notFound": "Organisation bañ.",
@@ -223,7 +273,9 @@
     "labelStartDate": "Date dékk",
     "labelEndDate": "Date bàyyi",
     "saveBtn": "Denc changements",
-    "savedBtn": "Changements denc"
+    "savedBtn": "Changements denc",
+    "toastUpdated": "Organisation bi soppiku na !",
+    "toastSaveError": "Njumte ci denc bi : {{message}}"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -245,6 +297,23 @@
     "labelWhatsapp": "WhatsApp support",
     "supportHint": "Affiché users org taw wala ngelaw.",
     "saveBtn": "Denc",
-    "savedBtn": "Paramètres denc"
+    "savedBtn": "Paramètres denc",
+    "toastSaved": "Paramètres plateforme bi denc na !",
+    "toastSaveError": "Njumte ci denc bi : {{message}}"
+  },
+  "stats": {
+    "title": "Statistiki bi ci plateforme bi",
+    "subtitle": "Xët yépp ak njariñ SaaS bi",
+    "kpiRevenue": "Yoon",
+    "kpiPeriod": "weer bi ñu wàll",
+    "kpiActiveOrgs": "Org yi Seen",
+    "kpiInvoices": "Facture yi",
+    "unpaidRate": "Taux Bët",
+    "revenueTrend": "Soppiku Yoon",
+    "noDataPeriod": "Kulu données ci weer bi",
+    "topTenants": "Tenants yi gën a mag",
+    "distribution": "Sàmm formule yi",
+    "tenant_one": "org",
+    "tenant_other": "org yi"
   }
 }

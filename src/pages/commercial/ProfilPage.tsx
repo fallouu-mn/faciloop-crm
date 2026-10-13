@@ -9,7 +9,7 @@ import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useTranslation } from 'react-i18next';
 
 export function ProfilPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation('common');
   const { user, logout, refreshUser } = useAuth();
 
   useEffect(() => { refreshUser(); }, []);
@@ -22,8 +22,6 @@ export function ProfilPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const isEn = i18n.language?.startsWith('en');
-
   const initiales = user
     ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase()
     : '?';
@@ -32,23 +30,23 @@ export function ProfilPage() {
     setError('');
     setSuccess(false);
     if (nouveau.length !== 6) {
-      setError(isEn ? 'Secret PIN code must contain 6 digits.' : 'Le code secret doit contenir exactement 6 chiffres.');
+      setError(t('profil.errors.pinLength'));
       return;
     }
     if (nouveau !== confirmation) {
-      setError(isEn ? 'PIN codes do not match.' : 'Les codes ne correspondent pas.');
+      setError(t('profil.errors.pinMismatch'));
       return;
     }
     setIsPending(true);
     try {
       const { error: updateError } = await supabase.auth.updateUser({ password: nouveau });
       if (updateError) {
-        setError(isEn ? `Error: ${updateError.message}` : `Erreur : ${updateError.message}`);
+        setError(t('profil.errors.update', { message: updateError.message }));
         toast.error(updateError.message);
         return;
       }
       setSuccess(true);
-      toast.success(isEn ? 'PIN code updated successfully!' : 'Code secret mis à jour avec succès !');
+      toast.success(t('profil.success.updated'));
       setTimeout(() => {
         setDialogOpen(false);
         setNouveau('');
@@ -57,7 +55,7 @@ export function ProfilPage() {
         setError('');
       }, 1500);
     } catch (e: any) {
-      setError(isEn ? 'An unexpected error occurred.' : 'Une erreur inattendue est survenue.');
+      setError(t('profil.errors.unexpected'));
     } finally {
       setIsPending(false);
     }
@@ -89,7 +87,7 @@ export function ProfilPage() {
           <h3 className="text-lg font-bold text-foreground">
             {user?.prenom} {user?.nom}
           </h3>
-          <p className="text-sm text-muted-foreground">{isEn ? 'Sales Representative' : 'Commercial'}</p>
+          <p className="text-sm text-muted-foreground">{t('profil.role.subtitle')}</p>
         </div>
       </div>
 
@@ -98,30 +96,30 @@ export function ProfilPage() {
         <div className="flex items-center gap-3">
           <User className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="flex-1 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">{isEn ? 'Full Name' : 'Nom complet'}</span>
+            <span className="text-xs text-muted-foreground">{t('profil.info.fullName')}</span>
             <span className="text-sm font-medium">{user?.prenom} {user?.nom}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="flex-1 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Email</span>
+            <span className="text-xs text-muted-foreground">{t('profil.info.email')}</span>
             <span className="text-sm font-medium">{user?.email}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="flex-1 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">{isEn ? 'Phone' : 'Téléphone'}</span>
+            <span className="text-xs text-muted-foreground">{t('profil.info.phone')}</span>
             <span className="text-sm font-medium">{user?.telephone}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <ShieldCheck className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="flex-1 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">{isEn ? 'Role' : 'Rôle'}</span>
+            <span className="text-xs text-muted-foreground">{t('profil.info.role')}</span>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-              {isEn ? 'Sales Rep' : 'Commercial'}
+              {t('profil.role.badge')}
             </span>
           </div>
         </div>
@@ -136,8 +134,8 @@ export function ProfilPage() {
         >
           <KeyRound className="h-4 w-4 text-primary" />
           <div className="flex-1">
-            <span className="text-sm font-bold text-foreground">{isEn ? 'Change my secret PIN code' : 'Modifier mon code secret'}</span>
-            <p className="text-xs text-muted-foreground">{isEn ? 'Update your 6-digit login PIN code' : 'Changer votre code PIN de connexion'}</p>
+            <span className="text-sm font-bold text-foreground">{t('profil.changePin.title')}</span>
+            <p className="text-xs text-muted-foreground">{t('profil.changePin.hint')}</p>
           </div>
         </button>
 
@@ -160,10 +158,10 @@ export function ProfilPage() {
           <div className="w-full max-w-sm rounded-2xl border border-border bg-background p-6 space-y-5 shadow-2xl">
             <div className="text-center">
               <h3 className="text-base font-bold text-foreground">
-                {isEn ? 'Change secret PIN code' : 'Changer le code secret'}
+                {t('profil.dialog.title')}
               </h3>
               <p className="text-xs text-muted-foreground mt-1">
-                {isEn ? 'Enter your new PIN code (6 digits)' : 'Entrez votre nouveau code PIN (6 chiffres)'}
+                {t('profil.dialog.subtitle')}
               </p>
             </div>
 
@@ -171,7 +169,7 @@ export function ProfilPage() {
               {/* Nouveau code */}
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-foreground">
-                  {isEn ? 'New secret PIN code' : 'Nouveau code secret'}
+                  {t('profil.dialog.newPin')}
                 </label>
                 <div className="flex items-center justify-center gap-2">
                   <InputOTP
@@ -203,7 +201,7 @@ export function ProfilPage() {
               {/* Confirmation */}
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-foreground">
-                  {isEn ? 'Confirm secret PIN code' : 'Confirmer le code secret'}
+                  {t('profil.dialog.confirmPin')}
                 </label>
                 <div className="flex items-center justify-center gap-2">
                   <InputOTP
@@ -234,7 +232,7 @@ export function ProfilPage() {
               <div className="flex items-center justify-center gap-2 text-emerald-600">
                 <CheckCircle2 className="h-4 w-4" />
                 <p className="text-xs font-semibold">
-                  {isEn ? 'PIN code updated successfully!' : 'Code secret mis à jour avec succès !'}
+                  {t('profil.success.updated')}
                 </p>
               </div>
             )}
@@ -245,7 +243,7 @@ export function ProfilPage() {
                 onClick={handleClose}
                 className="flex-1 py-2.5 rounded-xl border border-border text-xs font-bold text-muted-foreground hover:bg-muted transition-all"
               >
-                {isEn ? 'Cancel' : 'Annuler'}
+                {t('cancel')}
               </button>
               <button
                 type="button"
@@ -253,7 +251,7 @@ export function ProfilPage() {
                 disabled={isPending || nouveau.length !== 6 || confirmation.length !== 6}
                 className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold shadow-md hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isPending ? (isEn ? 'Saving…' : 'Enregistrement…') : (isEn ? 'Confirm' : 'Confirmer')}
+                {isPending ? t('profil.dialog.saving') : t('profil.dialog.confirm')}
               </button>
             </div>
           </div>

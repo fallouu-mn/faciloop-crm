@@ -9,8 +9,7 @@ interface Props {
 }
 
 export const PeriodFilter: React.FC<Props> = ({ value, onChange }) => {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en');
+  const { t } = useTranslation('common');
 
   const [customFrom, setCustomFrom] = useState(
     value.preset === 'custom' && value.from ? value.from.toISOString().split('T')[0] : ''
@@ -40,19 +39,8 @@ export const PeriodFilter: React.FC<Props> = ({ value, onChange }) => {
     onChange(DATE_RANGE_ALL);
   }
 
-  const getPresetLabel = (p: DatePreset, originalLabel: string) => {
-    if (!isEn) return originalLabel;
-    const map: Record<DatePreset, string> = {
-      all: 'All',
-      today: 'Today',
-      '7d': '7d',
-      '30d': '30d',
-      '3m': '3 mo.',
-      '12m': '12 mo.',
-      custom: 'Custom',
-    };
-    return map[p] || originalLabel;
-  };
+  const getPresetLabel = (p: DatePreset, originalLabel: string) =>
+    t(`periodFilter.presets.${p}`, originalLabel);
 
   return (
     <div className="space-y-2">
@@ -75,7 +63,7 @@ export const PeriodFilter: React.FC<Props> = ({ value, onChange }) => {
           <button
             type="button"
             onClick={reset}
-            aria-label={isEn ? "Reset" : "Réinitialiser"}
+            aria-label={t('periodFilter.reset')}
             className="shrink-0 h-7 w-7 rounded-full flex items-center justify-center bg-muted/60 text-muted-foreground hover:text-foreground transition-colors ml-1"
           >
             <X className="h-3 w-3" />

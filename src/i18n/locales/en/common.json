@@ -11,5 +11,205 @@
   "edit": "Edit",
   "status": "Status",
   "loading": "Loading...",
-  "logout": "Log out"
+  "logout": "Log out",
+  "nav": {
+    "dashboard": "Dashboard",
+    "myProspects": "My Prospects",
+    "customerJourney": "Customer Journey",
+    "myEarnings": "My Earnings",
+    "myObjectives": "My Objectives",
+    "followUps": "Follow-ups",
+    "notifications": "Notifications",
+    "myProfile": "My Profile"
+  },
+  "sidebar": {
+    "overview": "Overview",
+    "team": "Team",
+    "salesTeam": "Sales Team",
+    "salesObjectives": "Sales Objectives",
+    "salesManagement": "Sales Management",
+    "prospects": "Prospects",
+    "clientAccounts": "Client Accounts",
+    "revenue": "Revenue",
+    "offers": "Offers",
+    "payments": "Payments",
+    "commissions": "Commissions",
+    "administration": "Administration",
+    "actionLog": "Action Log",
+    "importExport": "Import / Export",
+    "settings": "Settings",
+    "alerts": "Alerts",
+    "navigationMenu": "Navigation Menu",
+    "workspace": "Workspace",
+    "myCompany": "My Company",
+    "managementConsole": "Management Console",
+    "salesRep": "Sales Rep",
+    "closeMenu": "Close menu",
+    "expandMenu": "Expand menu",
+    "collapseMenu": "Collapse menu",
+    "collapse": "Collapse"
+  },
+  "profil": {
+    "role": {
+      "subtitle": "Sales Representative",
+      "badge": "Sales Rep"
+    },
+    "info": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "phone": "Phone",
+      "role": "Role"
+    },
+    "changePin": {
+      "title": "Change my secret PIN code",
+      "hint": "Update your 6-digit login PIN code"
+    },
+    "dialog": {
+      "title": "Change secret PIN code",
+      "subtitle": "Enter your new PIN code (6 digits)",
+      "newPin": "New secret PIN code",
+      "confirmPin": "Confirm secret PIN code",
+      "saving": "Saving…",
+      "confirm": "Confirm"
+    },
+    "errors": {
+      "pinLength": "Secret PIN code must contain 6 digits.",
+      "pinMismatch": "PIN codes do not match.",
+      "update": "Error: {{message}}",
+      "unexpected": "An unexpected error occurred."
+    },
+    "success": {
+      "updated": "PIN code updated successfully!"
+    }
+  },
+  "notifications": {
+    "pageTitle": "Notifications",
+    "subtitle": "History of your alerts and follow-ups",
+    "markAllRead": "Mark all as read ({{count}})",
+    "empty": {
+      "title": "No notifications",
+      "description": "Your overdue follow-up alerts, assigned prospect notifications, and updates will appear here."
+    },
+    "newBadge": "New",
+    "open": "Open",
+    "title": {
+      "relance_retard": "Overdue Follow-up",
+      "relance_rappel": "Follow-up today",
+      "nouveau_prospect": "New prospect assigned",
+      "objectif": "New objective assigned",
+      "relance": "New follow-up scheduled",
+      "mention": "You have been mentioned",
+      "default": "Notification"
+    }
+  },
+  "phoneInput": {
+    "search": "Search for a country...",
+    "noResults": "No country found",
+    "regions": {
+      "afrique_de_l_ouest": "West Africa",
+      "afrique_centrale": "Central Africa",
+      "afrique_de_l_est": "East Africa",
+      "afrique_du_nord": "North Africa",
+      "afrique_australe": "Southern Africa",
+      "europe_de_l_ouest": "Western Europe",
+      "europe_du_sud": "Southern Europe",
+      "europe_du_nord": "Northern Europe",
+      "europe_de_l_est": "Eastern Europe",
+      "ameriques": "The Americas",
+      "caraibes": "Caribbean",
+      "amerique_du_sud": "South America",
+      "moyen_orient": "Middle East",
+      "asie_du_sud": "South Asia",
+      "asie_de_l_est": "East Asia",
+      "asie_du_sud_est": "Southeast Asia",
+      "asie_centrale": "Central Asia",
+      "oceanie": "Oceania",
+      "territoires_d_outre_mer": "Overseas Territories"
+    }
+  },
+  "mention": {
+    "tagTitle": "Mention a sales rep",
+    "tip": "Tip: type @ to notify a sales rep"
+  },
+  "customFields": {
+    "section": "Custom fields",
+    "selectOption": "— Select —",
+    "editor": {
+      "newField": "New field {{n}}",
+      "empty": "No custom field yet. Add one to make it available on prospect forms and cards.",
+      "label": "Label",
+      "type": "Type",
+      "typeText": "Text",
+      "typeNumber": "Number",
+      "typeDate": "Date",
+      "typeList": "List",
+      "options": "Options (comma separated)",
+      "optionsPlaceholder": "Small, Medium, Large",
+      "required": "Required",
+      "remove": "Remove",
+      "add": "Add a custom field"
+    },
+    "sources": {
+      "add": "Add",
+      "remove": "Remove",
+      "sourcePlaceholder": "Ex: Trade fair",
+      "empty": "No custom source yet — only the default list is offered."
+    }
+  },
+  "whatsapp": {
+    "confirmTitle": "Did you send the message?",
+    "confirmBodyPre": "For",
+    "confirmBodyPost": "Confirm to log exchange and close follow-ups.",
+    "logYes": "Yes, log the exchange",
+    "logLater": "No / Later",
+    "logMessage": "WhatsApp message sent to {{name}}.",
+    "nextAction": "Follow prospect reply"
+  },
+  "selectCustom": {
+    "placeholder": "Select...",
+    "search": "Search...",
+    "noResults": "No results found"
+  },
+  "periodFilter": {
+    "reset": "Reset",
+    "presets": {
+      "all": "All",
+      "today": "Today",
+      "7d": "7d",
+      "30d": "30d",
+      "3m": "3 mo.",
+      "12m": "12 mo.",
+      "custom": "Custom"
+    }
+  },
+  "planGate": {
+    "feature": {
+      "objectifs_equipe": "Team objectives",
+      "journal_actions": "Action audit log",
+      "import_csv": "CSV Import & deduplication",
+      "stats_avancees": "Advanced analytics",
+      "rapports_personnalises": "Custom reports"
+    },
+    "planRequired": "{{label}} — {{plan}} plan required",
+    "availFrom": "This feature is available starting from the {{plan}} plan. You are currently on the {{current}} plan.",
+    "upgradeMsg": "Hello, I would like to upgrade from the {{from}} plan to the {{to}} plan.",
+    "upgradeLink": "Upgrade to the {{plan}} plan"
+  },
+  "pinChange": {
+    "title": "Security — Change PIN code",
+    "hint": "Update your 6-digit secret PIN used to log in.",
+    "newPin": "New PIN code",
+    "confirmPin": "Confirm PIN code",
+    "visibility": "Toggle visibility",
+    "clear": "Clear",
+    "saving": "Saving…",
+    "update": "Update PIN",
+    "updated": "PIN code updated successfully!",
+    "errors": {
+      "pinLength": "PIN code must be exactly 6 digits.",
+      "mismatch": "PIN codes do not match.",
+      "update": "Error: {{message}}",
+      "unexpected": "An unexpected error occurred."
+    }
+  }
 }

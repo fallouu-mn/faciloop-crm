@@ -28,7 +28,7 @@ import { FadeInOnScroll } from '../../components/common/FadeInOnScroll';
 // import { DeviseCode, convertAmount, formatAmount } from '../../lib/currency';
 
 export const LandingPage: React.FC = () => {
-  const { t, i18n } = useTranslation('landing');
+  const { t } = useTranslation('landing');
   // const [billingCycle, setBillingCycle] = useState<string>('mensuel');
   // const [currency, setCurrency] = useState<DeviseCode>('XOF');
   const [demoStep, setDemoStep] = useState<number>(1);
@@ -40,8 +40,6 @@ export const LandingPage: React.FC = () => {
   // }, []);
 
   // const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', currency), currency);
-
-  const lng = i18n.language || 'fr';
 
   /* --- Ancien code offres (commenté) ---
   const PERIODICITES = [
@@ -132,82 +130,46 @@ export const LandingPage: React.FC = () => {
   const features = [
     {
       icon: Kanban,
-      title: lng === 'en' ? 'Customizable Sales Pipeline' : 'Pipeline Commercial Personnalisable',
-      desc: lng === 'en'
-        ? 'Visualize your opportunities with drag-and-drop, loss reason tracking, and client conversion.'
-        : 'Visualisez vos opportunités avec le glisser-déposer, le suivi des motifs de perte et la conversion client.',
+      title: t('feature1Title'),
+      desc: t('feature1Desc'),
     },
     {
       icon: MessageSquare,
-      title: lng === 'en' ? 'Integrated WhatsApp' : 'WhatsApp Intégré',
-      desc: lng === 'en'
-        ? 'Launch pre-filled WhatsApp conversations in 1 click right from the prospect card.'
-        : 'Lancez des conversations WhatsApp pré-remplies en 1 clic depuis la fiche prospect.',
+      title: t('feature2Title'),
+      desc: t('feature2Desc'),
     },
     {
       icon: CalendarClock,
-      title: lng === 'en' ? 'Organized Follow-ups' : 'Relances Organisées',
-      desc: lng === 'en'
-        ? 'Stay in control of today\'s meetings and never miss a follow-up.'
-        : 'Gardez le contrôle sur les RDV du jour et ne manquez aucune relance.',
+      title: t('feature3Title'),
+      desc: t('feature3Desc'),
     },
     {
       icon: ShieldCheck,
-      title: lng === 'en' ? 'Secure Data & Portfolios' : 'Données & Portefeuilles Sécurisés',
-      desc: lng === 'en'
-        ? 'Each sales rep only sees their own portfolio. Admins get a full team overview.'
-        : 'Chaque commercial accède uniquement à son portefeuille. L\'admin dispose d\'une vue globale sur toute l\'équipe.',
+      title: t('feature4Title'),
+      desc: t('feature4Desc'),
     },
     {
       icon: BarChart3,
-      title: lng === 'en' ? 'Dashboard & Analytics' : 'Tableau de Bord & Statistiques',
-      desc: lng === 'en'
-        ? 'Track revenue, conversions, and compare sales team performance with dynamic charts.'
-        : 'Suivez le CA, les conversions et comparez vos équipes avec des graphiques dynamiques.',
+      title: t('feature5Title'),
+      desc: t('feature5Desc'),
     },
     {
       icon: Building2,
-      title: lng === 'en' ? 'CSV Import & Assignment' : 'Import CSV & Attribution',
-      desc: lng === 'en'
-        ? 'Import prospect lists with duplicate detection and bulk assignment to your team.'
-        : 'Importez des listes de prospects avec détection des doublons et attribution en masse à votre équipe.',
+      title: t('feature6Title'),
+      desc: t('feature6Desc'),
     },
   ];
 
-  const pipelineSteps = lng === 'en' ? [
-    'New', 'To Contact', 'Contacted', 'Interested', 'Meeting Set', 'Demo Done',
-    'Trial Ongoing', 'Proposal', 'Payment Pending', 'Won Client', 'To Follow-up', 'Lost',
-  ] : [
-    'Nouveau', 'À contacter', 'Contacté', 'Intéressé', 'RDV programmé', 'Démo réalisée',
-    'Essai en cours', 'Proposition', 'Paiement att.', 'Client gagné', 'À relancer', 'Perdu',
+  const pipelineSteps = [
+    t('demoStep1'), t('demoStep2'), t('demoStep3'), t('demoStep4'),
+    t('demoStep5'), t('demoStep6'), t('demoStep7'), t('demoStep8'),
+    t('demoStep9'), t('demoStep10'), t('demoStep11'), t('demoStep12'),
   ];
 
-  const stepDescriptions = lng === 'en' ? [
-    "New Prospect: Automatic import with phone cleaning (E.164 +221) and anti-duplicate check.",
-    "To Contact: Prospect is ready for first contact by the sales representative.",
-    "Contacted: First exchange completed, qualifying interest.",
-    "Interested: Prospect confirmed interest in the Faciloop solution.",
-    "Meeting Set: Meeting date scheduled with automatic notification.",
-    "Demo Done: Product demonstration completed, awaiting feedback.",
-    "Trial Ongoing: Prospect is testing the platform.",
-    "Proposal: Quotation sent, pending agreement.",
-    "Payment Pending: Invoice sent, awaiting payment.",
-    "Won Client: Deal closed! Converted into an active client.",
-    "To Follow-up: Prospect on hold for scheduled later follow-up.",
-    "Lost Prospect: Mandatory loss reason for continuous improvement.",
-  ] : [
-    "Nouveau Prospect : Import automatique avec nettoyage téléphone (E.164 +221) et anti-doublon.",
-    "À Contacter : Le prospect est prêt pour la première prise de contact par le commercial.",
-    "Contacté : Premier échange effectué, le commercial qualifie l'intérêt.",
-    "Intéressé : Le prospect a confirmé son intérêt pour la solution Faciloop.",
-    "RDV Programmé : Date de rendez-vous fixée avec notification automatique.",
-    "Démo Réalisée : Démonstration produit effectuée, en attente de retour.",
-    "Essai en Cours : Le prospect teste actuellement la plateforme.",
-    "Proposition : Devis envoyé, en attente de validation.",
-    "Paiement en Attente : Facture transmise, en attente de règlement.",
-    "Client Gagné : Vente conclue ! Conversion en client actif.",
-    "À Relancer Plus Tard : Prospect mis en veille pour relance ultérieure programmée.",
-    "Prospect Perdu : Motif de perte obligatoire pour l'amélioration continue.",
+  const stepDescriptions = [
+    t('demoDesc1'), t('demoDesc2'), t('demoDesc3'), t('demoDesc4'),
+    t('demoDesc5'), t('demoDesc6'), t('demoDesc7'), t('demoDesc8'),
+    t('demoDesc9'), t('demoDesc10'), t('demoDesc11'), t('demoDesc12'),
   ];
 
   return (
@@ -228,7 +190,7 @@ export const LandingPage: React.FC = () => {
               className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
             >
               <LockKeyhole className="h-4 w-4" />
-              <span>{lng === 'en' ? 'Log in' : 'Connexion'}</span>
+              <span>{t('navLogin')}</span>
             </Link>
           </div>
         </div>
@@ -240,27 +202,16 @@ export const LandingPage: React.FC = () => {
           <FadeInOnScroll>
             <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-5">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>{lng === 'en' ? 'Simple CRM for SMBs' : 'CRM simple pour TPE / PME'}</span>
+              <span>{t('badge')}</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight max-w-4xl mx-auto">
-              {lng === 'en' ? (
-                <>
-                  The simple CRM to better track your prospects and{' '}
-                  <span className="text-gradient-faciloop">grow your sales</span>
-                </>
-              ) : (
-                <>
-                  Le CRM simple pour mieux suivre vos prospects et{' '}
-                  <span className="text-gradient-faciloop">développer vos ventes</span>
-                </>
-              )}
+              {t('heroTitleA')}{' '}
+              <span className="text-gradient-faciloop">{t('heroTitleB')}</span>
             </h1>
 
             <p className="mt-4 sm:mt-6 text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto font-medium">
-              {lng === 'en'
-                ? 'Centralize your prospects, organize follow-ups, track your sales team and manage your sales from one platform.'
-                : 'Centralisez vos prospects, organisez les relances, suivez vos commerciaux et pilotez vos ventes depuis une seule plateforme.'}
+              {t('heroSubtitle')}
             </p>
 
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -268,7 +219,7 @@ export const LandingPage: React.FC = () => {
                 to="/login"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
               >
-                <span>{lng === 'en' ? 'Access Platform' : 'Accéder à la plateforme'}</span>
+                <span>{t('accessButton')}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
@@ -276,7 +227,7 @@ export const LandingPage: React.FC = () => {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 rounded-full border border-border text-foreground font-medium text-sm hover:bg-muted transition-colors"
               >
                 <Play className="w-4 h-4 text-primary fill-primary" />
-                <span>{lng === 'en' ? 'View Demo' : 'Voir la démo'}</span>
+                <span>{t('demoButton')}</span>
               </a>
             </div>
           </FadeInOnScroll>
@@ -285,10 +236,10 @@ export const LandingPage: React.FC = () => {
           <FadeInOnScroll delay={200}>
             <div className="mt-12 sm:mt-16 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto">
               {[
-                { icon: ClipboardList, label: lng === 'en' ? 'Centralized prospects' : 'Prospects centralisés', color: 'text-orange-500 bg-orange-500/10' },
-                { icon: Bell, label: lng === 'en' ? 'Organized follow-ups' : 'Relances organisées', color: 'text-amber-500 bg-amber-500/10' },
-                { icon: Users, label: lng === 'en' ? 'Team oversight' : 'Équipe pilotée', color: 'text-orange-600 bg-orange-600/10' },
-                { icon: Shield, label: lng === 'en' ? 'Secure data' : 'Données sécurisées', color: 'text-amber-600 bg-amber-600/10' },
+                { icon: ClipboardList, label: t('metrics.prospects'), color: 'text-orange-500 bg-orange-500/10' },
+                { icon: Bell, label: t('metrics.relances'), color: 'text-amber-500 bg-amber-500/10' },
+                { icon: Users, label: t('metrics.equipe'), color: 'text-orange-600 bg-orange-600/10' },
+                { icon: Shield, label: t('metrics.securite'), color: 'text-amber-600 bg-amber-600/10' },
               ].map((stat, idx) => {
                 const IconComp = stat.icon;
                 return (
@@ -311,13 +262,13 @@ export const LandingPage: React.FC = () => {
           <FadeInOnScroll>
             <div className="text-center mb-8">
               <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
-                {lng === 'en' ? 'CUSTOMIZABLE SALES PIPELINE' : 'Pipeline Commercial Personnalisable'}
+                {t('demoBadge')}
               </p>
               <h2 className="text-xl sm:text-3xl font-bold text-foreground">
-                {lng === 'en' ? 'Your sales pipeline in action' : 'Votre pipeline commercial en action'}
+                {t('demoTitle')}
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                {lng === 'en' ? '12 stages included by default — adapt them to your sales process' : '12 étapes incluses par défaut — adaptez-les à votre processus commercial'}
+                {t('demoSubtitle')}
               </p>
             </div>
           </FadeInOnScroll>
@@ -343,7 +294,7 @@ export const LandingPage: React.FC = () => {
               <div className="p-4 rounded-xl bg-muted/50 border border-border">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-primary">
-                    {lng === 'en' ? `Step #${demoStep}` : `Étape #${demoStep}`}
+                    {t('demoStepLabel', { step: demoStep })}
                   </span>
                 </div>
                 <p className="text-sm font-medium text-foreground leading-relaxed">
@@ -361,10 +312,10 @@ export const LandingPage: React.FC = () => {
           <FadeInOnScroll>
             <div className="text-center mb-8 sm:mb-12">
               <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
-                {lng === 'en' ? 'KEY FEATURES' : 'Fonctionnalités Clés'}
+                {t('featuresBadge')}
               </p>
               <h2 className="text-xl sm:text-3xl font-bold text-foreground">
-                {lng === 'en' ? "Designed for your sales reps' efficiency" : "Conçu pour l'efficacité de vos commerciaux"}
+                {t('featuresTitle')}
               </h2>
             </div>
           </FadeInOnScroll>
@@ -396,25 +347,19 @@ export const LandingPage: React.FC = () => {
                 <Crown className="w-7 h-7" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                {lng === 'en' ? 'Want to subscribe?' : 'Vous souhaitez vous abonner ?'}
+                {t('pricingTitle')}
               </h2>
               <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
-                {lng === 'en'
-                  ? 'Contact our team to discover the offer best suited to your needs and get started quickly.'
-                  : 'Contactez notre équipe pour découvrir l\'offre la mieux adaptée à vos besoins et démarrer rapidement.'}
+                {t('pricingSubtitle')}
               </p>
               <a
-                href={`https://wa.me/221711387878?text=${encodeURIComponent(
-                  lng === 'en'
-                    ? 'Hello, I would like information about your CRM offers.'
-                    : 'Bonjour, je souhaite des informations sur vos offres CRM.'
-                )}`}
+                href={`https://wa.me/221711387878?text=${encodeURIComponent(t('pricingWhatsAppMessage'))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-6 inline-flex items-center gap-2.5 px-8 py-3 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
               >
                 <MessageSquare className="h-4 w-4" />
-                <span>{lng === 'en' ? 'Contact us on WhatsApp' : 'Nous contacter sur WhatsApp'}</span>
+                <span>{t('contactWhatsApp')}</span>
                 <ArrowUpRight className="h-4 w-4" />
               </a>
             </div>
@@ -440,19 +385,14 @@ export const LandingPage: React.FC = () => {
           <FadeInOnScroll>
             <div className="p-6 sm:p-10 rounded-xl border border-border bg-card">
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                {lng === 'en' ? 'Ready to transform your sales prospecting?' : 'Prêt à transformer votre prospection ?'}
+                {t('trialTitle')}
               </h2>
               <p className="mt-3 text-sm text-muted-foreground max-w-lg mx-auto">
-                {lng === 'en'
-                  ? 'Set up your pipeline in less than 2 minutes.'
-                  : "Configurez votre pipeline en moins de 2 minutes."}
+                {t('trialSubtitle')}
               </p>
 
               <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-foreground">
-                {(lng === 'en'
-                  ? ['Customizable pipeline', 'Built-in WhatsApp', 'Secure data', 'Dedicated support']
-                  : ['Pipeline personnalisable', 'WhatsApp intégré', 'Données sécurisées', 'Support dédié']
-                ).map((item) => (
+                {[t('trialFeature1'), t('trialFeature2'), t('trialFeature3'), t('trialFeature4')].map((item) => (
                   <li key={item} className="flex items-center gap-1.5">
                     <Check className="h-4 w-4 text-primary" strokeWidth={2.5} />
                     <span>{item}</span>
@@ -465,7 +405,7 @@ export const LandingPage: React.FC = () => {
                   to="/signup"
                   className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-faciloop text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
                 >
-                  <span>{lng === 'en' ? 'Create my free account' : 'Créer mon compte gratuitement'}</span>
+                  <span>{t('trialButton')}</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -479,9 +419,7 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-5xl mx-auto px-4 text-center space-y-4">
           <FaciloopBrand className="h-7 mx-auto" />
           <p className="text-sm text-muted-foreground">
-            {lng === 'en'
-              ? 'The simple CRM to centralize your prospects and grow your sales.'
-              : 'Le CRM simple pour centraliser vos prospects et développer vos ventes.'}
+            {t('footerDesc')}
           </p>
 
           {/* Social links */}
@@ -518,16 +456,16 @@ export const LandingPage: React.FC = () => {
           {/* Legal */}
           <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
             <Link to="/privacy" className="hover:text-foreground transition-colors">
-              {lng === 'en' ? 'Privacy Policy' : 'Confidentialité'}
+              {t('footerPrivacy')}
             </Link>
             <span>|</span>
             <Link to="/terms" className="hover:text-foreground transition-colors">
-              {lng === 'en' ? 'Terms of Service' : 'CGU'}
+              {t('footerTerms')}
             </Link>
           </div>
 
           <p className="text-xs text-muted-foreground">
-            {lng === 'en' ? "© 2026 Digit'Advisor. All rights reserved." : "© 2026 Digit'Advisor. Tous droits réservés."}
+            {t('footerCopyright')}
           </p>
         </div>
       </footer>

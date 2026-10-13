@@ -14,5 +14,10 @@
   "prioritiesTitle": "Today's Priorities",
   "viewAllRelances": "View all follow-ups",
   "weeklySales": "WEEKLY SALES REVENUE",
-  "salesTrend": "Sales trend of deals closed over 7 days"
+  "salesTrend": "Sales trend of deals closed over 7 days",
+  "commercial": {
+    "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "noRelances": "No follow-ups scheduled today.",
+    "canal": "Channel: {{canal}}"
+  }
 }

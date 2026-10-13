@@ -5,10 +5,11 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 export const NotificationsPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('common');
   const { user, notifications, markNotificationAsRead } = useAuth();
 
-  const isEn = i18n.language?.startsWith('en');
+  // Format locale for date rendering only (not a UI display-language switch)
+  const dateLocale = i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR';
 
   // Backend-ready: filter notifications for current commercial only
   const myNotifications = useMemo(() => {
@@ -22,14 +23,10 @@ export const NotificationsPage: React.FC = () => {
     myNotifications.filter(n => !n.lue).forEach(n => markNotificationAsRead(n.id));
   };
 
-  const translateNotifTitle = (titre: string, isEn: boolean) => {
-    if (!isEn) return titre;
-    if (titre === 'Relance en retard') return 'Overdue Follow-up';
-    if (titre === 'Nouveau prospect attribué') return 'New prospect assigned';
-    if (titre === 'Relance prévue aujourd\'hui') return 'Follow-up today';
-    if (titre === 'Relance aujourd\'hui') return 'Follow-up today';
-    return titre;
-  };
+  // Notification titles are rendered from the `type` code through i18n keys,
+  // so they follow the active language (fr / en / wo).
+  const translateNotifTitle = (type: string) =>
+    t(`notifications.title.${type}`, { defaultValue: t('notifications.title.default') });
 
   return (
     <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto font-sans">
@@ -37,10 +34,10 @@ export const NotificationsPage: React.FC = () => {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-            {isEn ? 'Notifications' : 'Notifications'}
+            {t('notifications.pageTitle')}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
-            {isEn ? 'History of your alerts and follow-ups' : 'Historique de vos alertes et relances'}
+            {t('notifications.subtitle')}
           </p>
         </div>
 
@@ -50,7 +47,7 @@ export const NotificationsPage: React.FC = () => {
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-input bg-card text-xs font-bold text-foreground hover:bg-muted transition-all shrink-0"
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            <span>{isEn ? `Mark all as read (${unreadCount})` : `Tout marquer lu (${unreadCount})`}</span>
+            <span>{t('notifications.markAllRead', { count: unreadCount })}</span>
           </button>
         )}
       </div>
@@ -60,10 +57,10 @@ export const NotificationsPage: React.FC = () => {
         <div className="rounded-2xl border border-border p-8 text-center space-y-3">
           <BellOff className="w-12 h-12 text-muted-foreground mx-auto" />
           <h3 className="text-sm font-bold text-foreground">
-            {isEn ? 'No notifications' : 'Aucune notification'}
+            {t('notifications.empty.title')}
           </h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            {isEn ? 'Your overdue follow-up alerts, assigned prospect notifications, and updates will appear here.' : 'Vos alertes de relances en retard, nouveaux prospects attribués et autres notifications apparaîtront ici.'}
+            {t('notifications.empty.description')}
           </p>
         </div>
       ) : (
@@ -91,17 +88,17 @@ export const NotificationsPage: React.FC = () => {
                 <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-extrabold text-xs text-foreground">
-                      {translateNotifTitle(notif.titre, isEn)}
+                      {translateNotifTitle(notif.type)}
                     </h3>
                     {!notif.lue && (
                       <span className="px-2 py-0.5 rounded-full bg-primary text-white text-[9px] font-black shrink-0">
-                        {isEn ? 'New' : 'Nouvelle'}
+                        {t('notifications.newBadge')}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">{notif.message}</p>
                   <span className="text-[10px] text-muted-foreground font-semibold">
-                    {new Date(notif.created_at).toLocaleDateString(isEn ? 'en-US' : 'fr-FR', {
+                    {new Date(notif.created_at).toLocaleDateString(dateLocale, {
                       day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
                     })}
                   </span>
@@ -114,7 +111,7 @@ export const NotificationsPage: React.FC = () => {
                   onClick={(e) => e.stopPropagation()}
                   className="px-3 py-1.5 rounded-xl border border-input text-xs font-bold hover:bg-muted shrink-0 transition-all"
                 >
-                  {isEn ? 'Open' : 'Ouvrir'}
+                  {t('notifications.open')}
                 </Link>
               )}
             </div>

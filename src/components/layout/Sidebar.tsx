@@ -39,71 +39,70 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { t: tSA } = useTranslation('superAdmin');
   const { user, currentOrg, adminNotifications, notifications } = useAuth();
   const location = useLocation();
   const role = user?.role || 'commercial';
-  const isEn = i18n.language?.startsWith('en');
   const platformSettings = usePlatformSettings();
   const adminBase = location.pathname.startsWith('/demo') ? '/demo' : '/admin';
   const adminUnread = adminNotifications?.filter(n => !n.lue).length ?? 0;
   const commercialUnread = notifications?.filter(n => !n.lue).length ?? 0;
 
   const commercialLinks = [
-    { to: '/app/dashboard', label: isEn ? 'Dashboard' : 'Dashboard', icon: LayoutDashboard },
-    { to: '/app/prospects', label: isEn ? 'My Prospects' : 'Mes Prospects', icon: Users },
-    { to: '/app/pipeline', label: isEn ? 'Customer Journey' : 'Parcours Client', icon: Kanban },
-    { to: '/app/gains', label: isEn ? 'My Earnings' : 'Mes Gains', icon: DollarSign },
-    { to: '/app/objectifs', label: isEn ? 'My Objectives' : 'Mes Objectifs', icon: Goal },
-    { to: '/app/relances', label: isEn ? 'Follow-ups' : 'Relances', icon: CalendarClock },
-    { to: '/app/notifications', label: isEn ? 'Notifications' : 'Notifications', icon: Bell },
-    { to: '/app/profil', label: isEn ? 'My Profile' : 'Mon Profil', icon: UserCircle },
+    { to: '/app/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { to: '/app/prospects', label: t('nav.myProspects'), icon: Users },
+    { to: '/app/pipeline', label: t('nav.customerJourney'), icon: Kanban },
+    { to: '/app/gains', label: t('nav.myEarnings'), icon: DollarSign },
+    { to: '/app/objectifs', label: t('nav.myObjectives'), icon: Goal },
+    { to: '/app/relances', label: t('nav.followUps'), icon: CalendarClock },
+    { to: '/app/notifications', label: t('nav.notifications'), icon: Bell },
+    { to: '/app/profil', label: t('nav.myProfile'), icon: UserCircle },
   ];
 
   const adminOrgSections = [
     {
-      title: isEn ? 'Overview' : 'Pilotage',
+      title: t('sidebar.overview'),
       links: [
-        { to: `${adminBase}/dashboard`, label: isEn ? 'Dashboard' : 'Dashboard', icon: BarChart3 },
+        { to: `${adminBase}/dashboard`, label: t('nav.dashboard'), icon: BarChart3 },
       ],
     },
     {
-      title: isEn ? 'Team' : 'Équipe',
+      title: t('sidebar.team'),
       links: [
-        { to: `${adminBase}/equipe`, label: isEn ? 'Sales Team' : 'Équipe commerciale', icon: Users },
-        { to: `${adminBase}/objectifs`, label: isEn ? 'Sales Objectives' : 'Objectifs commerciaux', icon: Goal },
+        { to: `${adminBase}/equipe`, label: t('sidebar.salesTeam'), icon: Users },
+        { to: `${adminBase}/objectifs`, label: t('sidebar.salesObjectives'), icon: Goal },
       ],
     },
     {
-      title: isEn ? 'Sales Management' : 'Gestion commerciale',
+      title: t('sidebar.salesManagement'),
       links: [
-        { to: `${adminBase}/prospects`, label: isEn ? 'Prospects' : 'Prospects', icon: UserPlus },
-        { to: `${adminBase}/pipeline`, label: isEn ? 'Customer Journey' : 'Parcours Client', icon: Kanban },
-        { to: `${adminBase}/relances`, label: isEn ? 'Follow-ups' : 'Relances', icon: CalendarClock },
-        { to: `${adminBase}/clients`, label: isEn ? 'Client Accounts' : 'Comptes Clients', icon: Building2 },
+        { to: `${adminBase}/prospects`, label: t('sidebar.prospects'), icon: UserPlus },
+        { to: `${adminBase}/pipeline`, label: t('nav.customerJourney'), icon: Kanban },
+        { to: `${adminBase}/relances`, label: t('nav.followUps'), icon: CalendarClock },
+        { to: `${adminBase}/clients`, label: t('sidebar.clientAccounts'), icon: Building2 },
       ],
     },
     {
-      title: isEn ? 'Revenue' : 'Revenus',
+      title: t('sidebar.revenue'),
       links: [
-        { to: `${adminBase}/abonnements`, label: isEn ? 'Offers' : 'Offres', icon: Crown },
-        { to: `${adminBase}/paiements`, label: isEn ? 'Payments' : 'Paiements', icon: CreditCard },
-        { to: `${adminBase}/commissions`, label: isEn ? 'Commissions' : 'Commissions', icon: Wallet },
+        { to: `${adminBase}/abonnements`, label: t('sidebar.offers'), icon: Crown },
+        { to: `${adminBase}/paiements`, label: t('sidebar.payments'), icon: CreditCard },
+        { to: `${adminBase}/commissions`, label: t('sidebar.commissions'), icon: Wallet },
       ],
     },
     {
-      title: isEn ? 'Administration' : 'Administration',
+      title: t('sidebar.administration'),
       links: [
-        { to: `${adminBase}/journal`, label: isEn ? 'Action Log' : 'Journal', icon: ScrollText },
-        { to: `${adminBase}/import-export`, label: isEn ? 'Import / Export' : 'Import / Export', icon: FileSpreadsheet },
-        { to: `${adminBase}/parametres`, label: isEn ? 'Settings' : 'Paramètres', icon: Settings },
+        { to: `${adminBase}/journal`, label: t('sidebar.actionLog'), icon: ScrollText },
+        { to: `${adminBase}/import-export`, label: t('sidebar.importExport'), icon: FileSpreadsheet },
+        { to: `${adminBase}/parametres`, label: t('sidebar.settings'), icon: Settings },
       ],
     },
     {
-      title: isEn ? 'Alerts' : 'Alertes',
+      title: t('sidebar.alerts'),
       links: [
-        { to: `${adminBase}/notifications`, label: isEn ? 'Notifications' : 'Notifications', icon: Bell },
+        { to: `${adminBase}/notifications`, label: t('nav.notifications'), icon: Bell },
       ],
     },
   ];
@@ -184,7 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, 
           <button
             onClick={onClose}
             className="rounded-xl p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
-            aria-label="Fermer le menu"
+            aria-label={t('sidebar.closeMenu')}
           >
             <X className="h-5 w-5" />
           </button>
@@ -193,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, 
         {/* Workspace Card */}
         <div className={`${isCollapsed ? 'p-2' : 'p-3 sm:p-4'} hidden md:block`}>
           {isCollapsed ? (
-            <div className="flex items-center justify-center py-2" title={currentOrg?.nom || (role === 'super_admin' ? 'Faciloop' : 'Mon Entreprise')}>
+            <div className="flex items-center justify-center py-2" title={currentOrg?.nom || (role === 'super_admin' ? 'Faciloop' : t('sidebar.myCompany'))}>
               <div className="w-9 h-9 rounded-xl bg-gradient-faciloop flex items-center justify-center text-white text-sm font-black">
                 {(currentOrg?.nom || (role === 'super_admin' ? 'F' : 'E'))[0].toUpperCase()}
               </div>
@@ -201,14 +200,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, 
           ) : (
             <div className="rounded-2xl border border-border/80 bg-muted/40 p-3 space-y-1 shadow-sm">
               <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-                <Building2 className="w-3 h-3 text-primary" /> {isEn ? 'Workspace' : 'Espace de travail'}
+                <Building2 className="w-3 h-3 text-primary" /> {t('sidebar.workspace')}
               </div>
               <div className="text-xs font-black text-foreground truncate">
-                {currentOrg?.nom || (role === 'super_admin' ? platformSettings.nom_plateforme : 'Mon Entreprise')}
+                {currentOrg?.nom || (role === 'super_admin' ? platformSettings.nom_plateforme : t('sidebar.myCompany'))}
               </div>
               <div className="text-[10px] font-bold text-primary capitalize flex items-center gap-1">
                 <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                {role === 'super_admin' ? 'Super Admin' : role === 'admin_org' ? (isEn ? 'Management Console' : 'Console Direction') : (isEn ? 'Sales Rep' : 'Commercial')}
+                {role === 'super_admin' ? 'Super Admin' : role === 'admin_org' ? t('sidebar.managementConsole') : t('sidebar.salesRep')}
               </div>
             </div>
           )}
@@ -218,14 +217,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, 
         <div className="p-3 md:hidden">
           <div className="rounded-2xl border border-border/80 bg-muted/40 p-3 space-y-1 shadow-sm">
             <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-              <Building2 className="w-3 h-3 text-primary" /> {isEn ? 'Workspace' : 'Espace de travail'}
+              <Building2 className="w-3 h-3 text-primary" /> {t('sidebar.workspace')}
             </div>
             <div className="text-xs font-black text-foreground truncate">
-              {currentOrg?.nom || (role === 'super_admin' ? platformSettings.nom_plateforme : 'Mon Entreprise')}
+              {currentOrg?.nom || (role === 'super_admin' ? platformSettings.nom_plateforme : t('sidebar.myCompany'))}
             </div>
             <div className="text-[10px] font-bold text-primary capitalize flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-emerald-500" />
-              {role === 'super_admin' ? 'Super Admin' : role === 'admin_org' ? (isEn ? 'Management Console' : 'Console Direction') : (isEn ? 'Sales Rep' : 'Commercial')}
+              {role === 'super_admin' ? 'Super Admin' : role === 'admin_org' ? t('sidebar.managementConsole') : t('sidebar.salesRep')}
             </div>
           </div>
         </div>
@@ -256,7 +255,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, 
             <>
               {!isCollapsed && (
                 <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-3 mb-2">
-                  {isEn ? 'Navigation Menu' : 'Menu Navigation'}
+                  {t('sidebar.navigationMenu')}
                 </div>
               )}
               {currentLinks.map((link) => {
@@ -273,10 +272,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, 
           <button
             onClick={onToggleCollapse}
             className={`flex items-center ${isCollapsed ? 'justify-center w-full' : 'gap-2 px-3'} py-2.5 rounded-xl text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-all w-full`}
-            title={isCollapsed ? (isEn ? 'Expand menu' : 'Ouvrir le menu') : (isEn ? 'Collapse menu' : 'Réduire le menu')}
+            title={isCollapsed ? t('sidebar.expandMenu') : t('sidebar.collapseMenu')}
           >
             {isCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-            {!isCollapsed && <span>{isEn ? 'Collapse' : 'Réduire'}</span>}
+            {!isCollapsed && <span>{t('sidebar.collapse')}</span>}
           </button>
         </div>
       </aside>

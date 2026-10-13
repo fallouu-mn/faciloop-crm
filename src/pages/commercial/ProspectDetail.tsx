@@ -60,8 +60,9 @@ const SECTEURS_DETAIL = ['Commerce / Distribution', 'Télécommunications', 'Ser
 const PAYS_DETAIL = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 
 export const ProspectDetail: React.FC = () => {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en');
+  const { t, i18n } = useTranslation('clients');
+  const lng = i18n.language || 'fr';
+  const isEn = lng.startsWith('en');
   const { etapes } = useEtapesPipeline();
   // Retour client n°6 : sources par défaut + sources custom de l'organisation.
   // Retour client n°4 : schéma des champs dynamiques prospects.
@@ -122,7 +123,7 @@ export const ProspectDetail: React.FC = () => {
           date: i.date,
           heure: i.heure,
           canal: (i.type === 'demonstration' ? 'autre' : 'visite') as any,
-          motif: i.commentaire || (i.type === 'demonstration' ? (isEn ? 'Demo' : 'Démonstration') : (isEn ? 'Meeting' : 'RDV')),
+          motif: i.commentaire || (i.type === 'demonstration' ? t('prospectDetail.demo') : t('prospectDetail.rdv')),
           commentaire: i.commentaire,
           statut,
           _rdv: true,
@@ -137,7 +138,7 @@ export const ProspectDetail: React.FC = () => {
         date: rdvDate,
         heure: undefined as any,
         canal: 'visite' as any,
-        motif: isEn ? 'Scheduled meeting' : 'RDV programmé',
+        motif: t('prospectDetail.rdvProgramme'),
         commentaire: undefined as any,
         statut: rdvDate < today ? 'en_retard' : 'prevue',
         _rdv: true,
@@ -146,7 +147,7 @@ export const ProspectDetail: React.FC = () => {
     }
 
     return items;
-  }, [prospectInteractions, isEn, prospect]);
+  }, [prospectInteractions, t, prospect]);
 
   const allFollowUps = useMemo(() => {
     return [...prospectRelances, ...plannedRdvs].sort((a, b) => a.date.localeCompare(b.date));
@@ -264,10 +265,10 @@ export const ProspectDetail: React.FC = () => {
       // Le contexte est à jour ; on invalide aussi le cache React Query
       // (liste commerciale, kanban, fiche) au lieu d'attendre le polling des 3 s.
       queryClient.invalidateQueries({ queryKey: ['commercial'] });
-      toast.success(isEn ? 'Prospect updated!' : 'Prospect mis à jour !');
+      toast.success(t('prospectDetail.updatedToast'));
       setIsEditing(false);
     } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de la mise à jour');
+      toast.error(err.message || t('prospectDetail.updateError'));
     } finally {
       setEditSaving(false);
     }
@@ -277,13 +278,11 @@ export const ProspectDetail: React.FC = () => {
   const handleDeleteProspect = () => {
     const label = orFallback(prospect.entreprise, fullName(prospect, prospect.telephone));
     const confirmed = window.confirm(
-      isEn
-        ? `Delete "${label}" permanently? This action cannot be undone.`
-        : `Supprimer « ${label} » définitivement ? Cette action est irréversible.`,
+      t('prospectDetail.deleteConfirm', { name: label }),
     );
     if (!confirmed) return;
     deleteProspect(prospect.id);
-    toast.success(isEn ? 'Prospect deleted.' : 'Prospect supprimé.');
+    toast.success(t('prospectDetail.deletedToast'));
     navigate(prospectsListPath);
   };
 
@@ -399,9 +398,7 @@ export const ProspectDetail: React.FC = () => {
   const handleWhatsAppClick = () => {
     window.open(
       `https://wa.me/${prospect?.telephone.replace(/\s+/g, '')}?text=${encodeURIComponent(
-        isEn
-          ? `Hello ${prospect?.prenom || prospect?.nom}, I am Moussa from Faciloopro.`
-          : `Bonjour ${prospect?.prenom || prospect?.nom}, je suis Moussa de Faciloopro.`
+        t('prospectDetail.whatsappGreeting', { name: prospect?.prenom || prospect?.nom })
       )}`,
       '_blank'
     );
@@ -411,9 +408,9 @@ export const ProspectDetail: React.FC = () => {
   if (!prospect) {
     return (
       <div className="p-8 text-center space-y-4 font-sans">
-        <p className="text-sm font-extrabold text-muted-foreground">{isEn ? 'Prospect not found.' : 'Prospect introuvable.'}</p>
+        <p className="text-sm font-extrabold text-muted-foreground">{t('prospectDetail.notFound')}</p>
         <Link to={prospectsListPath} className="text-xs font-extrabold text-primary hover:underline">
-          {isEn ? '← Back to prospects list' : '← Retour à la liste des prospects'}
+          ← {t('prospectDetail.backToList')}
         </Link>
       </div>
     );
@@ -444,10 +441,11 @@ export const ProspectDetail: React.FC = () => {
         organization_id: prospect.organization_id,
         commercial_id: c.id,
         type: 'mention',
-        titre: isEn ? 'You have been mentioned' : 'Vous avez été mentionné',
-        message: isEn
-          ? `${user ? `${user.prenom} ${user.nom}` : 'A sales rep'} mentioned you on the prospect ${fullName(prospect, prospect.telephone)}.`
-          : `${user ? `${user.prenom} ${user.nom}` : 'Un commercial'} vous a mentionné sur le prospect ${fullName(prospect, prospect.telephone)}.`,
+        titre: t('prospectDetail.mentionTitle'),
+        message: t('prospectDetail.mentionMessage', {
+          author: user ? `${user.prenom} ${user.nom}` : t('prospectDetail.mentionAuthorFallback'),
+          prospect: fullName(prospect, prospect.telephone),
+        }),
         lien: `/app/prospects/${prospect.id}`,
         lue: false,
       };
@@ -455,16 +453,14 @@ export const ProspectDetail: React.FC = () => {
     });
     if (mentioned.length > 0) {
       toast.info(
-        isEn
-          ? `${mentioned.length} sales rep${mentioned.length > 1 ? 's' : ''} notified.`
-          : `${mentioned.length} commercial${mentioned.length > 1 ? 's' : ''} notifié${mentioned.length > 1 ? 's' : ''}.`,
+        t('prospectDetail.notifiedCount', { count: mentioned.length }),
       );
     }
 
     setIsInterModalOpen(false);
     setInterComment('');
     setInterNextAction('');
-    toast.success(isEn ? 'Interaction added!' : 'Interaction ajoutée !');
+    toast.success(t('prospectDetail.interactionToast'));
   };
 
   const handleConvert = () => {
@@ -473,7 +469,7 @@ export const ProspectDetail: React.FC = () => {
       montant: convMontant ? Number(convMontant) : undefined,
     });
     setIsConvertModalOpen(false);
-    toast.success(isEn ? 'Prospect converted to client!' : 'Prospect converti en client !');
+    toast.success(t('prospectDetail.convertedToast'));
     navigate(clientsPath);
   };
 
@@ -488,7 +484,7 @@ export const ProspectDetail: React.FC = () => {
         <div className="border-b border-border/60 bg-muted/30 px-4 sm:px-6 py-2.5">
           <Link to={prospectsListPath} className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
             <ArrowLeft className="w-3.5 h-3.5" />
-            {isEn ? 'Back to prospects list' : 'Retour à la liste des prospects'}
+            {t('prospectDetail.backToList')}
           </Link>
         </div>
 
@@ -513,7 +509,7 @@ export const ProspectDetail: React.FC = () => {
                   {orFallback(prospect.entreprise)}
                 </span>
                 <span>•</span>
-                <span>{prospect.secteur_activite || (isEn ? 'General' : 'Général')}</span>
+                <span>{prospect.secteur_activite || t('prospectDetail.generalSector')}</span>
               </p>
             </div>
           </div>
@@ -526,7 +522,7 @@ export const ProspectDetail: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={handleWhatsAppClick}
-              title="WhatsApp Direct"
+              title={t('prospectDetail.whatsappDirect')}
               className="p-2.5 rounded-2xl bg-[#25D366] text-white shadow-md shadow-emerald-500/20 hover:bg-[#1ebe5d] flex items-center justify-center transition-all active:scale-95"
             >
               <WhatsAppIcon className="h-5 w-5" />
@@ -535,7 +531,7 @@ export const ProspectDetail: React.FC = () => {
             <a
               href={`tel:${prospect.telephone}`}
               className="p-3 rounded-2xl border border-input bg-card text-foreground hover:bg-muted text-xs font-extrabold transition-all active:scale-95"
-              title={isEn ? "Call" : "Appeler"}
+              title={t('prospectDetail.call')}
             >
               <Phone className="w-4 h-4 text-primary" />
             </a>
@@ -543,7 +539,7 @@ export const ProspectDetail: React.FC = () => {
             <a
               href={`mailto:${prospect.email || ''}`}
               className="p-3 rounded-2xl border border-input bg-card text-foreground hover:bg-muted text-xs font-extrabold transition-all active:scale-95"
-              title={isEn ? "Send email" : "Envoyer un e-mail"}
+              title={t('prospectDetail.sendEmail')}
             >
               <Mail className="w-4 h-4 text-primary" />
             </a>
@@ -555,8 +551,8 @@ export const ProspectDetail: React.FC = () => {
               className="px-4 py-2.5 sm:px-4 sm:py-3 rounded-2xl bg-gradient-faciloop text-white text-xs font-extrabold shadow-lg shadow-primary/25 hover:opacity-95 flex items-center gap-1.5 transition-all ml-auto sm:ml-0 active:scale-95"
             >
               <UserCheck className="w-4 h-4" />
-              <span className="hidden sm:inline">{isEn ? 'Convert to Client' : 'Convertir en Client'}</span>
-              <span className="sm:hidden">{isEn ? 'Convert' : 'Convertir'}</span>
+              <span className="hidden sm:inline">{t('prospectDetail.convertToClient')}</span>
+              <span className="sm:hidden">{t('prospectDetail.convertShort')}</span>
             </button>
           )}
         </div>
@@ -565,25 +561,25 @@ export const ProspectDetail: React.FC = () => {
         <div className="px-3 sm:px-6 pt-3 border-b border-border/80 bg-card overflow-x-auto">
           <div className="relative flex gap-1 sm:gap-2 text-xs font-extrabold min-w-max">
             {[
-              { id: 'timeline', label: `${isEn ? 'History' : 'Historique'} (${prospectInteractions.length})` },
-              { id: 'relances', label: `${isEn ? 'Follow-ups / Meetings' : 'Relances / RDV'} (${allFollowUps.length})` },
-              { id: 'notes', label: `Notes (${notes.length})` },
-              { id: 'infos', label: isEn ? 'Information' : 'Informations' }
-            ].map((t) => (
+              { id: 'timeline', label: `${t('prospectDetail.tabTimeline')} (${prospectInteractions.length})` },
+              { id: 'relances', label: `${t('prospectDetail.tabRelances')} (${allFollowUps.length})` },
+              { id: 'notes', label: `${t('prospectDetail.tabNotes')} (${notes.length})` },
+              { id: 'infos', label: t('prospectDetail.tabInfos') }
+            ].map((tab) => (
               <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id as any)}
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
                 className="relative z-10 px-3.5 sm:px-4 py-3 text-foreground transition-colors"
               >
-                {activeTab === t.id && (
+                {activeTab === tab.id && (
                   <motion.div
                     layoutId="prospect-tab-pill"
                     className="absolute inset-0 border-b-2 border-primary -z-10"
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   />
                 )}
-                <span className={activeTab === t.id ? 'text-primary font-black' : 'text-muted-foreground'}>
-                  {t.label}
+                <span className={activeTab === tab.id ? 'text-primary font-black' : 'text-muted-foreground'}>
+                  {tab.label}
                 </span>
               </button>
             ))}
@@ -597,14 +593,14 @@ export const ProspectDetail: React.FC = () => {
             <div className="space-y-4 sm:space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                  {isEn ? 'TIMELINE OF EXCHANGES' : 'Frise Chronologique des Échanges'}
+                  {t('prospectDetail.timelineTitle')}
                 </h3>
                 <button
                   onClick={() => setIsInterModalOpen(true)}
                   className="px-3 py-2 rounded-xl bg-primary text-white font-extrabold text-xs shadow-md shadow-primary/20 hover:opacity-95 flex items-center gap-1 active:scale-95 transition-all"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>{isEn ? 'Log an interaction' : 'Consigner un échange'}</span>
+                  <span>{t('prospectDetail.logInteraction')}</span>
                 </button>
               </div>
 
@@ -612,12 +608,10 @@ export const ProspectDetail: React.FC = () => {
                 <div className="p-6 sm:p-8 rounded-3xl border-2 border-dashed border-border text-center space-y-2">
                   <History className="w-8 h-8 text-muted-foreground mx-auto" />
                   <p className="text-xs font-black text-foreground">
-                    {isEn ? 'No interaction logged yet.' : 'Aucune interaction consignée pour le moment.'}
+                    {t('prospectDetail.noInteraction')}
                   </p>
                   <p className="text-xs text-muted-foreground font-semibold">
-                    {isEn 
-                      ? 'Record your calls, demos or WhatsApp exchanges to maintain a smooth history.' 
-                      : 'Enregistrez vos appels, démos ou échanges WhatsApp pour conserver un historique fluide.'}
+                    {t('prospectDetail.noInteractionHint')}
                   </p>
                 </div>
               ) : (
@@ -630,6 +624,14 @@ export const ProspectDetail: React.FC = () => {
                       return <PhoneCall className="w-3.5 h-3.5 text-amber-500" />;
                     };
 
+                    const typeLabels: Record<string, string> = {
+                      appel: t('prospectDetail.phoneCall'),
+                      whatsapp: t('prospectDetail.whatsapp'),
+                      email: t('prospectDetail.email'),
+                      demonstration: t('prospectDetail.demonstration'),
+                      visite: t('prospectDetail.clientVisit'),
+                    };
+
                     return (
                       <div key={inter.id} className="relative flex items-start gap-3 sm:gap-4 group">
                         {/* Timeline Circle Node */}
@@ -640,11 +642,11 @@ export const ProspectDetail: React.FC = () => {
                         <div className="flex-1 p-3.5 sm:p-4 rounded-2xl border border-border/80 bg-card shadow-sm hover:shadow-md transition-all space-y-1.5 sm:space-y-2">
                           <div className="flex flex-wrap items-center justify-between text-xs gap-1">
                             <span className="font-black text-foreground capitalize flex items-center gap-1.5">
-                              {isEn && inter.type === 'appel' ? 'Phone Call' : isEn && inter.type === 'demonstration' ? 'Demonstration' : isEn && inter.type === 'visite' ? 'Client Visit' : inter.type}
+                              {typeLabels[inter.type] || inter.type}
                             </span>
                             <span className="text-xs font-bold text-muted-foreground flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              {inter.date} {isEn ? 'at' : 'à'} {inter.heure}
+                              {inter.date} {t('prospectDetail.at')} {inter.heure}
                             </span>
                           </div>
 
@@ -653,7 +655,7 @@ export const ProspectDetail: React.FC = () => {
                           {inter.prochaine_action && (
                             <div className="pt-2 border-t border-border/50 text-xs font-extrabold text-amber-500 flex items-center gap-1.5">
                               <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                              <span>{isEn ? 'Next action' : 'Prochaine action'} : {inter.prochaine_action}</span>
+                              <span>{t('prospectDetail.nextAction')} : {inter.prochaine_action}</span>
                             </div>
                           )}
                         </div>
@@ -670,7 +672,7 @@ export const ProspectDetail: React.FC = () => {
             <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                  {isEn ? 'Follow-ups & Meetings' : 'Relances & RDV'}
+                  {t('prospectDetail.relancesHeading')}
                 </h3>
                 <button
                   onClick={() => {
@@ -681,7 +683,7 @@ export const ProspectDetail: React.FC = () => {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all shadow-sm"
                 >
                   <CalendarPlus className="w-3.5 h-3.5" />
-                  {isEn ? 'Schedule follow-up' : 'Programmer une relance'}
+                  {t('prospectDetail.scheduleFollowUp')}
                 </button>
               </div>
 
@@ -691,7 +693,7 @@ export const ProspectDetail: React.FC = () => {
                 </div>
               ) : allFollowUps.length === 0 ? (
                 <div className="p-6 sm:p-8 rounded-3xl border-2 border-dashed border-border text-center text-xs font-semibold text-muted-foreground">
-                  {isEn ? 'No follow-up or meeting scheduled for this prospect.' : 'Aucune relance ni RDV programmé pour ce prospect.'}
+                  {t('prospectDetail.noFollowUp')}
                 </div>
               ) : (
                 <div className="space-y-2.5">
@@ -715,10 +717,10 @@ export const ProspectDetail: React.FC = () => {
                       annulee: 'bg-muted text-muted-foreground',
                     };
                     const statutLabels = {
-                      prevue: isEn ? 'Scheduled' : 'Prévue',
-                      en_retard: isEn ? 'Overdue' : 'En retard',
-                      realisee: isEn ? 'Done' : 'Réalisée',
-                      annulee: isEn ? 'Cancelled' : 'Annulée',
+                      prevue: t('prospectDetail.statutPrevue'),
+                      en_retard: t('prospectDetail.statutEnRetard'),
+                      realisee: t('prospectDetail.statutRealisee'),
+                      annulee: t('prospectDetail.statutAnnulee'),
                     };
                     return (
                       <div key={rel.id} className={`p-3.5 sm:p-4 rounded-2xl border bg-card shadow-sm text-xs transition-opacity ${isDone || isCancelled ? 'opacity-60' : ''} ${isLate ? 'border-rose-500/30' : 'border-border'} ${isSynthetic ? 'border-dashed opacity-80' : ''}`}>
@@ -735,17 +737,17 @@ export const ProspectDetail: React.FC = () => {
                               )}
                               {isRdv && (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] bg-purple-500/10 text-purple-600">
-                                  {(rel as any)._rdvType === 'demonstration' ? (isEn ? 'Demo' : 'Démo') : 'RDV'}
+                                  {(rel as any)._rdvType === 'demonstration' ? t('prospectDetail.demoShort') : t('prospectDetail.rdvShort')}
                                 </span>
                               )}
                               {/* {isSynthetic && (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] bg-amber-500/10 text-amber-600">
-                                  {isEn ? 'From form' : 'Depuis le formulaire'}
+                                  {t('prospectDetail.fromForm')}
                                 </span>
                               )} */}
                             </div>
                             <div className={`font-extrabold text-foreground ${isDone ? 'line-through' : ''}`}>
-                              {rel.motif || (isEn ? 'Commercial follow-up' : 'Relance commerciale')}
+                              {rel.motif || t('prospectDetail.defaultMotif')}
                             </div>
                             <div className="flex items-center gap-1 text-muted-foreground font-semibold">
                               <Clock className="w-3 h-3 text-primary shrink-0" />
@@ -759,7 +761,7 @@ export const ProspectDetail: React.FC = () => {
                             <div className="flex items-center gap-1.5 shrink-0">
                               <button
                                 onClick={() => openEditRelance(rel)}
-                                title={isEn ? 'Edit' : 'Modifier'}
+                                title={t('prospectDetail.edit')}
                                 className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                               >
                                 <Pencil className="w-3.5 h-3.5" />
@@ -767,7 +769,7 @@ export const ProspectDetail: React.FC = () => {
                               {!isDone && !isCancelled && (
                                 <button
                                   onClick={async () => { await completeRelance(rel.id); queryClient.invalidateQueries({ queryKey: ['relances', 'prospect', id] }); }}
-                                  title={isEn ? 'Mark as done' : 'Marquer comme réalisée'}
+                                  title={t('prospectDetail.markDone')}
                                   className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-colors"
                                 >
                                   <CheckCircle2 className="w-3.5 h-3.5" />
@@ -775,7 +777,7 @@ export const ProspectDetail: React.FC = () => {
                               )}
                               <button
                                 onClick={async () => { await deleteRelance(rel.id); queryClient.invalidateQueries({ queryKey: ['relances', 'prospect', id] }); }}
-                                title={isEn ? 'Delete' : 'Supprimer'}
+                                title={t('prospectDetail.delete')}
                                 className="p-1.5 rounded-lg hover:bg-rose-500/10 hover:text-rose-500 text-muted-foreground transition-colors"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -796,7 +798,7 @@ export const ProspectDetail: React.FC = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                  {isEn ? 'Internal Notes' : 'Notes internes'}
+                  {t('prospectDetail.notesHeading')}
                 </h3>
                 <div className="relative">
                   <textarea
@@ -816,7 +818,7 @@ export const ProspectDetail: React.FC = () => {
                         setShowMentions(false);
                       }
                     }}
-                    placeholder={isEn ? 'Write a note... Type @ to mention a colleague' : 'Écrire une note... Tapez @ pour mentionner un collègue'}
+                    placeholder={t('prospectDetail.notePlaceholder')}
                     className="w-full p-3 rounded-2xl border border-input bg-background text-xs font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none resize-none"
                   />
                   {showMentions && (
@@ -846,7 +848,7 @@ export const ProspectDetail: React.FC = () => {
                           </button>
                         ))}
                       {commerciaux.filter(c => `${c.prenom} ${c.nom}`.toLowerCase().includes(mentionFilter)).length === 0 && (
-                        <p className="px-3 py-2 text-xs text-muted-foreground">{isEn ? 'No match' : 'Aucun résultat'}</p>
+                        <p className="px-3 py-2 text-xs text-muted-foreground">{t('prospectDetail.noMatch')}</p>
                       )}
                     </div>
                   )}
@@ -862,9 +864,9 @@ export const ProspectDetail: React.FC = () => {
                       try {
                         await addNote.mutateAsync({ contenu: noteText.trim(), mentionedUserIds: mentionedIds });
                         setNoteText('');
-                        toast.success(isEn ? 'Note added!' : 'Note ajoutée !');
+                        toast.success(t('prospectDetail.noteAddedToast'));
                       } catch {
-                        toast.error(isEn ? 'Error adding note.' : "Erreur lors de l'ajout.");
+                        toast.error(t('prospectDetail.noteErrorToast'));
                       } finally {
                         setNoteSaving(false);
                       }
@@ -877,7 +879,7 @@ export const ProspectDetail: React.FC = () => {
                     ) : (
                       <Plus className="w-3.5 h-3.5" />
                     )}
-                    {isEn ? 'Add note' : 'Ajouter'}
+                    {t('prospectDetail.addNoteBtn')}
                   </button>
                 </div>
               </div>
@@ -886,10 +888,10 @@ export const ProspectDetail: React.FC = () => {
                 <div className="p-6 sm:p-8 rounded-3xl border-2 border-dashed border-border text-center space-y-2">
                   <MessageSquare className="w-8 h-8 text-muted-foreground mx-auto" />
                   <p className="text-xs font-black text-foreground">
-                    {isEn ? 'No note yet.' : 'Aucune note pour le moment.'}
+                    {t('prospectDetail.noNote')}
                   </p>
                   <p className="text-xs text-muted-foreground font-semibold">
-                    {isEn ? 'Add internal notes and @mention colleagues to notify them.' : 'Ajoutez des notes internes et @mentionnez vos collègues pour les notifier.'}
+                    {t('prospectDetail.noNoteHint')}
                   </p>
                 </div>
               ) : (
@@ -936,7 +938,7 @@ export const ProspectDetail: React.FC = () => {
             <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                  {isEn ? 'Commercial Profile Summary' : "Fiche d'Identité Commerciale"}
+                  {t('prospectDetail.profileHeading')}
                 </h3>
                 {!isEditing ? (
                   <div className="flex items-center gap-2">
@@ -945,7 +947,7 @@ export const ProspectDetail: React.FC = () => {
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-input text-xs font-bold text-foreground hover:bg-muted transition-all"
                     >
                       <Pencil className="w-3.5 h-3.5 text-primary" />
-                      {isEn ? 'Edit' : 'Modifier'}
+                      {t('prospectDetail.edit')}
                     </button>
                     {/* Retour client n°8 : suppression du prospect depuis sa fiche */}
                     <button
@@ -953,7 +955,7 @@ export const ProspectDetail: React.FC = () => {
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-input text-xs font-bold text-red-500 hover:bg-red-500/10 hover:border-red-500/30 transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                      {isEn ? 'Delete' : 'Supprimer'}
+                      {t('prospectDetail.delete')}
                     </button>
                   </div>
                 ) : (
@@ -962,7 +964,7 @@ export const ProspectDetail: React.FC = () => {
                       onClick={() => setIsEditing(false)}
                       className="px-3 py-1.5 rounded-xl border border-input text-xs font-bold text-muted-foreground hover:bg-muted transition-all"
                     >
-                      {isEn ? 'Cancel' : 'Annuler'}
+                      {t('prospectDetail.cancel')}
                     </button>
                     <button
                       onClick={handleSaveEdit}
@@ -972,7 +974,7 @@ export const ProspectDetail: React.FC = () => {
                       {editSaving
                         ? <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         : <Save className="w-3.5 h-3.5" />}
-                      {isEn ? 'Save' : 'Enregistrer'}
+                      {t('prospectDetail.save')}
                     </button>
                   </div>
                 )}
@@ -985,25 +987,25 @@ export const ProspectDetail: React.FC = () => {
                     {/* Identité */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Last name' : 'Nom'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.lastName')}</label>
                         <input value={editForm.nom} onChange={e => setEditForm(f => ({...f, nom: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'First name' : 'Prénom'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.firstName')}</label>
                         <input value={editForm.prenom} onChange={e => setEditForm(f => ({...f, prenom: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Company' : 'Entreprise'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.company')}</label>
                         <input value={editForm.entreprise} onChange={e => setEditForm(f => ({...f, entreprise: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Sector' : "Secteur d'activité"}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.sector')}</label>
                         <select value={editForm.secteur_activite} onChange={e => setEditForm(f => ({...f, secteur_activite: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
-                          <option value="">{isEn ? 'Select…' : 'Sélectionner…'}</option>
+                          <option value="">{t('prospectDetail.select')}</option>
                           {SECTEURS_DETAIL.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                       </div>
@@ -1011,21 +1013,21 @@ export const ProspectDetail: React.FC = () => {
                     {/* Contact */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Phone' : 'Téléphone'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.phone')}</label>
                         <PhoneInput
                           value={editForm.telephone}
                           onChange={(val) => setEditForm(f => ({...f, telephone: val}))}
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">WhatsApp</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.whatsapp')}</label>
                         <PhoneInput
                           value={editForm.whatsapp}
                           onChange={(val) => setEditForm(f => ({...f, whatsapp: val}))}
                         />
                       </div>
                       <div className="sm:col-span-2 space-y-1">
-                        <label className="font-extrabold text-muted-foreground">Email</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.email')}</label>
                         <input type="email" value={editForm.email} onChange={e => setEditForm(f => ({...f, email: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
@@ -1033,19 +1035,19 @@ export const ProspectDetail: React.FC = () => {
                     {/* Localisation */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Country' : 'Pays'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.country')}</label>
                         <select value={editForm.pays} onChange={e => setEditForm(f => ({...f, pays: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
                           {PAYS_DETAIL.map(p => <option key={p} value={p}>{p}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'City' : 'Ville'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.city')}</label>
                         <input value={editForm.ville} onChange={e => setEditForm(f => ({...f, ville: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Address' : 'Adresse'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.address')}</label>
                         <input value={editForm.adresse} onChange={e => setEditForm(f => ({...f, adresse: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
@@ -1053,7 +1055,7 @@ export const ProspectDetail: React.FC = () => {
                     {/* Pipeline */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Source' : 'Source'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.source')}</label>
                         <select value={editForm.source} onChange={e => setEditForm(f => ({...f, source: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
                           {SOURCES_DETAIL.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, isEn)}</option>)}
@@ -1063,14 +1065,14 @@ export const ProspectDetail: React.FC = () => {
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Pipeline stage' : 'Étape pipeline'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.pipelineStage')}</label>
                         <select value={editForm.statut_pipeline} onChange={e => setEditForm(f => ({...f, statut_pipeline: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
                           {etapes.map(e => <option key={e.nom} value={e.nom}>{getEtapeLabel(e, isEn)}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Assigned to' : 'Commercial assigné'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.assignedTo')}</label>
                         <select value={editForm.commercial_id} onChange={e => setEditForm(f => ({...f, commercial_id: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
                           <option value="">—</option>
@@ -1078,7 +1080,7 @@ export const ProspectDetail: React.FC = () => {
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Target plan' : 'Formule envisagée'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.targetPlan')}</label>
                         <select value={editForm.formule_envisagee} onChange={e => setEditForm(f => ({...f, formule_envisagee: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
                           <option value="">—</option>
@@ -1086,35 +1088,35 @@ export const ProspectDetail: React.FC = () => {
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Budget (FCFA)' : 'Budget estimé (FCFA)'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.budgetLabel')}</label>
                         <input type="number" value={editForm.budget_estime} onChange={e => setEditForm(f => ({...f, budget_estime: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'No. of employees' : "Nombre d'employés"}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.employees')}</label>
                         <input type="number" min="0" value={editForm.nombre_employes} onChange={e => setEditForm(f => ({...f, nombre_employes: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'No. of sales reps' : 'Nbre de commerciaux'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.salesReps')}</label>
                         <input type="number" min="0" value={editForm.nbre_commerciaux} onChange={e => setEditForm(f => ({...f, nbre_commerciaux: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-extrabold text-muted-foreground">{isEn ? 'Follow-up date' : 'Date de relance'}</label>
+                        <label className="font-extrabold text-muted-foreground">{t('prospectDetail.followUpDate')}</label>
                         <input type="date" value={editForm.date_prochaine_relance} onChange={e => setEditForm(f => ({...f, date_prochaine_relance: e.target.value}))}
                           style={{ colorScheme: 'auto' }}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="font-extrabold text-muted-foreground">{isEn ? 'Website' : 'Site web'}</label>
+                      <label className="font-extrabold text-muted-foreground">{t('prospectDetail.website')}</label>
                       <input type="url" value={editForm.site_web} onChange={e => setEditForm(f => ({...f, site_web: e.target.value}))}
                         placeholder="https://..."
                         className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
                     </div>
                     <div className="space-y-1">
-                      <label className="font-extrabold text-muted-foreground">{isEn ? 'Notes' : 'Notes / Commentaire'}</label>
+                      <label className="font-extrabold text-muted-foreground">{t('prospectDetail.notesLabel')}</label>
                       <textarea rows={3} value={editForm.commentaire} onChange={e => setEditForm(f => ({...f, commentaire: e.target.value}))}
                         className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none resize-none" />
                     </div>
@@ -1132,22 +1134,22 @@ export const ProspectDetail: React.FC = () => {
                   <div className="space-y-4">
                     {/* Identité */}
                     <div>
-                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Identity' : 'Identité'}</p>
+                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{t('prospectDetail.identity')}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Last name' : 'Nom'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.lastName')}</span>
                           <span className="font-black text-foreground">{prospect.nom || '—'}</span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'First name' : 'Prénom'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.firstName')}</span>
                           <span className="font-black text-foreground">{prospect.prenom || '—'}</span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Company' : 'Entreprise'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.company')}</span>
                           <span className="font-black text-foreground">{orFallback(prospect.entreprise)}</span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Industry / Sector' : "Secteur d'Activité"}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.industrySector')}</span>
                           <span className="font-black text-foreground">{prospect.secteur_activite || '—'}</span>
                         </div>
                       </div>
@@ -1155,22 +1157,22 @@ export const ProspectDetail: React.FC = () => {
 
                     {/* Contact */}
                     <div className="pt-3 border-t border-border/60">
-                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Contact' : 'Contact'}</p>
+                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{t('prospectDetail.contact')}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Phone' : 'Téléphone'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.phone')}</span>
                           <span className="font-black text-foreground text-sm">{formatPhoneNumber(prospect.telephone)}</span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">WhatsApp</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.whatsapp')}</span>
                           <span className="font-black text-foreground">{prospect.whatsapp ? formatPhoneNumber(prospect.whatsapp) : '-'}</span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">Email</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.email')}</span>
                           <span className="font-black text-foreground">{prospect.email || '—'}</span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Website' : 'Site web'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.website')}</span>
                           {prospect.site_web ? (
                             <a href={prospect.site_web} target="_blank" rel="noopener noreferrer" className="font-black text-primary hover:underline text-xs break-all">{prospect.site_web}</a>
                           ) : (
@@ -1182,18 +1184,18 @@ export const ProspectDetail: React.FC = () => {
 
                     {/* Localisation */}
                     <div className="pt-3 border-t border-border/60">
-                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Location' : 'Localisation'}</p>
+                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{t('prospectDetail.location')}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Country' : 'Pays'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.country')}</span>
                           <span className="font-black text-foreground">{prospect.pays || '—'}</span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'City' : 'Ville'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.city')}</span>
                           <span className="font-black text-foreground">{prospect.ville || '—'}</span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Address' : 'Adresse'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.address')}</span>
                           <span className="font-black text-foreground">{prospect.adresse || '—'}</span>
                         </div>
                       </div>
@@ -1201,16 +1203,16 @@ export const ProspectDetail: React.FC = () => {
 
                     {/* Pipeline */}
                     <div className="pt-3 border-t border-border/60">
-                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Pipeline' : 'Pipeline'}</p>
+                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{t('prospectDetail.pipeline')}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Stage' : 'Étape'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.stage')}</span>
                           <span className="font-black text-foreground">
                             {getEtapeLabelByNom(prospect.statut_pipeline, etapes, isEn)}
                           </span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Acquisition Source' : "Source d'Acquisition"}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.acquisitionSource')}</span>
                           <span className="font-black text-foreground capitalize">
                             {(() => {
                               const found = SOURCES_DETAIL.find(s => s.value === prospect.source);
@@ -1219,15 +1221,15 @@ export const ProspectDetail: React.FC = () => {
                           </span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Assigned Sales Rep' : 'Commercial Responsable'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.assignedSalesRep')}</span>
                           <span className="font-black text-primary">{prospect.commercial_nom || '—'}</span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Target plan' : 'Formule envisagée'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.targetPlan')}</span>
                           <span className="font-black text-foreground">{prospect.formule_envisagee || '—'}</span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Follow-up date' : 'Date de relance'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.followUpDate')}</span>
                           <span className="font-black text-foreground">{prospect.date_prochaine_relance || '—'}</span>
                         </div>
                       </div>
@@ -1235,20 +1237,20 @@ export const ProspectDetail: React.FC = () => {
 
                     {/* Données entreprise */}
                     <div className="pt-3 border-t border-border/60">
-                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Company data' : "Données entreprise"}</p>
+                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{t('prospectDetail.companyData')}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'Estimated Budget' : 'Budget Estimé'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.estimatedBudget')}</span>
                           <span className="font-black text-emerald-500 text-sm">
                             {prospect.budget_estime ? `${prospect.budget_estime.toLocaleString()} FCFA` : '—'}
                           </span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'No. of employees' : "Nombre d'employés"}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.employees')}</span>
                           <span className="font-black text-foreground">{prospect.nombre_employes ?? '—'}</span>
                         </div>
                         <div>
-                          <span className="block text-muted-foreground font-extrabold text-[11px]">{isEn ? 'No. of sales reps' : 'Nbre de commerciaux'}</span>
+                          <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.salesReps')}</span>
                           <span className="font-black text-foreground">{prospect.nbre_commerciaux ?? '—'}</span>
                         </div>
                       </div>
@@ -1257,7 +1259,7 @@ export const ProspectDetail: React.FC = () => {
                     {/* Notes */}
                     {prospect.commentaire && (
                       <div className="pt-3 border-t border-border/60">
-                        <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{isEn ? 'Notes' : 'Notes / Commentaire'}</p>
+                        <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{t('prospectDetail.notesLabel')}</p>
                         <p className="text-foreground font-semibold leading-relaxed bg-muted/40 rounded-xl p-3">{prospect.commentaire}</p>
                       </div>
                     )}
@@ -1297,7 +1299,7 @@ export const ProspectDetail: React.FC = () => {
 
               <div className="flex items-center justify-between">
                 <h2 className="text-base sm:text-lg font-extrabold text-foreground">
-                  {isEn ? 'Log an Interaction' : 'Consigner une Interaction'}
+                  {t('prospectDetail.logInteractionTitle')}
                 </h2>
                 <button onClick={() => setIsInterModalOpen(false)} className="p-1 rounded-lg hover:bg-muted">
                   <X className="w-5 h-5" />
@@ -1306,41 +1308,41 @@ export const ProspectDetail: React.FC = () => {
 
               <form onSubmit={handleAddInteraction} className="space-y-3 text-xs">
                 <div>
-                  <label className="block font-bold mb-1 text-foreground">{isEn ? 'Interaction type' : "Type d'interaction"}</label>
+                  <label className="block font-bold mb-1 text-foreground">{t('prospectDetail.interactionType')}</label>
                   <select
                     value={interType}
                     onChange={(e) => setInterType(e.target.value)}
                     className="w-full p-3 rounded-2xl border border-input bg-background font-bold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   >
-                    <option value="appel">{isEn ? 'Phone Call' : 'Appel Téléphonique'}</option>
-                    <option value="whatsapp">WhatsApp</option>
-                    <option value="email">Email</option>
-                    <option value="demonstration">{isEn ? 'Demonstration' : 'Démonstration'}</option>
-                    <option value="visite">{isEn ? 'Client Visit' : 'Visite Client'}</option>
+                    <option value="appel">{t('prospectDetail.phoneCall')}</option>
+                    <option value="whatsapp">{t('prospectDetail.whatsapp')}</option>
+                    <option value="email">{t('prospectDetail.email')}</option>
+                    <option value="demonstration">{t('prospectDetail.demonstration')}</option>
+                    <option value="visite">{t('prospectDetail.clientVisit')}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-bold mb-1 text-foreground">{isEn ? 'Report / Comment' : 'Compte-rendu / Commentaire'}</label>
+                  <label className="block font-bold mb-1 text-foreground">{t('prospectDetail.reportComment')}</label>
                   {/* Retour client n°2 : mention @ pour notifier un commercial */}
                   <MentionTextarea
                     required
                     rows={3}
                     value={interComment}
                     onChange={setInterComment}
-                    placeholder={isEn ? "Key points discussed during exchange... Type @ to notify a sales rep." : "Points clés abordés lors de l'échange... Tapez @ pour notifier un commercial."}
+                    placeholder={t('prospectDetail.interactionCommentPlaceholder')}
                     className="rounded-2xl font-semibold"
                     isEn={isEn}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold mb-1 text-foreground">{isEn ? 'Next Action' : 'Prochaine Action'}</label>
+                  <label className="block font-bold mb-1 text-foreground">{t('prospectDetail.nextActionLabel')}</label>
                   <input
                     type="text"
                     value={interNextAction}
                     onChange={(e) => setInterNextAction(e.target.value)}
-                    placeholder={isEn ? "Ex: Send proposal" : "Ex: Envoyer la proposition commerciale"}
+                    placeholder={t('prospectDetail.nextActionPlaceholder')}
                     className="w-full p-3 rounded-2xl border border-input bg-background font-semibold text-foreground"
                   />
                 </div>
@@ -1351,13 +1353,13 @@ export const ProspectDetail: React.FC = () => {
                     onClick={() => setIsInterModalOpen(false)}
                     className="w-full sm:w-1/3 py-3 rounded-2xl border border-input font-bold hover:bg-muted text-foreground"
                   >
-                    {isEn ? 'Cancel' : 'Annuler'}
+                    {t('prospectDetail.cancel')}
                   </button>
                   <button
                     type="submit"
                     className="w-full sm:w-2/3 py-3 rounded-2xl bg-gradient-faciloop text-white font-extrabold shadow-md hover:opacity-95"
                   >
-                    {isEn ? 'Save interaction' : "Enregistrer l'interaction"}
+                    {t('prospectDetail.saveInteraction')}
                   </button>
                 </div>
               </form>
@@ -1382,7 +1384,7 @@ export const ProspectDetail: React.FC = () => {
               <div className="flex items-center justify-between">
                 <h2 className="text-base sm:text-lg font-extrabold text-foreground flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-emerald-500" />
-                  {isEn ? 'Convert to Client' : 'Conversion en Client'}
+                  {t('prospectDetail.convertTitle')}
                 </h2>
                 <button onClick={() => setIsConvertModalOpen(false)} className="p-1 rounded-lg hover:bg-muted">
                   <X className="w-5 h-5" />
@@ -1390,18 +1392,16 @@ export const ProspectDetail: React.FC = () => {
               </div>
 
               <p className="text-xs text-muted-foreground font-semibold">
-                {isEn
-                  ? `Converting ${orFallback(prospect.entreprise, fullName(prospect))} to an official client.`
-                  : `Conversion de ${orFallback(prospect.entreprise, fullName(prospect))} en client officiel.`}
+                {t('prospectDetail.convertDescription', { name: orFallback(prospect.entreprise, fullName(prospect)) })}
               </p>
 
               <div className="space-y-3 text-xs">
                 {/* Offre */}
                 <div>
-                  <label className="block font-bold text-foreground mb-1.5">{isEn ? 'Subscription plan' : "Offre d'abonnement *"}</label>
+                  <label className="block font-bold text-foreground mb-1.5">{t('prospectDetail.offerLabel')}</label>
                   {activeOrgOffers.length === 0 ? (
                     <p className="text-xs text-amber-600 p-3 rounded-xl border border-amber-500/30 bg-amber-500/5">
-                      {isEn ? 'No active offer configured. Go to Subscriptions to create one.' : 'Aucune offre active. Configurez vos offres dans Abonnements.'}
+                      {t('prospectDetail.noOffer')}
                     </p>
                   ) : (
                     <select
@@ -1418,11 +1418,16 @@ export const ProspectDetail: React.FC = () => {
 
                 {/* Période */}
                 <div>
-                  <label className="block font-bold text-foreground mb-1.5">{isEn ? 'Billing period *' : 'Périodicité *'}</label>
+                  <label className="block font-bold text-foreground mb-1.5">{t('prospectDetail.billingPeriod')}</label>
                   <div className="flex gap-2">
                     {(['mensuel', 'trimestriel', 'annuel'] as const).map(freq => {
                       const selectedOffer = activeOrgOffers.find(o => o.nom === formuleSouscrite);
                       const tarif = selectedOffer?.tarifs[freq] || 0;
+                      const freqLabels: Record<string, string> = {
+                        mensuel: t('prospectDetail.freqMensuel'),
+                        trimestriel: t('prospectDetail.freqTrimestriel'),
+                        annuel: t('prospectDetail.freqAnnuel'),
+                      };
                       return (
                         <button
                           key={freq}
@@ -1434,7 +1439,7 @@ export const ProspectDetail: React.FC = () => {
                               : 'border-input bg-background text-foreground hover:border-primary/50'
                           }`}
                         >
-                          <div className="capitalize">{freq === 'mensuel' ? 'Mensuel' : freq === 'trimestriel' ? 'Trimestriel' : 'Annuel'}</div>
+                          <div className="capitalize">{freqLabels[freq]}</div>
                           {tarif > 0 && (
                             <div className="text-[10px] font-semibold opacity-80 mt-0.5">
                               {tarif.toLocaleString('fr-FR')} FCFA
@@ -1448,7 +1453,7 @@ export const ProspectDetail: React.FC = () => {
 
                 {/* Montant */}
                 <div>
-                  <label className="block font-bold text-foreground mb-1.5">{isEn ? 'Amount (FCFA) *' : 'Montant (FCFA) *'}</label>
+                  <label className="block font-bold text-foreground mb-1.5">{t('prospectDetail.amountLabel')}</label>
                   <input
                     type="number"
                     value={convMontant}
@@ -1456,7 +1461,7 @@ export const ProspectDetail: React.FC = () => {
                     placeholder="0"
                     className="w-full p-3 rounded-2xl border border-input bg-background font-bold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   />
-                  <p className="text-[10px] text-muted-foreground mt-1">Modifiable — pré-rempli depuis le tarif de l'offre</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{t('prospectDetail.amountHint')}</p>
                 </div>
               </div>
 
@@ -1465,14 +1470,14 @@ export const ProspectDetail: React.FC = () => {
                   onClick={() => setIsConvertModalOpen(false)}
                   className="w-full sm:w-1/2 py-3 rounded-2xl border border-input text-xs font-bold hover:bg-muted text-foreground"
                 >
-                  {isEn ? 'Cancel' : 'Annuler'}
+                  {t('prospectDetail.cancel')}
                 </button>
                 <button
                   onClick={handleConvert}
                   disabled={activeOrgOffers.length === 0}
                   className="w-full sm:w-1/2 py-3 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs hover:bg-emerald-600 shadow-md shadow-emerald-500/25 disabled:opacity-50"
                 >
-                  {isEn ? 'Confirm sale' : '✓ Confirmer la vente'}
+                  {t('prospectDetail.confirmSale')}
                 </button>
               </div>
             </motion.div>
@@ -1501,7 +1506,7 @@ export const ProspectDetail: React.FC = () => {
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-extrabold text-foreground flex items-center gap-2">
                   <CalendarPlus className="w-4 h-4 text-primary" />
-                  {isEn ? 'Schedule a follow-up' : 'Programmer une relance'}
+                  {t('prospectDetail.scheduleTitle')}
                 </h2>
                 <button onClick={() => setIsRelanceModalOpen(false)} className="p-1 hover:bg-muted rounded-lg">
                   <X className="w-4 h-4" />
@@ -1510,43 +1515,43 @@ export const ProspectDetail: React.FC = () => {
 
               <form onSubmit={handleCreateRelance} className="space-y-3 text-xs">
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Date & Time *' : 'Date & Heure *'}</label>
+                  <label className="block font-semibold mb-1">{t('prospectDetail.dateTime')}</label>
                   <input type="datetime-local" required value={rDateTime} onChange={e => setRDateTime(e.target.value)}
                     style={{ colorScheme: 'auto' }}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Channel *' : 'Canal *'}</label>
+                  <label className="block font-semibold mb-1">{t('prospectDetail.channel')}</label>
                   <select value={rCanal} onChange={e => setRCanal(e.target.value as RelanceCanal)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                    <option value="appel">{isEn ? 'Phone call' : 'Appel téléphonique'}</option>
-                    <option value="whatsapp">WhatsApp</option>
-                    <option value="email">Email</option>
-                    <option value="visite">{isEn ? 'Visit' : 'Visite'}</option>
-                    <option value="autre">{isEn ? 'Other' : 'Autre'}</option>
+                    <option value="appel">{t('prospectDetail.phoneCall')}</option>
+                    <option value="whatsapp">{t('prospectDetail.whatsapp')}</option>
+                    <option value="email">{t('prospectDetail.email')}</option>
+                    <option value="visite">{t('prospectDetail.canalVisite')}</option>
+                    <option value="autre">{t('prospectDetail.canalAutre')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Purpose' : 'Motif'}</label>
+                  <label className="block font-semibold mb-1">{t('prospectDetail.motifLabel')}</label>
                   <input type="text" value={rMotif} onChange={e => setRMotif(e.target.value)}
-                    placeholder={isEn ? 'e.g. Proposal follow-up' : 'ex. Suivi offre commerciale'}
+                    placeholder={t('prospectDetail.motifPlaceholder')}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Notes' : 'Commentaire'}</label>
+                  <label className="block font-semibold mb-1">{t('prospectDetail.commentLabel')}</label>
                   <textarea rows={2} value={rComment} onChange={e => setRComment(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
                 </div>
                 <div className="flex gap-2 pt-1">
                   <button type="button" onClick={() => setIsRelanceModalOpen(false)}
                     className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
-                    {isEn ? 'Cancel' : 'Annuler'}
+                    {t('prospectDetail.cancel')}
                   </button>
                   <button type="submit" disabled={rSaving}
                     className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
                     {rSaving
                       ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      : <><CalendarPlus className="w-3.5 h-3.5" /> {isEn ? 'Schedule' : 'Programmer'}</>
+                      : <><CalendarPlus className="w-3.5 h-3.5" /> {t('prospectDetail.scheduleBtn')}</>
                     }
                   </button>
                 </div>
@@ -1569,50 +1574,50 @@ export const ProspectDetail: React.FC = () => {
             >
               <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto sm:hidden mb-1" />
               <div className="flex items-center justify-between">
-                <h3 className="font-extrabold text-base text-foreground">{isEn ? 'Edit follow-up' : 'Modifier la relance'}</h3>
+                <h3 className="font-extrabold text-base text-foreground">{t('prospectDetail.editRelanceTitle')}</h3>
                 <button onClick={() => setEditRelanceId(null)} className="p-1.5 rounded-xl hover:bg-muted transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <form onSubmit={handleSaveEditRelance} className="space-y-3 text-xs">
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Date & Time *' : 'Date & Heure *'}</label>
+                  <label className="block font-semibold mb-1">{t('prospectDetail.dateTime')}</label>
                   <input type="datetime-local" required value={erDateTime} onChange={e => setErDateTime(e.target.value)}
                     style={{ colorScheme: 'auto' }}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Channel *' : 'Canal *'}</label>
+                  <label className="block font-semibold mb-1">{t('prospectDetail.channel')}</label>
                   <select value={erCanal} onChange={e => setErCanal(e.target.value as RelanceCanal)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                    <option value="appel">{isEn ? 'Phone call' : 'Appel téléphonique'}</option>
-                    <option value="whatsapp">WhatsApp</option>
-                    <option value="email">Email</option>
-                    <option value="visite">{isEn ? 'Visit' : 'Visite'}</option>
-                    <option value="autre">{isEn ? 'Other' : 'Autre'}</option>
+                    <option value="appel">{t('prospectDetail.phoneCall')}</option>
+                    <option value="whatsapp">{t('prospectDetail.whatsapp')}</option>
+                    <option value="email">{t('prospectDetail.email')}</option>
+                    <option value="visite">{t('prospectDetail.canalVisite')}</option>
+                    <option value="autre">{t('prospectDetail.canalAutre')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Purpose' : 'Motif'}</label>
+                  <label className="block font-semibold mb-1">{t('prospectDetail.motifLabel')}</label>
                   <input type="text" value={erMotif} onChange={e => setErMotif(e.target.value)}
-                    placeholder={isEn ? 'e.g. Proposal follow-up' : 'ex. Suivi offre commerciale'}
+                    placeholder={t('prospectDetail.motifPlaceholder')}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Notes' : 'Commentaire'}</label>
+                  <label className="block font-semibold mb-1">{t('prospectDetail.commentLabel')}</label>
                   <textarea rows={2} value={erComment} onChange={e => setErComment(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
                 </div>
                 <div className="flex gap-2 pt-1">
                   <button type="button" onClick={() => setEditRelanceId(null)}
                     className="flex-1 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground">
-                    {isEn ? 'Cancel' : 'Annuler'}
+                    {t('prospectDetail.cancel')}
                   </button>
                   <button type="submit" disabled={erSaving}
                     className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white text-xs font-bold hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
                     {erSaving
                       ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      : <><Save className="w-3.5 h-3.5" /> {isEn ? 'Save' : 'Enregistrer'}</>
+                      : <><Save className="w-3.5 h-3.5" /> {t('prospectDetail.save')}</>
                     }
                   </button>
                 </div>

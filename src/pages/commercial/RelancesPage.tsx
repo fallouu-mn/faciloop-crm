@@ -51,21 +51,21 @@ export const RelancesPage: React.FC = () => {
   const isAdmin = user?.role === 'admin_org' || user?.role === 'super_admin';
 
   const canalLabels: Record<RelanceCanal, string> = useMemo(() => ({
-    appel:    t('sales.canal.appel', 'Appel'),
+    appel:    t('canal.appel'),
     whatsapp: 'WhatsApp',
-    email:    t('sales.canal.email', 'Email'),
-    visite:   t('sales.canal.visite', 'Visite'),
-    autre:    t('sales.canal.autre', 'Autre'),
-  }), [t, lng]);
+    email:    t('canal.email'),
+    visite:   t('canal.visite'),
+    autre:    t('canal.autre'),
+  }), [t]);
 
   const tabLabels: Record<Tab, string> = useMemo(() => ({
-    toutes:      t('sales.relances.tabs.toutes', 'Toutes'),
-    aujourd_hui: t('sales.relances.tabs.aujourd_hui', "Aujourd'hui"),
-    en_retard:   t('sales.relances.tabs.en_retard', 'En retard'),
-    a_venir:     t('sales.relances.tabs.a_venir', 'À venir'),
-    realisees:   t('sales.relances.tabs.realisees', 'Réalisées'),
-    annulees:    t('sales.relances.tabs.annulees', 'Annulées'),
-  }), [t, lng]);
+    toutes:      t('relances.tabs.toutes'),
+    aujourd_hui: t('relances.tabs.aujourd_hui'),
+    en_retard:   t('relances.tabs.en_retard'),
+    a_venir:     t('relances.tabs.a_venir'),
+    realisees:   t('relances.tabs.realisees'),
+    annulees:    t('relances.tabs.annulees'),
+  }), [t]);
 
   // Modal form state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -125,18 +125,18 @@ export const RelancesPage: React.FC = () => {
         date,
         canal: 'autre',
         motif: p.statut_pipeline === 'rdv_programme'
-          ? t('sales.relances.motif.rdv_programme', 'RDV programmé')
+          ? t('relances.motif.rdv_programme')
           : p.statut_pipeline === 'a_relancer'
-            ? t('sales.relances.motif.a_relancer', 'À relancer')
-            : t('sales.relances.motif.prochaine_relance', 'Prochaine relance'),
-        commentaire: t('sales.relances.motif.synthetic_comment', 'Programmé depuis la fiche prospect (lecture seule)'),
+            ? t('relances.motif.a_relancer')
+            : t('relances.motif.prochaine_relance'),
+        commentaire: t('relances.motif.synthetic_comment'),
         statut: 'prevue',
         created_at: p.created_at,
         _synthetic: true,
       }));
 
     return [...scopedRelances, ...synthetic];
-  }, [relances, isAdmin, user, prospects, myProspects, t, lng]);
+  }, [relances, isAdmin, user, prospects, myProspects, t]);
 
   // ── KPI calculations
   const kpiAujourdhui = useMemo(() => baseRelances.filter(r => r.date === TODAY && (r.statut === 'prevue' || r.statut === 'en_retard')).length, [baseRelances]);
@@ -199,7 +199,7 @@ export const RelancesPage: React.FC = () => {
     setFormProspectId('');
     setFormCommentaire('');
     setFormCommercialId(commerciaux[0]?.id || '');
-    toast.success(lng === 'en' ? 'Follow-up scheduled!' : 'Relance programmée !');
+    toast.success(t('relancesPage.scheduledToast'));
   };
 
   function openEditRelance(rel: Relance) {
@@ -226,7 +226,7 @@ export const RelancesPage: React.FC = () => {
         commentaire: erMotif,
         ...(isAdmin && erCommercialId ? { commercial_id: erCommercialId } : {}),
       });
-      toast.success(lng === 'en' ? 'Follow-up updated!' : 'Relance mise à jour !');
+      toast.success(t('relancesPage.updatedToast'));
       setEditRelanceId(null);
     } finally {
       setErSaving(false);
@@ -245,22 +245,22 @@ export const RelancesPage: React.FC = () => {
     switch (eff) {
       case 'en_retard': return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold">
-          <AlertTriangle className="w-3 h-3" /> {lng === 'en' ? 'Overdue' : 'En retard'}
+          <AlertTriangle className="w-3 h-3" /> {t('relancesPage.overdueBadge')}
         </span>
       );
       case 'prevue': return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-bold">
-          <Clock className="w-3 h-3" /> {lng === 'en' ? 'Scheduled' : 'Prévue'}
+          <Clock className="w-3 h-3" /> {t('relancesPage.scheduledBadge')}
         </span>
       );
       case 'realisee': return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold">
-          <CheckCircle2 className="w-3 h-3" /> {lng === 'en' ? 'Completed' : 'Réalisée'}
+          <CheckCircle2 className="w-3 h-3" /> {t('relancesPage.completedBadge')}
         </span>
       );
       case 'annulee': return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
-          <Ban className="w-3 h-3" /> {lng === 'en' ? 'Cancelled' : 'Annulée'}
+          <Ban className="w-3 h-3" /> {t('relancesPage.cancelledBadge')}
         </span>
       );
     }
@@ -273,10 +273,10 @@ export const RelancesPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-            {lng === 'en' ? 'Follow-ups' : 'Relances'}
+            {t('relancesPage.title')}
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 font-medium">
-            {lng === 'en' ? 'Track and manage prospect follow-ups' : 'Suivez et gérez vos relances prospects'}
+            {t('relancesPage.subtitle')}
           </p>
         </div>
         <button
@@ -284,31 +284,31 @@ export const RelancesPage: React.FC = () => {
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
         >
           <Plus className="h-4 w-4" />
-          <span>{lng === 'en' ? '+ Schedule Follow-up' : 'Programmer une relance'}</span>
+          <span>{t('relancesPage.scheduleBtn')}</span>
         </button>
       </div>
 
       {/* ── KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3.5 space-y-1">
-          <p className="text-[11px] font-bold text-amber-600 uppercase tracking-wide">{lng === 'en' ? 'TODAY' : "AUJOURD'HUI"}</p>
+          <p className="text-[11px] font-bold text-amber-600 uppercase tracking-wide">{t('relancesPage.today')}</p>
           <p className="text-2xl font-black text-amber-600">{kpiAujourdhui}</p>
-          <p className="text-[10px] text-muted-foreground">{lng === 'en' ? 'Scheduled follow-ups' : 'Relances prévues'}</p>
+          <p className="text-[10px] text-muted-foreground">{t('relancesPage.todayDesc')}</p>
         </div>
         <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-3.5 space-y-1">
-          <p className="text-[11px] font-bold text-red-500 uppercase tracking-wide">{lng === 'en' ? 'OVERDUE' : 'EN RETARD'}</p>
+          <p className="text-[11px] font-bold text-red-500 uppercase tracking-wide">{t('relancesPage.overdue')}</p>
           <p className="text-2xl font-black text-red-500">{kpiEnRetard}</p>
-          <p className="text-[10px] text-muted-foreground">{lng === 'en' ? 'Pending / Missed' : 'Non réalisées'}</p>
+          <p className="text-[10px] text-muted-foreground">{t('relancesPage.overdueDesc')}</p>
         </div>
         <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 space-y-1">
-          <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wide">{lng === 'en' ? 'THIS MONTH' : 'CE MOIS'}</p>
+          <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wide">{t('relancesPage.thisMonth')}</p>
           <p className="text-2xl font-black text-emerald-600">{kpiRealiseesMois}</p>
-          <p className="text-[10px] text-muted-foreground">{lng === 'en' ? 'Completed' : 'Réalisées'}</p>
+          <p className="text-[10px] text-muted-foreground">{t('relancesPage.thisMonthDesc')}</p>
         </div>
         <div className="rounded-2xl border border-blue-500/30 bg-blue-500/5 p-3.5 space-y-1">
-          <p className="text-[11px] font-bold text-blue-500 uppercase tracking-wide">{lng === 'en' ? 'THIS WEEK' : 'CETTE SEMAINE'}</p>
+          <p className="text-[11px] font-bold text-blue-500 uppercase tracking-wide">{t('relancesPage.thisWeek')}</p>
           <p className="text-2xl font-black text-blue-500">{kpiAVenir}</p>
-          <p className="text-[10px] text-muted-foreground">{lng === 'en' ? 'Upcoming (7d)' : 'À venir (7j)'}</p>
+          <p className="text-[10px] text-muted-foreground">{t('relancesPage.thisWeekDesc')}</p>
         </div>
       </div>
 
@@ -352,7 +352,7 @@ export const RelancesPage: React.FC = () => {
               onChange={e => setFilterCommercial(e.target.value)}
               className="h-8 px-2.5 rounded-lg border border-input bg-card text-xs font-medium text-foreground focus:ring-2 focus:ring-primary/40"
             >
-              <option value="">{lng === 'en' ? 'All sales reps' : 'Tous les commerciaux'}</option>
+              <option value="">{t('relancesPage.allSalesReps')}</option>
               {commerciaux.filter(c => c.statut === 'actif').map(c => (
                 <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
               ))}
@@ -363,7 +363,7 @@ export const RelancesPage: React.FC = () => {
             onChange={e => setFilterCanal(e.target.value)}
             className="h-8 px-2.5 rounded-lg border border-input bg-card text-xs font-medium text-foreground focus:ring-2 focus:ring-primary/40"
           >
-            <option value="">{lng === 'en' ? 'All channels' : 'Tous les canaux'}</option>
+            <option value="">{t('relancesPage.allChannels')}</option>
             {(Object.keys(canalLabels) as RelanceCanal[]).map(c => (
               <option key={c} value={c}>{canalLabels[c]}</option>
             ))}
@@ -375,7 +375,7 @@ export const RelancesPage: React.FC = () => {
       <div className="space-y-2.5">
         {filtered.length === 0 ? (
           <div className="py-12 text-center rounded-2xl border border-dashed border-border text-muted-foreground text-sm">
-            {lng === 'en' ? 'No follow-up for this filter.' : 'Aucune relance pour ce filtre.'}
+            {t('relancesPage.emptyFilter')}
           </div>
         ) : (
           filtered.map(relance => {
@@ -414,10 +414,10 @@ export const RelancesPage: React.FC = () => {
                     {isSynthetic && (
                       <span
                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold"
-                        title={lng === 'en' ? 'Scheduled from the prospect file' : 'Programmé depuis la fiche prospect'}
+                        title={t('relancesPage.fromProspectFileTitle')}
                       >
                         <CalendarClock className="w-3 h-3" />
-                        {lng === 'en' ? 'From prospect file' : 'Fiche prospect'}
+                        {t('relancesPage.fromProspectFile')}
                       </span>
                     )}
                   </div>
@@ -449,23 +449,23 @@ export const RelancesPage: React.FC = () => {
                       <button
                         onClick={() => openEditRelance(relance)}
                         className="p-1.5 rounded-xl border border-input text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
-                        title={lng === 'en' ? 'Edit' : 'Modifier'}
+                        title={t('relancesPage.edit')}
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => { completeRelance(relance.id); toast.success(lng === 'en' ? 'Follow-up completed!' : 'Relance marquée effectuée !'); }}
+                        onClick={() => { completeRelance(relance.id); toast.success(t('relancesPage.completedToast')); }}
                         className="px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-bold text-[11px] shadow hover:bg-emerald-600 flex items-center gap-1 transition-all"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>{lng === 'en' ? 'Complete' : 'Effectuée'}</span>
+                        <span>{t('relancesPage.complete')}</span>
                       </button>
                       <button
-                        onClick={() => { cancelRelance(relance.id); toast.success(lng === 'en' ? 'Follow-up cancelled.' : 'Relance annulée.'); }}
+                        onClick={() => { cancelRelance(relance.id); toast.success(t('relancesPage.cancelledToast')); }}
                         className="px-3 py-1.5 rounded-xl border border-input text-[11px] font-bold text-muted-foreground hover:text-red-500 hover:border-red-500/50 flex items-center gap-1 transition-all"
                       >
                         <Ban className="w-3.5 h-3.5" />
-                        <span>{lng === 'en' ? 'Cancel' : 'Annuler'}</span>
+                        <span>{t('relancesPage.cancel')}</span>
                       </button>
                     </>
                   )}
@@ -474,7 +474,7 @@ export const RelancesPage: React.FC = () => {
                     className="px-3 py-1.5 rounded-xl border border-input text-[11px] font-bold text-foreground hover:bg-muted flex items-center gap-1 transition-all"
                   >
                     <Eye className="w-3.5 h-3.5 text-primary" />
-                    <span>{lng === 'en' ? 'View' : 'Voir'}</span>
+                    <span>{t('relancesPage.view')}</span>
                   </button>
                 </div>
               </div>
@@ -493,7 +493,7 @@ export const RelancesPage: React.FC = () => {
                   <Bell className="w-4 h-4" />
                 </div>
                 <h2 className="text-base font-bold text-foreground">
-                  {lng === 'en' ? 'Schedule a Follow-up' : 'Programmer une relance'}
+                  {t('relancesPage.scheduleTitle')}
                 </h2>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg hover:bg-muted">
@@ -504,14 +504,14 @@ export const RelancesPage: React.FC = () => {
             <form onSubmit={handleCreate} className="space-y-3 text-xs">
               {isAdmin && (
                 <div>
-                  <label className="block font-semibold mb-1">Commercial *</label>
+                  <label className="block font-semibold mb-1">{t('relancesPage.commercial')}</label>
                   <select
                     required
                     value={formCommercialId}
                     onChange={e => setFormCommercialId(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   >
-                    <option value="">Sélectionner un commercial</option>
+                    <option value="">{t('relancesPage.selectCommercial')}</option>
                     {commerciaux.map(c => (
                       <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
                     ))}
@@ -520,7 +520,7 @@ export const RelancesPage: React.FC = () => {
               )}
               <div>
                 <label className="block font-semibold mb-1">
-                  {lng === 'en' ? 'Prospect' : 'Prospect à relancer'} *
+                  {t('relancesPage.prospect')}
                 </label>
                 <select
                   required
@@ -528,7 +528,7 @@ export const RelancesPage: React.FC = () => {
                   onChange={e => setFormProspectId(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 >
-                  <option value="">Sélectionner un prospect</option>
+                  <option value="">{t('relancesPage.selectProspect')}</option>
                   {modalProspects.map(p => (
                     <option key={p.id} value={p.id}>
                       {fullName(p)}{p.entreprise ? ` — ${p.entreprise}` : ''}
@@ -540,7 +540,7 @@ export const RelancesPage: React.FC = () => {
               <div>
                 <label className="block font-semibold mb-1 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-primary" />
-                  {lng === 'en' ? 'Date & Time *' : 'Date & Heure *'}
+                  {t('relancesPage.dateTime')}
                 </label>
                 <input
                   type="datetime-local"
@@ -552,7 +552,7 @@ export const RelancesPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Canal *</label>
+                <label className="block font-semibold mb-1">{t('relancesPage.canal')}</label>
                 <select
                   value={formCanal}
                   onChange={e => setFormCanal(e.target.value as RelanceCanal)}
@@ -565,13 +565,13 @@ export const RelancesPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Motif / Commentaire *</label>
+                <label className="block font-semibold mb-1">{t('relancesPage.motif')}</label>
                 <input
                   type="text"
                   required
                   value={formCommentaire}
                   onChange={e => setFormCommentaire(e.target.value)}
-                  placeholder="Ex : Confirmer le RDV de la semaine prochaine"
+                  placeholder={t('relancesPage.motifPlaceholder')}
                   className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
               </div>
@@ -581,7 +581,7 @@ export const RelancesPage: React.FC = () => {
                 disabled={!formProspectId || !formCommentaire || (isAdmin && !formCommercialId)}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50"
               >
-                {lng === 'en' ? 'Confirm Follow-up' : 'Valider la relance'}
+                {t('relancesPage.confirmBtn')}
               </button>
             </form>
           </div>
@@ -598,7 +598,7 @@ export const RelancesPage: React.FC = () => {
                   <Pencil className="w-4 h-4" />
                 </div>
                 <h2 className="text-base font-bold text-foreground">
-                  {lng === 'en' ? 'Edit Follow-up' : 'Modifier la relance'}
+                  {t('relancesPage.editTitle')}
                 </h2>
               </div>
               <button onClick={() => setEditRelanceId(null)} className="p-1 rounded-lg hover:bg-muted">
@@ -609,14 +609,14 @@ export const RelancesPage: React.FC = () => {
             <form onSubmit={handleSaveEditRelance} className="space-y-3 text-xs">
               {isAdmin && (
                 <div>
-                  <label className="block font-semibold mb-1">Commercial *</label>
+                  <label className="block font-semibold mb-1">{t('relancesPage.commercial')}</label>
                   <select
                     required
                     value={erCommercialId}
                     onChange={e => setErCommercialId(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   >
-                    <option value="">{lng === 'en' ? 'Select a sales rep' : 'Sélectionner un commercial'}</option>
+                    <option value="">{t('relancesPage.selectCommercial')}</option>
                     {commerciaux.map(c => (
                       <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
                     ))}
@@ -626,7 +626,7 @@ export const RelancesPage: React.FC = () => {
               <div>
                 <label className="block font-semibold mb-1 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-primary" />
-                  {lng === 'en' ? 'Date & Time *' : 'Date & Heure *'}
+                  {t('relancesPage.dateTime')}
                 </label>
                 <input
                   type="datetime-local"
@@ -638,7 +638,7 @@ export const RelancesPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Canal *</label>
+                <label className="block font-semibold mb-1">{t('relancesPage.canal')}</label>
                 <select
                   value={erCanal}
                   onChange={e => setErCanal(e.target.value as RelanceCanal)}
@@ -651,7 +651,7 @@ export const RelancesPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Motif / Commentaire *</label>
+                <label className="block font-semibold mb-1">{t('relancesPage.motif')}</label>
                 <input
                   type="text"
                   required
@@ -666,7 +666,7 @@ export const RelancesPage: React.FC = () => {
                 disabled={erSaving || !erDateTime || !erMotif || (isAdmin && !erCommercialId)}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50"
               >
-                {erSaving ? (lng === 'en' ? 'Saving...' : 'Enregistrement...') : (lng === 'en' ? 'Save Changes' : 'Enregistrer les modifications')}
+                {erSaving ? t('relancesPage.saving') : t('relancesPage.saveChanges')}
               </button>
             </form>
           </div>
@@ -684,7 +684,7 @@ export const RelancesPage: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-foreground">
-                    {lng === 'en' ? 'Follow-up Details' : 'Détails de la relance'}
+                    {t('relancesPage.detailsTitle')}
                   </h2>
                   <p className="text-[11px] text-muted-foreground">
                     {selectedRelanceForView.prospect_nom || orFallback(selectedRelanceForView.prospect_entreprise)}
@@ -702,7 +702,7 @@ export const RelancesPage: React.FC = () => {
 
             <div className="space-y-3 text-xs">
               <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/60">
-                <span className="font-semibold text-muted-foreground">{lng === 'en' ? 'Status:' : 'Statut :'}</span>
+                <span className="font-semibold text-muted-foreground">{t('relancesPage.status')}</span>
                 <div>{statutBadge(getEffectiveStatut(selectedRelanceForView))}</div>
               </div>
 
@@ -710,7 +710,7 @@ export const RelancesPage: React.FC = () => {
                 <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 space-y-1">
                   <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
                     <Calendar className="w-3 h-3 text-primary" />
-                    {lng === 'en' ? 'Date & Time' : 'Date & Heure'}
+                    {t('relancesPage.dateTime')}
                   </span>
                   <p className="font-bold text-foreground">
                     {formatDateWithTime(selectedRelanceForView.date, selectedRelanceForView.heure, lng === 'en' ? 'en' : 'fr')}
@@ -720,7 +720,7 @@ export const RelancesPage: React.FC = () => {
                 <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 space-y-1">
                   <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
                     <MessageCircle className="w-3 h-3 text-primary" />
-                    {lng === 'en' ? 'Channel' : 'Canal'}
+                    {t('relancesPage.channel')}
                   </span>
                   <p className="font-bold text-foreground flex items-center gap-1">
                     {CANAL_ICONS[selectedRelanceForView.canal]}
@@ -730,18 +730,18 @@ export const RelancesPage: React.FC = () => {
               </div>
 
               <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 space-y-1">
-                <span className="text-[10px] font-bold text-muted-foreground">{lng === 'en' ? 'Note / Motif:' : 'Motif / Commentaire :'}</span>
+                <span className="text-[10px] font-bold text-muted-foreground">{t('relancesPage.noteMotif')}</span>
                 <p className="font-medium text-foreground whitespace-pre-wrap">
-                  {selectedRelanceForView.commentaire || selectedRelanceForView.motif || (lng === 'en' ? 'No note specified' : 'Aucun commentaire spécifié')}
+                  {selectedRelanceForView.commentaire || selectedRelanceForView.motif || t('relancesPage.noNote')}
                 </p>
               </div>
 
               <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-muted-foreground">{lng === 'en' ? 'Sales Rep:' : 'Commercial responsable :'}</span>
+                <span className="text-[10px] font-bold text-muted-foreground">{t('relancesPage.salesRep')}</span>
                 <span className="font-bold text-foreground">
                   {commerciaux.find(c => c.id === selectedRelanceForView.commercial_id)
                     ? `${commerciaux.find(c => c.id === selectedRelanceForView.commercial_id)?.prenom} ${commerciaux.find(c => c.id === selectedRelanceForView.commercial_id)?.nom}`
-                    : (lng === 'en' ? 'Commercial' : 'Commercial')}
+                    : t('relancesPage.commercialFallback')}
                 </span>
               </div>
             </div>
@@ -751,13 +751,13 @@ export const RelancesPage: React.FC = () => {
                 to={`/${isAdmin ? 'admin' : 'app'}/prospects/${selectedRelanceForView.prospect_id}`}
                 className="flex-1 py-2.5 rounded-xl bg-gradient-faciloop text-white font-bold text-xs shadow-md text-center hover:opacity-95 transition-all"
               >
-                {lng === 'en' ? 'Open Prospect File' : 'Ouvrir fiche prospect'}
+                {t('relancesPage.openProspect')}
               </Link>
               <button
                 onClick={() => setSelectedRelanceForView(null)}
                 className="px-4 py-2.5 rounded-xl border border-input text-xs font-bold text-muted-foreground hover:bg-muted transition-colors"
               >
-                {lng === 'en' ? 'Close' : 'Fermer'}
+                {t('relancesPage.close')}
               </button>
             </div>
           </div>

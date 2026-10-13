@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Plus, GripVertical, Pencil, Trash2, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import type { EtapePipeline } from '@/services/etapesPipeline';
 
 const COULEURS = [
@@ -30,12 +31,14 @@ interface Props {
   onDelete: (id: string) => Promise<void>;
   onReorder: (reordered: EtapePipeline[]) => Promise<void>;
   prospectCountByEtape?: Record<string, number>;
+  /** @deprecated Plus utilisé — le composant gère sa langue via useTranslation. Conservé pour compatibilité. */
   isEn?: boolean;
 }
 
 export const GestionEtapesModal: React.FC<Props> = ({
-  isOpen, onClose, etapes, onCreate, onUpdate, onDelete, onReorder, prospectCountByEtape = {}, isEn = false,
+  isOpen, onClose, etapes, onCreate, onUpdate, onDelete, onReorder, prospectCountByEtape = {},
 }) => {
+  const { t } = useTranslation('sales');
   const [newLabel, setNewLabel] = useState('');
   const [newCouleurIdx, setNewCouleurIdx] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -52,7 +55,7 @@ export const GestionEtapesModal: React.FC<Props> = ({
     if (!newLabel.trim()) return;
     const nom = slugify(newLabel.trim());
     if (etapes.some(e => e.nom === nom)) {
-      toast.error(isEn ? 'A stage with this name already exists' : 'Une étape avec ce nom existe déjà');
+      toast.error(t('gestionEtapes.stageExists'));
       return;
     }
     setLoading(true);
@@ -60,9 +63,9 @@ export const GestionEtapesModal: React.FC<Props> = ({
       const c = COULEURS[newCouleurIdx];
       await onCreate({ nom, label: newLabel.trim(), couleur: c.couleur, badge_bg: c.badge, icone: 'Circle' });
       setNewLabel('');
-      toast.success(isEn ? 'Stage created' : 'Étape créée');
+      toast.success(t('gestionEtapes.created'));
     } catch {
-      toast.error(isEn ? 'Error creating stage' : 'Erreur lors de la création');
+      toast.error(t('gestionEtapes.createError'));
     } finally {
       setLoading(false);
     }
@@ -75,9 +78,9 @@ export const GestionEtapesModal: React.FC<Props> = ({
       const c = COULEURS[editCouleurIdx];
       await onUpdate(id, { label: editLabel.trim(), couleur: c.couleur, badge_bg: c.badge });
       setEditingId(null);
-      toast.success(isEn ? 'Stage updated' : 'Étape modifiée');
+      toast.success(t('gestionEtapes.updated'));
     } catch {
-      toast.error(isEn ? 'Error updating stage' : 'Erreur lors de la modification');
+      toast.error(t('gestionEtapes.updateError'));
     } finally {
       setLoading(false);
     }
@@ -85,7 +88,7 @@ export const GestionEtapesModal: React.FC<Props> = ({
 
   const requestDelete = (etape: EtapePipeline) => {
     if (etapes.length <= 2) {
-      toast.error(isEn ? 'You must keep at least 2 stages' : 'Vous devez garder au moins 2 étapes');
+      toast.error(t('gestionEtapes.minStages'));
       return;
     }
     setConfirmDeleteId(etape.id);
@@ -97,9 +100,9 @@ export const GestionEtapesModal: React.FC<Props> = ({
     try {
       await onDelete(confirmDeleteId);
       setConfirmDeleteId(null);
-      toast.success(isEn ? 'Stage deleted' : 'Étape supprimée');
+      toast.success(t('gestionEtapes.deleted'));
     } catch {
-      toast.error(isEn ? 'Error deleting stage' : 'Erreur lors de la suppression');
+      toast.error(t('gestionEtapes.deleteError'));
     } finally {
       setLoading(false);
     }
@@ -120,7 +123,7 @@ export const GestionEtapesModal: React.FC<Props> = ({
     try {
       await onReorder(reordered);
     } catch {
-      toast.error(isEn ? 'Error reordering' : 'Erreur lors du réordonnancement');
+      toast.error(t('gestionEtapes.reorderError'));
     }
   };
 
@@ -139,7 +142,7 @@ export const GestionEtapesModal: React.FC<Props> = ({
         <div className="px-5 pt-5 pb-3 flex items-center justify-between border-b border-border/60">
           <div className="sm:hidden w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto absolute top-2 left-1/2 -translate-x-1/2" />
           <h3 className="font-extrabold text-base text-foreground">
-            {isEn ? 'Manage Pipeline Stages' : 'Gérer les étapes du pipeline'}
+            {t('gestionEtapes.title')}
           </h3>
           <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-muted transition-colors">
             <X className="w-5 h-5 text-muted-foreground" />
@@ -160,7 +163,7 @@ export const GestionEtapesModal: React.FC<Props> = ({
                 <button
                   className="cursor-grab text-muted-foreground hover:text-foreground"
                   onMouseDown={() => setDragIdx(idx)}
-                  title={isEn ? 'Drag to reorder' : 'Glisser pour réordonner'}
+                  title={t('gestionEtapes.dragTitle')}
                 >
                   <GripVertical className="w-4 h-4" />
                 </button>
@@ -212,7 +215,7 @@ export const GestionEtapesModal: React.FC<Props> = ({
                     <span className="text-xs font-bold text-foreground truncate block">{idx + 1}. {etape.label}</span>
                     {etape.is_default && (
                       <span className="text-[9px] text-muted-foreground font-medium">
-                        {isEn ? 'Default' : 'Par défaut'}
+                        {t('gestionEtapes.defaultLabel')}
                       </span>
                     )}
                   </div>
@@ -235,24 +238,22 @@ export const GestionEtapesModal: React.FC<Props> = ({
           return (
             <div className="px-5 py-3 border-t border-rose-500/30 bg-rose-500/5 space-y-2">
               <p className="text-xs font-bold text-rose-600">
-                {isEn
-                  ? `Delete "${etape?.label}"?${count > 0 ? ` ${count} prospect(s) will become invisible in the pipeline.` : ''}`
-                  : `Supprimer « ${etape?.label} » ?${count > 0 ? ` ${count} prospect(s) deviendront invisibles dans le pipeline.` : ''}`
-                }
+                {t('gestionEtapes.deleteConfirm', { label: etape?.label })}
+                {count > 0 ? ` ${t('gestionEtapes.deleteWarn', { count })}` : ''}
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setConfirmDeleteId(null)}
                   className="px-3 py-1.5 rounded-lg border border-input text-xs font-bold text-foreground hover:bg-muted"
                 >
-                  {isEn ? 'Cancel' : 'Annuler'}
+                  {t('gestionEtapes.cancel')}
                 </button>
                 <button
                   onClick={confirmDelete}
                   disabled={loading}
                   className="px-3 py-1.5 rounded-lg bg-rose-500 text-white text-xs font-bold hover:bg-rose-600 disabled:opacity-50"
                 >
-                  {isEn ? 'Confirm delete' : 'Confirmer la suppression'}
+                  {t('gestionEtapes.confirmDelete')}
                 </button>
               </div>
             </div>
@@ -261,13 +262,13 @@ export const GestionEtapesModal: React.FC<Props> = ({
 
         {/* Create New Stage */}
         <div className="px-5 py-4 border-t border-border/60 space-y-3">
-          <p className="text-xs font-bold text-foreground">{isEn ? 'Add a new stage' : 'Ajouter une nouvelle étape'}</p>
+          <p className="text-xs font-bold text-foreground">{t('gestionEtapes.addNew')}</p>
           <div className="flex items-center gap-2">
             <input
               type="text"
               value={newLabel}
               onChange={e => setNewLabel(e.target.value)}
-              placeholder={isEn ? 'Stage name...' : "Nom de l'étape..."}
+              placeholder={t('gestionEtapes.namePlaceholder')}
               className="flex-1 h-9 px-3 rounded-xl border border-input bg-background text-xs font-bold text-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary"
               onKeyDown={e => e.key === 'Enter' && handleCreate()}
             />
@@ -286,7 +287,7 @@ export const GestionEtapesModal: React.FC<Props> = ({
               className="h-9 px-4 rounded-xl bg-gradient-faciloop text-white text-xs font-extrabold hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5 shrink-0"
             >
               <Plus className="w-3.5 h-3.5" />
-              {isEn ? 'Add' : 'Ajouter'}
+              {t('gestionEtapes.add')}
             </button>
           </div>
         </div>

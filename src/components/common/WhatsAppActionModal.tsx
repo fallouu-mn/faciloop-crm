@@ -17,8 +17,7 @@ export const WhatsAppActionModal: React.FC<WhatsAppActionModalProps> = ({
   prospectNom,
   onClose
 }) => {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en');
+  const { t } = useTranslation('common');
   const { addInteraction, relances, completeRelance } = useAuth();
 
   if (!isOpen) return null;
@@ -31,8 +30,8 @@ export const WhatsAppActionModal: React.FC<WhatsAppActionModalProps> = ({
       statut: 'realisee',
       date: new Date().toISOString().split('T')[0],
       heure: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      commentaire: isEn ? `WhatsApp message sent to ${prospectNom}.` : `Message WhatsApp transmis à ${prospectNom}.`,
-      prochaine_action: isEn ? 'Follow prospect reply' : 'Suivre la réponse du prospect'
+      commentaire: t('whatsapp.logMessage', { name: prospectNom }),
+      prochaine_action: t('whatsapp.nextAction')
     });
 
     // 2. Automatically complete any pending relance for this prospect
@@ -66,12 +65,10 @@ export const WhatsAppActionModal: React.FC<WhatsAppActionModalProps> = ({
 
           <div className="space-y-1.5">
             <h3 className="text-base sm:text-lg font-extrabold text-foreground">
-              {isEn ? 'Did you send the message?' : 'Avez-vous envoyé le message ?'}
+              {t('whatsapp.confirmTitle')}
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground font-semibold leading-relaxed">
-              {isEn 
-                ? <>For <strong className="text-foreground font-extrabold">{prospectNom}</strong>. Confirm to log exchange and close follow-ups.</>
-                : <>Pour <strong className="text-foreground font-extrabold">{prospectNom}</strong>. Validez pour consigner l'échange et clore vos relances.</>}
+              {t('whatsapp.confirmBodyPre')} <strong className="text-foreground font-extrabold">{prospectNom}</strong> {t('whatsapp.confirmBodyPost')}
             </p>
           </div>
 
@@ -81,14 +78,14 @@ export const WhatsAppActionModal: React.FC<WhatsAppActionModalProps> = ({
               className="w-full py-3.5 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-500/25 hover:bg-emerald-600 flex items-center justify-center gap-2 transition-all active:scale-95"
             >
               <Check className="w-4 h-4" />
-              <span>{isEn ? "Yes, log the exchange" : "Oui, consigner l'échange"}</span>
+              <span>{t('whatsapp.logYes')}</span>
             </button>
 
             <button
               onClick={onClose}
               className="w-full py-3 rounded-2xl border border-input text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95"
             >
-              {isEn ? 'No / Later' : 'Non / Plus tard'}
+              {t('whatsapp.logLater')}
             </button>
           </div>
         </motion.div>

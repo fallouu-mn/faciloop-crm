@@ -11,8 +11,7 @@ import { useTranslation } from 'react-i18next';
  * Utilisable par les rôles : commercial, admin_org, super_admin
  */
 export const PinChangeSection: React.FC = () => {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en');
+  const { t } = useTranslation('common');
 
   const [nouveau, setNouveau] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -34,13 +33,11 @@ export const PinChangeSection: React.FC = () => {
     setSuccess(false);
 
     if (nouveau.length !== 6) {
-      setError(isEn
-        ? 'PIN code must be exactly 6 digits.'
-        : 'Le code secret doit contenir exactement 6 chiffres.');
+      setError(t('pinChange.errors.pinLength'));
       return;
     }
     if (nouveau !== confirmation) {
-      setError(isEn ? 'PIN codes do not match.' : 'Les codes ne correspondent pas.');
+      setError(t('pinChange.errors.mismatch'));
       return;
     }
 
@@ -48,21 +45,15 @@ export const PinChangeSection: React.FC = () => {
     try {
       const { error: updateError } = await supabase.auth.updateUser({ password: nouveau });
       if (updateError) {
-        setError(isEn
-          ? `Error: ${updateError.message}`
-          : `Erreur : ${updateError.message}`);
+        setError(t('pinChange.errors.update', { message: updateError.message }));
         toast.error(updateError.message);
         return;
       }
       setSuccess(true);
-      toast.success(isEn
-        ? 'PIN code updated successfully!'
-        : 'Code secret mis à jour avec succès !');
+      toast.success(t('pinChange.updated'));
       setTimeout(reset, 2000);
     } catch {
-      setError(isEn
-        ? 'An unexpected error occurred.'
-        : 'Une erreur inattendue est survenue.');
+      setError(t('pinChange.errors.unexpected'));
     } finally {
       setIsPending(false);
     }
@@ -75,18 +66,16 @@ export const PinChangeSection: React.FC = () => {
       {/* Section header */}
       <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
         <ShieldCheck className="w-4 h-4 text-primary" />
-        {isEn ? 'Security — Change PIN code' : 'Sécurité — Changer le code PIN'}
+        {t('pinChange.title')}
       </h2>
       <p className="text-xs text-muted-foreground -mt-2">
-        {isEn
-          ? 'Update your 6-digit secret PIN used to log in.'
-          : 'Modifiez votre code secret à 6 chiffres utilisé pour la connexion.'}
+        {t('pinChange.hint')}
       </p>
 
       {/* New PIN */}
       <div className="space-y-2">
         <label className="text-xs font-semibold text-foreground">
-          {isEn ? 'New PIN code' : 'Nouveau code secret'}
+          {t('pinChange.newPin')}
         </label>
         <div className="flex items-center gap-3">
           <InputOTP
@@ -106,7 +95,7 @@ export const PinChangeSection: React.FC = () => {
             type="button"
             onClick={() => setShowPin((v) => !v)}
             className="shrink-0 h-10 w-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
-            title={isEn ? 'Toggle visibility' : 'Afficher/masquer'}
+            title={t('pinChange.visibility')}
           >
             {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
@@ -116,7 +105,7 @@ export const PinChangeSection: React.FC = () => {
       {/* Confirm PIN */}
       <div className="space-y-2">
         <label className="text-xs font-semibold text-foreground">
-          {isEn ? 'Confirm PIN code' : 'Confirmer le code secret'}
+          {t('pinChange.confirmPin')}
         </label>
         <div className="flex items-center gap-3">
           <InputOTP
@@ -145,7 +134,7 @@ export const PinChangeSection: React.FC = () => {
         <div className="flex items-center gap-2 text-emerald-600">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           <p className="text-xs font-semibold">
-            {isEn ? 'PIN code updated successfully!' : 'Code secret mis à jour avec succès !'}
+            {t('pinChange.updated')}
           </p>
         </div>
       )}
@@ -158,7 +147,7 @@ export const PinChangeSection: React.FC = () => {
           disabled={isPending || (!nouveau && !confirmation)}
           className="flex-1 py-2.5 rounded-xl border border-border text-xs font-bold text-muted-foreground hover:bg-muted transition-all disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {isEn ? 'Clear' : 'Effacer'}
+          {t('pinChange.clear')}
         </button>
         <button
           type="button"
@@ -169,12 +158,12 @@ export const PinChangeSection: React.FC = () => {
           {isPending ? (
             <>
               <span className="h-3.5 w-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-              {isEn ? 'Saving…' : 'Enregistrement…'}
+              {t('pinChange.saving')}
             </>
           ) : (
             <>
               <KeyRound className="h-3.5 w-3.5" />
-              {isEn ? 'Update PIN' : 'Mettre à jour le PIN'}
+              {t('pinChange.update')}
             </>
           )}
         </button>

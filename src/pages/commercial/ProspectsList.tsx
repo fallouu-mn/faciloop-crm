@@ -33,8 +33,9 @@ const PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
 export const ProspectsList: React.FC = () => {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en');
+  const { t, i18n } = useTranslation('sales');
+  const lng = i18n.language || 'fr';
+  const isEn = lng.startsWith('en');
   const { user, myProspects, prospects, addProspect, deleteProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
   const { prospects: apiProspects, createProspect: apiCreateProspect, reassignProspects: apiReassignProspects } = useProspects();
   const { etapes } = useEtapesPipeline();
@@ -115,7 +116,7 @@ export const ProspectsList: React.FC = () => {
       f => f.required && String(newCustomFields[f.key] ?? '').trim() === '',
     );
     if (missingRequired) {
-      toast.error(isEn ? 'Please fill in all required custom fields.' : 'Veuillez renseigner tous les champs personnalisés obligatoires.');
+      toast.error(t('prospectList.requiredFieldsError'));
       return;
     }
 
@@ -148,7 +149,7 @@ export const ProspectsList: React.FC = () => {
     }
 
     if (res.success) {
-      toast.success('Prospect créé et attribué avec succès !');
+      toast.success(t('prospectList.createdToast'));
       setIsNewModalOpen(false);
       resetNewForm();
     }
@@ -223,7 +224,7 @@ export const ProspectsList: React.FC = () => {
         else skipped++;
       }
 
-      toast.success(`Import terminé : ${imported} prospects créés, ${skipped} ignorés (doublons/invalides)`);
+      toast.success(t('prospectList.importToast', { imported, skipped }));
       if (fileInputRef.current) fileInputRef.current.value = '';
     };
     reader.readAsText(file);
@@ -263,7 +264,7 @@ export const ProspectsList: React.FC = () => {
     const commNom = `${targetComm.prenom} ${targetComm.nom}`;
 
     reassignProspects(selectedIds, targetComm.id, commNom);
-    toast.success(`${selectedIds.length} prospects réattribués avec succès à ${commNom} !`);
+    toast.success(t('prospectList.reassignedToast', { count: selectedIds.length, name: commNom }));
     setSelectedIds([]);
     setIsReassignModalOpen(false);
   };
@@ -271,7 +272,7 @@ export const ProspectsList: React.FC = () => {
   const handleDelete = async (id: string) => {
     await deleteProspect(id);
     setConfirmDeleteId(null);
-    toast.success(isEn ? 'Prospect deleted.' : 'Prospect supprimé.');
+    toast.success(t('prospectList.deletedToast'));
   };
 
   const isAdminRole = user?.role === 'admin_org' || user?.role === 'super_admin';
@@ -283,20 +284,20 @@ export const ProspectsList: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
-              Liste des Prospects ({filtered.length})
+              {t('prospectList.title', { count: filtered.length })}
             </h1>
             {user?.role === 'commercial' ? (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold flex items-center gap-1">
-                <Lock className="w-3 h-3" /> Portefeuille Personnel
+                <Lock className="w-3 h-3" /> {t('prospectList.personalPortfolio')}
               </span>
             ) : (
               <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-bold flex items-center gap-1">
-                <UserCheck className="w-3 h-3" /> Vue globale Admin
+                <UserCheck className="w-3 h-3" /> {t('prospectList.adminGlobalView')}
               </span>
             )}
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Gérez, recherchez et réattribuez les opportunités de l'entreprise
+            {t('prospectList.subtitle')}
           </p>
         </div>
 
@@ -308,7 +309,7 @@ export const ProspectsList: React.FC = () => {
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 text-white px-4 py-2.5 text-xs font-extrabold shadow-lg shadow-amber-500/25 hover:bg-amber-600 transition-all animate-pulse"
             >
               <ArrowRightLeft className="h-4 w-4 shrink-0" />
-              <span>Réattribuer la sélection ({selectedIds.length})</span>
+              <span>{t('prospectList.reassignSelection', { count: selectedIds.length })}</span>
             </button>
           )}
 
@@ -317,17 +318,17 @@ export const ProspectsList: React.FC = () => {
             <button
               onClick={handleExportCSV}
               className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-input bg-card px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition-all"
-              title="Exporter mes prospects en CSV"
+              title={t('prospectList.exportTooltip')}
             >
               <Download className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Export</span>
+              <span className="hidden sm:inline">{t('prospectList.export')}</span>
             </button>
             <label
               className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-input bg-card px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition-all cursor-pointer"
-              title="Importer des prospects depuis un fichier CSV"
+              title={t('prospectList.importTooltip')}
             >
               <Upload className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Import</span>
+              <span className="hidden sm:inline">{t('prospectList.import')}</span>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -343,7 +344,7 @@ export const ProspectsList: React.FC = () => {
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-faciloop px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
           >
             <Plus className="h-4 w-4 shrink-0" />
-            <span>Nouveau Prospect</span>
+            <span>{t('prospectList.newProspect')}</span>
           </button>
         </div>
       </div>
@@ -357,7 +358,7 @@ export const ProspectsList: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher par nom, entreprise ou téléphone..."
+            placeholder={t('prospectList.searchPlaceholder')}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-input bg-card text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
           />
         </div>
@@ -368,9 +369,9 @@ export const ProspectsList: React.FC = () => {
             onChange={(e) => setFilterStep(e.target.value)}
             className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
           >
-            <option value="all">{isEn ? 'All stages' : 'Toutes les étapes'}</option>
+            <option value="all">{t('prospectList.allStages')}</option>
             {etapes.map(e => (
-              <option key={e.nom} value={e.nom}>{getEtapeLabelByNom(e.nom, etapes, isEn)}</option>
+              <option key={e.nom} value={e.nom}>{getEtapeLabelByNom(e.nom, etapes, isEn ? 'en' : lng)}</option>
             ))}
           </select>
 
@@ -379,7 +380,7 @@ export const ProspectsList: React.FC = () => {
             onChange={(e) => setFilterSource(e.target.value)}
             className="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
           >
-            <option value="all">{isEn ? 'All sources' : 'Toutes les sources'}</option>
+            <option value="all">{t('prospectList.allSources')}</option>
             {allSourceOptions.map(s => (
               <option key={s.value} value={s.value}>{sourceLabel(s, isEn)}</option>
             ))}
@@ -400,12 +401,12 @@ export const ProspectsList: React.FC = () => {
                   className="w-4 h-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
                 />
               </th>
-              <th className="p-4">Prospect / Entreprise</th>
-              <th className="p-4">Téléphone</th>
-              <th className="p-4">Étape du Parcours</th>
-              <th className="p-4">Source</th>
-              <th className="p-4">Commercial Attribué</th>
-              <th className="p-4 text-right">Actions</th>
+              <th className="p-4">{t('prospectList.colProspect')}</th>
+              <th className="p-4">{t('prospectList.colPhone')}</th>
+              <th className="p-4">{t('prospectList.colStage')}</th>
+              <th className="p-4">{t('prospectList.colSource')}</th>
+              <th className="p-4">{t('prospectList.colSalesRep')}</th>
+              <th className="p-4 text-right">{t('prospectList.colActions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -432,14 +433,14 @@ export const ProspectsList: React.FC = () => {
                       p.statut_pipeline === 'perdu' ? 'bg-rose-500/10 text-rose-500' :
                       'bg-primary/10 text-primary'
                     }`}>
-                      {getEtapeLabelByNom(p.statut_pipeline, etapes, isEn)}
+                      {getEtapeLabelByNom(p.statut_pipeline, etapes, isEn ? 'en' : lng)}
                     </span>
                   </td>
                   <td className="p-4 capitalize text-muted-foreground">{(() => {
                     const opt = allSourceOptions.find(s => s.value === p.source);
                     return opt ? sourceLabel(opt, isEn) : p.source.replace(/[_-]+/g, ' ');
                   })()}</td>
-                  <td className="p-4 font-semibold text-primary">{p.commercial_nom || 'Non attribué'}</td>
+                  <td className="p-4 font-semibold text-primary">{p.commercial_nom || t('prospectList.unassigned')}</td>
                   <td className="p-4 text-right">
                     <div className="inline-flex items-center gap-1.5">
                       <Link
@@ -447,7 +448,7 @@ export const ProspectsList: React.FC = () => {
                         className="inline-flex items-center gap-1 rounded-lg border border-input bg-card px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span>Fiche</span>
+                        <span>{t('prospectList.file')}</span>
                       </Link>
                       {confirmDeleteId === p.id ? (
                         <div className="inline-flex items-center gap-1">
@@ -455,13 +456,13 @@ export const ProspectsList: React.FC = () => {
                             onClick={() => handleDelete(p.id)}
                             className="px-2 py-1.5 rounded-lg bg-red-500 text-white text-[10px] font-bold hover:bg-red-600"
                           >
-                            {isEn ? 'Confirm' : 'Confirmer'}
+                            {t('prospectList.confirm')}
                           </button>
                           <button
                             onClick={() => setConfirmDeleteId(null)}
                             className="px-2 py-1.5 rounded-lg border border-input text-[10px] font-bold hover:bg-muted"
                           >
-                            {isEn ? 'Cancel' : 'Annuler'}
+                            {t('prospectList.cancel')}
                           </button>
                         </div>
                       ) : (
@@ -503,7 +504,7 @@ export const ProspectsList: React.FC = () => {
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${
                   p.statut_pipeline === 'gagne' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'
                 }`}>
-                  {getEtapeLabelByNom(p.statut_pipeline, etapes, isEn)}
+                  {getEtapeLabelByNom(p.statut_pipeline, etapes, isEn ? 'en' : lng)}
                 </span>
               </div>
 
@@ -517,7 +518,7 @@ export const ProspectsList: React.FC = () => {
                   to={`/app/prospects/${p.id}`}
                   className="flex-1 py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all"
                 >
-                  <span>{isEn ? 'Open Prospect Card' : 'Ouvrir Fiche Prospect'}</span>
+                  <span>{t('prospectList.openCard')}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
                 {confirmDeleteId === p.id ? (
@@ -526,7 +527,7 @@ export const ProspectsList: React.FC = () => {
                       onClick={() => handleDelete(p.id)}
                       className="px-3 py-2 rounded-xl bg-red-500 text-white text-[10px] font-bold hover:bg-red-600 active:scale-95"
                     >
-                      {isEn ? 'Confirm' : 'OK'}
+                      {t('prospectList.confirmMobile')}
                     </button>
                     <button
                       onClick={() => setConfirmDeleteId(null)}
@@ -559,21 +560,19 @@ export const ProspectsList: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-extrabold text-base text-foreground">
-                  {isEn ? 'Bulk Reassignment' : 'Réattribution en Masse'}
+                  {t('prospectList.bulkReassignTitle')}
                 </h3>
-                <p className="text-xs text-muted-foreground">{isEn ? 'Organization Admin' : 'Admin Organisation'}</p>
+                <p className="text-xs text-muted-foreground">{t('prospectList.orgAdmin')}</p>
               </div>
             </div>
 
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {isEn 
-                ? <>You are about to reassign <strong>{selectedIds.length} prospect(s)</strong> selected to the sales rep of your choice:</>
-                : <>Vous allez réattribuer <strong>{selectedIds.length} prospect(s)</strong> sélectionné(s) au commercial de votre choix :</>}
+              {t('prospectList.reassignDescPre')} <strong>{t('prospectList.reassignDescCount', { count: selectedIds.length })}</strong> {t('prospectList.reassignDescPost')}
             </p>
 
             <div className="space-y-2">
               <label className="block text-xs font-bold text-foreground">
-                {isEn ? 'Select the new sales rep:' : 'Sélectionnez le nouveau commercial :'}
+                {t('prospectList.selectSalesRep')}
               </label>
               <select
                 value={targetCommercialId}
@@ -593,13 +592,13 @@ export const ProspectsList: React.FC = () => {
                 onClick={() => setIsReassignModalOpen(false)}
                 className="w-full sm:w-1/2 py-2.5 rounded-xl border border-input text-xs font-bold hover:bg-muted text-foreground transition-all"
               >
-                {isEn ? 'Cancel' : 'Annuler'}
+                {t('prospectList.cancel')}
               </button>
               <button
                 onClick={handleConfirmReassign}
                 className="w-full sm:w-1/2 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 shadow-md shadow-amber-500/20 transition-all"
               >
-                {isEn ? 'Confirm Reassignment' : 'Confirmer la réattribution'}
+                {t('prospectList.confirmReassign')}
               </button>
             </div>
           </div>
@@ -612,7 +611,7 @@ export const ProspectsList: React.FC = () => {
           <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto font-sans">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-foreground">
-                {isEn ? 'New Prospect' : 'Nouveau Prospect'}
+                {t('prospectList.newProspect')}
               </h2>
               <button onClick={() => { setIsNewModalOpen(false); resetNewForm(); }} className="p-1 hover:bg-muted rounded-lg">
                 <X className="w-5 h-5" />
@@ -622,7 +621,7 @@ export const ProspectsList: React.FC = () => {
             {duplicateAlert && (
               <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-bold flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>{isEn ? 'Warning: This phone number already exists in the organization!' : "Attention : Ce numéro existe déjà dans l'organisation !"}</span>
+                <span>{t('prospectList.duplicatePhoneWarning')}</span>
               </div>
             )}
 
@@ -630,22 +629,22 @@ export const ProspectsList: React.FC = () => {
               {/* Section: Identité */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {isEn ? 'IDENTITY' : 'Identité'}
+                  {t('prospectList.sectionIdentity')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Last Name' : 'Nom'}</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.lastName')}</label>
                     <input type="text" value={newNom} onChange={(e) => setNewNom(e.target.value)}
                       placeholder="Diop" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'First Name' : 'Prénom'}</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.firstName')}</label>
                     <input type="text" value={newPrenom} onChange={(e) => setNewPrenom(e.target.value)}
                       placeholder="Moussa" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Company' : 'Entreprise'}</label>
+                  <label className="block font-semibold mb-1">{t('prospectList.company')}</label>
                   <input type="text" value={newEntreprise} onChange={(e) => setNewEntreprise(e.target.value)}
                     placeholder="Dakar Tech Ltd" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
@@ -654,11 +653,11 @@ export const ProspectsList: React.FC = () => {
               {/* Section: Contact */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {isEn ? 'CONTACT' : 'Contact'}
+                  {t('prospectList.sectionContact')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Phone *' : 'Téléphone *'}</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.phone')}</label>
                     <PhoneInput
                       value={newPhone}
                       onChange={(val) => setNewPhone(val)}
@@ -666,7 +665,7 @@ export const ProspectsList: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">WhatsApp</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.whatsapp')}</label>
                     <PhoneInput
                       value={newWhatsapp}
                       onChange={(val) => setNewWhatsapp(val)}
@@ -674,7 +673,7 @@ export const ProspectsList: React.FC = () => {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block font-semibold mb-1">Email</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.email')}</label>
                     <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)}
                       placeholder="contact@entreprise.sn" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
@@ -684,25 +683,25 @@ export const ProspectsList: React.FC = () => {
               {/* Section: Localisation */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {isEn ? 'LOCATION' : 'Localisation'}
+                  {t('prospectList.sectionLocation')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Country *' : 'Pays *'}</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.country')}</label>
                     <select value={newPays} onChange={(e) => setNewPays(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                       {PAYS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'City' : 'Ville'}</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.city')}</label>
                     <input type="text" value={newVille} onChange={(e) => setNewVille(e.target.value)}
                       placeholder="Dakar" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Address' : 'Adresse'}</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.address')}</label>
                     <input type="text" value={newAdresse} onChange={(e) => setNewAdresse(e.target.value)}
-                      placeholder={isEn ? "Neighborhood, street..." : "Quartier, rue..."} className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                      placeholder={t('prospectList.addressPlaceholder')} className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
               </div>
@@ -710,41 +709,41 @@ export const ProspectsList: React.FC = () => {
               {/* Section: Qualification */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {isEn ? 'QUALIFICATION' : 'Qualification'}
+                  {t('prospectList.sectionQualification')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Industry / Sector' : "Secteur d'activité"}</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.sector')}</label>
                     <select value={newSecteur} onChange={(e) => setNewSecteur(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                      <option value="">{isEn ? '— Select —' : '— Sélectionner —'}</option>
+                      <option value="">{t('prospectList.selectOption')}</option>
                       {SECTEURS.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Source' : 'Source'}</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.source')}</label>
                     <select value={newSource} onChange={(e) => setNewSource(e.target.value as SourceValue)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                       {sourceOptions.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, isEn)}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Target Plan' : 'Formule envisagée'}</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.targetPlan')}</label>
                     <select value={newFormule} onChange={(e) => setNewFormule(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                      <option value="">{isEn ? '— None —' : '— Aucune —'}</option>
+                      <option value="">{t('prospectList.none')}</option>
                       {activeOrgOffers.map(o => <option key={o.id} value={o.nom}>{o.nom}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Estimated Budget (FCFA)' : 'Budget estimé (FCFA)'}</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.budget')}</label>
                     <input type="number" value={newBudget} onChange={(e) => setNewBudget(e.target.value)}
                       placeholder="500000" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                   <div>
-                    <label className="block font-semibold mb-1">{isEn ? 'Number of sales reps' : 'Nbre de commerciaux'}</label>
+                    <label className="block font-semibold mb-1">{t('prospectList.salesRepCount')}</label>
                     <input type="number" min="0" value={newNbreCommerciaux} onChange={(e) => setNewNbreCommerciaux(e.target.value)}
-                      placeholder="Ex: 5" className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
+                      placeholder={t('prospectList.salesRepCountExample')} className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                   </div>
                 </div>
               </div>
@@ -752,16 +751,16 @@ export const ProspectsList: React.FC = () => {
               {/* Section: Notes & Relance */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  {isEn ? 'NOTES & FOLLOW-UP' : 'Notes & Relance'}
+                  {t('prospectList.sectionNotes')}
                 </h3>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Comment' : 'Commentaire'}</label>
+                  <label className="block font-semibold mb-1">{t('prospectList.comment')}</label>
                   <textarea value={newCommentaire} onChange={(e) => setNewCommentaire(e.target.value)}
-                    rows={2} placeholder={isEn ? "Internal notes..." : "Notes internes..."}
+                    rows={2} placeholder={t('prospectList.commentPlaceholder')}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50 resize-none" />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{isEn ? 'Next Follow-up Date' : 'Date prochaine relance'}</label>
+                  <label className="block font-semibold mb-1">{t('prospectList.nextFollowUp')}</label>
                   <input type="date" value={newRelance} onChange={(e) => setNewRelance(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/50" />
                 </div>
@@ -778,7 +777,7 @@ export const ProspectsList: React.FC = () => {
               <button type="submit"
                 disabled={!newPhone || !newPays || duplicateAlert}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                {isEn ? 'Create Prospect' : 'Créer le prospect'}
+                {t('prospectList.createProspect')}
               </button>
             </form>
           </div>

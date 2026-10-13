@@ -206,9 +206,9 @@ export const OrganisationDetail: React.FC = () => {
     if (!error) {
       setSaveSuccess(true);
       setOrg(prev => prev ? { ...prev, ...form, prix_abonnement: prix } : prev);
-      toast.success('Organisation mise à jour avec succès !');
+      toast.success(t('detail.toastUpdated'));
     } else {
-      toast.error(`Erreur lors de la sauvegarde : ${error.message}`);
+      toast.error(t('detail.toastSaveError', { message: error.message }));
     }
   };
 

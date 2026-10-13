@@ -11,5 +11,205 @@
   "edit": "Soppi",
   "status": "Melokaan",
   "loading": "Yéwénna...",
-  "logout": "Génn"
+  "logout": "Génn",
+  "nav": {
+    "dashboard": "Dashboard",
+    "myProspects": "Kiliyã yu naa",
+    "customerJourney": "Parcours Client",
+    "myEarnings": "Gains yu naa",
+    "myObjectives": "Objectifs yu naa",
+    "followUps": "Woote yi",
+    "notifications": "Notifications",
+    "myProfile": "Profil bu naa"
+  },
+  "sidebar": {
+    "overview": "Pilotage",
+    "team": "Mbootay",
+    "salesTeam": "Mbootay commercial",
+    "salesObjectives": "Objectifs commerciaux",
+    "salesManagement": "Jëfandikoo commercial",
+    "prospects": "Kiliyã yi",
+    "clientAccounts": "Comptes Clients",
+    "revenue": "Revenus",
+    "offers": "Offres",
+    "payments": "Paiements",
+    "commissions": "Commissions",
+    "administration": "Administration",
+    "actionLog": "Journal",
+    "importExport": "Import / Export",
+    "settings": "Paramètres",
+    "alerts": "Alertes",
+    "navigationMenu": "Menu Navigation",
+    "workspace": "Espace de travail",
+    "myCompany": "Kéwél bu naa",
+    "managementConsole": "Console Direction",
+    "salesRep": "Commercial",
+    "closeMenu": "Bàq menu bi",
+    "expandMenu": "Ubb menu bi",
+    "collapseMenu": "Réduire menu bi",
+    "collapse": "Réduire"
+  },
+  "profil": {
+    "role": {
+      "subtitle": "Jëfandikoo liggéey",
+      "badge": "Jëfandikoo liggéey"
+    },
+    "info": {
+      "fullName": "Turu njëg ak sant",
+      "email": "Email",
+      "phone": "Telefoon",
+      "role": "Rol"
+    },
+    "changePin": {
+      "title": "Soppi sa koodu njëg bi",
+      "hint": "Soppi sa koodu njëg bi ngir duggu (6 nimro)"
+    },
+    "dialog": {
+      "title": "Soppi koodu njëg bi",
+      "subtitle": "Jox sa koodu njëg bu bés bi (6 nimro)",
+      "newPin": "Koodu njëg bu bés",
+      "confirmPin": "Kontre koodu njëg bi",
+      "saving": "Denc...",
+      "confirm": "Dëggël"
+    },
+    "errors": {
+      "pinLength": "Koodu njëg bi war na am 6 nimro.",
+      "pinMismatch": "Kood yi ba jàppale.",
+      "update": "Njumte : {{message}}",
+      "unexpected": "Njumte bu ñu xamul dafa nekk."
+    },
+    "success": {
+      "updated": "Koodu njëg bi soppiku na !"
+    }
+  },
+  "notifications": {
+    "pageTitle": "Xibaar",
+    "subtitle": "Li kàttan ci sa yàggle yi ak woote yi",
+    "markAllRead": "Jox yépp jas ({{count}})",
+    "empty": {
+      "title": "Kulu xibaar",
+      "description": "Sa yàggle woote yu bët, xibaar kiliyã yu ñu la jox ak yeneen xibaar dinañu nekk fii."
+    },
+    "newBadge": "Bu bees",
+    "open": "Ubb",
+    "title": {
+      "relance_retard": "Woote bu bët",
+      "relance_rappel": "Woote bi tey",
+      "nouveau_prospect": "Kiliyã bu bees ñu la jox",
+      "objectif": "Jubluwaay bu bees ñu la jox",
+      "relance": "Woote bu bees ñu taxa",
+      "mention": "Ñu wax nañu sa tur",
+      "default": "Xibaar"
+    }
+  },
+  "phoneInput": {
+    "search": "Seeti benn réew...",
+    "noResults": "Amul benn réew.",
+    "regions": {
+      "afrique_de_l_ouest": "Afrik sowu",
+      "afrique_centrale": "Afrik penx",
+      "afrique_de_l_est": "Afrik penku",
+      "afrique_du_nord": "Afrik bëj-gànnaar",
+      "afrique_australe": "Afrik bëj-saalum",
+      "europe_de_l_ouest": "Europ sowu",
+      "europe_du_sud": "Europ bëj-saalum",
+      "europe_du_nord": "Europ bëj-gànnaar",
+      "europe_de_l_est": "Europ penku",
+      "ameriques": "Amériik yi",
+      "caraibes": "Karayib",
+      "amerique_du_sud": "Amériik bëj-saalum",
+      "moyen_orient": "Moyen-Orient",
+      "asie_du_sud": "Azi bëj-saalum",
+      "asie_de_l_est": "Azi penku",
+      "asie_du_sud_est": "Azi bëj-saalum penku",
+      "asie_centrale": "Azi penx",
+      "oceanie": "Oseani",
+      "territoires_d_outre_mer": "Territoires d'outre-mer"
+    }
+  },
+  "mention": {
+    "tagTitle": "Bind ci benn liwo commercial",
+    "tip": "Xibaar : bind @ ngir yëgal benn liwo commercial"
+  },
+  "customFields": {
+    "section": "Bàtt yi personnalisés",
+    "selectOption": "— Tàmbalee —",
+    "editor": {
+      "newField": "Bàtt bu bees {{n}}",
+      "empty": "Amul benn bàtt bu persinale tey. Yokk benn ngir gis ci formulier yi ak fiche kiliyã yi.",
+      "label": "Turu bi",
+      "type": "Xeetu",
+      "typeText": "Baat",
+      "typeNumber": "Nombér",
+      "typeDate": "Bis",
+      "typeList": "Liste",
+      "options": "Options (bind ci kanam)",
+      "optionsPlaceholder": "Petite, Moyenne, Grande",
+      "required": "Wara",
+      "remove": "Far",
+      "add": "Yokk benn bàtt bu persinale"
+    },
+    "sources": {
+      "add": "Yokk",
+      "remove": "Far",
+      "sourcePlaceholder": "Ex : Salon professionnel",
+      "empty": "Amul benn source bu persinale — liste bu noonu lañu jox."
+    }
+  },
+  "whatsapp": {
+    "confirmTitle": "Ndax nga yóbbu na sa benn bi?",
+    "confirmBodyPre": "Ci",
+    "confirmBodyPost": "Dëggëlu ngir bind xibaar bi te ubb sa woote yi.",
+    "logYes": "Waaw, bind xibaar bi",
+    "logLater": "Déet / Ci kanam",
+    "logMessage": "Benn WhatsApp nga yóbbu ci {{name}}.",
+    "nextAction": "Téere sa kàdda"
+  },
+  "selectCustom": {
+    "placeholder": "Tàmbalee...",
+    "search": "Seeti...",
+    "noResults": "Amul benn."
+  },
+  "periodFilter": {
+    "reset": "Dott ko",
+    "presets": {
+      "all": "Li moy",
+      "today": "Tey",
+      "7d": "7 fan",
+      "30d": "30 fan",
+      "3m": "3 weer",
+      "12m": "12 weer",
+      "custom": "Bu nga def"
+    }
+  },
+  "planGate": {
+    "feature": {
+      "objectifs_equipe": "Jubluwaay gi group bi",
+      "journal_actions": "Kàddu àpp yi",
+      "import_csv": "Import CSV ak fàddli benn yi",
+      "stats_avancees": "Statistiques yu mag",
+      "rapports_personnalises": "Rapport yi persinale"
+    },
+    "planRequired": "{{label}} — Offre {{plan}} la war",
+    "availFrom": "{{plan}} la war ci kanam. Offre {{current}} lañu am.",
+    "upgradeMsg": "Nanga def, dëgg na ma bëgg noppi ci offree {{from}} ngir {{to}}.",
+    "upgradeLink": "Noppi ci offree {{plan}}"
+  },
+  "pinChange": {
+    "title": "Sàmmeye — Sopp koodu njëg",
+    "hint": "Sopp sa koodu njëg bu 6 limu ji nga jëm ci kayitu.",
+    "newPin": "Koodu njëg bu bees",
+    "confirmPin": "Dëggël koodu njëg",
+    "visibility": "Wone / Tibb",
+    "clear": "Mbubb",
+    "saving": "Denc…",
+    "update": "Sopp koodu njëg",
+    "updated": "Koodu njëg bi soppee na!",
+    "errors": {
+      "pinLength": "Koodu njëg bi war na am 6 limu.",
+      "mismatch": "Ñaari koodu yi du tiim.",
+      "update": "Njam : {{message}}",
+      "unexpected": "Benn njam bu amul solo dëkk na."
+    }
+  }
 }

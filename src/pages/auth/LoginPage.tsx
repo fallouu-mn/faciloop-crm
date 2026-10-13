@@ -19,12 +19,10 @@ export const LoginPage: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const { t, i18n } = useTranslation('auth');
+  const { t } = useTranslation('auth');
   const { login } = useAuth();
   const navigate = useNavigate();
   const platformSettings = usePlatformSettings();
-
-  const lng = i18n.language || 'fr';
 
   const supportContact = platformSettings.whatsapp_support || platformSettings.email_support || '';
   const supportMsg = supportContact ? ` — ${supportContact}` : '';
@@ -39,18 +37,22 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const handleDeactivated = () => {
+    setErrorMsg(t('login.accountDeactivated'));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
     if (!phone || phone.length < 9) {
-      setErrorMsg(lng === 'en' ? 'Please enter a valid phone number' : 'Veuillez entrer un numéro de téléphone valide');
+      setErrorMsg(t('errors.invalidPhone'));
       return;
     }
 
     const pin = codeDigits.join('');
     if (pin.length < 6) {
-      setErrorMsg(lng === 'en' ? 'Please enter your 6-digit secret PIN code' : 'Veuillez renseigner le code secret à 6 chiffres');
+      setErrorMsg(t('errors.invalidPin'));
       return;
     }
 
@@ -59,10 +61,7 @@ export const LoginPage: React.FC = () => {
       const session = await login(phone, pin);
       if (session) {
         if (session.commStatut === 'inactif') {
-          setErrorMsg(lng === 'en'
-            ? 'Your account has been deactivated. Please contact your manager.'
-            : 'Votre compte a été désactivé. Veuillez contacter votre responsable.'
-          );
+          handleDeactivated();
         } else if (session.orgStatut === 'en_attente') {
           navigate('/pending-activation');
         } else if (session.orgStatut === 'suspendu' || session.orgStatut === 'inactif') {
@@ -71,10 +70,10 @@ export const LoginPage: React.FC = () => {
           redirectByRole(session.role);
         }
       } else {
-        setErrorMsg(lng === 'en' ? 'Incorrect phone number or PIN code' : 'Numéro de téléphone ou code secret incorrect');
+        setErrorMsg(t('errors.badCredentials'));
       }
     } catch {
-      setErrorMsg(lng === 'en' ? 'Connection error. Please try again.' : 'Erreur de connexion. Veuillez réessayer.');
+      setErrorMsg(t('errors.generic'));
     } finally {
       setLoading(false);
     }
@@ -88,10 +87,7 @@ export const LoginPage: React.FC = () => {
       const session = await login(phoneVal, pin);
       if (session) {
         if (session.commStatut === 'inactif') {
-          setErrorMsg(lng === 'en'
-            ? 'Your account has been deactivated. Please contact your manager.'
-            : 'Votre compte a été désactivé. Veuillez contacter votre responsable.'
-          );
+          handleDeactivated();
         } else if (session.orgStatut === 'en_attente') {
           navigate('/pending-activation');
         } else if (session.orgStatut === 'suspendu' || session.orgStatut === 'inactif') {
@@ -116,9 +112,9 @@ export const LoginPage: React.FC = () => {
           <div className="flex justify-center mb-4">
             <FaciloopBrand className="h-12 w-auto" />
           </div>
-          <h1 className="text-xl font-medium text-foreground">{lng === 'en' ? 'Log in to your account' : 'Connectez-vous'}</h1>
+          <h1 className="text-xl font-medium text-foreground">{t('login.title')}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {lng === 'en' ? 'Manage your prospects and sales activity simply' : 'Gérez vos clients et votre activité simplement'}
+            {t('login.subtitle')}
           </p>
         </div>
 
@@ -126,7 +122,7 @@ export const LoginPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="px-6 space-y-5">
           {/* Phone */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">{lng === 'en' ? 'Phone Number' : 'Téléphone'}</label>
+            <label className="text-sm font-medium text-foreground">{t('login.phoneLabel')}</label>
             <PhoneInput
               value={phone}
               onChange={setPhone}
@@ -142,7 +138,7 @@ export const LoginPage: React.FC = () => {
             showPin={showCode}
             onToggleShow={() => setShowCode(!showCode)}
             disabled={loading}
-            label={lng === 'en' ? 'Secret PIN code (6 digits)' : 'Code secret (6 chiffres)'}
+            label={t('login.pinLabel')}
           />
 
           <p className="text-center">
@@ -150,7 +146,7 @@ export const LoginPage: React.FC = () => {
               to="/forgot-pin"
               className="text-xs text-muted-foreground hover:underline hover:text-primary transition-colors"
             >
-              {lng === 'en' ? 'Forgot secret PIN code?' : 'Code secret oublié ?'}
+              {t('login.forgotPin')}
             </Link>
           </p>
 
@@ -164,7 +160,7 @@ export const LoginPage: React.FC = () => {
               className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
             />
             <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
-              {lng === 'en' ? 'Remember me' : 'Se souvenir de moi'}
+              {t('login.rememberMe')}
             </label>
           </div>
 
@@ -177,7 +173,7 @@ export const LoginPage: React.FC = () => {
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              lng === 'en' ? 'Log in' : 'Se connecter'
+              t('login.loginButton')
             )}
           </button>
         </form>
@@ -185,9 +181,9 @@ export const LoginPage: React.FC = () => {
         {/* Footer */}
         <div className="px-6 py-4 text-center">
           <p className="text-sm text-muted-foreground">
-            {lng === 'en' ? "Don't have an account yet?" : "Pas encore de compte ?"}{' '}
+            {t('login.noAccount')}{' '}
             <Link to="/signup" className="text-primary hover:underline">
-              {lng === 'en' ? 'Create an account' : 'Créer un compte'}
+              {t('login.signupLink')}
             </Link>
           </p>
         </div>

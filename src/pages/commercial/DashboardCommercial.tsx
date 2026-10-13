@@ -89,12 +89,13 @@ const DashboardSkeleton: React.FC = () => (
 
 // ─── Main Component ───────────────────────────────────────────
 export const DashboardCommercial: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('dashboard');
   const { user, myProspects, myRelances, commissions, objectifs, paiements, currency, setCurrency } = useAuth();
   const activeCurrency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === currency)?.[0] || 'XOF') as Currency;
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const isEn = i18n.language?.startsWith('en');
+  // Current display language — used to recompute translated day labels
+  const lng = i18n.language;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -134,8 +135,7 @@ export const DashboardCommercial: React.FC = () => {
 
   // ─── Real weekly sales computed from commissions and payments ───
   const salesTrendData = useMemo(() => {
-    const daysFr = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-    const daysEn = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const dayLabels = t('commercial.days', { returnObjects: true }) as string[];
 
     // Determine the Monday of the current week
     const now = new Date();
@@ -156,7 +156,7 @@ export const DashboardCommercial: React.FC = () => {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
       const dateStr = d.toISOString().split('T')[0];
-      const dayLabel = isEn ? daysEn[i] : daysFr[i];
+      const dayLabel = dayLabels[i];
 
       // Sum sales from commissions for this day
       let daySales = myComms
@@ -198,7 +198,8 @@ export const DashboardCommercial: React.FC = () => {
     }
 
     return days;
-  }, [commissions, paiements, user, isEn]);
+    // `t` / `lng` recompute the labels when the display language changes
+  }, [commissions, paiements, user, t, lng]);
 
   const salesChartData = useMemo(() =>
     salesTrendData.map(d => ({ ...d, sales: Math.round(d.sales * EXCHANGE_RATES[activeCurrency]) })),
@@ -221,10 +222,10 @@ export const DashboardCommercial: React.FC = () => {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
-              {isEn ? 'Hello' : 'Bonjour'}, {user?.prenom || 'Moussa'}
+              {t('welcome', { name: user?.prenom || 'Moussa' })}
             </h1>
             <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider">
-              {isEn ? 'Sales Space' : 'Espace Commercial'}
+              {t('space')}
             </span>
           </div>
 
@@ -246,18 +247,18 @@ export const DashboardCommercial: React.FC = () => {
         </div>
 
         <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
-          {isEn ? 'Your priorities, follow-ups, and sales performance today' : "Vos priorités, relances et performance de vente aujourd'hui"}
+          {t('subtitle')}
         </p>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-        <KpiCard icon={Users} color="blue" label={isEn ? 'MY PROSPECTS' : 'MES PROSPECTS'} value={metrics.totalProspects} link="/app/prospects" />
-        <KpiCard icon={CalendarClock} color="amber" label={isEn ? "TODAY'S FOLLOW-UPS" : 'RELANCES AUJ.'} value={metrics.relancesAujourdhui} link="/app/relances" />
-        <KpiCard icon={AlertTriangle} color="rose" label={isEn ? 'OVERDUE FOLLOW-UPS' : 'RELANCES EN RETARD'} value={metrics.relancesEnRetard} alert={metrics.relancesEnRetard > 0} link="/app/relances" />
-        <KpiCard icon={TrendingUp} color="emerald" label={isEn ? 'REVENUE GENERATED' : 'CA GÉNÉRÉ'} value={formatMoney(metrics.caGenere, activeCurrency)} isText />
-        <KpiCard icon={DollarSign} color="amber" label={isEn ? 'MY EARNINGS' : 'MES GAINS'} value={formatMoney(metrics.mesGains, activeCurrency)} isText link="/app/gains" />
-        <KpiCard icon={Percent} color="blue" label={isEn ? 'CONVERSION RATE' : 'TAUX CONVERSION'} value={`${metrics.tauxConversion}%`} isText />
+        <KpiCard icon={Users} color="blue" label={t('kpis.myProspects')} value={metrics.totalProspects} link="/app/prospects" />
+        <KpiCard icon={CalendarClock} color="amber" label={t('kpis.todayRelances')} value={metrics.relancesAujourdhui} link="/app/relances" />
+        <KpiCard icon={AlertTriangle} color="rose" label={t('kpis.overdueRelances')} value={metrics.relancesEnRetard} alert={metrics.relancesEnRetard > 0} link="/app/relances" />
+        <KpiCard icon={TrendingUp} color="emerald" label={t('kpis.revenue')} value={formatMoney(metrics.caGenere, activeCurrency)} isText />
+        <KpiCard icon={DollarSign} color="amber" label={t('kpis.earnings')} value={formatMoney(metrics.mesGains, activeCurrency)} isText link="/app/gains" />
+        <KpiCard icon={Percent} color="blue" label={t('kpis.conversion')} value={`${metrics.tauxConversion}%`} isText />
       </div>
 
       {/* Main Content: Priorities + Chart */}
@@ -268,11 +269,11 @@ export const DashboardCommercial: React.FC = () => {
             <div className="flex items-center gap-2">
               <WhatsAppIcon className="w-4 h-4 fill-emerald-500" />
               <h3 className="font-extrabold text-sm sm:text-base text-foreground uppercase tracking-wider">
-                {isEn ? "Today's Priorities" : 'Mes Priorités du Jour'}
+                {t('prioritiesTitle')}
               </h3>
             </div>
             <Link to="/app/relances" className="text-xs font-extrabold text-primary hover:underline flex items-center gap-1">
-              <span>{isEn ? 'View all follow-ups' : 'Voir toutes mes relances'}</span>
+              <span>{t('viewAllRelances')}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -296,7 +297,7 @@ export const DashboardCommercial: React.FC = () => {
                         <Clock className="w-3 h-3 text-primary" /> {relance.heure || '09:00'}
                       </span>
                       <span>•</span>
-                      <span>Canal: {(relance.canal || 'whatsapp').replace('_', ' ')}</span>
+                      <span>{t('commercial.canal', { canal: (relance.canal || 'whatsapp').replace('_', ' ') })}</span>
                     </div>
                   </div>
 
@@ -322,7 +323,7 @@ export const DashboardCommercial: React.FC = () => {
 
             {myRelances.length === 0 && (
               <p className="text-xs text-muted-foreground text-center py-4">
-                {isEn ? 'No follow-ups scheduled today.' : "Aucune relance programmée aujourd'hui."}
+                {t('commercial.noRelances')}
               </p>
             )}
           </div>
@@ -332,13 +333,13 @@ export const DashboardCommercial: React.FC = () => {
         <div className="p-5 sm:p-6 rounded-3xl border border-border/80 bg-card shadow-md space-y-4 flex flex-col justify-between">
           <div className="space-y-1">
             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              {isEn ? 'WEEKLY SALES REVENUE' : 'CA Ventes Hebdomadaire'}
+              {t('weeklySales')}
             </span>
             <h3 className="text-2xl font-black text-primary">
               {formatMoney(weeklyTotal, activeCurrency)}
             </h3>
             <p className="text-xs text-muted-foreground font-semibold">
-              {isEn ? '7-day closed deals trend' : 'Tendance des ventes conclues sur 7 jours'}
+              {t('salesTrend')}
             </p>
           </div>
 

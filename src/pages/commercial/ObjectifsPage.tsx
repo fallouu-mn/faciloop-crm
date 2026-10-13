@@ -19,30 +19,17 @@ function getProgressColor(pct: number): string {
   return 'bg-rose-500';
 }
 
-function getProgressText(pct: number, isEn: boolean): string {
-  if (pct >= 100) return isEn ? 'Goal reached!' : 'Objectif atteint !';
-  if (pct >= 80) return isEn ? 'Almost reached' : 'Presque atteint';
-  if (pct >= 50) return isEn ? 'On track' : 'En bonne voie';
-  return isEn ? 'Behind schedule' : 'En retard';
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
+
+function getProgressText(pct: number, t: TranslateFn): string {
+  if (pct >= 100) return t('objectifs.progress.reached');
+  if (pct >= 80) return t('objectifs.progress.almost');
+  if (pct >= 50) return t('objectifs.progress.onTrack');
+  return t('objectifs.progress.behind');
 }
 
-const TYPE_LABELS: Record<string, Record<string, string>> = {
-  ca: { fr: 'Chiffre d\'affaires', en: 'Turnover / Revenue' },
-  ventes: { fr: 'Ventes conclues', en: 'Closed Deals' },
-  prospects: { fr: 'Prospects créés', en: 'Prospects Created' },
-  rdv: { fr: 'RDV réalisés', en: 'Completed Meetings' },
-};
-
-const TYPE_ICONS: Record<string, string> = {
-  ca: 'FCFA',
-  ventes: 'ventes',
-  prospects: 'prospects',
-  rdv: 'RDV',
-};
-
 export const ObjectifsPage: React.FC = () => {
-  const { i18n } = useTranslation();
-  const isEn = Boolean(i18n.language?.startsWith('en'));
+  const { t } = useTranslation('sales');
   const { user, objectifs, currency, setCurrency } = useAuth();
   const { objectifs: apiObjectifs } = useObjectifs();
   const activeCurrency = (Object.entries(CURRENCY_LABELS).find(([, v]) => v === currency)?.[0] || 'XOF') as Currency;
@@ -83,10 +70,10 @@ export const ObjectifsPage: React.FC = () => {
       <div className="flex items-center justify-between gap-2">
         <div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-            Mes Objectifs
+            {t('objectifs.title')}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
-            Objectifs définis par votre responsable commercial
+            {t('objectifs.subtitle')}
           </p>
         </div>
 
@@ -113,17 +100,17 @@ export const ObjectifsPage: React.FC = () => {
           <div className="p-4 rounded-2xl border border-border bg-card shadow-sm text-center space-y-1">
             <Goal className="w-5 h-5 text-primary mx-auto" />
             <p className="text-2xl font-black text-foreground">{summary.total}</p>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase">Objectifs</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase">{t('objectifs.kpiTotal')}</p>
           </div>
           <div className="p-4 rounded-2xl border border-border bg-card shadow-sm text-center space-y-1">
             <Award className="w-5 h-5 text-emerald-500 mx-auto" />
             <p className="text-2xl font-black text-emerald-600">{summary.atteints}</p>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase">Atteints</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase">{t('objectifs.kpiReached')}</p>
           </div>
           <div className="p-4 rounded-2xl border border-border bg-card shadow-sm text-center space-y-1">
             <TrendingUp className="w-5 h-5 text-blue-500 mx-auto" />
             <p className="text-2xl font-black text-blue-600">{summary.avgProgress}%</p>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase">Progression moy.</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase">{t('objectifs.kpiAvgProgress')}</p>
           </div>
         </div>
       )}
@@ -132,10 +119,9 @@ export const ObjectifsPage: React.FC = () => {
       {myObjectifs.length === 0 ? (
         <div className="rounded-2xl border border-border p-8 text-center space-y-3">
           <Goal className="w-12 h-12 text-muted-foreground mx-auto" />
-          <h3 className="text-sm font-bold text-foreground">Aucun objectif défini</h3>
+          <h3 className="text-sm font-bold text-foreground">{t('objectifs.emptyTitle')}</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            Vos objectifs seront définis par votre administrateur d'organisation.
-            Ils apparaîtront ici dès qu'ils seront configurés.
+            {t('objectifs.emptyDesc')}
           </p>
         </div>
       ) : (
@@ -143,9 +129,11 @@ export const ObjectifsPage: React.FC = () => {
           {myObjectifs.map(obj => {
             const pct = obj.objectif > 0 ? Math.min(100, Math.round((obj.realise / obj.objectif) * 100)) : 0;
             const isCA = obj.type === 'ca';
+            const typeLabel = t('objectifs.typeLabel.' + obj.type, obj.type);
+            const unitLabel = t('objectifs.unit.' + obj.type, '');
             const valueText = isCA
               ? `${formatMoney(obj.realise, activeCurrency)} / ${formatMoney(obj.objectif, activeCurrency)}`
-              : `${obj.realise} / ${obj.objectif} ${TYPE_ICONS[obj.type] || ''}`;
+              : `${obj.realise} / ${obj.objectif} ${unitLabel}`;
 
             return (
               <div
@@ -162,10 +150,10 @@ export const ObjectifsPage: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="text-xs sm:text-sm font-extrabold text-foreground">
-                        {TYPE_LABELS[obj.type]?.[isEn ? 'en' : 'fr'] || obj.type}
+                        {typeLabel}
                       </h3>
                       <p className="text-[10px] text-muted-foreground font-semibold">
-                        {isEn ? 'Period' : 'Période'} : {obj.periode}
+                        {t('objectifs.period')} : {obj.periode}
                       </p>
                     </div>
                   </div>
@@ -176,7 +164,7 @@ export const ObjectifsPage: React.FC = () => {
                     pct >= 50 ? 'bg-amber-500/10 text-amber-600' :
                     'bg-rose-500/10 text-rose-600'
                   }`}>
-                    {getProgressText(pct, isEn)}
+                    {getProgressText(pct, t)}
                   </span>
                 </div>
 
@@ -203,9 +191,7 @@ export const ObjectifsPage: React.FC = () => {
       <div className="rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/40 p-3 flex items-start gap-2">
         <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
         <p className="text-xs text-blue-700 dark:text-blue-300">
-          {isEn
-            ? 'Objectives are set and updated by your organization administrator. Your progress is calculated automatically from your sales and activities.'
-            : "Les objectifs sont définis et mis à jour par votre administrateur d'organisation. Votre progression est calculée automatiquement à partir de vos ventes et activités."}
+          {t('objectifs.infoBox')}
         </p>
       </div>
     </div>

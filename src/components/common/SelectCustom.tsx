@@ -30,9 +30,8 @@ export const SelectCustom: React.FC<SelectCustomProps> = ({
   disabled = false,
   className = '',
 }) => {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en');
-  const defaultPlaceholder = isEn ? 'Select...' : 'Sélectionner...';
+  const { t } = useTranslation('common');
+  const defaultPlaceholder = t('selectCustom.placeholder');
   const activePlaceholder = placeholder || defaultPlaceholder;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -110,7 +109,7 @@ export const SelectCustom: React.FC<SelectCustomProps> = ({
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder={isEn ? "Search..." : "Rechercher..."}
+                  placeholder={t('selectCustom.search')}
                   className="w-full pl-8 pr-8 py-2 rounded-lg border border-input bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                 />
                 {search && (
@@ -128,7 +127,7 @@ export const SelectCustom: React.FC<SelectCustomProps> = ({
           <div className="max-h-56 overflow-y-auto overscroll-contain py-1">
             {filtered.length === 0 ? (
               <div className="px-4 py-3 text-xs text-muted-foreground text-center">
-                {isEn ? 'No results found' : 'Aucun résultat'}
+                {t('selectCustom.noResults')}
               </div>
             ) : (
               filtered.map((option) => {

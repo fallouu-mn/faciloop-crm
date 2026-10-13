@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronsUpDown, Search, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Country {
   code: string;
@@ -297,6 +298,19 @@ const COUNTRY_GROUPS: CountryGroup[] = [
 
 const ALL_COUNTRIES: Country[] = COUNTRY_GROUPS.flatMap(g => g.countries);
 
+/**
+ * Clé de traduction d'une région, dérivée du libellé FR du groupe
+ * (ex: "Afrique de l'Ouest" → "afrique_de_l_ouest").
+ * Si la clé est introuvable, i18next revient au libellé FR (comportement actuel).
+ */
+const regionKey = (name: string): string =>
+  name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
 interface PhoneInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -305,6 +319,7 @@ interface PhoneInputProps {
 }
 
 export function PhoneInput({ value, onChange, placeholder = '77 123 45 67', disabled = false }: PhoneInputProps) {
+  const { t } = useTranslation('common');
   const [selectedCountry, setSelectedCountry] = useState<Country>(ALL_COUNTRIES[0]);
   const [localNumber, setLocalNumber] = useState(value);
   const [open, setOpen] = useState(false);
@@ -384,7 +399,7 @@ export function PhoneInput({ value, onChange, placeholder = '77 123 45 67', disa
               <input
                 ref={searchRef}
                 type="text"
-                placeholder="Rechercher un pays..."
+                placeholder={t('phoneInput.search')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="flex h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
@@ -394,11 +409,11 @@ export function PhoneInput({ value, onChange, placeholder = '77 123 45 67', disa
             {/* Country list */}
             <div className="max-h-[260px] overflow-y-auto p-1">
               {filteredGroups.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">Aucun pays trouvé</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('phoneInput.noResults')}</p>
               )}
               {filteredGroups.map((group) => (
                 <div key={group.name}>
-                  <p className="text-xs font-medium text-muted-foreground px-2 py-1.5">{group.name}</p>
+                  <p className="text-xs font-medium text-muted-foreground px-2 py-1.5">{t(`phoneInput.regions.${regionKey(group.name)}`)}</p>
                   {group.countries.map((country) => (
                     <button
                       key={country.code}

@@ -78,9 +78,9 @@ export const ParametresSuperAdmin: React.FC = () => {
     setSaving(false);
     if (!error) {
       setSaveSuccess(true);
-      toast.success('Paramètres de la plateforme sauvegardés !');
+      toast.success(t('parametres.toastSaved'));
     } else {
-      toast.error(`Erreur lors de la sauvegarde : ${error.message}`);
+      toast.error(t('parametres.toastSaveError', { message: error.message }));
     }
   };
 

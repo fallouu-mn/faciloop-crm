@@ -11,5 +11,205 @@
   "edit": "Modifier",
   "status": "Statut",
   "loading": "Chargement...",
-  "logout": "Se déconnecter"
+  "logout": "Se déconnecter",
+  "nav": {
+    "dashboard": "Dashboard",
+    "myProspects": "Mes Prospects",
+    "customerJourney": "Parcours Client",
+    "myEarnings": "Mes Gains",
+    "myObjectives": "Mes Objectifs",
+    "followUps": "Relances",
+    "notifications": "Notifications",
+    "myProfile": "Mon Profil"
+  },
+  "sidebar": {
+    "overview": "Pilotage",
+    "team": "Équipe",
+    "salesTeam": "Équipe commerciale",
+    "salesObjectives": "Objectifs commerciaux",
+    "salesManagement": "Gestion commerciale",
+    "prospects": "Prospects",
+    "clientAccounts": "Comptes Clients",
+    "revenue": "Revenus",
+    "offers": "Offres",
+    "payments": "Paiements",
+    "commissions": "Commissions",
+    "administration": "Administration",
+    "actionLog": "Journal",
+    "importExport": "Import / Export",
+    "settings": "Paramètres",
+    "alerts": "Alertes",
+    "navigationMenu": "Menu Navigation",
+    "workspace": "Espace de travail",
+    "myCompany": "Mon Entreprise",
+    "managementConsole": "Console Direction",
+    "salesRep": "Commercial",
+    "closeMenu": "Fermer le menu",
+    "expandMenu": "Ouvrir le menu",
+    "collapseMenu": "Réduire le menu",
+    "collapse": "Réduire"
+  },
+  "profil": {
+    "role": {
+      "subtitle": "Commercial",
+      "badge": "Commercial"
+    },
+    "info": {
+      "fullName": "Nom complet",
+      "email": "Email",
+      "phone": "Téléphone",
+      "role": "Rôle"
+    },
+    "changePin": {
+      "title": "Modifier mon code secret",
+      "hint": "Changer votre code PIN de connexion"
+    },
+    "dialog": {
+      "title": "Changer le code secret",
+      "subtitle": "Entrez votre nouveau code PIN (6 chiffres)",
+      "newPin": "Nouveau code secret",
+      "confirmPin": "Confirmer le code secret",
+      "saving": "Enregistrement…",
+      "confirm": "Confirmer"
+    },
+    "errors": {
+      "pinLength": "Le code secret doit contenir exactement 6 chiffres.",
+      "pinMismatch": "Les codes ne correspondent pas.",
+      "update": "Erreur : {{message}}",
+      "unexpected": "Une erreur inattendue est survenue."
+    },
+    "success": {
+      "updated": "Code secret mis à jour avec succès !"
+    }
+  },
+  "notifications": {
+    "pageTitle": "Notifications",
+    "subtitle": "Historique de vos alertes et relances",
+    "markAllRead": "Tout marquer lu ({{count}})",
+    "empty": {
+      "title": "Aucune notification",
+      "description": "Vos alertes de relances en retard, nouveaux prospects attribués et autres notifications apparaîtront ici."
+    },
+    "newBadge": "Nouvelle",
+    "open": "Ouvrir",
+    "title": {
+      "relance_retard": "Relance en retard",
+      "relance_rappel": "Relance prévue aujourd'hui",
+      "nouveau_prospect": "Nouveau prospect attribué",
+      "objectif": "Nouvel objectif attribué",
+      "relance": "Nouvelle relance programmée",
+      "mention": "Vous avez été mentionné",
+      "default": "Notification"
+    }
+  },
+  "phoneInput": {
+    "search": "Rechercher un pays...",
+    "noResults": "Aucun pays trouvé",
+    "regions": {
+      "afrique_de_l_ouest": "Afrique de l'Ouest",
+      "afrique_centrale": "Afrique Centrale",
+      "afrique_de_l_est": "Afrique de l'Est",
+      "afrique_du_nord": "Afrique du Nord",
+      "afrique_australe": "Afrique Australe",
+      "europe_de_l_ouest": "Europe de l'Ouest",
+      "europe_du_sud": "Europe du Sud",
+      "europe_du_nord": "Europe du Nord",
+      "europe_de_l_est": "Europe de l'Est",
+      "ameriques": "Amériques",
+      "caraibes": "Caraïbes",
+      "amerique_du_sud": "Amérique du Sud",
+      "moyen_orient": "Moyen-Orient",
+      "asie_du_sud": "Asie du Sud",
+      "asie_de_l_est": "Asie de l'Est",
+      "asie_du_sud_est": "Asie du Sud-Est",
+      "asie_centrale": "Asie Centrale",
+      "oceanie": "Océanie",
+      "territoires_d_outre_mer": "Territoires d'outre-mer"
+    }
+  },
+  "mention": {
+    "tagTitle": "Taguer un commercial",
+    "tip": "Astuce : tapez @ pour notifier un commercial"
+  },
+  "customFields": {
+    "section": "Champs personnalisés",
+    "selectOption": "— Sélectionner —",
+    "editor": {
+      "newField": "Nouveau champ {{n}}",
+      "empty": "Aucun champ personnalisé pour le moment. Ajoutez-en un pour le voir apparaître sur les formulaires et les fiches prospects.",
+      "label": "Libellé",
+      "type": "Type",
+      "typeText": "Texte",
+      "typeNumber": "Nombre",
+      "typeDate": "Date",
+      "typeList": "Liste",
+      "options": "Options (séparées par des virgules)",
+      "optionsPlaceholder": "Petite, Moyenne, Grande",
+      "required": "Obligatoire",
+      "remove": "Supprimer",
+      "add": "Ajouter un champ personnalisé"
+    },
+    "sources": {
+      "add": "Ajouter",
+      "remove": "Supprimer",
+      "sourcePlaceholder": "Ex : Salon professionnel",
+      "empty": "Aucune source personnalisée — seule la liste par défaut est proposée."
+    }
+  },
+  "whatsapp": {
+    "confirmTitle": "Avez-vous envoyé le message ?",
+    "confirmBodyPre": "Pour",
+    "confirmBodyPost": "Validez pour consigner l'échange et clore vos relances.",
+    "logYes": "Oui, consigner l'échange",
+    "logLater": "Non / Plus tard",
+    "logMessage": "Message WhatsApp transmis à {{name}}.",
+    "nextAction": "Suivre la réponse du prospect"
+  },
+  "selectCustom": {
+    "placeholder": "Sélectionner...",
+    "search": "Rechercher...",
+    "noResults": "Aucun résultat"
+  },
+  "periodFilter": {
+    "reset": "Réinitialiser",
+    "presets": {
+      "all": "Tout",
+      "today": "Auj.",
+      "7d": "7j",
+      "30d": "30j",
+      "3m": "3 mois",
+      "12m": "12 mois",
+      "custom": "Perso."
+    }
+  },
+  "planGate": {
+    "feature": {
+      "objectifs_equipe": "Objectifs d'équipe",
+      "journal_actions": "Journal des actions",
+      "import_csv": "Import CSV & dédoublonnage",
+      "stats_avancees": "Statistiques avancées",
+      "rapports_personnalises": "Rapports personnalisés"
+    },
+    "planRequired": "{{label}} — Offre {{plan}} requise",
+    "availFrom": "Cette fonctionnalité est disponible à partir de l'offre {{plan}}. Vous êtes actuellement sur l'offre {{current}}.",
+    "upgradeMsg": "Bonjour, je souhaite passer de l'offre {{from}} à l'offre {{to}}.",
+    "upgradeLink": "Passer à l'offre {{plan}}"
+  },
+  "pinChange": {
+    "title": "Sécurité — Changer le code PIN",
+    "hint": "Modifiez votre code secret à 6 chiffres utilisé pour la connexion.",
+    "newPin": "Nouveau code secret",
+    "confirmPin": "Confirmer le code secret",
+    "visibility": "Afficher/masquer",
+    "clear": "Effacer",
+    "saving": "Enregistrement…",
+    "update": "Mettre à jour le PIN",
+    "updated": "Code secret mis à jour avec succès !",
+    "errors": {
+      "pinLength": "Le code secret doit contenir exactement 6 chiffres.",
+      "mismatch": "Les codes ne correspondent pas.",
+      "update": "Erreur : {{message}}",
+      "unexpected": "Une erreur inattendue est survenue."
+    }
+  }
 }

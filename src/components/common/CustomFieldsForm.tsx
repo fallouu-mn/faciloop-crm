@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus, Trash2, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { CustomFieldDef, CustomFieldValues } from '../../types/crm';
 
 interface CustomFieldsFormProps {
@@ -9,6 +10,7 @@ interface CustomFieldsFormProps {
   disabled?: boolean;
   /** Rendu lecture seule (fiche détails) au lieu d'inputs éditables. */
   readOnly?: boolean;
+  /** @deprecated Plus utilisé — le composant gère sa langue via useTranslation. Conservé pour compatibilité. */
   isEn?: boolean;
 }
 
@@ -26,8 +28,9 @@ export const CustomFieldsForm: React.FC<CustomFieldsFormProps> = ({
   onChange,
   disabled = false,
   readOnly = false,
-  isEn = false,
 }) => {
+  const { t } = useTranslation('common');
+
   if (schema.length === 0) return null;
 
   const setValue = (key: string, value: string) => {
@@ -38,7 +41,7 @@ export const CustomFieldsForm: React.FC<CustomFieldsFormProps> = ({
   return (
     <div className="space-y-2">
       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-        {isEn ? 'CUSTOM FIELDS' : 'Champs personnalisés'}
+        {t('customFields.section')}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {schema.map((field) => {
@@ -71,7 +74,7 @@ export const CustomFieldsForm: React.FC<CustomFieldsFormProps> = ({
                   onChange={(e) => setValue(field.key, e.target.value)}
                   className={inputClass}
                 >
-                  <option value="">{isEn ? '— Select —' : '— Sélectionner —'}</option>
+                  <option value="">{t('customFields.selectOption')}</option>
                   {(field.options || []).map((opt) => (
                     <option key={opt} value={opt}>
                       {opt}
@@ -105,6 +108,7 @@ export const CustomFieldsForm: React.FC<CustomFieldsFormProps> = ({
 interface CustomFieldsSchemaEditorProps {
   schema: CustomFieldDef[];
   onChange: (schema: CustomFieldDef[]) => void;
+  /** @deprecated Plus utilisé — le composant gère sa langue via useTranslation. Conservé pour compatibilité. */
   isEn?: boolean;
 }
 
@@ -113,8 +117,9 @@ const FIELD_TYPES: CustomFieldDef['type'][] = ['text', 'number', 'date', 'select
 export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> = ({
   schema,
   onChange,
-  isEn = false,
 }) => {
+  const { t } = useTranslation('common');
+
   const update = (index: number, patch: Partial<CustomFieldDef>) => {
     onChange(schema.map((f, i) => (i === index ? { ...f, ...patch } : f)));
   };
@@ -127,7 +132,7 @@ export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> =
       ...schema,
       {
         key: `champ_${Date.now()}`,
-        label: isEn ? `New field ${n}` : `Nouveau champ ${n}`,
+        label: t('customFields.editor.newField', { n }),
         type: 'text',
         options: [],
         required: false,
@@ -139,9 +144,7 @@ export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> =
     <div className="space-y-3">
       {schema.length === 0 && (
         <p className="text-xs text-muted-foreground font-medium">
-          {isEn
-            ? 'No custom field yet. Add one to make it available on prospect forms and cards.'
-            : 'Aucun champ personnalisé pour le moment. Ajoutez-en un pour le voir apparaître sur les formulaires et les fiches prospects.'}
+          {t('customFields.editor.empty')}
         </p>
       )}
 
@@ -153,7 +156,7 @@ export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> =
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div className="sm:col-span-2">
               <label className="block text-[10px] font-bold text-muted-foreground mb-1">
-                {isEn ? 'Label' : 'Libellé'}
+                {t('customFields.editor.label')}
               </label>
               <input
                 type="text"
@@ -164,7 +167,7 @@ export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> =
             </div>
             <div>
               <label className="block text-[10px] font-bold text-muted-foreground mb-1">
-                {isEn ? 'Type' : 'Type'}
+                {t('customFields.editor.type')}
               </label>
               <select
                 value={field.type}
@@ -173,23 +176,15 @@ export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> =
                 }
                 className="w-full p-2 rounded-lg border border-input bg-background text-xs font-medium text-foreground"
               >
-                {FIELD_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t === 'text'
-                      ? isEn
-                        ? 'Text'
-                        : 'Texte'
-                      : t === 'number'
-                      ? isEn
-                        ? 'Number'
-                        : 'Nombre'
-                      : t === 'date'
-                      ? isEn
-                        ? 'Date'
-                        : 'Date'
-                      : isEn
-                      ? 'List'
-                      : 'Liste'}
+                {FIELD_TYPES.map((ft) => (
+                  <option key={ft} value={ft}>
+                    {ft === 'text'
+                      ? t('customFields.editor.typeText')
+                      : ft === 'number'
+                      ? t('customFields.editor.typeNumber')
+                      : ft === 'date'
+                      ? t('customFields.editor.typeDate')
+                      : t('customFields.editor.typeList')}
                   </option>
                 ))}
               </select>
@@ -199,7 +194,7 @@ export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> =
           {field.type === 'select' && (
             <div>
               <label className="block text-[10px] font-bold text-muted-foreground mb-1">
-                {isEn ? 'Options (comma separated)' : 'Options (séparées par des virgules)'}
+                {t('customFields.editor.options')}
               </label>
               <input
                 type="text"
@@ -212,7 +207,7 @@ export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> =
                       .filter(Boolean),
                   })
                 }
-                placeholder={isEn ? 'Small, Medium, Large' : 'Petite, Moyenne, Grande'}
+                placeholder={t('customFields.editor.optionsPlaceholder')}
                 className="w-full p-2 rounded-lg border border-input bg-background text-xs font-medium text-foreground focus:ring-2 focus:ring-primary/50"
               />
             </div>
@@ -226,7 +221,7 @@ export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> =
                 onChange={(e) => update(index, { required: e.target.checked })}
                 className="w-3.5 h-3.5 rounded border-input accent-primary"
               />
-              {isEn ? 'Required' : 'Obligatoire'}
+              {t('customFields.editor.required')}
             </label>
             <button
               type="button"
@@ -234,7 +229,7 @@ export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> =
               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-800/40 text-[11px] font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
             >
               <Trash2 className="w-3 h-3" />
-              {isEn ? 'Remove' : 'Supprimer'}
+              {t('customFields.editor.remove')}
             </button>
           </div>
         </div>
@@ -246,7 +241,7 @@ export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> =
         className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-primary/50 text-xs font-bold text-primary hover:bg-primary/5 transition-all"
       >
         <Plus className="w-3.5 h-3.5" />
-        {isEn ? 'Add a custom field' : 'Ajouter un champ personnalisé'}
+        {t('customFields.editor.add')}
       </button>
     </div>
   );
@@ -259,14 +254,15 @@ export const CustomFieldsSchemaEditor: React.FC<CustomFieldsSchemaEditorProps> =
 interface CustomSourcesEditorProps {
   sources: string[];
   onChange: (sources: string[]) => void;
+  /** @deprecated Plus utilisé — le composant gère sa langue via useTranslation. Conservé pour compatibilité. */
   isEn?: boolean;
 }
 
 export const CustomSourcesEditor: React.FC<CustomSourcesEditorProps> = ({
   sources,
   onChange,
-  isEn = false,
 }) => {
+  const { t } = useTranslation('common');
   const [draft, setDraft] = React.useState('');
 
   const add = () => {
@@ -293,7 +289,7 @@ export const CustomSourcesEditor: React.FC<CustomSourcesEditorProps> = ({
               add();
             }
           }}
-          placeholder={isEn ? 'Ex: Trade fair' : 'Ex : Salon professionnel'}
+          placeholder={t('customFields.sources.sourcePlaceholder')}
           className="flex-1 p-2.5 rounded-xl border border-input bg-background text-xs font-medium text-foreground focus:ring-2 focus:ring-primary/50"
         />
         <button
@@ -301,7 +297,7 @@ export const CustomSourcesEditor: React.FC<CustomSourcesEditorProps> = ({
           onClick={add}
           className="px-3.5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all"
         >
-          {isEn ? 'Add' : 'Ajouter'}
+          {t('customFields.sources.add')}
         </button>
       </div>
 
@@ -317,7 +313,7 @@ export const CustomSourcesEditor: React.FC<CustomSourcesEditorProps> = ({
                 type="button"
                 onClick={() => onChange(sources.filter((x) => x !== s))}
                 className="hover:text-red-500 transition-colors"
-                aria-label={isEn ? 'Remove' : 'Supprimer'}
+                aria-label={t('customFields.sources.remove')}
               >
                 <X className="w-3 h-3" />
               </button>
@@ -326,9 +322,7 @@ export const CustomSourcesEditor: React.FC<CustomSourcesEditorProps> = ({
         </div>
       ) : (
         <p className="text-[11px] text-muted-foreground font-medium">
-          {isEn
-            ? 'No custom source yet — only the default list is offered.'
-            : 'Aucune source personnalisée — seule la liste par défaut est proposée.'}
+          {t('customFields.sources.empty')}
         </p>
       )}
     </div>

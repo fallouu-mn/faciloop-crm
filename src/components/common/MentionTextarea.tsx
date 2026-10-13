@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { AtSign, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Commercial } from '../../types/crm';
 
@@ -52,6 +53,7 @@ interface MentionTextareaProps {
   rows?: number;
   required?: boolean;
   className?: string;
+  /** @deprecated Plus utilisé — le composant gère sa langue via useTranslation. Conservé pour compatibilité. */
   isEn?: boolean;
 }
 
@@ -62,8 +64,8 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   rows = 3,
   required = false,
   className = '',
-  isEn = false,
 }) => {
+  const { t } = useTranslation('common');
   const { commerciaux } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [query, setQuery] = useState<string | null>(null);
@@ -157,7 +159,7 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
       {open && (
         <div className="absolute z-50 left-0 right-0 mt-1 max-h-52 overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
           <p className="px-3 py-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground bg-muted/60 border-b border-border">
-            {isEn ? 'Mention a sales rep' : 'Taguer un commercial'}
+            {t('mention.tagTitle')}
           </p>
           {candidates.map((c, i) => (
             <button
@@ -188,7 +190,7 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
 
       {!open && (
         <p className="mt-1 text-[10px] text-muted-foreground font-medium">
-          {isEn ? 'Tip: type @ to notify a sales rep' : 'Astuce : tapez @ pour notifier un commercial'}
+          {t('mention.tip')}
         </p>
       )}
     </div>

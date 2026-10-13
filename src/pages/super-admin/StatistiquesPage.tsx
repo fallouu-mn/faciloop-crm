@@ -33,8 +33,7 @@ const mockTenants: TenantData[] = [];
 const mockFactures: FactureData[] = [];
 
 export const StatistiquesPage: React.FC = () => {
-  const { i18n } = useTranslation();
-  const isEn = Boolean(i18n.language?.startsWith('en'));
+  const { t } = useTranslation('superAdmin');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [period, setPeriod] = useState<DateRange>(() => searchParamsToDateRange(searchParams));
@@ -113,9 +112,9 @@ export const StatistiquesPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Statistiques Plateforme</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">{t('stats.title')}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Métriques globales et performance SaaS
+            {t('stats.subtitle')}
           </p>
         </div>
         <CurrencyToggle value={devise} onChange={setDevise} />
@@ -131,7 +130,7 @@ export const StatistiquesPage: React.FC = () => {
           className="rounded-xl border border-border bg-card p-4 space-y-2 text-left hover:border-primary/40 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Revenus</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('stats.kpiRevenue')}</span>
             <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
               <TrendingUp className="h-4 w-4 text-emerald-500" />
             </div>
@@ -140,7 +139,7 @@ export const StatistiquesPage: React.FC = () => {
             <span className="text-lg font-bold text-foreground">{fmt(totalRevenu)}</span>
             <div className="flex items-center gap-1 mt-1">
               <ArrowUpRight className="h-3 w-3 text-emerald-500" />
-              <span className="text-xs text-emerald-500 font-medium">période sélectionnée</span>
+              <span className="text-xs text-emerald-500 font-medium">{t('stats.kpiPeriod')}</span>
             </div>
           </div>
         </button>
@@ -150,7 +149,7 @@ export const StatistiquesPage: React.FC = () => {
           className="rounded-xl border border-border bg-card p-4 space-y-2 text-left hover:border-primary/40 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Orgs Actives</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('stats.kpiActiveOrgs')}</span>
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
               <Building2 className="h-4 w-4 text-primary" />
             </div>
@@ -163,7 +162,7 @@ export const StatistiquesPage: React.FC = () => {
           className="rounded-xl border border-border bg-card p-4 space-y-2 text-left hover:border-primary/40 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Factures</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('stats.kpiInvoices')}</span>
             <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center">
               <FileText className="h-4 w-4 text-blue-500" />
             </div>
@@ -173,7 +172,7 @@ export const StatistiquesPage: React.FC = () => {
 
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">{isEn ? 'Unpaid Rate' : 'Taux Impayé'}</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('stats.unpaidRate')}</span>
             <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
               <BarChart3 className="h-4 w-4 text-amber-500" />
             </div>
@@ -187,13 +186,13 @@ export const StatistiquesPage: React.FC = () => {
         <div className="lg:col-span-2 rounded-xl border border-border bg-card">
           <div className="px-4 py-3 border-b border-border">
             <h2 className="text-sm font-semibold text-foreground">
-              {isEn ? 'Revenue Trend' : 'Évolution des Revenus'}
+              {t('stats.revenueTrend')}
             </h2>
           </div>
           <div className="p-4">
             {revenueByMonth.length === 0 ? (
               <div className="h-40 flex items-center justify-center text-sm text-muted-foreground">
-                {isEn ? 'No data during this period' : 'Aucune donnée sur cette période'}
+                {t('stats.noDataPeriod')}
               </div>
             ) : (
               <div className="flex items-end justify-between gap-2 h-40">
@@ -218,17 +217,17 @@ export const StatistiquesPage: React.FC = () => {
 
         <div className="rounded-xl border border-border bg-card">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground">Top Tenants</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t('stats.topTenants')}</h2>
             <button
               onClick={() => navigate(buildFilteredUrl('/super-admin/organisations', period))}
               className="text-xs text-primary hover:underline"
             >
-              {isEn ? 'View all' : 'Voir tout'}
+              {t('common.seeAll')}
             </button>
           </div>
           <div className="divide-y divide-border">
             {topTenants.length === 0 ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">{isEn ? 'No data' : 'Aucune donnée'}</div>
+              <div className="p-6 text-center text-sm text-muted-foreground">{t('common.noData')}</div>
             ) : (
               topTenants.map((t, idx) => (
                 <div key={t.nom} className="px-4 py-3 flex items-center gap-3">
@@ -252,7 +251,7 @@ export const StatistiquesPage: React.FC = () => {
       <div className="rounded-xl border border-border bg-card">
         <div className="px-4 py-3 border-b border-border">
           <h2 className="text-sm font-semibold text-foreground">
-            {isEn ? 'Distribution by Plan' : 'Répartition par Formule'}
+            {t('stats.distribution')}
           </h2>
         </div>
         <div className="p-4">
@@ -271,12 +270,12 @@ export const StatistiquesPage: React.FC = () => {
                       <div className={`w-3 h-3 rounded-full ${color}`} />
                       <span className="text-sm font-semibold text-foreground">{f.label}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{fmt(f.prix_xof)}{isEn ? '/mo' : '/mois'}</span>
+                    <span className="text-xs text-muted-foreground">{fmt(f.prix_xof)}{t('period.perMonth')}</span>
                   </div>
                   <div className="flex items-baseline justify-between">
                     <div>
                       <span className="text-2xl font-bold text-foreground">{f.count}</span>
-                      <span className="text-xs text-muted-foreground ml-1">tenant{f.count > 1 ? 's' : ''}</span>
+                      <span className="text-xs text-muted-foreground ml-1">{t('stats.tenant', { count: f.count })}</span>
                     </div>
                     <span className="text-sm font-bold text-foreground">{fmt(f.revenu)}</span>
                   </div>

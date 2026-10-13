@@ -19,8 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 export const WelcomeOnboardingPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en');
+  const { t } = useTranslation('auth');
 
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -57,10 +56,10 @@ export const WelcomeOnboardingPage: React.FC = () => {
 
             <div className="space-y-1">
               <h1 className="text-2xl sm:text-3xl font-black text-foreground">
-                {isEn ? 'Welcome to Faciloop!' : 'Bienvenue sur Faciloop !'}
+                {t('onboarding.welcomeTitle')}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
-                {isEn ? 'How would you like to get started?' : 'Comment souhaitez-vous démarrer ?'}
+                {t('onboarding.welcomeSubtitle')}
               </p>
             </div>
 
@@ -77,10 +76,10 @@ export const WelcomeOnboardingPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-sm text-foreground group-hover:text-amber-500 transition-colors">
-                      {isEn ? 'Choose a plan' : 'Choisir un abonnement'}
+                      {t('onboarding.choosePlan')}
                     </h3>
                     <p className="text-xs text-muted-foreground font-semibold">
-                      {isEn ? 'Access all features right now' : 'Accédez à toutes les fonctionnalités dès maintenant'}
+                      {t('onboarding.choosePlanDesc')}
                     </p>
                   </div>
                 </div>
@@ -98,10 +97,10 @@ export const WelcomeOnboardingPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-sm text-foreground group-hover:text-primary transition-colors">
-                      {isEn ? 'Start free trial' : "Commencer l'essai gratuit"}
+                      {t('onboarding.startTrial')}
                     </h3>
                     <p className="text-xs text-muted-foreground font-semibold">
-                      {isEn ? 'Test the app with no commitment' : "Testez l'application sans engagement"}
+                      {t('onboarding.startTrialDesc')}
                     </p>
                   </div>
                 </div>
@@ -132,14 +131,14 @@ export const WelcomeOnboardingPage: React.FC = () => {
 
               <div className="inline-flex items-center gap-1.5 text-xs font-black text-amber-500">
                 <Sparkles className="w-4 h-4" />
-                <span>{isEn ? 'Discover Faciloop' : 'Découvrez Faciloop'}</span>
+                <span>{t('onboarding.discover')}</span>
               </div>
 
               <h1 className="text-2xl sm:text-3xl font-black text-foreground">
-                {isEn ? `Welcome ${firstName}!` : `Bienvenue ${firstName} !`}
+                {t('onboarding.welcomeUser', { name: firstName })}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground font-semibold">
-                {isEn ? 'The tool that protects your business daily' : "L'outil qui protège votre business au quotidien"}
+                {t('onboarding.toolTagline')}
               </p>
             </div>
 
@@ -150,7 +149,7 @@ export const WelcomeOnboardingPage: React.FC = () => {
                   <ShoppingBag className="w-5 h-5" />
                 </div>
                 <span className="text-foreground">
-                  {isEn ? 'Manage your sales and track your revenue' : "Gérez vos ventes et suivez votre chiffre d'affaires"}
+                  {t('onboarding.feature1')}
                 </span>
               </div>
 
@@ -159,7 +158,7 @@ export const WelcomeOnboardingPage: React.FC = () => {
                   <Wallet className="w-5 h-5" />
                 </div>
                 <span className="text-foreground">
-                  {isEn ? 'Track your credits and follow up via WhatsApp' : 'Suivez vos crédits et relancez par WhatsApp'}
+                  {t('onboarding.feature2')}
                 </span>
               </div>
 
@@ -168,7 +167,7 @@ export const WelcomeOnboardingPage: React.FC = () => {
                   <CreditCard className="w-5 h-5" />
                 </div>
                 <span className="text-foreground">
-                  {isEn ? 'Stay in control of your down payments' : 'Gardez le contrôle sur vos acomptes'}
+                  {t('onboarding.feature3')}
                 </span>
               </div>
 
@@ -177,7 +176,7 @@ export const WelcomeOnboardingPage: React.FC = () => {
                   <Calendar className="w-5 h-5" />
                 </div>
                 <span className="text-foreground">
-                  {isEn ? 'Schedule your client meetings' : 'Planifiez vos rendez-vous clients'}
+                  {t('onboarding.feature4')}
                 </span>
               </div>
             </div>
@@ -186,27 +185,27 @@ export const WelcomeOnboardingPage: React.FC = () => {
             <div className="p-4 sm:p-5 rounded-3xl border border-amber-500/30 bg-amber-500/5 text-left space-y-2">
               <div className="flex items-center gap-2 text-amber-500 font-black text-xs">
                 <Gift className="w-4 h-4" />
-                <span>{isEn ? 'Your trial period' : "Votre période d'essai"}</span>
+                <span>{t('onboarding.trialPeriod')}</span>
               </div>
               <div className="text-xl font-black text-amber-500">
-                {isEn ? '30 days free' : '30 jours offerts'}
+                {t('onboarding.trialDays')}
               </div>
               
               <div className="text-xs text-muted-foreground font-semibold pt-1">
-                {isEn ? 'Included in your trial:' : 'Inclus dans votre essai :'}
+                {t('onboarding.trialIncluded')}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-xs font-bold text-foreground pt-1">
                 <div className="flex items-center gap-1.5">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>{isEn ? 'Direct sales' : 'Ventes directes'}</span>
+                  <span>{t('onboarding.trialFeature1')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>{isEn ? 'Client credits' : 'Crédits clients'}</span>
+                  <span>{t('onboarding.trialFeature2')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>{isEn ? 'Down payments' : 'Acomptes'}</span>
+                  <span>{t('onboarding.trialFeature3')}</span>
                 </div>
               </div>
             </div>
@@ -217,7 +216,7 @@ export const WelcomeOnboardingPage: React.FC = () => {
                 onClick={() => navigate('/admin/dashboard')}
                 className="w-full py-4 rounded-2xl bg-gradient-faciloop text-white font-black text-sm shadow-xl shadow-primary/30 hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                <span>{isEn ? 'Start the adventure!' : "Démarrer l'aventure !"}</span>
+                <span>{t('onboarding.startAdventure')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -225,7 +224,7 @@ export const WelcomeOnboardingPage: React.FC = () => {
                 to="/admin/parametres"
                 className="block text-xs font-extrabold text-amber-500 hover:underline"
               >
-                {isEn ? 'Complete my company details' : 'Compléter les infos de mon entreprise'}
+                {t('onboarding.completeDetails')}
               </Link>
             </div>
           </motion.div>

@@ -14,5 +14,10 @@
   "prioritiesTitle": "Mes Priorités du Jour",
   "viewAllRelances": "Voir toutes mes relances",
   "weeklySales": "CA Ventes Hebdomadaire",
-  "salesTrend": "Tendance des ventes conclues sur 7 jours"
+  "salesTrend": "Tendance des ventes conclues sur 7 jours",
+  "commercial": {
+    "days": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+    "noRelances": "Aucune relance programmée aujourd'hui.",
+    "canal": "Canal: {{canal}}"
+  }
 }

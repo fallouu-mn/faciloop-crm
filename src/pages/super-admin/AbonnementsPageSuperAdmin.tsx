@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Crown, Check, Pencil, X, Save, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -11,17 +11,13 @@ import {
   updateFormule,
   toggleFormuleActive,
 } from '../../services/formulesSaas';
-import { translateText } from '../../lib/translate';
 import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
 export const AbonnementsPageSuperAdmin: React.FC = () => {
-  const { t, i18n } = useTranslation('superAdmin');
-  const isEn = i18n.language?.startsWith('en');
+  const { t } = useTranslation('superAdmin');
   const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [formules, setFormules] = useState<FormuleConfig[]>([]);
   const [loading, setLoading] = useState(true);
-  const [enDescriptions, setEnDescriptions] = useState<Record<string, string>>({});
-  const translatingCodes = useRef<Set<string>>(new Set());
   const [editingFormule, setEditingFormule] = useState<string | null>(null);
   const [editPricing, setEditPricing] = useState<FormuleConfig['pricing'] | null>(null);
   const [editLabel, setEditLabel] = useState<string>('');
@@ -47,26 +43,6 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
 
   useEffect(() => { loadFormules(); }, []);
   useRefetchOnFocus(loadFormules);
-
-  useEffect(() => {
-    if (!isEn || formules.length === 0) return;
-    const missing = formules.filter(
-      f => f.description && !enDescriptions[f.code] && !translatingCodes.current.has(f.code)
-    );
-    if (missing.length === 0) return;
-
-    missing.forEach(f => translatingCodes.current.add(f.code));
-
-    Promise.all(
-      missing.map(async f => {
-        const en = await translateText(f.description, 'fr', 'en');
-        return [f.code, en] as const;
-      })
-    ).then(results => {
-      setEnDescriptions(prev => ({ ...prev, ...Object.fromEntries(results) }));
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEn, formules.length]);
 
   const fmt = (amount: number) => formatAmount(convertAmount(amount, 'XOF', devise), devise);
   const symbol = getDeviseSymbol(devise);
@@ -101,10 +77,10 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
         prix_xof: editPricing.mensuel,
       });
       setFormules(prev => prev.map(f => f.code === editingFormule ? updated : f));
-      toast.success(`Formule "${editingFormule}" mise à jour !`);
+      toast.success(t('abonnements.toast.updated', { code: editingFormule }));
     } catch (err: any) {
       console.error('Erreur sauvegarde:', err);
-      toast.error(`Erreur lors de la mise à jour : ${err?.message || 'Erreur inconnue'}`);
+      toast.error(t('abonnements.toast.updateError', { message: err?.message || t('abonnements.unknownError') }));
     }
     setEditingFormule(null);
     setEditPricing(null);
@@ -119,10 +95,10 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
     try {
       await toggleFormuleActive(code, newActive);
       setFormules(prev => prev.map(fo => fo.code === code ? { ...fo, isActive: newActive } : fo));
-      toast.success(newActive ? `Formule "${code}" activée !` : `Formule "${code}" désactivée.`);
+      toast.success(newActive ? t('abonnements.toast.activated', { code }) : t('abonnements.toast.deactivated', { code }));
     } catch (err: any) {
       console.error('Erreur toggle:', err);
-      toast.error(`Erreur : ${err?.message || 'Erreur inconnue'}`);
+      toast.error(t('abonnements.toast.error', { message: err?.message || t('abonnements.unknownError') }));
     }
   };
 
@@ -167,10 +143,10 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
       const created = await createFormule(newFormule);
       setFormules(prev => [...prev, created]);
       setIsAddModalOpen(false);
-      toast.success(`Formule "${newLabel}" créée avec succès !`);
+      toast.success(t('abonnements.toast.created', { name: newLabel }));
     } catch (err: any) {
       console.error('Erreur création formule:', err);
-      toast.error(`Erreur lors de la création : ${err?.message || 'Erreur inconnue'}`);
+      toast.error(t('abonnements.toast.createError', { message: err?.message || t('abonnements.unknownError') }));
     }
   };
 
@@ -311,11 +287,11 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                       onChange={(e) => setEditDescription(e.target.value)}
                       rows={2}
                       className="w-full mt-2 bg-white/20 text-white placeholder-white/50 text-xs px-2 py-1.5 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 resize-none"
-                      placeholder={isEn ? 'Offer description...' : 'Description de l\'offre...'}
+                      placeholder={t('abonnements.descPlaceholder')}
                     />
                   ) : (
                     <p className="text-xs text-white/80 mt-1">
-                      {isEn ? (enDescriptions[f.code] || f.description) : f.description}
+                      {t(`abonnements.descriptions.${f.code}`, { defaultValue: f.description })}
                     </p>
                   )}
                 </div>
@@ -604,7 +580,7 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                   required
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
-                  placeholder="Ex: Starter, Pro, Enterprise..."
+                  placeholder={t('abonnements.modal.labelNamePlaceholder')}
                   className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
                 />
               </div>
@@ -614,7 +590,7 @@ export const AbonnementsPageSuperAdmin: React.FC = () => {
                   type="text"
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder="Ex: Pour les grandes entreprises"
+                  placeholder={t('abonnements.modal.labelDescPlaceholder')}
                   className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
                 />
               </div>

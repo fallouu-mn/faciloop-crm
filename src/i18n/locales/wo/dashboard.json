@@ -14,5 +14,10 @@
   "prioritiesTitle": "Sa Yàggle yi Tey",
   "viewAllRelances": "Gis woote yiyam yépp",
   "weeklySales": "CA Buyaa Jàpp",
-  "salesTrend": "Tendance ventes ci 7 fan"
+  "salesTrend": "Tendance ventes ci 7 fan",
+  "commercial": {
+    "days": ["Tenteen", "Talaata", "Aram", "Alxames", "Ajj", "Seer", "Dibeer"],
+    "noRelances": "Amul woote ci tey bi.",
+    "canal": "Canal: {{canal}}"
+  }
 }
