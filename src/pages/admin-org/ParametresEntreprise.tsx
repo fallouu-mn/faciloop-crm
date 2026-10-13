@@ -10,6 +10,7 @@ import {
 } from '../../components/common/CustomFieldsForm';
 import { useOrganizationSettings } from '../../hooks/useOrganizationSettings';
 import type { CustomFieldDef } from '../../types/crm';
+import { PhoneInput } from '../../components/common/PhoneInput';
 
 export const ParametresEntreprise: React.FC = () => {
   const { t, i18n } = useTranslation('admin');
