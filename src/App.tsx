@@ -12,6 +12,7 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { PendingActivationPage } from './pages/auth/PendingActivationPage';
 import { SuspendedPage } from './pages/auth/SuspendedPage';
+import { ExpiredPage } from './pages/auth/ExpiredPage';
 import { DemoAuthProvider } from './contexts/DemoAuthProvider';
 import { WelcomeOnboardingPage } from './pages/auth/WelcomeOnboardingPage';
 import { ForgotPinPage } from './pages/auth/ForgotPinPage';
@@ -94,7 +95,7 @@ function DocumentTitle() {
 
   useEffect(() => {
     const page = PAGE_TITLES.find((p) => p.match.test(pathname))?.label;
-    const suffix = 'Faciloop PRO';
+    const suffix = 'Faciloopro';
     document.title = page
       ? currentOrg?.nom
         ? `${page} — ${currentOrg.nom} | ${suffix}`
@@ -121,6 +122,7 @@ function App() {
           <Route path="/signup" element={<RegisterPage />} />
           <Route path="/pending-activation" element={<PendingActivationPage />} />
           <Route path="/suspended" element={<SuspendedPage />} />
+          <Route path="/expired" element={<ExpiredPage />} />
           <Route path="/welcome" element={<WelcomeOnboardingPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />

@@ -45,7 +45,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProspects } from '@/hooks/commercial/useProspects';
-import { formatPhoneNumber, fullName, orFallback } from '../../utils/formatters';
+import { formatPhoneNumber, fullName, orFallback, PAYS } from '../../utils/formatters';
 import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { sourceLabel } from '@/services/organizationSettings';
@@ -62,7 +62,6 @@ const QA_SOURCES_FALLBACK: { value: string; label: string }[] = [
   { value: 'autre', label: 'Autre' },
 ];
 const QA_SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
-const QA_PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 
 interface ColumnDef {
   id: PipelineStepId;
@@ -1025,7 +1024,7 @@ export const ProspectKanban: React.FC = () => {
                       <label className="block font-semibold mb-1">{t('kanban.country')}</label>
                       <select value={qaPays} onChange={e => setQaPays(e.target.value)}
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
-                        {QA_PAYS.map(p => <option key={p} value={p}>{p}</option>)}
+                        {PAYS.map(p => <option key={p} value={p}>{p}</option>)}
                       </select>
                     </div>
                     <div>

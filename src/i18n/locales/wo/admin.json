@@ -70,6 +70,13 @@
       "updateFailed": "Bugg ci soppi bi.",
       "deleted": "Commercial bi far.",
       "deleteConfirm": "Far {{name}} ? Jëf ji daw lu ñu àggal.",
+      "deleteFailed": "Njam ci faar bi",
+      "deleteModal": {
+        "title": "Far liwo commercial bi",
+        "warning": "Def bi duñu sopp ko",
+        "questionPre": "Ndax nga bëgg far",
+        "questionPost": " ?"
+      },
       "limitReached": "Limite àggal ({{max}} commercial ci {{plan}}).",
       "limitReachedUpgrade": "Limite àggal ({{max}} commercial ci {{plan}}). Nangu offre bu ëpp ngir àggal.",
       "limitBanner": "Nga àggal limite {{max}} commercial actif ci offre {{plan}}. Nangu offre bu ëpp ngir àggal.",
@@ -341,6 +348,7 @@
         "toutes": "Yépp",
         "non_lues": "Kulu jas",
         "activite": "Aktivité",
+        "relances": "Woote",
         "paiements": "Fey",
         "clients": "Kood",
         "objectifs": "Jubluwaay"

@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
           service: 'Faciloopro',
           number: cleanPhone,
           channel: 'sms',
-          signature: 'DEXCHANGE',
+          signature: 'FACILOOP',
         }),
       });
 

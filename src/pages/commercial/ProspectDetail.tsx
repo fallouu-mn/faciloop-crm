@@ -38,11 +38,12 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useProspectDetail, useInteractions, useRelances } from '@/hooks/commercial';
 import { getRelancesByProspect } from '../../services/relances';
-import { formatPhoneNumber, fullName, orFallback, formatDateWithTime, toDateTimeLocal, splitDateTimeLocal } from '../../utils/formatters';
+import { formatPhoneNumber, fullName, orFallback, formatDateWithTime, toDateTimeLocal, splitDateTimeLocal, PAYS } from '../../utils/formatters';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { sourceLabel } from '@/services/organizationSettings';
 import { CustomFieldsForm } from '@/components/common/CustomFieldsForm';
 import { MentionTextarea, extractMentionedCommerciaux } from '@/components/common/MentionTextarea';
+import { PhoneInput } from '@/components/common/PhoneInput';
 import * as notificationsService from '../../services/notifications';
 import { useProspectNotes } from '@/hooks/useProspectNotes';
 import type { CustomFieldValues, NotificationItem } from '../../types/crm';
@@ -57,7 +58,6 @@ const SOURCES_DETAIL_FALLBACK = [
   { value: 'autre', label: 'Autre' },
 ];
 const SECTEURS_DETAIL = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
-const PAYS_DETAIL = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 
 export const ProspectDetail: React.FC = () => {
   const { t, i18n } = useTranslation('clients');
@@ -473,7 +473,7 @@ export const ProspectDetail: React.FC = () => {
     navigate(clientsPath);
   };
 
-  const getStageTitle = (st: string) => getEtapeLabelByNom(st, etapes, isEn);
+  const getStageTitle = (st: string) => getEtapeLabelByNom(st, etapes, lng);
 
   return (
     <div className="space-y-0 font-sans">
@@ -677,7 +677,7 @@ export const ProspectDetail: React.FC = () => {
                 <button
                   onClick={() => {
                     // Retour client n°10 : valeur par défaut du créneau horaire unique.
-                    setRDateTime(toDateTimeLocal(prospect?.date_prochaine_relance || new Date().toISOString().split('T')[0], '09:30'));
+                    setRDateTime(toDateTimeLocal(prospect?.date_prochaine_relance || new Date().toISOString().split('T')[0], '09:00'));
                     setIsRelanceModalOpen(true);
                   }}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all shadow-sm"
@@ -1038,7 +1038,7 @@ export const ProspectDetail: React.FC = () => {
                         <label className="font-extrabold text-muted-foreground">{t('prospectDetail.country')}</label>
                         <select value={editForm.pays} onChange={e => setEditForm(f => ({...f, pays: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
-                          {PAYS_DETAIL.map(p => <option key={p} value={p}>{p}</option>)}
+                          {PAYS.map(p => <option key={p} value={p}>{p}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
@@ -1068,7 +1068,7 @@ export const ProspectDetail: React.FC = () => {
                         <label className="font-extrabold text-muted-foreground">{t('prospectDetail.pipelineStage')}</label>
                         <select value={editForm.statut_pipeline} onChange={e => setEditForm(f => ({...f, statut_pipeline: e.target.value}))}
                           className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
-                          {etapes.map(e => <option key={e.nom} value={e.nom}>{getEtapeLabel(e, isEn)}</option>)}
+                          {etapes.map(e => <option key={e.nom} value={e.nom}>{getEtapeLabel(e, lng)}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
@@ -1208,7 +1208,7 @@ export const ProspectDetail: React.FC = () => {
                         <div>
                           <span className="block text-muted-foreground font-extrabold text-[11px]">{t('prospectDetail.stage')}</span>
                           <span className="font-black text-foreground">
-                            {getEtapeLabelByNom(prospect.statut_pipeline, etapes, isEn)}
+                            {getEtapeLabelByNom(prospect.statut_pipeline, etapes, lng)}
                           </span>
                         </div>
                         <div>

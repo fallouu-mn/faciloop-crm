@@ -6,6 +6,21 @@
  */
 
 /* ──────────────────────────────────────────────────────────────
+ * Pays
+ * ────────────────────────────────────────────────────────────── */
+
+export const PAYS = [
+  'Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée',
+  'Cameroun', 'Bénin', 'Togo', 'Niger',
+  'Congo', 'Gabon', 'Mauritanie',
+  'France', 'Belgique', 'Suisse',
+  'Maroc', 'Tunisie', 'Algérie',
+  'Rwanda', 'Ouganda', 'Kenya', 'Tanzanie',
+  'Canada', 'Royaume-Uni',
+  'Autre',
+] as const;
+
+/* ──────────────────────────────────────────────────────────────
  * Téléphone
  * ────────────────────────────────────────────────────────────── */
 
@@ -45,7 +60,6 @@ export const normalizePhoneNumber = (phone: string): string => {
 /** Groupes de chiffres attendus après l'indicatif pays, par indicatif. */
 const PHONE_GROUPS: Record<string, number[]> = {
   '221': [2, 3, 2, 2], // Sénégal   → +221 77 123 45 67
-  '33': [1, 2, 2, 2, 2], // France  → +33 6 12 34 56 78
   '225': [2, 3, 2, 3], // Côte d'Ivoire → +225 07 123 456 78
   '223': [2, 2, 2, 2], // Mali
   '226': [2, 2, 2, 2], // Burkina Faso
@@ -54,6 +68,22 @@ const PHONE_GROUPS: Record<string, number[]> = {
   '229': [2, 2, 2, 2], // Bénin
   '228': [2, 2, 2, 2], // Togo
   '227': [2, 2, 2, 2], // Niger
+  '242': [2, 3, 2, 2], // Congo
+  '243': [2, 3, 2, 2], // Congo (RDC)
+  '241': [2, 2, 2, 2], // Gabon
+  '222': [2, 2, 2, 2], // Mauritanie
+  '33': [1, 2, 2, 2, 2], // France  → +33 6 12 34 56 78
+  '32': [3, 2, 2, 2],  // Belgique → +32 475 12 34 56
+  '41': [2, 3, 2, 2],  // Suisse   → +41 79 123 45 67
+  '212': [1, 2, 2, 2, 2], // Maroc → +212 6 12 34 56 78
+  '216': [2, 3, 3],    // Tunisie  → +216 98 123 456
+  '213': [3, 2, 2, 2], // Algérie  → +213 555 12 34 56
+  '250': [3, 3, 3],    // Rwanda   → +250 788 123 456
+  '256': [3, 3, 3],    // Ouganda  → +256 772 123 456
+  '254': [3, 3, 3],    // Kenya    → +254 712 123 456
+  '255': [3, 3, 3],    // Tanzanie → +255 712 123 456
+  '1': [3, 3, 4],      // USA/Canada → +1 514 123 4567
+  '44': [4, 3, 3],     // UK → +44 7911 123 456
 };
 
 /** Les indicatifs les plus longs d'abord (le match est un prefixe). */

@@ -5,7 +5,7 @@ import { ProspectSource, SourceValue, CustomFieldValues } from '../../types/crm'
 import { CustomFieldsForm } from '../../components/common/CustomFieldsForm';
 import { useEtapesPipeline, getEtapeLabelByNom } from '@/hooks/useEtapesPipeline';
 import { normalizePhoneNumber } from '../../lib/phoneUtils';
-import { formatPhoneNumber, fullName, orFallback } from '../../utils/formatters';
+import { formatPhoneNumber, fullName, orFallback, PAYS } from '../../utils/formatters';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import {
   Users,
@@ -21,7 +21,6 @@ import {
   Download,
   Upload,
   FileSpreadsheet,
-  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -29,7 +28,6 @@ import { useProspects } from '@/hooks/commercial/useProspects';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { usedSourceOptions, sourceLabel, matchExistingSource, slugifyFieldKey } from '@/services/organizationSettings';
 
-const PAYS = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
 export const ProspectsList: React.FC = () => {
@@ -82,7 +80,6 @@ export const ProspectsList: React.FC = () => {
   const [newRelance, setNewRelance] = useState<string>('');
 
   const [duplicateAlert, setDuplicateAlert] = useState<boolean>(false);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Phone input duplicate checker (checks across whole org using formatPhoneNumber)
   const handlePhoneChange = (val: string) => {
@@ -269,12 +266,6 @@ export const ProspectsList: React.FC = () => {
     setIsReassignModalOpen(false);
   };
 
-  const handleDelete = async (id: string) => {
-    await deleteProspect(id);
-    setConfirmDeleteId(null);
-    toast.success(t('prospectList.deletedToast'));
-  };
-
   const isAdminRole = user?.role === 'admin_org' || user?.role === 'super_admin';
 
   return (
@@ -371,7 +362,7 @@ export const ProspectsList: React.FC = () => {
           >
             <option value="all">{t('prospectList.allStages')}</option>
             {etapes.map(e => (
-              <option key={e.nom} value={e.nom}>{getEtapeLabelByNom(e.nom, etapes, isEn ? 'en' : lng)}</option>
+              <option key={e.nom} value={e.nom}>{getEtapeLabelByNom(e.nom, etapes, lng)}</option>
             ))}
           </select>
 
@@ -433,7 +424,7 @@ export const ProspectsList: React.FC = () => {
                       p.statut_pipeline === 'perdu' ? 'bg-rose-500/10 text-rose-500' :
                       'bg-primary/10 text-primary'
                     }`}>
-                      {getEtapeLabelByNom(p.statut_pipeline, etapes, isEn ? 'en' : lng)}
+                      {getEtapeLabelByNom(p.statut_pipeline, etapes, lng)}
                     </span>
                   </td>
                   <td className="p-4 capitalize text-muted-foreground">{(() => {
@@ -450,29 +441,6 @@ export const ProspectsList: React.FC = () => {
                         <Eye className="w-3.5 h-3.5" />
                         <span>{t('prospectList.file')}</span>
                       </Link>
-                      {confirmDeleteId === p.id ? (
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            onClick={() => handleDelete(p.id)}
-                            className="px-2 py-1.5 rounded-lg bg-red-500 text-white text-[10px] font-bold hover:bg-red-600"
-                          >
-                            {t('prospectList.confirm')}
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="px-2 py-1.5 rounded-lg border border-input text-[10px] font-bold hover:bg-muted"
-                          >
-                            {t('prospectList.cancel')}
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmDeleteId(p.id)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 dark:border-red-800/40 px-2.5 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
                     </div>
                   </td>
                 </tr>
@@ -504,7 +472,7 @@ export const ProspectsList: React.FC = () => {
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${
                   p.statut_pipeline === 'gagne' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'
                 }`}>
-                  {getEtapeLabelByNom(p.statut_pipeline, etapes, isEn ? 'en' : lng)}
+                  {getEtapeLabelByNom(p.statut_pipeline, etapes, lng)}
                 </span>
               </div>
 
@@ -521,29 +489,6 @@ export const ProspectsList: React.FC = () => {
                   <span>{t('prospectList.openCard')}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
-                {confirmDeleteId === p.id ? (
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => handleDelete(p.id)}
-                      className="px-3 py-2 rounded-xl bg-red-500 text-white text-[10px] font-bold hover:bg-red-600 active:scale-95"
-                    >
-                      {t('prospectList.confirmMobile')}
-                    </button>
-                    <button
-                      onClick={() => setConfirmDeleteId(null)}
-                      className="px-3 py-2 rounded-xl border border-input text-[10px] font-bold hover:bg-muted active:scale-95"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setConfirmDeleteId(p.id)}
-                    className="px-3 py-2 rounded-xl border border-red-200 dark:border-red-800/40 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 active:scale-95 transition-all"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
               </div>
             </div>
           );

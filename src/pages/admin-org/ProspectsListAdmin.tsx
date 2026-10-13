@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProspectSource, SourceValue, PipelineStepId, Prospect } from '../../types/crm';
 import { normalizePhoneNumber } from '../../lib/phoneUtils';
-import { formatPhoneNumber, fullName, orFallback } from '../../utils/formatters';
+import { formatPhoneNumber, fullName, orFallback, PAYS } from '../../utils/formatters';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { useTranslation } from 'react-i18next';
 import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
@@ -12,7 +12,7 @@ import { CustomFieldsForm } from '@/components/common/CustomFieldsForm';
 import type { CustomFieldValues } from '../../types/crm';
 import {
   Users, Search, Plus, AlertTriangle, X, Calendar,
-  ArrowRight, Eye, UserCheck, ArrowRightLeft, Trash2, Filter, Pencil, Save
+  ArrowRight, Eye, UserCheck, ArrowRightLeft, Filter, Pencil, Save
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -40,7 +40,6 @@ const SOURCES_FALLBACK: { value: string; label: string }[] = [
 ];
 
 
-const PAYS_DEFAUT = ['Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée', 'Cameroun', 'Bénin', 'Togo', 'Niger', 'France', 'Autre'];
 const SECTEURS = ['Commerce / Distribution', 'Télécommunications', 'Services', 'Industrie', 'Immobilier', 'Logistique / Transport', 'Agroalimentaire', 'BTP / Construction', 'Technologie / IT', 'Textile / Confection', 'Éducation / Formation', 'Santé', 'Autre'];
 
 export const ProspectsListAdmin: React.FC = () => {
@@ -48,7 +47,7 @@ export const ProspectsListAdmin: React.FC = () => {
   const isEn = i18n.language?.startsWith('en');
   const { prospects, addProspect, updateProspect, deleteProspect, reassignProspects, orgOffers, commerciaux } = useAuth();
   const { etapes } = useEtapesPipeline();
-  const ETAPES = etapes.map(e => ({ value: e.nom as PipelineStepId, label: getEtapeLabel(e, isEn) }));
+  const ETAPES = etapes.map(e => ({ value: e.nom as PipelineStepId, label: getEtapeLabel(e, i18n.language || 'fr') }));
   const activeOrgOffers = orgOffers.filter(o => o.actif);
   // Retour client n°6 : sources par défaut + sources custom de l'organisation
   // + valeurs déjà présentes en base (jamais masquées dans un filtre/select).
@@ -185,7 +184,7 @@ export const ProspectsListAdmin: React.FC = () => {
   // Dynamic pays options from real data
   const paysOptions = useMemo(() => {
     const fromData = [...new Set(prospects.map(p => p.pays).filter(Boolean))] as string[];
-    const merged = [...new Set([...PAYS_DEFAUT, ...fromData])];
+    const merged = [...new Set([...PAYS, ...fromData])];
     return merged.sort();
   }, [prospects]);
 
@@ -260,13 +259,6 @@ export const ProspectsListAdmin: React.FC = () => {
     setFFormule(activeOrgOffers[0]?.nom || ''); setFBudget(''); setFNbreEmployes(''); setFCommentaire(''); setFRelance(''); setFSiteWeb('');
     setFCustomFields({});
     setDuplicateAlert(false);
-  };
-
-  const handleDelete = (id: string) => {
-    if (window.confirm(t('adminOrg.prospects.deleteConfirm'))) {
-      deleteProspect(id);
-      setSelectedIds(prev => prev.filter(i => i !== id));
-    }
   };
 
   // Use all org prospects (not myProspects which is scoped to current user)
@@ -491,13 +483,6 @@ export const ProspectsListAdmin: React.FC = () => {
                     >
                       <Pencil className="w-3.5 h-3.5 text-primary" />
                     </button>
-                    <button
-                      onClick={() => handleDelete(p.id)}
-                      className="p-1.5 rounded-lg border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-colors"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
                 </td>
               </tr>
@@ -550,12 +535,6 @@ export const ProspectsListAdmin: React.FC = () => {
                 className="flex-1 py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5">
                 {t('adminOrg.prospects.openFile')} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-              <button
-                onClick={() => handleDelete(p.id)}
-                className="p-2 rounded-xl border border-input hover:bg-red-500/10 hover:border-red-500/30 text-muted-foreground hover:text-red-500 transition-colors shrink-0"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
             </div>
           </div>
         ))}

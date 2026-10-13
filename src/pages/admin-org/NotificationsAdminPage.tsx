@@ -9,12 +9,13 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../lib/utils';
 
-type Filtre = 'toutes' | 'non_lues' | 'activite' | 'paiements' | 'clients' | 'objectifs';
+type Filtre = 'toutes' | 'non_lues' | 'activite' | 'relances' | 'paiements' | 'clients' | 'objectifs';
 
 const FILTRES: { key: Filtre; label: string }[] = [
   { key: 'toutes', label: 'Toutes' },
   { key: 'non_lues', label: 'Non lues' },
   { key: 'activite', label: 'Activité' },
+  { key: 'relances', label: 'Relances' },
   { key: 'paiements', label: 'Paiements' },
   { key: 'clients', label: 'Clients' },
   { key: 'objectifs', label: 'Objectifs' },
@@ -24,6 +25,7 @@ const FILTRE_TYPES: Record<Filtre, string[] | null> = {
   toutes: null,
   non_lues: null,
   activite: ['baisse_activite', 'prospect_non_traite'],
+  relances: ['relance', 'relances_jour_admin', 'relances_retard_admin'],
   paiements: ['paiement_en_retard', 'abonnement_expire', 'paiement_recu'],
   clients: ['client_inactif', 'compte_suspendu', 'nouveau_client'],
   objectifs: ['objectif_non_atteint', 'prospects_perdus_anormal', 'objectif_atteint'],

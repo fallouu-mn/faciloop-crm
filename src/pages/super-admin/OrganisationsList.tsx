@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Plus, X, Clock, Power, Search, CheckCircle2, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { Plus, X, Clock, Power, Search, CheckCircle2, Loader2, SquarePen, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { PeriodFilter } from '../../components/common/PeriodFilter';
 import { DateRange, isInDateRange, searchParamsToDateRange } from '../../lib/dateFilter';
@@ -31,12 +31,16 @@ interface OrgRow {
   statut_abonnement?: string;
   responsable_nom?: string;
   responsable_prenom?: string;
+  date_fin_abonnement?: string | null;
   created_at: string;
 }
 
 export const OrganisationsList: React.FC = () => {
-  const { t } = useTranslation('superAdmin');
+  const { t, i18n } = useTranslation('superAdmin');
+  /** Locale Intl pour les dates affichées (fr par défaut, en pour l'anglais). */
+  const dateLocale = i18n.language?.startsWith('en') ? 'en-US' : 'fr-FR';
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const initialStatut = (searchParams.get('statut') as 'actif' | 'suspendu') || 'tous';
 
@@ -60,6 +64,19 @@ export const OrganisationsList: React.FC = () => {
   const [createSansAbonnement, setCreateSansAbonnement] = useState(false);
   const [createSecteur, setCreateSecteur] = useState('');
 
+  // Menu action (dropdown)
+  const [actionMenuId, setActionMenuId] = useState<string | null>(null);
+  const actionMenuRef = useRef<HTMLDivElement>(null);
+
+  // Modal suspension
+  const [suspendingOrg, setSuspendingOrg] = useState<OrgRow | null>(null);
+  const [suspendLoading, setSuspendLoading] = useState(false);
+
+  // Modal suppression
+  const [deletingOrg, setDeletingOrg] = useState<OrgRow | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+
   // Modal "Activation"
   const [activatingOrg, setActivatingOrg] = useState<OrgRow | null>(null);
   const [activFormule, setActivFormule] = useState('');
@@ -67,6 +84,7 @@ export const OrganisationsList: React.FC = () => {
   const [activLoading, setActivLoading] = useState(false);
   const [activError, setActivError] = useState<string | null>(null);
   const [activSansAbonnement, setActivSansAbonnement] = useState(false);
+  const [activDateFin, setActivDateFin] = useState('');
   const [activSecteur, setActivSecteur] = useState('');
 
   const PERIODICITES = PERIODICITES_CODES.map(code => ({ code, label: t(`period.${code}`) }));
@@ -86,8 +104,18 @@ export const OrganisationsList: React.FC = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [location.key]);
   useRefetchOnFocus(fetchData);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (actionMenuRef.current && !actionMenuRef.current.contains(event.target as Node)) {
+        setActionMenuId(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fmtPrice = (amount: number) => formatAmount(amount, 'XOF');
 
@@ -107,6 +135,7 @@ export const OrganisationsList: React.FC = () => {
     setActivatingOrg(org);
     setActivError(null);
     setActivSansAbonnement(false);
+    setActivDateFin('');
     setActivSecteur(org.secteur || '');
     if (org.formule_code) {
       setActivFormule(org.formule_code);
@@ -133,7 +162,7 @@ export const OrganisationsList: React.FC = () => {
         formule_code: null,
         periodicite: null,
         date_debut_abonnement: null,
-        date_fin_abonnement: null,
+        date_fin_abonnement: activDateFin || null,
         secteur: activSecteur || null,
       };
       localPatch = {
@@ -142,6 +171,7 @@ export const OrganisationsList: React.FC = () => {
         prix_abonnement: 0,
         formule_code: undefined,
         periodicite: undefined,
+        date_fin_abonnement: activDateFin || undefined,
         secteur: activSecteur || undefined,
       };
     } else {
@@ -169,15 +199,22 @@ export const OrganisationsList: React.FC = () => {
       };
     }
 
-    const { error } = await supabase
+    const { data: updatedRows, error } = await supabase
       .from('organizations')
       .update(updates)
-      .eq('id', activatingOrg.id);
+      .eq('id', activatingOrg.id)
+      .select();
 
     if (error) {
       setActivError(error.message);
       setActivLoading(false);
       toast.error(t('organisations.toast.activateError', { message: error.message }));
+      return;
+    }
+    if (!updatedRows || updatedRows.length === 0) {
+      setActivError(t('organisations.toast.rlsDenied'));
+      setActivLoading(false);
+      toast.error(t('organisations.toast.rlsDenied'));
       return;
     }
 
@@ -189,7 +226,12 @@ export const OrganisationsList: React.FC = () => {
     setActivatingOrg(null);
     toast.success(
       activSansAbonnement
-        ? t('organisations.toast.activatedNoSub', { name: activatingOrg.nom })
+        ? (activDateFin
+            ? t('organisations.toast.activatedNoSubUntil', {
+                name: activatingOrg.nom,
+                date: new Date(activDateFin).toLocaleDateString(dateLocale),
+              })
+            : t('organisations.toast.activatedNoSub', { name: activatingOrg.nom }))
         : t('organisations.toast.activated', { name: activatingOrg.nom })
     );
   };
@@ -202,24 +244,29 @@ export const OrganisationsList: React.FC = () => {
     } else if (newStatut === 'actif' && target?.formule_code) {
       updates.statut_abonnement = 'actif';
     }
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('organizations')
       .update(updates)
-      .eq('id', id);
-    if (!error) {
-      setTenants(prev => prev.map(tenant => tenant.id === id ? {
-        ...tenant,
-        statut: newStatut,
-        statut_abonnement: (updates.statut_abonnement as string) || tenant.statut_abonnement,
-      } : tenant));
-      toast.success(
-        newStatut === 'suspendu'
-          ? t('organisations.toast.suspended', { name: target?.nom ?? '' })
-          : t('organisations.toast.reactivated', { name: target?.nom ?? '' })
-      );
-    } else {
+      .eq('id', id)
+      .select();
+    if (error) {
       toast.error(t('organisations.toast.error', { message: error.message }));
+      return;
     }
+    if (!data || data.length === 0) {
+      toast.error(t('organisations.toast.rlsDenied'));
+      return;
+    }
+    setTenants(prev => prev.map(tenant => tenant.id === id ? {
+      ...tenant,
+      statut: newStatut,
+      statut_abonnement: (updates.statut_abonnement as string) || tenant.statut_abonnement,
+    } : tenant));
+    toast.success(
+      newStatut === 'suspendu'
+        ? t('organisations.toast.suspended', { name: target?.nom ?? '' })
+        : t('organisations.toast.reactivated', { name: target?.nom ?? '' })
+    );
   };
 
   const toggleStatus = async (id: string) => {
@@ -227,6 +274,51 @@ export const OrganisationsList: React.FC = () => {
     if (!target) return;
     const newStatut = target.statut === 'actif' ? 'suspendu' : 'actif';
     await changeStatus(id, newStatut);
+  };
+
+  const handleSuspend = async () => {
+    if (!suspendingOrg) return;
+    setSuspendLoading(true);
+    await changeStatus(suspendingOrg.id, 'suspendu');
+    setSuspendLoading(false);
+    setSuspendingOrg(null);
+  };
+
+  const handleDeleteOrg = async () => {
+    if (!deletingOrg || deleteConfirmText !== deletingOrg.nom) return;
+    setDeleteLoading(true);
+
+    const orgId = deletingOrg.id;
+    const orgNom = deletingOrg.nom;
+
+    const tablesToClean = [
+      'notifications',
+      'relances',
+      'objectifs',
+      'commissions',
+      'journal_actions',
+      'sources_custom',
+      'prospects',
+      'profiles',
+    ];
+
+    for (const table of tablesToClean) {
+      await supabase.from(table).delete().eq('organization_id', orgId);
+    }
+
+    const { error } = await supabase.from('organizations').delete().eq('id', orgId);
+
+    if (error) {
+      toast.error(t('organisations.toast.deleteError', { message: error.message }));
+      setDeleteLoading(false);
+      return;
+    }
+
+    setTenants(prev => prev.filter(t => t.id !== orgId));
+    setDeleteLoading(false);
+    setDeletingOrg(null);
+    setDeleteConfirmText('');
+    toast.success(t('organisations.toast.deleted', { name: orgNom }));
   };
 
   const resetCreateForm = () => {
@@ -416,7 +508,7 @@ export const OrganisationsList: React.FC = () => {
       </div>
 
       {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card">
+      <div className="hidden md:block rounded-xl border border-border bg-card overflow-visible">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border bg-muted/50">
             <tr className="text-xs font-medium text-muted-foreground">
@@ -465,25 +557,49 @@ export const OrganisationsList: React.FC = () => {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  {tenant.statut === 'en_attente' ? (
+                  <div className="relative inline-block" ref={actionMenuId === tenant.id ? actionMenuRef : undefined}>
                     <button
-                      onClick={(e) => { e.stopPropagation(); openActivationModal(tenant); }}
-                      className="px-3 py-1.5 rounded-full border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 text-xs font-medium transition-colors"
+                      onClick={(e) => { e.stopPropagation(); setActionMenuId(prev => prev === tenant.id ? null : tenant.id); }}
+                      className="p-1.5 rounded-md hover:bg-muted text-muted-foreground transition-colors"
                     >
-                      {t('common.activate')}
+                      <SquarePen className="w-4 h-4" />
                     </button>
-                  ) : (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleStatus(tenant.id); }}
-                      className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
-                        tenant.statut === 'actif'
-                          ? 'border-destructive/30 text-destructive hover:bg-destructive/10'
-                          : 'border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10'
-                      }`}
-                    >
-                      {tenant.statut === 'actif' ? t('common.suspend') : t('common.activate')}
-                    </button>
-                  )}
+                    {actionMenuId === tenant.id && (
+                      <div className="absolute right-0 bottom-full mb-1 w-44 rounded-lg border border-border bg-card shadow-lg z-50 py-1"
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        {tenant.statut === 'actif' ? (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setActionMenuId(null); setSuspendingOrg(tenant); }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-amber-600 hover:bg-muted transition-colors text-left"
+                          >
+                            <Power className="w-4 h-4" />
+                            Suspendre
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActionMenuId(null);
+                              if (tenant.statut === 'en_attente') openActivationModal(tenant);
+                              else toggleStatus(tenant.id);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-emerald-600 hover:bg-muted transition-colors text-left"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            Activer
+                          </button>
+                        )}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setActionMenuId(null); setDeletingOrg(tenant); setDeleteConfirmText(''); }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors text-left"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Supprimer
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -531,27 +647,49 @@ export const OrganisationsList: React.FC = () => {
               </span>
             </div>
             <div className="pt-3 border-t border-border flex items-center justify-end">
-              {tenant.statut === 'en_attente' ? (
+              <div className="relative" ref={actionMenuId === tenant.id ? actionMenuRef : undefined}>
                 <button
-                  onClick={(e) => { e.stopPropagation(); openActivationModal(tenant); }}
-                  className="px-3 py-1.5 rounded-full border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 text-xs font-medium flex items-center gap-1.5 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); setActionMenuId(prev => prev === tenant.id ? null : tenant.id); }}
+                  className="p-1.5 rounded-md hover:bg-muted text-muted-foreground transition-colors"
                 >
-                  <Power className="w-3.5 h-3.5" />
-                  <span>{t('common.activate')}</span>
+                  <SquarePen className="w-4 h-4" />
                 </button>
-              ) : (
-                <button
-                  onClick={(e) => { e.stopPropagation(); toggleStatus(tenant.id); }}
-                  className={`px-3 py-1.5 rounded-full border text-xs font-medium flex items-center gap-1.5 transition-colors ${
-                    tenant.statut === 'actif'
-                      ? 'border-destructive/30 text-destructive hover:bg-destructive/10'
-                      : 'border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10'
-                  }`}
-                >
-                  <Power className="w-3.5 h-3.5" />
-                  <span>{tenant.statut === 'actif' ? t('common.suspend') : t('common.activate')}</span>
-                </button>
-              )}
+                {actionMenuId === tenant.id && (
+                  <div className="absolute right-0 bottom-full mb-1 w-44 rounded-lg border border-border bg-card shadow-lg z-50 py-1"
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
+                    {tenant.statut === 'actif' ? (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setActionMenuId(null); setSuspendingOrg(tenant); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-amber-600 hover:bg-muted transition-colors text-left"
+                      >
+                        <Power className="w-4 h-4" />
+                        Suspendre
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActionMenuId(null);
+                          if (tenant.statut === 'en_attente') openActivationModal(tenant);
+                          else toggleStatus(tenant.id);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-emerald-600 hover:bg-muted transition-colors text-left"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        Activer
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setActionMenuId(null); setDeletingOrg(tenant); setDeleteConfirmText(''); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors text-left"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Supprimer
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -665,9 +803,28 @@ export const OrganisationsList: React.FC = () => {
               </label>
 
               {activSansAbonnement ? (
-                <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-1">
-                  <p className="text-xs font-semibold text-amber-600">{t('organisations.withoutSubAccessTitle')}</p>
-                  <p className="text-xs text-muted-foreground">{t('organisations.accountStatusPrefix')} <span className="font-medium text-foreground">{t('status.actif')}</span> — {t('organisations.subStatusPrefix')} <span className="font-medium text-foreground">{t('status.en_attente')}</span> — {t('organisations.pricePrefix')} <span className="font-medium text-foreground">0</span></p>
+                <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-3">
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-amber-600">{t('organisations.withoutSubAccessTitle')}</p>
+                    <p className="text-xs text-muted-foreground">{t('organisations.accountStatusPrefix')} <span className="font-medium text-foreground">{t('status.actif')}</span> — {t('organisations.subStatusPrefix')} <span className="font-medium text-foreground">{t('status.en_attente')}</span> — {t('organisations.pricePrefix')} <span className="font-medium text-foreground">0</span></p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-foreground">{t('organisations.accessEndDateLabel')}</label>
+                    <input
+                      type="date"
+                      value={activDateFin}
+                      onChange={(e) => setActivDateFin(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm text-foreground focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none transition-all"
+                    />
+                    <p className="text-[10px] text-muted-foreground">
+                      {activDateFin
+                        ? t('organisations.accessEndDateHint', {
+                            date: new Date(activDateFin).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' }),
+                          })
+                        : t('organisations.accessEndNoDate')}
+                    </p>
+                  </div>
                 </div>
               ) : activeFormules.length > 0 ? (
                 <>
@@ -754,6 +911,118 @@ export const OrganisationsList: React.FC = () => {
         </div>
       )}
 
+      {/* ═══════ Modal Confirmation Suspension ═══════ */}
+      {suspendingOrg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-lg space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
+                <Power className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Suspendre le compte</h2>
+                <p className="text-xs text-muted-foreground">Cette action est reversible</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-foreground">
+              Voulez-vous suspendre <span className="font-bold">{suspendingOrg.nom}</span> ? Les utilisateurs ne pourront plus se connecter.
+            </p>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setSuspendingOrg(null)}
+                className="flex-1 h-10 rounded-full border border-border text-sm font-medium hover:bg-muted text-foreground transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSuspend}
+                disabled={suspendLoading}
+                className="flex-1 h-10 rounded-full bg-amber-600 text-white text-sm font-semibold shadow-sm hover:bg-amber-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              >
+                {suspendLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Power className="h-4 w-4" />
+                    Suspendre
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════ Modal Confirmation Suppression ═══════ */}
+      {deletingOrg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-destructive/30 bg-card p-6 shadow-lg space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Supprimer definitivement</h2>
+                <p className="text-xs text-muted-foreground">Cette action est irreversible</p>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3 space-y-2">
+              <p className="text-sm text-foreground">
+                Vous allez supprimer <span className="font-bold">{deletingOrg.nom}</span> et toutes ses donnees :
+              </p>
+              <ul className="text-xs text-muted-foreground space-y-1 ml-3 list-disc">
+                <li>Prospects et clients</li>
+                <li>Relances et objectifs</li>
+                <li>Commissions et notifications</li>
+                <li>Utilisateurs et profils</li>
+                <li>Journal d'actions</li>
+              </ul>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">
+                Tapez <span className="font-bold text-destructive">{deletingOrg.nom}</span> pour confirmer
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder={deletingOrg.nom}
+                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground focus:ring-2 focus:ring-destructive/20 focus:border-destructive focus:outline-none transition-all"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => { setDeletingOrg(null); setDeleteConfirmText(''); }}
+                className="flex-1 h-10 rounded-full border border-border text-sm font-medium hover:bg-muted text-foreground transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDeleteOrg}
+                disabled={deleteLoading || deleteConfirmText !== deletingOrg.nom}
+                className="flex-1 h-10 rounded-full bg-destructive text-white text-sm font-semibold shadow-sm hover:bg-destructive/90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              >
+                {deleteLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    Supprimer
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ═══════ Modal Nouvelle Entreprise ═══════ */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -810,8 +1079,7 @@ export const OrganisationsList: React.FC = () => {
                   <PhoneInput
                   value={adminTelephone}
                   onChange={(val) => setAdminTelephone(val)}
-                  placeholder="+221 77 000 00 00"
-                  className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" />
+                  placeholder="+221 77 000 00 00" />
                   <p className="text-[10px] text-muted-foreground">{t('organisations.createModal.phoneHint')}</p>
                 </div>
               </div>

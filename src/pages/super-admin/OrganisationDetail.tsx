@@ -3,17 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Building2, Save, Loader2, Crown, User, Phone, MapPin, Mail, Globe, Briefcase, Clock, Shield, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { PAYS } from '../../utils/formatters';
 import { supabase } from '../../lib/supabase';
 import { formatAmount } from '../../lib/currency';
 import { FormuleConfig, getFormules, getOfferPrice } from '../../services/formulesSaas';
 
 const PERIODICITE_CODES = ['mensuel', 'trimestriel', 'annuel'] as const;
 
-const PAYS = [
-  'Sénégal', "Côte d'Ivoire", 'Mali', 'Burkina Faso', 'Guinée',
-  'Bénin', 'Togo', 'Niger', 'Cameroun', 'Congo', 'Gabon',
-  'Mauritanie', 'France', 'Autre',
-];
 
 interface OrgData {
   id: string;

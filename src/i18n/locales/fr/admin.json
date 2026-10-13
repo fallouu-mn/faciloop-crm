@@ -70,6 +70,13 @@
       "updateFailed": "Erreur lors de la mise à jour.",
       "deleted": "Commercial supprimé.",
       "deleteConfirm": "Supprimer {{name}} ? Cette action est irréversible.",
+      "deleteFailed": "Erreur lors de la suppression.",
+      "deleteModal": {
+        "title": "Supprimer le commercial",
+        "warning": "Cette action est irreversible",
+        "questionPre": "Voulez-vous supprimer",
+        "questionPost": " ?"
+      },
       "limitReached": "Limite atteinte ({{max}} commerciaux sur {{plan}}).",
       "limitReachedUpgrade": "Limite atteinte ({{max}} commerciaux sur {{plan}}). Passez à une offre supérieure pour en ajouter.",
       "limitBanner": "Vous avez atteint la limite de {{max}} commerciaux actifs sur l'offre {{plan}}. Passez à une offre supérieure pour en ajouter.",
@@ -341,6 +348,7 @@
         "toutes": "Toutes",
         "non_lues": "Non lues",
         "activite": "Activité",
+        "relances": "Relances",
         "paiements": "Paiements",
         "clients": "Clients",
         "objectifs": "Objectifs"

@@ -5,7 +5,7 @@ import { ClientFaciloop } from '../../types/crm';
 import { CurrencyToggle } from '../../components/common/CurrencyToggle';
 import { SelectCustom } from '../../components/common/SelectCustom';
 import { DeviseCode, convertAmount, formatAmount, detectDevise } from '../../lib/currency';
-import { formatPhoneNumber } from '../../utils/formatters';
+import { formatPhoneNumber, PAYS } from '../../utils/formatters';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { useTranslation } from 'react-i18next';
 import {
@@ -538,8 +538,7 @@ export const ClientsListAdmin: React.FC = () => {
                     <label className="block font-semibold mb-1">Téléphone</label>
                     <PhoneInput
                       value={editTelephone}
-                      onChange={(val) => setEditTelephone(val)}
-                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                      onChange={(val) => setEditTelephone(val)} />
                   </div>
                   <div>
                     <label className="block font-semibold mb-1">Email</label>
@@ -569,8 +568,7 @@ export const ClientsListAdmin: React.FC = () => {
                     <label className="block font-semibold mb-1">WhatsApp</label>
                     <PhoneInput
                       value={editWhatsapp}
-                      onChange={(val) => setEditWhatsapp(val)}
-                      className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" />
+                      onChange={(val) => setEditWhatsapp(val)} />
                   </div>
                   <div>
                     <label className="block font-semibold mb-1">Secteur d'activité</label>
@@ -585,7 +583,7 @@ export const ClientsListAdmin: React.FC = () => {
                     <select value={editPays} onChange={(e) => setEditPays(e.target.value)}
                       className="w-full p-2 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary">
                       <option value="">—</option>
-                      {["Sénégal", "Côte d'Ivoire", "Mali", "Burkina Faso", "Guinée", "Cameroun", "Bénin", "Togo", "Niger", "France", "Autre"].map(p => <option key={p} value={p}>{p}</option>)}
+                      {PAYS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                   <div>

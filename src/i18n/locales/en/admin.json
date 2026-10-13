@@ -70,6 +70,13 @@
       "updateFailed": "Update failed.",
       "deleted": "Sales rep deleted.",
       "deleteConfirm": "Delete {{name}}? This action is irreversible.",
+      "deleteFailed": "Delete failed.",
+      "deleteModal": {
+        "title": "Delete sales rep",
+        "warning": "This action is irreversible",
+        "questionPre": "Are you sure you want to delete",
+        "questionPost": "?"
+      },
       "limitReached": "Limit reached ({{max}} sales reps on {{plan}}).",
       "limitReachedUpgrade": "Limit reached ({{max}} sales reps on {{plan}}). Upgrade your plan to add more.",
       "limitBanner": "You have reached the limit of {{max}} active sales reps on the {{plan}} plan. Upgrade to add more.",
@@ -341,6 +348,7 @@
         "toutes": "All",
         "non_lues": "Unread",
         "activite": "Activity",
+        "relances": "Follow-ups",
         "paiements": "Payments",
         "clients": "Clients",
         "objectifs": "Objectives"
