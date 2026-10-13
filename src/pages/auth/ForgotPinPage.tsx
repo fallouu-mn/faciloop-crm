@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Loader2, ArrowLeft, Eye, EyeOff, CheckCircle, Smartphone } from 'lucide-react';
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
-import { PhoneInput } from '../../components/common/PhoneInput';
+import { PhoneInput, parsePhoneValue, Country } from '../../components/common/PhoneInput';
+import { validatePhoneForCountry } from '../../utils/phoneValidation';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../../components/ui/input-otp';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useTranslation } from 'react-i18next';
@@ -13,11 +14,12 @@ import { supabase } from '../../lib/supabase';
 type Step = 'phone' | 'otp' | 'success';
 
 export const ForgotPinPage: React.FC = () => {
-  const { t } = useTranslation('auth');
+  const { t, i18n } = useTranslation('auth');
 
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('phone');
   const [phone, setPhone] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [otp, setOtp] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -36,8 +38,14 @@ export const ForgotPinPage: React.FC = () => {
   const handleSendOtp = useCallback(async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setError('');
-    if (!phone || phone.length < 9) {
-      setError(t('errors.invalidPhone'));
+
+    const parsed = parsePhoneValue(phone);
+    const dialCode = selectedCountry?.dialCode || parsed.country.dialCode;
+    const localDigits = parsed.localDigits;
+    const phoneCheck = validatePhoneForCountry(dialCode, localDigits, i18n.language);
+
+    if (!phoneCheck.isValid) {
+      setError(phoneCheck.message || t('errors.invalidPhone'));
       return;
     }
     if (cooldown > 0) return;
@@ -68,7 +76,7 @@ export const ForgotPinPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [phone, cooldown, t]);
+  }, [phone, selectedCountry, cooldown, t, i18n.language]);
 
   const handleVerifyAndReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,6 +188,7 @@ export const ForgotPinPage: React.FC = () => {
               <PhoneInput
                 value={phone}
                 onChange={setPhone}
+                onCountryChange={setSelectedCountry}
                 placeholder="77 123 45 67"
                 disabled={isLoading}
               />

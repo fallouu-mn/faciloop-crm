@@ -4,7 +4,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
-import { PhoneInput } from '../../components/common/PhoneInput';
+import { PhoneInput, parsePhoneValue, Country } from '../../components/common/PhoneInput';
+import { validatePhoneForCountry } from '../../utils/phoneValidation';
 import { PinInput } from '../../components/common/PinInput';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
@@ -13,13 +14,14 @@ import { useTranslation } from 'react-i18next';
 
 export const LoginPage: React.FC = () => {
   const [phone, setPhone] = useState<string>('');
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [codeDigits, setCodeDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [showCode, setShowCode] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const { t } = useTranslation('auth');
+  const { t, i18n } = useTranslation('auth');
   const { login } = useAuth();
   const navigate = useNavigate();
   const platformSettings = usePlatformSettings();
@@ -45,8 +47,13 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!phone || phone.length < 9) {
-      setErrorMsg(t('errors.invalidPhone'));
+    const parsed = parsePhoneValue(phone);
+    const dialCode = selectedCountry?.dialCode || parsed.country.dialCode;
+    const localDigits = parsed.localDigits;
+    const phoneCheck = validatePhoneForCountry(dialCode, localDigits, i18n.language);
+
+    if (!phoneCheck.isValid) {
+      setErrorMsg(phoneCheck.message || t('errors.invalidPhone'));
       return;
     }
 
@@ -130,6 +137,7 @@ export const LoginPage: React.FC = () => {
             <PhoneInput
               value={phone}
               onChange={setPhone}
+              onCountryChange={setSelectedCountry}
               placeholder="77 123 45 67"
               disabled={loading}
             />

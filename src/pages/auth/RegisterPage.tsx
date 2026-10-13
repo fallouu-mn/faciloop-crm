@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Loader2, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { FaciloopBrand } from '../../components/common/FaciloopBrand';
-import { PhoneInput } from '../../components/common/PhoneInput';
+import { PhoneInput, parsePhoneValue, Country } from '../../components/common/PhoneInput';
+import { validatePhoneForCountry } from '../../utils/phoneValidation';
 import { PinInput } from '../../components/common/PinInput';
 import { LanguageToggle } from '../../components/common/LanguageToggle';
 import { ThemeToggle } from '../../components/common/ThemeToggle';
@@ -13,13 +14,14 @@ import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
-  const { t } = useTranslation('auth');
+  const { t, i18n } = useTranslation('auth');
   const navigate = useNavigate();
 
   const [prenom, setPrenom] = useState<string>('');
   const [nom, setNom] = useState<string>('');
   const [entreprise, setEntreprise] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [showParrainage, setShowParrainage] = useState<boolean>(false);
   const [codeParrainage, setCodeParrainage] = useState<string>('');
   const [codeDigits, setCodeDigits] = useState<string[]>(['', '', '', '', '', '']);
@@ -50,8 +52,13 @@ export const RegisterPage: React.FC = () => {
       return;
     }
 
-    if (!phone || phone.length < 9) {
-      setErrorMsg(t('errors.invalidPhone'));
+    const parsed = parsePhoneValue(phone);
+    const dialCode = selectedCountry?.dialCode || parsed.country.dialCode;
+    const localDigits = parsed.localDigits;
+    const phoneCheck = validatePhoneForCountry(dialCode, localDigits, i18n.language);
+
+    if (!phoneCheck.isValid) {
+      setErrorMsg(phoneCheck.message || t('errors.invalidPhone'));
       return;
     }
 
@@ -214,6 +221,7 @@ export const RegisterPage: React.FC = () => {
             <PhoneInput
               value={phone}
               onChange={setPhone}
+              onCountryChange={setSelectedCountry}
               placeholder="77 123 45 67"
               disabled={loading}
             />

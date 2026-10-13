@@ -844,12 +844,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       password: codeSecret,
     });
 
-    // Fallback avec / sans préfixe pays 221
+    // Fallback de compatibilité STRICTEMENT réservé aux anciens comptes sénégalais créés
+    // sans l'indicatif 221 (ex: 771234567@faciloop.app) ou avec 221 (ex: 221771234567@faciloop.app).
+    // Ne JAMAIS tronquer 221 si le reste n'est pas un numéro sénégalais national valide à 9 chiffres !
     if (error) {
       let alternateEmail = '';
-      if (cleanPhone.startsWith('221') && cleanPhone.length > 9) {
-        alternateEmail = `${cleanPhone.slice(3)}@faciloop.app`;
-      } else if (!cleanPhone.startsWith('221')) {
+      if (cleanPhone.startsWith('221') && cleanPhone.length === 12) {
+        const localPart = cleanPhone.slice(3);
+        if (/^(7[05678]\d{7}|33[89]\d{6})$/.test(localPart)) {
+          alternateEmail = `${localPart}@faciloop.app`;
+        }
+      } else if (!cleanPhone.startsWith('221') && /^(7[05678]\d{7}|33[89]\d{6})$/.test(cleanPhone)) {
         alternateEmail = `221${cleanPhone}@faciloop.app`;
       }
 

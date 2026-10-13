@@ -11,3 +11,10 @@
  * opération, plus d'alias concurrent.
  */
 export { normalizePhoneNumber, formatPhoneNumber } from '../utils/formatters';
+export {
+  validatePhoneForCountry,
+  getCountryPhoneRule,
+  normalizeLocalPhone,
+  formatLocalDigits,
+  getMaxLocalLength,
+} from '../utils/phoneValidation';

@@ -1,15 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronsUpDown, Search, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import {
+  normalizeLocalPhone,
+  formatLocalDigits,
+  getMaxLocalLength,
+  getCountryPhoneRule,
+  validatePhoneForCountry,
+} from '../../utils/phoneValidation';
 
-interface Country {
+export interface Country {
   code: string;
   name: string;
   flag: string;
   dialCode: string;
 }
 
-interface CountryGroup {
+export interface CountryGroup {
   name: string;
   countries: Country[];
 }
@@ -336,7 +343,51 @@ const COUNTRY_GROUPS: CountryGroup[] = [
   },
 ];
 
-const ALL_COUNTRIES: Country[] = COUNTRY_GROUPS.flatMap(g => g.countries);
+export const ALL_COUNTRIES: Country[] = COUNTRY_GROUPS.flatMap(g => g.countries);
+
+/**
+ * Analyse une valeur brute pour en extraire le pays et les chiffres locaux.
+ */
+export function parsePhoneValue(raw: string): { country: Country; localDigits: string } {
+  if (!raw) return { country: ALL_COUNTRIES[0], localDigits: '' };
+  const clean = raw.trim().replace(/[^\d+]/g, '');
+  const digitsOnly = clean.replace(/\D/g, '');
+
+  let toMatch = digitsOnly;
+  if (clean.startsWith('00')) {
+    toMatch = digitsOnly.slice(2);
+  }
+
+  // Trier les pays par longueur d'indicatif décroissante pour matcher le plus spécifique
+  const sorted = [...ALL_COUNTRIES].sort((a, b) => b.dialCode.length - a.dialCode.length);
+
+  // 1. Si commencé par + ou 00, on cherche l'indicatif
+  if (clean.startsWith('+') || clean.startsWith('00')) {
+    for (const c of sorted) {
+      if (toMatch.startsWith(c.dialCode)) {
+        return { country: c, localDigits: toMatch.slice(c.dialCode.length) };
+      }
+    }
+  }
+
+  // 2. Si un indicatif explicite correspond au début et que le reste est non vide
+  for (const c of sorted) {
+    if (toMatch.startsWith(c.dialCode) && toMatch.length > c.dialCode.length) {
+      // Éviter de confondre un numéro mobile sénégalais 77... avec '7' (Russie)
+      if (c.dialCode === '7' && /^7[05678]\d{7}$/.test(toMatch)) {
+        continue;
+      }
+      // Éviter de confondre un numéro fixe sénégalais 338/339... avec '33' (France)
+      if (c.dialCode === '33' && /^33[89]\d{6}$/.test(toMatch)) {
+        continue;
+      }
+      return { country: c, localDigits: toMatch.slice(c.dialCode.length) };
+    }
+  }
+
+  // 3. Fallback : numéro local sénégalais
+  return { country: ALL_COUNTRIES[0], localDigits: digitsOnly };
+}
 
 /**
  * Clé de traduction d'une région, dérivée du libellé FR du groupe
@@ -351,21 +402,51 @@ const regionKey = (name: string): string =>
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '');
 
-interface PhoneInputProps {
+export interface PhoneInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  className?: string;
+  onCountryChange?: (country: Country) => void;
+  autoFocus?: boolean;
 }
 
-export function PhoneInput({ value, onChange, placeholder = '77 123 45 67', disabled = false }: PhoneInputProps) {
+export function PhoneInput({
+  value,
+  onChange,
+  placeholder,
+  disabled = false,
+  className = '',
+  onCountryChange,
+  autoFocus = false,
+}: PhoneInputProps) {
   const { t } = useTranslation('common');
-  const [selectedCountry, setSelectedCountry] = useState<Country>(ALL_COUNTRIES[0]);
-  const [localNumber, setLocalNumber] = useState(value);
+  const [selectedCountry, setSelectedCountry] = useState<Country>(() => parsePhoneValue(value).country);
+  const [localNumber, setLocalNumber] = useState<string>(() => {
+    const { country, localDigits } = parsePhoneValue(value);
+    return formatLocalDigits(country.dialCode, localDigits);
+  });
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const lastEmittedValueRef = useRef<string>(value);
+
+  // Synchronisation lorsque la valeur change de l'extérieur (ex: preset, réinitialisation)
+  useEffect(() => {
+    if (value !== lastEmittedValueRef.current) {
+      lastEmittedValueRef.current = value;
+      if (!value) {
+        setLocalNumber('');
+        return;
+      }
+      const { country, localDigits } = parsePhoneValue(value);
+      setSelectedCountry(country);
+      setLocalNumber(formatLocalDigits(country.dialCode, localDigits));
+      onCountryChange?.(country);
+    }
+  }, [value, onCountryChange]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -387,14 +468,79 @@ export function PhoneInput({ value, onChange, placeholder = '77 123 45 67', disa
     setSelectedCountry(country);
     setOpen(false);
     setSearch('');
-    const cleaned = localNumber.replace(/\D/g, '');
-    onChange(cleaned ? `${country.dialCode}${cleaned}` : '');
+    onCountryChange?.(country);
+
+    // Ajuster le numéro local existant avec les contraintes du nouveau pays sélectionné
+    let digits = localNumber.replace(/\D/g, '');
+    // Si l'utilisateur avait déjà saisi l'indicatif dans le champ local, on le retire
+    if (digits.startsWith(country.dialCode) && digits.length > country.dialCode.length) {
+      digits = digits.slice(country.dialCode.length);
+    }
+    const maxDigits = getMaxLocalLength(country.dialCode);
+    const trimmed = digits.slice(0, maxDigits);
+    const formatted = formatLocalDigits(country.dialCode, trimmed);
+    setLocalNumber(formatted);
+
+    const normalized = normalizeLocalPhone(country.dialCode, trimmed);
+    const full = normalized ? `${country.dialCode}${normalized}` : '';
+    lastEmittedValueRef.current = full;
+    onChange(full);
   };
 
   const handleLocalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const filtered = e.target.value.replace(/[^0-9]/g, '');
-    setLocalNumber(filtered);
-    onChange(filtered ? `${selectedCountry.dialCode}${filtered}` : '');
+    const rawVal = e.target.value;
+
+    // Détection si l'utilisateur colle un numéro international (+ ou 00)
+    if (rawVal.trim().startsWith('+') || rawVal.trim().startsWith('00')) {
+      const { country, localDigits } = parsePhoneValue(rawVal);
+      setSelectedCountry(country);
+      onCountryChange?.(country);
+      const formatted = formatLocalDigits(country.dialCode, localDigits);
+      setLocalNumber(formatted);
+      const normalized = normalizeLocalPhone(country.dialCode, localDigits);
+      const full = normalized ? `${country.dialCode}${normalized}` : '';
+      lastEmittedValueRef.current = full;
+      onChange(full);
+      return;
+    }
+
+    let digits = rawVal.replace(/\D/g, '');
+
+    // Si l'utilisateur tape ou colle l'indicatif du pays dans le champ local (ex: 33614578547 ou 221771234567)
+    const dial = selectedCountry.dialCode;
+    if (digits.startsWith(dial) && digits.length > dial.length) {
+      digits = digits.slice(dial.length);
+    }
+
+    const maxDigits = getMaxLocalLength(selectedCountry.dialCode);
+
+    // Si la saisie dépasse la longueur locale autorisée et correspond à un autre pays
+    // (ex: collage d'un numéro français sous l'indicatif sénégalais sans +)
+    if (digits.length > maxDigits) {
+      const parsed = parsePhoneValue(rawVal);
+      if (parsed.country.dialCode !== selectedCountry.dialCode) {
+        const check = validatePhoneForCountry(parsed.country.dialCode, parsed.localDigits);
+        if (check.isValid) {
+          setSelectedCountry(parsed.country);
+          onCountryChange?.(parsed.country);
+          const formatted = formatLocalDigits(parsed.country.dialCode, parsed.localDigits);
+          setLocalNumber(formatted);
+          const full = `${parsed.country.dialCode}${check.normalizedLocal}`;
+          lastEmittedValueRef.current = full;
+          onChange(full);
+          return;
+        }
+      }
+      digits = digits.slice(0, maxDigits);
+    }
+
+    const formatted = formatLocalDigits(selectedCountry.dialCode, digits);
+    setLocalNumber(formatted);
+
+    const normalized = normalizeLocalPhone(selectedCountry.dialCode, digits);
+    const full = normalized ? `${selectedCountry.dialCode}${normalized}` : '';
+    lastEmittedValueRef.current = full;
+    onChange(full);
   };
 
   const normalizeSearch = (text: string): string =>
@@ -414,8 +560,11 @@ export function PhoneInput({ value, onChange, placeholder = '77 123 45 67', disa
     }),
   })).filter(group => group.countries.length > 0);
 
+  const countryRule = getCountryPhoneRule(selectedCountry.dialCode);
+  const effectivePlaceholder = placeholder || countryRule.placeholder;
+
   return (
-    <div className="flex gap-2">
+    <div className={`flex gap-2 ${className}`}>
       {/* Country selector */}
       <div className="relative" ref={dropdownRef}>
         <button
@@ -479,12 +628,14 @@ export function PhoneInput({ value, onChange, placeholder = '77 123 45 67', disa
       {/* Phone number input */}
       <input
         type="tel"
-        placeholder={placeholder}
+        placeholder={effectivePlaceholder}
         value={localNumber}
         onChange={handleLocalChange}
         disabled={disabled}
+        autoFocus={autoFocus}
         className="flex-1 h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
       />
     </div>
   );
 }
+
