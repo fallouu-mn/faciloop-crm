@@ -53,9 +53,9 @@ export const COUNTRY_PHONE_RULES: Record<string, CountryPhoneRule> = {
     placeholder: '07 12 34 56 78',
     example: '07 12 34 56 78',
     formatGroups: [2, 2, 2, 2, 2],
-    errorMessageFr: "Le numéro ivoirien (+225) doit comporter 10 chiffres (ex : 01, 05, 07 pour mobile, 21, 25, 27 pour fixe).",
-    errorMessageEn: 'Ivorian phone numbers (+225) must have 10 digits (e.g. 01, 05, 07...).',
-    errorMessageWo: 'Limu telfon Kot Diwaar (+225) war na am 10 nimro (misal : 01, 05, 07...).',
+    errorMessageFr: "Le numéro ivoirien (+225) doit comporter 8 à 10 chiffres (ex : 01, 05, 07 pour mobile, 21, 25, 27 pour fixe).",
+    errorMessageEn: 'Ivorian phone numbers (+225) must have 8 to 10 digits (e.g. 01, 05, 07...).',
+    errorMessageWo: 'Limu telfon Kot Diwaar (+225) war na am 8 ba 10 nimro (misal : 01, 05, 07...).',
   },
 
   // ── France (+33) ────────────────────────────────────────────────────────────
