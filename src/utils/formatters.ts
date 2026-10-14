@@ -39,8 +39,8 @@ export const normalizePhoneNumber = (phone: string): string => {
     cleaned = '+' + cleaned.slice(2);
   }
 
-  // 9 chiffres locaux sénégalais (771234567) → +221771234567
-  if (/^7[05678]\d{7}$/.test(cleaned)) {
+  // 9 chiffres locaux sénégalais (771234567, 711234567) → +221...
+  if (/^7[015678]\d{7}$/.test(cleaned)) {
     cleaned = '+221' + cleaned;
   }
 

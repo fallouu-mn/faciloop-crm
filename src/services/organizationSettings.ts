@@ -23,13 +23,25 @@ const DEFAULT_SOURCES_EN: Record<string, string> = {
   autre: 'Other',
 };
 
-/** Libellé d'une source selon la langue, sans casser les sources custom (identiques en fr/en). */
+/** Libellés wolof des sources par défaut. */
+const DEFAULT_SOURCES_WO: Record<string, string> = {
+  prospection_directe: 'Seet kiliyã ci bopp',
+  site_web: 'Dalub web',
+  recommandation: 'Tànk / Wone',
+  reseaux_sociaux: 'Réseaux sociaux',
+  whatsapp: 'WhatsApp',
+  evenement: 'Xew-xew',
+  autre: 'Yeneen',
+};
+
+/** Libellé d'une source selon la langue, sans casser les sources custom (identiques en fr/en/wo). */
 export function sourceLabel(
   option: { value: string; label: string },
-  isEn?: boolean,
+  langOrIsEn?: boolean | string,
 ): string {
-  if (!isEn) return option.label;
-  return DEFAULT_SOURCES_EN[option.value] ?? option.label;
+  if (langOrIsEn === true || langOrIsEn === 'en') return DEFAULT_SOURCES_EN[option.value] ?? option.label;
+  if (langOrIsEn === 'wo') return DEFAULT_SOURCES_WO[option.value] ?? option.label;
+  return option.label;
 }
 
 export const DEFAULT_SETTINGS: Pick<

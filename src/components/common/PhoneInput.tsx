@@ -373,8 +373,8 @@ export function parsePhoneValue(raw: string): { country: Country; localDigits: s
   // 2. Si un indicatif explicite correspond au début et que le reste est non vide
   for (const c of sorted) {
     if (toMatch.startsWith(c.dialCode) && toMatch.length > c.dialCode.length) {
-      // Éviter de confondre un numéro mobile sénégalais 77... avec '7' (Russie)
-      if (c.dialCode === '7' && /^7[05678]\d{7}$/.test(toMatch)) {
+      // Éviter de confondre un numéro mobile sénégalais 77... ou 71... avec '7' (Russie)
+      if (c.dialCode === '7' && /^7[015678]\d{7}$/.test(toMatch)) {
         continue;
       }
       // Éviter de confondre un numéro fixe sénégalais 338/339... avec '33' (France)

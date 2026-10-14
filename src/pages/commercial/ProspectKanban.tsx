@@ -94,7 +94,7 @@ const DraggableProspectCard: React.FC<{ prospect: Prospect; basePath?: string; a
   const { sourceOptions } = useOrganizationSettings();
   const sourceOpt = sourceOptions.find(s => s.value === prospect.source);
   const sourceDisplay = sourceOpt
-    ? sourceLabel(sourceOpt, lng === 'en')
+    ? sourceLabel(sourceOpt, lng)
     : prospect.source.replace(/[_-]+/g, ' ');
 
   const style = transform
@@ -1056,7 +1056,7 @@ export const ProspectKanban: React.FC = () => {
                       <label className="block font-semibold mb-1">{t('kanban.source')}</label>
                       <select value={qaSource} onChange={e => setQaSource(e.target.value as SourceValue)}
                         className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground focus:ring-2 focus:ring-primary/20">
-                        {QA_SOURCES.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, lng === 'en')}</option>)}
+                        {QA_SOURCES.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, lng)}</option>)}
                       </select>
                     </div>
                     {commerciaux.length > 0 && (

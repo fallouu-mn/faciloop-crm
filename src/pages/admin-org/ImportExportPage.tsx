@@ -184,7 +184,12 @@ export const ImportExportPage: React.FC = () => {
       skipped: skippedCount,
       commercialNom: commNom
     });
-    toast.success(`${importedCount} prospect(s) importé(s) et attribué(s) à ${commNom}.${skippedCount > 0 ? ` ${skippedCount} doublon(s) ignoré(s).` : ''}`);
+    const successMsg = i18n.language === 'wo'
+      ? `${importedCount} kiliyã yékk nañu leen te jox leen ci ${commNom}.${skippedCount > 0 ? ` ${skippedCount} ñaaral bàyyi nañu leen.` : ''}`
+      : isEn
+      ? `${importedCount} prospect(s) imported and assigned to ${commNom}.${skippedCount > 0 ? ` ${skippedCount} duplicate(s) skipped.` : ''}`
+      : `${importedCount} prospect(s) importé(s) et attribué(s) à ${commNom}.${skippedCount > 0 ? ` ${skippedCount} doublon(s) ignoré(s).` : ''}`;
+    toast.success(successMsg);
 
     setTimeout(() => {
       setIsImportSuccess(false);
@@ -303,16 +308,24 @@ export const ImportExportPage: React.FC = () => {
               <Lock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
             </div>
             <h3 className="text-sm sm:text-base font-bold text-foreground">
-              {isEn ? 'CSV Import — Business plan required' : 'Import CSV — Offre Business requise'}
+              {i18n.language === 'wo'
+                ? 'Yékk CSV — Offre Business la laaj'
+                : isEn
+                ? 'CSV Import — Business plan required'
+                : 'Import CSV — Offre Business requise'}
             </h3>
             <p className="mt-2 text-xs text-muted-foreground max-w-sm">
-              {isEn
+              {i18n.language === 'wo'
+                ? `Yékk CSV & seet ñaaral yi ci formule Business la tàmbalee. Yaa ngi ci formule ${plan.label}.`
+                : isEn
                 ? `CSV import & deduplication is available starting from the Business plan. You are currently on the ${plan.label} plan.`
                 : `L'import CSV & dédoublonnage est disponible à partir de l'offre Business. Vous êtes actuellement sur l'offre ${plan.label}.`}
             </p>
             <a
               href={`https://wa.me/221711387878?text=${encodeURIComponent(
-                isEn
+                i18n.language === 'wo'
+                  ? `Nanga def, bëgg naa yéeg ci offre ${getRequiredPlan('import_csv')}.`
+                  : isEn
                   ? `Hello, I would like to upgrade from ${plan.label} to ${getRequiredPlan('import_csv')}.`
                   : `Bonjour, je souhaite passer de l'offre ${plan.label} à l'offre ${getRequiredPlan('import_csv')}.`
               )}`}
@@ -320,7 +333,7 @@ export const ImportExportPage: React.FC = () => {
               rel="noopener noreferrer"
               className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-faciloop text-white font-semibold text-xs shadow-md hover:opacity-90 transition-opacity"
             >
-              <span>{isEn ? 'Upgrade to Business' : "Passer à l'offre Business"}</span>
+              <span>{i18n.language === 'wo' ? "Yéeg ci formule Business" : isEn ? 'Upgrade to Business' : "Passer à l'offre Business"}</span>
               <ArrowUpRight className="h-4 w-4" />
             </a>
           </div>
@@ -392,7 +405,7 @@ export const ImportExportPage: React.FC = () => {
               {fileName ? `${t('adminOrg.importExport.import.fileLoaded')} ${fileName}` : t('adminOrg.importExport.import.dropzone')}
             </div>
             <p className="text-[11px] sm:text-xs text-muted-foreground max-w-md mx-auto">
-              Ou cliquez ci-dessous pour sélectionner un fichier. Extraction de <strong>Nom</strong>, <strong>Entreprise</strong> et <strong>Téléphone</strong>.
+              {t('adminOrg.importExport.import.helpText', 'Ou cliquez ci-dessous pour sélectionner un fichier. Extraction de Nom, Entreprise et Téléphone.')}
             </p>
           </div>
 

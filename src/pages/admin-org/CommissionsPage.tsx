@@ -21,25 +21,27 @@ const PERIODICITE_COLORS: Record<string, string> = {
   annuel: 'bg-emerald-500/10 text-emerald-600',
 };
 
-function getLastMonths(count: number): { value: string; label: string }[] {
+function getLastMonths(count: number, lng: string): { value: string; label: string }[] {
   const months = [];
   const now = new Date();
   for (let i = 0; i < count; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    const label = d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    const locale = lng.startsWith('en') ? 'en-US' : 'fr-FR';
+    const label = d.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
     months.push({ value, label: label.charAt(0).toUpperCase() + label.slice(1) });
   }
   return months;
 }
 
 export const CommissionsPage: React.FC = () => {
-  const { t } = useTranslation('admin');
+  const { t, i18n } = useTranslation('admin');
+  const lng = i18n.language || 'fr';
   const { commissions, markCommissionVersee } = useAuth();
   const [devise, setDevise] = useState<DeviseCode>(detectDevise());
   const [expandedCommercial, setExpandedCommercial] = useState<string | null>(null);
 
-  const lastMonths = getLastMonths(3);
+  const lastMonths = getLastMonths(3, lng);
   const [selectedMonth, setSelectedMonth] = useState<string>(lastMonths[0].value);
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
@@ -142,7 +144,7 @@ export const CommissionsPage: React.FC = () => {
           }`}
         >
           <CalendarDays className="w-3.5 h-3.5" />
-          Personnalisée
+          {t('adminOrg.commissions.customPeriod', t('adminOrg.dashboard.period.personnalise', 'Personnalisée'))}
         </button>
 
         {selectedMonth === 'custom' && (
@@ -264,7 +266,7 @@ export const CommissionsPage: React.FC = () => {
                               <p className="text-xs font-bold text-foreground truncate">{entry.clientNom}</p>
                               <div className="flex items-center gap-2 mt-1">
                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${PERIODICITE_COLORS[entry.periodicite] || 'bg-muted text-muted-foreground'}`}>
-                                  {entry.periodicite}
+                                  {t(`adminOrg.abonnements.period.${entry.periodicite}`, entry.periodicite)}
                                 </span>
                                 <span className="text-[10px] text-muted-foreground font-semibold">
                                   {entry.formule} · {entry.tauxCommission}%
@@ -273,7 +275,7 @@ export const CommissionsPage: React.FC = () => {
                             </div>
                             <div className="text-right shrink-0">
                               <p className="text-xs font-black text-foreground">{fmt(entry.montantCommission)}</p>
-                              <p className="text-[10px] text-muted-foreground">sur {fmt(entry.montantVente)}</p>
+                              <p className="text-[10px] text-muted-foreground">{t('adminOrg.commissions.on', 'sur')} {fmt(entry.montantVente)}</p>
                             </div>
                             {entry.statut === 'a_verser' ? (
                               <button

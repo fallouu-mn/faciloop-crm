@@ -25,20 +25,20 @@ export interface CountryPhoneRule {
 
 export const COUNTRY_PHONE_RULES: Record<string, CountryPhoneRule> = {
   // ── Sénégal (+221) ──────────────────────────────────────────────────────────
-  // 9 chiffres locaux. Mobile : 70 (Expresso), 75 (Promobile), 76 (Free), 77 (Orange), 78 (Orange).
+  // 9 chiffres locaux. Mobile : 70 (Expresso), 71 (Promobile), 75 (Promobile), 76 (Free), 77 (Orange), 78 (Orange).
   // Fixe : 33 (Sonatel).
   '221': {
     dialCode: '221',
     countryCode: 'SN',
     name: 'Sénégal',
     expectedLengths: [9],
-    regex: /^(7[05678]\d{7}|33[89]\d{6})$/,
+    regex: /^(7[015678]\d{7}|33[89]\d{6})$/,
     placeholder: '77 123 45 67',
     example: '77 123 45 67',
     formatGroups: [2, 3, 2, 2],
-    errorMessageFr: 'Le numéro sénégalais (+221) doit comporter 9 chiffres et commencer par 70, 75, 76, 77 ou 78 (ou 338/339 pour un fixe).',
-    errorMessageEn: 'Senegalese phone numbers (+221) must have 9 digits and start with 70, 75, 76, 77, or 78.',
-    errorMessageWo: 'Limu telfon Senegaal (+221) war na am 9 nimro te tàmbalee 70, 75, 76, 77 wala 78.',
+    errorMessageFr: 'Le numéro sénégalais (+221) doit comporter 9 chiffres et commencer par 70, 71, 75, 76, 77 ou 78 (ou 338/339 pour un fixe).',
+    errorMessageEn: 'Senegalese phone numbers (+221) must have 9 digits and start with 70, 71, 75, 76, 77, or 78.',
+    errorMessageWo: 'Limu telfon Senegaal (+221) war na am 9 nimro te tàmbalee 70, 71, 75, 76, 77 wala 78.',
   },
 
   // ── Côte d'Ivoire (+225) ────────────────────────────────────────────────────

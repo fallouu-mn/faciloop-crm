@@ -118,7 +118,7 @@ export const AbonnementsPage: React.FC = () => {
               periodView === p ? 'bg-gradient-faciloop shadow-sm text-white' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            {p}
+            {t(`adminOrg.abonnements.period.${p}`, p)}
           </button>
         ))}
       </div>
@@ -242,7 +242,7 @@ export const AbonnementsPage: React.FC = () => {
                 <p className="font-bold text-foreground text-xs">{t('adminOrg.abonnements.pricing')}</p>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-[10px] font-medium text-muted-foreground mb-1">Mensuel *</label>
+                    <label className="block text-[10px] font-medium text-muted-foreground mb-1">{t('adminOrg.abonnements.period.mensuel')} *</label>
                     <input
                       type="number"
                       value={formMensuel}
@@ -252,7 +252,7 @@ export const AbonnementsPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-medium text-muted-foreground mb-1">Trimestriel</label>
+                    <label className="block text-[10px] font-medium text-muted-foreground mb-1">{t('adminOrg.abonnements.period.trimestriel')}</label>
                     <input
                       type="number"
                       value={formTrimestriel}
@@ -262,7 +262,7 @@ export const AbonnementsPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-medium text-muted-foreground mb-1">Annuel</label>
+                    <label className="block text-[10px] font-medium text-muted-foreground mb-1">{t('adminOrg.abonnements.period.annuel')}</label>
                     <input
                       type="number"
                       value={formAnnuel}

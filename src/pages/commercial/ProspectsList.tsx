@@ -373,7 +373,7 @@ export const ProspectsList: React.FC = () => {
           >
             <option value="all">{t('prospectList.allSources')}</option>
             {allSourceOptions.map(s => (
-              <option key={s.value} value={s.value}>{sourceLabel(s, isEn)}</option>
+              <option key={s.value} value={s.value}>{sourceLabel(s, lng)}</option>
             ))}
           </select>
         </div>
@@ -429,7 +429,7 @@ export const ProspectsList: React.FC = () => {
                   </td>
                   <td className="p-4 capitalize text-muted-foreground">{(() => {
                     const opt = allSourceOptions.find(s => s.value === p.source);
-                    return opt ? sourceLabel(opt, isEn) : p.source.replace(/[_-]+/g, ' ');
+                    return opt ? sourceLabel(opt, lng) : p.source.replace(/[_-]+/g, ' ');
                   })()}</td>
                   <td className="p-4 font-semibold text-primary">{p.commercial_nom || t('prospectList.unassigned')}</td>
                   <td className="p-4 text-right">
@@ -669,7 +669,7 @@ export const ProspectsList: React.FC = () => {
                     <label className="block font-semibold mb-1">{t('prospectList.source')}</label>
                     <select value={newSource} onChange={(e) => setNewSource(e.target.value as SourceValue)}
                       className="w-full p-2.5 rounded-xl border border-input bg-background font-medium text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                      {sourceOptions.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, isEn)}</option>)}
+                      {sourceOptions.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, lng)}</option>)}
                     </select>
                   </div>
                   <div>

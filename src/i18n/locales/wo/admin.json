@@ -234,44 +234,44 @@
       "renewal": "Yeesal"
     },
     "abonnements": {
-      "title": "Ofis Abonnement",
-      "subtitle": "Maane offres yi wax kood yi",
-      "addBtn": "Jëkk offre",
+      "title": "Offres d'abonnement",
+      "subtitle": "Saytu offres yi ngeen di jox seen kiliyã yi",
+      "addBtn": "+ Yokk offre",
       "period": {
-        "mensuel": "weer",
-        "trimestriel": "trimestre",
-        "annuel": "déé"
+        "mensuel": "Weer",
+        "trimestriel": "3 Weer",
+        "annuel": "At"
       },
       "periodShort": {
         "mensuel": "weer",
-        "trimestriel": "atm.",
-        "annuel": "déé"
+        "trimestriel": "3w",
+        "annuel": "at"
       },
       "status": {
-        "active": "Seen",
-        "inactive": "Taaw"
+        "active": "Dox na",
+        "inactive": "Doxul"
       },
-      "pricing": "Njool (FCFA)",
-      "offerActive": "Offre seen",
+      "pricing": "Njëg yi (FCFA)",
+      "offerActive": "Offre bi dox na",
       "edit": "Soppi",
       "modal": {
-        "createTitle": "Bind offre",
-        "editTitle": "Soppi offre",
-        "name": "Tur offre *",
-        "description": "Description",
+        "createTitle": "Sos offre bu bés",
+        "editTitle": "Soppi offre bi",
+        "name": "Turu offre bi *",
+        "description": "Xibaar ci offre bi",
         "cancel": "Bàyyi",
         "save": "Denc",
-        "create": "Bind offre"
+        "create": "Sos offre bi"
       },
       "empty": {
-        "title": "Kulu offre teey bind",
-        "subtitle": "Bind sa première offre ngir àddina jàpp kiliyã",
-        "btn": "Bind offre"
+        "title": "Amul benn offre bu sosu",
+        "subtitle": "Sos sa jëkk offre ngir tàmbalee soppi kiliyã yi",
+        "btn": "Sos offre"
       },
       "toast": {
-        "created": "Offre bind ak ndaw",
-        "updated": "Offre soppi ak ndaw",
-        "deleted": "Offre far"
+        "created": "Offre bi sosu na bu baax",
+        "updated": "Offre bi soppiku na bu baax",
+        "deleted": "Offre bi far na"
       }
     },
     "paiements": {
@@ -303,24 +303,28 @@
       }
     },
     "commissions": {
-      "title": "Komis yi",
-      "badge": "Fey Variable",
-      "subtitle": "Taal commissions yi commercial yi — 5% weer, 8% trimestre, 10% déé",
-      "periodLabel": "Atmeer :",
-      "allPeriods": "Périodes yépp",
+      "title": "Komisiyoŋ yi",
+      "badge": "Pey yu soppiku",
+      "subtitle": "Saytu komisiyoŋ yi war a fay commercial yi — 5% weer, 8% 3 weer, 10% at",
+      "periodLabel": "Diir bi :",
+      "allPeriods": "Diir yépp",
+      "customPeriod": "Diir bu jëm",
+      "from": "Dàll",
+      "to": "Àgg",
+      "on": "ci",
       "kpi": {
-        "toVerify": "Total ngir fey",
-        "revenue": "CA Yàdd",
-        "salesReps": "Commercial",
-        "sales": "Jàpp"
+        "toVerify": "Li war a fay yépp",
+        "revenue": "CA bi am",
+        "salesReps": "Commercial yi",
+        "sales": "Jaay yi"
       },
-      "detailTitle": "Xibaar ci Commercial",
-      "salesCount": "jàpp",
-      "caLabel": "Alala :",
-      "toPay": "ngir fey",
-      "markPaid": "Mark fey",
-      "paid": "Seen ✓",
-      "empty": "Kulu commission periode ji"
+      "detailTitle": "Xibaar ci Commercial bu nekk",
+      "salesCount": "jaay",
+      "caLabel": "CA:",
+      "toPay": "war a fay",
+      "markPaid": "Mande fay nañu",
+      "paid": "Fay nañu ko ✓",
+      "empty": "Amul benn komisiyoŋ ci diir bi"
     },
     "journal": {
       "title": "Journal Aktivité",
@@ -384,43 +388,44 @@
       "select": "Wàll"
     },
     "importExport": {
-      "title": "Import / Export Daata (CSV & Excel)",
-      "subtitle": "Importe listes kiliyã, attribue yépp ak far dobb",
+      "title": "Yékk / Yéral Données (CSV & Excel)",
+      "subtitle": "Yékkatil limu kiliyã yi, jox leen mbootay commercial bi te tere ñu ñaaral",
       "export": {
-        "title": "Exporte données CSV",
-        "prospects": "Exporte Prospects",
-        "clients": "Exporte Kood Faciloop",
-        "prospectsSubtitle": "CSV pret ak colonnes CRM",
-        "clientsSubtitle": "CSV complet ak formules ak montants"
+        "title": "Yéral samay données ci CSV",
+        "prospects": "Yéral Kiliyã yi",
+        "clients": "Yéral Koodi Faciloop yi",
+        "prospectsSubtitle": "Bire CSV bu noppi ak kolonn yépp yu CRM",
+        "clientsSubtitle": "Bire CSV bu mat ak formules yi ak montants yi"
       },
       "import": {
-        "title": "Importe liste kiliyã (CSV)",
-        "subtitle": "Accepte virgule (,) ak point-virgule (;)",
-        "assignTo": "Attribue liste :",
-        "dropzone": "Drop ton CSV ici",
-        "browseBtn": "Wàll fichiers",
-        "changeBtn": "Soppi CSV",
-        "fileLoaded": "Fichier denc na :",
-        "parsing": "Analyse CSV & scan dobb...",
-        "success": "Importation jàpp !",
-        "importedPrefix": "kiliyã yi import ak attribue",
-        "duplicatesIgnored": "doblons far",
-        "preview": "Résumé preview :",
-        "ready": "pret",
-        "attribution": "Nëbb ci :",
-        "validateBtn": "Valide import",
-        "successBtn": "Kiliyã import !"
+        "title": "Yékk limu kiliyã yi (Bire CSV)",
+        "subtitle": "Dafay nangu virgule (,) ak point-virgule (;)",
+        "assignTo": "Jox lim bi ci :",
+        "dropzone": "Sànnil sa bire CSV fii",
+        "browseBtn": "Seet ci samay dossiers",
+        "changeBtn": "Soppi bire CSV",
+        "fileLoaded": "Bire bi dugg na :",
+        "parsing": "Saytu bire CSV & seet ñaaral yi...",
+        "success": "Yékkal gi jàpp na bu baax !",
+        "importedPrefix": "kiliyã yékk nañu leen te jox leen ci",
+        "duplicatesIgnored": "ñaaral yi ñu bàyyi",
+        "preview": "Gis li ci nekk laata nga koy dëggal :",
+        "ready": "noppi na",
+        "attribution": "Jox commercial :",
+        "validateBtn": "Dëggal yékkal gi",
+        "successBtn": "Kiliyã yi yékk nañu !",
+        "helpText": "Wala cuqal ci suuf ngir tànn bire. Liggéey ci Nom, Entreprise ak Téléphone."
       },
       "col": {
-        "name": "Tur / Kontak",
+        "name": "Tur / Jokkoo",
         "company": "Kéwél",
         "phone": "Telfon",
         "source": "Source",
-        "dupStatus": "Statut Anti-Doblon"
+        "dupStatus": "Melokaan ñaaral"
       },
       "status": {
-        "ready": "✓ Pret",
-        "duplicate": "⚠️ Doblon (Far)"
+        "ready": "✓ Noppi na",
+        "duplicate": "⚠️ Ñaaral (Bàyyi)"
       }
     }
   }

@@ -7,7 +7,7 @@ import { PhoneInput } from '../../components/common/PhoneInput';
 import { useTranslation } from 'react-i18next';
 import { useEtapesPipeline, getEtapeLabel } from '@/hooks/useEtapesPipeline';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
-import { usedSourceOptions } from '@/services/organizationSettings';
+import { usedSourceOptions, sourceLabel } from '@/services/organizationSettings';
 import { CustomFieldsForm } from '@/components/common/CustomFieldsForm';
 import type { CustomFieldValues } from '../../types/crm';
 import {
@@ -389,7 +389,7 @@ export const ProspectsListAdmin: React.FC = () => {
           <select value={filterSource} onChange={(e) => setFilterSource(e.target.value)}
             className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground">
             <option value="all">{t('adminOrg.prospects.filterAll.sources')}</option>
-            {SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            {SOURCES.map(s => <option key={s.value} value={s.value}>{sourceLabel(s, i18n.language || 'fr')}</option>)}
           </select>
           <select value={filterCommercial} onChange={(e) => setFilterCommercial(e.target.value)}
             className="px-3 py-2.5 rounded-xl border border-input bg-card text-xs font-semibold text-foreground">
@@ -458,12 +458,12 @@ export const ProspectsListAdmin: React.FC = () => {
                     p.statut_pipeline === 'perdu' ? 'bg-rose-500/10 text-rose-500' :
                     'bg-primary/10 text-primary'
                   }`}>
-                    {p.statut_pipeline.replace(/_/g, ' ')}
+                    {ETAPES.find(e => e.value === p.statut_pipeline)?.label || p.statut_pipeline.replace(/_/g, ' ')}
                   </span>
                 </td>
                 <td className="p-4 capitalize text-muted-foreground">{(() => {
                   const opt = SOURCES.find(s => s.value === p.source);
-                  return opt ? opt.label : p.source.replace(/[_-]+/g, ' ');
+                  return opt ? sourceLabel(opt, i18n.language || 'fr') : p.source.replace(/[_-]+/g, ' ');
                 })()}</td>
                 <td className="p-4 font-semibold text-primary">{p.commercial_nom || t('adminOrg.prospects.unassigned')}</td>
                 <td className={`p-4 text-[11px] ${relanceDateColor(p.date_prochaine_relance)}`}>

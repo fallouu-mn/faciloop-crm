@@ -851,10 +851,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let alternateEmail = '';
       if (cleanPhone.startsWith('221') && cleanPhone.length === 12) {
         const localPart = cleanPhone.slice(3);
-        if (/^(7[05678]\d{7}|33[89]\d{6})$/.test(localPart)) {
+        if (/^(7[015678]\d{7}|33[89]\d{6})$/.test(localPart)) {
           alternateEmail = `${localPart}@faciloop.app`;
         }
-      } else if (!cleanPhone.startsWith('221') && /^(7[05678]\d{7}|33[89]\d{6})$/.test(cleanPhone)) {
+      } else if (!cleanPhone.startsWith('221') && /^(7[015678]\d{7}|33[89]\d{6})$/.test(cleanPhone)) {
         alternateEmail = `221${cleanPhone}@faciloop.app`;
       }
 
