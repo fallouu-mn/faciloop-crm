@@ -1127,9 +1127,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const deleteCommercial = async (id: string) => {
     setCommerciaux(prev => prev.filter(c => c.id !== id));
     try {
-      await commerciauxService.deleteCommercial(id);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Session expirée');
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-commercial`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ commercialId: id }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Erreur suppression');
     } catch (e) {
       console.error('Erreur suppression commercial:', e);
+      throw e;
     }
   };
 
