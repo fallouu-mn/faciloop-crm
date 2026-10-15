@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserPlus, UserCheck, Shield, X, Check, Mail, Phone, MessageSquare, Power, AlertTriangle, Pencil, Trash2, Save, Loader2 } from 'lucide-react';
 import { formatPhoneNumber } from '../../utils/formatters';
@@ -8,12 +8,95 @@ import { useTranslation } from 'react-i18next';
 import { usePlanLimits } from '../../hooks/usePlanLimits';
 import { Commercial } from '../../types/crm';
 import { PhoneInput } from '../../components/common/PhoneInput';
+import { supabase } from '../../lib/supabase';
 
 export const EquipeCommerciale: React.FC = () => {
   const { t } = useTranslation('admin');
-  const { commerciaux: team, addCommercial, toggleCommercialStatus, updateCommercial, deleteCommercial } = useAuth();
-  const { canAddCommercial, activeCommerciaux, plan, formuleCode } = usePlanLimits();
+  const { commerciaux: team, addCommercial, toggleCommercialStatus, updateCommercial, deleteCommercial, refreshUser, currentOrg } = useAuth();
+  const { canAddCommercial, activeCommerciaux, plan, formuleCode, maxCommerciaux, hasCustomQuota } = usePlanLimits();
+
+  // Quota initialisé immédiatement depuis currentOrg si disponible
+  const [freshMaxCommerciaux, setFreshMaxCommerciaux] = useState<number | null | undefined>(
+    currentOrg?.max_commerciaux !== undefined ? currentOrg.max_commerciaux : undefined
+  );
+  const [quotaLoading, setQuotaLoading] = useState(false);
+
+  const fetchQuota = async () => {
+    if (!currentOrg?.id) return;
+    try {
+      const { data } = await supabase
+        .from('organizations')
+        .select('max_commerciaux, formule_code')
+        .eq('id', currentOrg.id)
+        .single();
+      if (data) {
+        setFreshMaxCommerciaux(data.max_commerciaux ?? null);
+      }
+    } catch (err) {
+      console.warn('[EquipeCommerciale] Erreur fetchQuota:', err);
+    }
+  };
+
+  // ── Écoute temps réel + synchronisation immédiate du quota ─────
+  // Dès que le superadmin modifie le quota en BDD, l'interface le reflète sans délai.
+  useEffect(() => {
+    if (!currentOrg?.id) return;
+
+    fetchQuota();
+
+    const channel = supabase
+      .channel(`org-quota-live-${currentOrg.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'organizations', filter: `id=eq.${currentOrg.id}` },
+        (payload) => {
+          const updated = payload.new as { max_commerciaux?: number | null };
+          if (updated && 'max_commerciaux' in updated) {
+            setFreshMaxCommerciaux(updated.max_commerciaux ?? null);
+          }
+          refreshUser?.();
+        }
+      )
+      .subscribe();
+
+    // Polling actif court (3s) + détection du retour sur l'onglet
+    const interval = setInterval(fetchQuota, 3000);
+    const onFocus = () => { fetchQuota(); };
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [currentOrg?.id]);
+
+  // Quota effectif : valeur fraîche BDD si disponible, sinon celle du currentOrg / hook
+  const effectiveMax = (freshMaxCommerciaux != null && freshMaxCommerciaux > 0)
+    ? freshMaxCommerciaux
+    : (currentOrg?.max_commerciaux != null && currentOrg.max_commerciaux > 0 ? currentOrg.max_commerciaux : maxCommerciaux);
+  const currentActiveCount = team.filter(c => c.statut === 'actif').length;
+  const effectiveCanAdd = currentActiveCount < effectiveMax;
+  const effectiveHasCustom = (freshMaxCommerciaux != null && freshMaxCommerciaux > 0) ||
+    (currentOrg?.max_commerciaux != null && currentOrg.max_commerciaux > 0);
+
+  // Debug logs
+  console.log('[EquipeCommerciale] freshMaxCommerciaux:', freshMaxCommerciaux);
+  console.log('[EquipeCommerciale] maxCommerciaux (hook):', maxCommerciaux);
+  console.log('[EquipeCommerciale] effectiveMax:', effectiveMax);
+  console.log('[EquipeCommerciale] activeCommerciaux:', activeCommerciaux);
+  console.log('[EquipeCommerciale] effectiveCanAdd:', effectiveCanAdd);
+  console.log('[EquipeCommerciale] quotaLoading:', quotaLoading);
+
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  // Fermer automatiquement le modal si le quota est atteint pendant qu'il est ouvert
+  useEffect(() => {
+    if (isModalOpen && !effectiveCanAdd) {
+      setIsModalOpen(false);
+      toast.error(`Quota atteint : ${currentActiveCount} / ${effectiveMax} commerciaux.`);
+    }
+  }, [isModalOpen, effectiveCanAdd, currentActiveCount, effectiveMax]);
 
   // Add form
   const [nom, setNom] = useState<string>('');
@@ -73,6 +156,10 @@ export const EquipeCommerciale: React.FC = () => {
 
   const toggleStatus = (id: string) => {
     const comm = team.find(c => c.id === id);
+    if (comm?.statut === 'inactif' && !effectiveCanAdd) {
+      toast.error(`Impossible d'activer ce commercial : le quota de ${effectiveMax} commercial${effectiveMax > 1 ? 'aux' : ''} est déjà atteint.`);
+      return;
+    }
     toggleCommercialStatus(id);
     const statusKey = comm?.statut === 'actif' ? 'statusDeactivated' : 'statusActivated';
     toast.success(t('adminOrg.equipe.statusChanged', { status: t(`adminOrg.equipe.${statusKey}`) }));
@@ -80,10 +167,15 @@ export const EquipeCommerciale: React.FC = () => {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canAddCommercial) {
-      setAddError(t('adminOrg.equipe.limitReached', { max: plan.maxCommerciaux, plan: plan.label }));
+
+    // Vérification locale stricte AVANT l'appel à addCommercial pour éviter les race conditions
+    if (!effectiveCanAdd) {
+      const msg = `Quota atteint : cette entreprise est limitée à ${effectiveMax} commercial${effectiveMax > 1 ? 'aux' : ''}.`;
+      setAddError(msg);
+      toast.error(msg);
       return;
     }
+
     setAddError(null);
     setAddLoading(true);
     try {
@@ -115,32 +207,56 @@ export const EquipeCommerciale: React.FC = () => {
 
         <button
           onClick={() => {
-            if (!canAddCommercial) {
-              toast.error(t('adminOrg.equipe.limitReachedUpgrade', { max: plan.maxCommerciaux, plan: plan.label }));
+            if (!effectiveCanAdd) {
+              toast.error(
+                effectiveHasCustom
+                  ? `Quota atteint : cette entreprise est limitée à ${effectiveMax} commercial${effectiveMax > 1 ? 'aux' : ''}.`
+                  : t('adminOrg.equipe.limitReachedUpgrade', { max: effectiveMax === Infinity ? '∞' : effectiveMax, plan: plan.label })
+              );
               return;
             }
             setIsModalOpen(true);
           }}
+          disabled={quotaLoading || !effectiveCanAdd}
+          title={!effectiveCanAdd ? `Quota maximal atteint (${currentActiveCount}/${effectiveMax})` : undefined}
           className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-extrabold shadow-lg transition-all ${
-            canAddCommercial
-              ? 'bg-gradient-faciloop text-white shadow-primary/25 hover:opacity-95'
-              : 'bg-muted text-muted-foreground shadow-none cursor-not-allowed'
+            quotaLoading || !effectiveCanAdd
+              ? 'bg-muted text-muted-foreground/60 border border-border/60 opacity-60 cursor-not-allowed shadow-none'
+              : 'bg-gradient-faciloop text-white shadow-primary/25 hover:opacity-95'
           }`}
         >
-          <UserPlus className="h-4 w-4 shrink-0" />
+          {quotaLoading ? <Loader2 className="h-4 w-4 animate-spin shrink-0" /> : <UserPlus className="h-4 w-4 shrink-0" />}
           <span>{t('adminOrg.equipe.addBtn')}</span>
         </button>
       </div>
 
       {/* Plan limit banner */}
-      {!canAddCommercial && (
+      {!quotaLoading && !effectiveCanAdd && (
         <div className="flex items-center gap-3 p-3 rounded-xl border border-amber-300/50 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-700/30">
           <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
           <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
-            {t('adminOrg.equipe.limitBanner', { max: plan.maxCommerciaux, plan: plan.label })}
+            {effectiveHasCustom
+              ? `Limite de commerciaux atteinte : cette entreprise est limitée à ${effectiveMax} commercial${effectiveMax > 1 ? 'aux' : ''}. Contactez le super administrateur pour augmenter ce quota.`
+              : t('adminOrg.equipe.limitBanner', { max: effectiveMax === Infinity ? '∞' : effectiveMax, plan: plan.label })}
           </p>
         </div>
       )}
+
+      {/* Quota counter */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground">
+          {currentActiveCount} / {effectiveMax === Infinity ? '∞' : effectiveMax} commercial{effectiveMax !== 1 ? 'aux' : ''}
+        </span>
+        {effectiveHasCustom ? (
+          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
+            Nombre personnalisé
+          </span>
+        ) : (
+          <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-medium">
+            {plan.label}
+          </span>
+        )}
+      </div>
 
       {/* Desktop Table View */}
       <div className="hidden md:block overflow-x-auto rounded-2xl border border-border/80 bg-card shadow-sm">
@@ -325,7 +441,7 @@ export const EquipeCommerciale: React.FC = () => {
                 </div>
               )}
 
-              <button type="submit" disabled={addLoading}
+              <button type="submit" disabled={addLoading || !effectiveCanAdd}
                 className="w-full py-3 rounded-xl bg-gradient-faciloop text-white font-bold shadow-md hover:opacity-95 disabled:opacity-50 flex items-center justify-center gap-2">
                 {addLoading ? (
                   <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />

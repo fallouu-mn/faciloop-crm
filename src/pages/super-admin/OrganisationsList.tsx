@@ -32,6 +32,8 @@ interface OrgRow {
   responsable_nom?: string;
   responsable_prenom?: string;
   date_fin_abonnement?: string | null;
+  /** Quota de commerciaux attribué par le superadmin (prioritaire sur le plan). */
+  max_commerciaux?: number | null;
   created_at: string;
 }
 
@@ -63,6 +65,7 @@ export const OrganisationsList: React.FC = () => {
   const [createLoading, setCreateLoading] = useState(false);
   const [createSansAbonnement, setCreateSansAbonnement] = useState(false);
   const [createSecteur, setCreateSecteur] = useState('');
+  const [createMaxCommerciaux, setCreateMaxCommerciaux] = useState<string>('');
 
   // Menu action (dropdown)
   const [actionMenuId, setActionMenuId] = useState<string | null>(null);
@@ -86,6 +89,7 @@ export const OrganisationsList: React.FC = () => {
   const [activSansAbonnement, setActivSansAbonnement] = useState(false);
   const [activDateFin, setActivDateFin] = useState('');
   const [activSecteur, setActivSecteur] = useState('');
+  const [activMaxCommerciaux, setActivMaxCommerciaux] = useState<string>('');
 
   const PERIODICITES = PERIODICITES_CODES.map(code => ({ code, label: t(`period.${code}`) }));
 
@@ -137,6 +141,7 @@ export const OrganisationsList: React.FC = () => {
     setActivSansAbonnement(false);
     setActivDateFin('');
     setActivSecteur(org.secteur || '');
+    setActivMaxCommerciaux(org.max_commerciaux != null ? String(org.max_commerciaux) : '');
     if (org.formule_code) {
       setActivFormule(org.formule_code);
     } else {
@@ -151,6 +156,11 @@ export const OrganisationsList: React.FC = () => {
     setActivLoading(true);
     setActivError(null);
 
+    const parsedActivMaxCommerciaux =
+      activMaxCommerciaux.trim() !== '' && parseInt(activMaxCommerciaux, 10) > 0
+        ? parseInt(activMaxCommerciaux, 10)
+        : null;
+
     let updates: Record<string, unknown>;
     let localPatch: Partial<OrgRow>;
 
@@ -164,6 +174,7 @@ export const OrganisationsList: React.FC = () => {
         date_debut_abonnement: null,
         date_fin_abonnement: activDateFin || null,
         secteur: activSecteur || null,
+        max_commerciaux: parsedActivMaxCommerciaux,
       };
       localPatch = {
         statut: 'actif',
@@ -173,6 +184,7 @@ export const OrganisationsList: React.FC = () => {
         periodicite: undefined,
         date_fin_abonnement: activDateFin || undefined,
         secteur: activSecteur || undefined,
+        max_commerciaux: parsedActivMaxCommerciaux,
       };
     } else {
       const prix = getOfferPrice(formules, activFormule, activPeriodicite, false);
@@ -188,6 +200,7 @@ export const OrganisationsList: React.FC = () => {
         date_fin_abonnement: dateFin,
         statut_abonnement: 'actif',
         secteur: activSecteur || null,
+        max_commerciaux: parsedActivMaxCommerciaux,
       };
       localPatch = {
         statut: 'actif',
@@ -196,6 +209,7 @@ export const OrganisationsList: React.FC = () => {
         prix_abonnement: prix,
         statut_abonnement: 'actif',
         secteur: activSecteur || undefined,
+        max_commerciaux: parsedActivMaxCommerciaux,
       };
     }
 
@@ -331,11 +345,17 @@ export const OrganisationsList: React.FC = () => {
     setCreatePeriodicite('mensuel');
     setCreateSansAbonnement(false);
     setCreateSecteur('');
+    setCreateMaxCommerciaux('');
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateLoading(true);
+
+    const parsedMaxCommerciaux =
+      createMaxCommerciaux.trim() !== '' && parseInt(createMaxCommerciaux, 10) > 0
+        ? parseInt(createMaxCommerciaux, 10)
+        : null;
 
     let orgInsert: Record<string, unknown>;
 
@@ -352,6 +372,7 @@ export const OrganisationsList: React.FC = () => {
         statut_abonnement: 'en_attente',
         secteur: createSecteur || null,
         email: adminEmail || null,
+        max_commerciaux: parsedMaxCommerciaux,
       };
     } else {
       const prix = getOfferPrice(formules, createFormule, createPeriodicite, false);
@@ -370,6 +391,7 @@ export const OrganisationsList: React.FC = () => {
         statut_abonnement: formules.length > 0 ? 'actif' : 'inactif',
         secteur: createSecteur || null,
         email: adminEmail || null,
+        max_commerciaux: parsedMaxCommerciaux,
       };
     }
 
@@ -543,6 +565,13 @@ export const OrganisationsList: React.FC = () => {
                   ) : (
                     <span className="text-muted-foreground italic">—</span>
                   )}
+                  {tenant.max_commerciaux != null && tenant.max_commerciaux > 0 && (
+                    <div className="mt-1">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary">
+                        Quota : {tenant.max_commerciaux} commercial{tenant.max_commerciaux > 1 ? 'aux' : ''}
+                      </span>
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{new Date(tenant.created_at).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
@@ -632,6 +661,11 @@ export const OrganisationsList: React.FC = () => {
                     </span>
                     {tenant.formule_code && (
                       <span className="font-medium">{tenant.formule_code}</span>
+                    )}
+                    {tenant.max_commerciaux != null && tenant.max_commerciaux > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary">
+                        {tenant.max_commerciaux} com.
+                      </span>
                     )}
                   </div>
                 </div>
@@ -876,6 +910,24 @@ export const OrganisationsList: React.FC = () => {
                   </p>
                 </div>
               )}
+
+              {/* Nombre de commerciaux */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-foreground">
+                  Nombre de commerciaux
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={activMaxCommerciaux}
+                  onChange={(e) => setActivMaxCommerciaux(e.target.value)}
+                  placeholder="Ex : 5 (laisser vide = limite du plan)"
+                  className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Nombre maximum de commerciaux autorisés pour cette entreprise. Laissez vide pour utiliser la limite de la formule.
+                </p>
+              </div>
             </div>
 
             {activError && (
@@ -1186,6 +1238,25 @@ export const OrganisationsList: React.FC = () => {
                   className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
                 />
               </div>
+
+              {/* Nombre de commerciaux */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-foreground">
+                  Nombre de commerciaux
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={createMaxCommerciaux}
+                  onChange={(e) => setCreateMaxCommerciaux(e.target.value)}
+                  placeholder="Ex : 15 (laisser vide = limite du plan)"
+                  className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm text-foreground hover:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Nombre maximum de commerciaux autorisés pour cette entreprise. Laissez vide pour utiliser la limite de la formule.
+                </p>
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"

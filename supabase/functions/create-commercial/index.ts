@@ -79,6 +79,46 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'Accès réservé aux administrateurs' }, 403);
     }
 
+    const targetOrgId = callerRole.organization_id;
+    if (!targetOrgId) {
+      return jsonResponse({ error: 'Organisation non associée à ce compte' }, 400);
+    }
+
+    // ── Vérification stricte du quota de commerciaux ──────────────
+    const { data: orgData, error: orgFetchError } = await supabase
+      .from('organizations')
+      .select('id, max_commerciaux, formule_code')
+      .eq('id', targetOrgId)
+      .single();
+
+    if (orgFetchError || !orgData) {
+      return jsonResponse({ error: 'Organisation introuvable' }, 404);
+    }
+
+    let maxAllowed: number;
+    if (orgData.max_commerciaux != null && orgData.max_commerciaux > 0) {
+      maxAllowed = orgData.max_commerciaux;
+    } else {
+      const PLAN_LIMITS: Record<string, number> = { Pro: 3, Business: 10, Premium: Infinity };
+      maxAllowed = PLAN_LIMITS[orgData.formule_code] ?? 3;
+    }
+
+    const { count: activeCount, error: countError } = await supabase
+      .from('commerciaux')
+      .select('*', { count: 'exact', head: true })
+      .eq('organization_id', targetOrgId)
+      .eq('statut', 'actif');
+
+    if (countError) {
+      return jsonResponse({ error: 'Erreur lors de la vérification du quota' }, 500);
+    }
+
+    if ((activeCount ?? 0) >= maxAllowed) {
+      return jsonResponse({
+        error: `Quota atteint : cette entreprise est limitée à ${maxAllowed} commercial${maxAllowed > 1 ? 'aux' : ''}.`,
+      }, 400);
+    }
+
     // ── Payload ────────────────────────────────────────────────────
     const body: CreateCommercialRequest = await req.json();
     const { nom, prenom, email, telephone, statut } = body;

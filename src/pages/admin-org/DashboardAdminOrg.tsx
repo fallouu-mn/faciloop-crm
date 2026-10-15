@@ -114,7 +114,7 @@ export const DashboardAdminOrg: React.FC = () => {
   const { t, i18n } = useTranslation('admin');
   const isEn = i18n.language?.startsWith('en');
   const { user, currentOrg, prospects, clients, commerciaux, paiements } = useAuth();
-  const { hasFeature, getRequiredPlan, plan } = usePlanLimits();
+  const { hasFeature, getRequiredPlan, plan, canAddCommercial, activeCommerciaux, maxCommerciaux } = usePlanLimits();
   const canAdvancedStats = hasFeature('stats_avancees');
   const [currency, setCurrency] = useState<DeviseCode>(detectDevise());
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -279,13 +279,24 @@ export const DashboardAdminOrg: React.FC = () => {
             <FileSpreadsheet className="h-4 w-4 text-emerald-500 shrink-0" />
             <span>{t('actions.importCsv')}</span>
           </Link>
-          <Link
-            to="/admin/equipe"
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-faciloop px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
-          >
-            <UserPlus className="h-4 w-4 shrink-0" />
-            <span>{t('adminOrg.dashboard.newSalesRep')}</span>
-          </Link>
+          {canAddCommercial ? (
+            <Link
+              to="/admin/equipe"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-faciloop px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs font-extrabold text-white shadow-lg shadow-primary/25 hover:opacity-95 transition-all"
+            >
+              <UserPlus className="h-4 w-4 shrink-0" />
+              <span>{t('adminOrg.dashboard.newSalesRep')}</span>
+            </Link>
+          ) : (
+            <button
+              disabled
+              title={`Quota maximal atteint (${activeCommerciaux}/${maxCommerciaux === Infinity ? '∞' : maxCommerciaux})`}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted border border-border/60 px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs font-extrabold text-muted-foreground/60 opacity-60 cursor-not-allowed shadow-none"
+            >
+              <UserPlus className="h-4 w-4 shrink-0" />
+              <span>{t('adminOrg.dashboard.newSalesRep')}</span>
+            </button>
+          )}
         </div>
       </div>
 

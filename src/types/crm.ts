@@ -77,6 +77,12 @@ export interface Organization {
   statut_abonnement?: string;
   responsable_nom?: string;
   responsable_prenom?: string;
+  /**
+   * Quota de commerciaux attribué par le superadmin.
+   * Quand défini (> 0), il prend la priorité sur la limite du plan.
+   * null / undefined = pas de quota custom → on utilise la limite du plan.
+   */
+  max_commerciaux?: number | null;
   created_at: string;
 }
 

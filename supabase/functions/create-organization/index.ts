@@ -25,6 +25,7 @@ interface CreateOrgRequest {
   formule_code: string;
   periodicite: string;
   prix_abonnement: number;
+  max_commerciaux?: number | null;
 }
 
 function phoneToEmail(phone: string): string {
@@ -122,6 +123,7 @@ Deno.serve(async (req) => {
         date_debut_abonnement: dateDebut,
         date_fin_abonnement: dateFin,
         statut_abonnement: 'actif',
+        max_commerciaux: body.max_commerciaux ?? null,
       })
       .select()
       .single();

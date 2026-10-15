@@ -556,6 +556,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         statut_abonnement: orgData.statut_abonnement,
         responsable_nom: orgData.responsable_nom,
         responsable_prenom: orgData.responsable_prenom,
+        max_commerciaux: orgData.max_commerciaux ?? null,
         created_at: orgData.created_at,
       });
     }
@@ -672,6 +673,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'notifications_admin_commercial', filter: `organization_id=eq.${orgId}` },
         payload => onNotification(payload.new as NotificationItem, setAdminNotifications)
+      )
+      .on(
+        // Mise à jour en temps réel quand le superadmin modifie l'org
+        // (ex: max_commerciaux, formule, statut). Pas besoin de reconnecter.
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'organizations', filter: `id=eq.${orgId}` },
+        payload => {
+          const updated = payload.new as Record<string, unknown>;
+          setCurrentOrg(prev => prev ? { ...prev, ...updated } : prev);
+        }
       )
       .subscribe();
 
@@ -1038,6 +1049,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addCommercial = async (c: Omit<Commercial, 'id' | 'organization_id' | 'created_at'>) => {
     if (!user) return;
     try {
+      // ── Vérification du quota depuis la BDD (source de vérité) ─────────
+      // On ne fait pas confiance au cache de la session : on relit l'org
+      // pour avoir max_commerciaux à jour avant chaque création.
+      const orgId = user.organizationId;
+      if (orgId) {
+        const { data: freshOrg } = await supabase
+          .from('organizations')
+          .select('max_commerciaux, formule_code')
+          .eq('id', orgId)
+          .single();
+
+        if (freshOrg) {
+          // Mettre à jour currentOrg avec la valeur fraîche
+          setCurrentOrg(prev => prev ? { ...prev, max_commerciaux: freshOrg.max_commerciaux ?? null, formule_code: freshOrg.formule_code } : prev);
+
+          // Compter les commerciaux actifs directement en base pour éviter les états périmés
+          const { count: dbActiveCount } = await supabase
+            .from('commerciaux')
+            .select('*', { count: 'exact', head: true })
+            .eq('organization_id', orgId)
+            .eq('statut', 'actif');
+
+          const activeCount = dbActiveCount ?? commerciaux.filter(x => x.statut === 'actif').length;
+
+          if (freshOrg.max_commerciaux != null && freshOrg.max_commerciaux > 0) {
+            // Quota personnalisé superadmin — strictement respecté
+            if (activeCount >= freshOrg.max_commerciaux) {
+              throw new Error(`Quota atteint : cette entreprise est limitée à ${freshOrg.max_commerciaux} commercial${freshOrg.max_commerciaux > 1 ? 'aux' : ''}.`);
+            }
+          } else {
+            const limits = getPlanLimits(freshOrg.formule_code);
+            if (activeCount >= limits.maxCommerciaux) {
+              throw new Error(`Quota atteint : votre formule ${limits.label} est limitée à ${limits.maxCommerciaux} commercial(aux).`);
+            }
+          }
+        }
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Session expirée');
 
@@ -1103,6 +1152,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const target = commerciaux.find(c => c.id === id);
     if (!target || !user) return;
     const newStatut = target.statut === 'actif' ? 'inactif' : 'actif';
+
+    if (newStatut === 'actif' && user.organizationId) {
+      const { data: freshOrg } = await supabase
+        .from('organizations')
+        .select('max_commerciaux, formule_code')
+        .eq('id', user.organizationId)
+        .single();
+
+      const { count: dbActiveCount } = await supabase
+        .from('commerciaux')
+        .select('*', { count: 'exact', head: true })
+        .eq('organization_id', user.organizationId)
+        .eq('statut', 'actif');
+
+      const activeCount = dbActiveCount ?? commerciaux.filter(x => x.statut === 'actif').length;
+      const effectiveLimit = (freshOrg?.max_commerciaux != null && freshOrg.max_commerciaux > 0)
+        ? freshOrg.max_commerciaux
+        : getPlanLimits(freshOrg?.formule_code).maxCommerciaux;
+
+      if (activeCount >= effectiveLimit) {
+        throw new Error(`Impossible d'activer ce commercial : le quota de ${effectiveLimit} commercial(aux) est déjà atteint.`);
+      }
+    }
     try {
       const updated = await commerciauxService.updateCommercial(id, { statut: newStatut });
       setCommerciaux(prev => prev.map(c => c.id === id ? updated : c));

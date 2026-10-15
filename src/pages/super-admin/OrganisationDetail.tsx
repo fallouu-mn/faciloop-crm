@@ -31,6 +31,8 @@ interface OrgData {
   statut_abonnement?: string;
   responsable_nom?: string;
   responsable_prenom?: string;
+  /** Quota de commerciaux attribué par le superadmin (prioritaire sur le plan). */
+  max_commerciaux?: number | null;
   created_at: string;
 }
 
@@ -51,6 +53,8 @@ interface FormState {
   date_debut_abonnement: string;
   date_fin_abonnement: string;
   statut_abonnement: string;
+  /** Quota de commerciaux — stocké en string pour le input, converti au save. */
+  max_commerciaux: string;
 }
 
 function orgToForm(org: OrgData): FormState {
@@ -71,6 +75,7 @@ function orgToForm(org: OrgData): FormState {
     date_debut_abonnement: org.date_debut_abonnement?.split('T')[0] || '',
     date_fin_abonnement: org.date_fin_abonnement?.split('T')[0] || '',
     statut_abonnement: org.statut_abonnement || 'inactif',
+    max_commerciaux: org.max_commerciaux != null ? String(org.max_commerciaux) : '',
   };
 }
 
@@ -88,6 +93,7 @@ export const OrganisationDetail: React.FC = () => {
     site_web: '', secteur: '', responsable_prenom: '', responsable_nom: '',
     statut: 'actif', formule_code: '', periodicite: 'mensuel',
     date_debut_abonnement: '', date_fin_abonnement: '', statut_abonnement: 'inactif',
+    max_commerciaux: '',
   });
 
   useEffect(() => {
@@ -175,6 +181,11 @@ export const OrganisationDetail: React.FC = () => {
     setSaving(true);
     const prix = getOfferPrice(formules, form.formule_code, form.periodicite, false);
 
+    const parsedMaxCommerciaux =
+      form.max_commerciaux.trim() !== '' && parseInt(form.max_commerciaux, 10) > 0
+        ? parseInt(form.max_commerciaux, 10)
+        : null;
+
     const { error } = await supabase
       .from('organizations')
       .update({
@@ -195,13 +206,14 @@ export const OrganisationDetail: React.FC = () => {
         date_debut_abonnement: form.date_debut_abonnement || null,
         date_fin_abonnement: form.date_fin_abonnement || null,
         statut_abonnement: form.statut_abonnement,
+        max_commerciaux: parsedMaxCommerciaux,
       })
       .eq('id', id);
 
     setSaving(false);
     if (!error) {
       setSaveSuccess(true);
-      setOrg(prev => prev ? { ...prev, ...form, prix_abonnement: prix } : prev);
+      setOrg(prev => prev ? { ...prev, ...form, max_commerciaux: parsedMaxCommerciaux, prix_abonnement: prix } : prev);
       toast.success(t('detail.toastUpdated'));
     } else {
       toast.error(t('detail.toastSaveError', { message: error.message }));
@@ -409,6 +421,25 @@ export const OrganisationDetail: React.FC = () => {
               className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
             />
           </div>
+
+          {/* Nombre de commerciaux */}
+          <div className="space-y-1.5 sm:col-span-2">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+              <User className="h-3 w-3" /> Nombre de commerciaux
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={form.max_commerciaux}
+              onChange={(e) => update('max_commerciaux', e.target.value)}
+              placeholder="Laisser vide = limite de la formule"
+              className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Nombre max de commerciaux autorisés pour cette entreprise. Vide = limite définie par la formule ({form.formule_code || 'plan par défaut'}).
+            </p>
+          </div>
+
         </div>
       </div>
 
