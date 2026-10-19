@@ -689,25 +689,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => { supabase.removeChannel(channel); };
   }, [user?.organizationId, invalidateProspectQueries]);
 
-  // Filet de sécurité : si le Realtime n'est pas activé sur une table, ce
-  // polling rattrape le retard (notifications toutes les 30s, prospects
-  // relus pour ne rien laisser passer).
+  // Filet de sécurité : le Realtime n'émet que pour les tables présentes dans
+  // la publication `supabase_realtime` (cf. migration
+  // 20261002000003_realtime_prospects_notifications.sql). Si elle n'est pas
+  // appliquée, ce polling rattrape le retard.
+  // Les notifications sont relues toutes les 5 s : une notification de mention
+  // ou d'attribution apparaît donc quasi instantanément même sans Realtime.
+  // Les prospects restent à 30 s (volume plus lourd).
   useEffect(() => {
     if (!user?.organizationId) return;
     const orgId = user.organizationId;
-    const interval = setInterval(async () => {
+    let cancelled = false;
+
+    const refreshNotifications = async () => {
       try {
-        const [notifs, adminNotifs, prospectsData] = await Promise.all([
+        const [notifs, adminNotifs] = await Promise.all([
           notificationsService.getNotifications(orgId),
           notificationsService.getAdminNotifications(orgId),
-          prospectsService.getProspects(orgId),
         ]);
-        setNotifications(notifs);
-        setAdminNotifications(adminNotifs);
-        setProspects(prospectsData);
-      } catch {}
-    }, 30000);
-    return () => clearInterval(interval);
+        if (cancelled) return;
+        // Évite un re-rendu inutile de toutes les pages à chaque tick quand
+        // rien n'a changé (seuls l'id et l'état lu comptent).
+        const same = (a: NotificationItem[], b: NotificationItem[]) =>
+          a.length === b.length && a.every((n, i) => n.id === b[i].id && n.lue === b[i].lue);
+        setNotifications(prev => (same(prev, notifs) ? prev : notifs));
+        setAdminNotifications(prev => (same(prev, adminNotifs) ? prev : adminNotifs));
+      } catch { /* réseau indisponible : on retentera au tick suivant */ }
+    };
+
+    const refreshProspects = async () => {
+      try {
+        const data = await prospectsService.getProspects(orgId);
+        if (!cancelled) setProspects(data);
+      } catch { /* idem */ }
+    };
+
+    const notificationsInterval = setInterval(refreshNotifications, 5_000);
+    const prospectsInterval = setInterval(refreshProspects, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(notificationsInterval);
+      clearInterval(prospectsInterval);
+    };
   }, [user?.organizationId]);
 
   // ─── Notifications de relances (rappel du jour / retard) ───────────────

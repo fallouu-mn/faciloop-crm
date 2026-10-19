@@ -222,6 +222,9 @@ export const LandingPage: React.FC = () => {
                 <span>{t('accessButton')}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
+              {/* Mode démo — masqué à la demande du client.
+                  Code conservé volontairement : il suffit de décommenter pour
+                  réafficher le bouton.
               <a
                 href="/demo/dashboard"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 rounded-full border border-border text-foreground font-medium text-sm hover:bg-muted transition-colors"
@@ -229,6 +232,7 @@ export const LandingPage: React.FC = () => {
                 <Play className="w-4 h-4 text-primary fill-primary" />
                 <span>{t('demoButton')}</span>
               </a>
+              */}
             </div>
           </FadeInOnScroll>
 
@@ -256,7 +260,9 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Demo Section */}
+      {/* Mode démo — section masquée à la demande du client.
+          Le bloc est conservé en commentaire (pas supprimé) : il suffit de
+          retirer les délimiteurs pour la réafficher.
       <section id="demo" className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 bg-muted/30">
         <div className="max-w-5xl mx-auto">
           <FadeInOnScroll>
@@ -305,6 +311,7 @@ export const LandingPage: React.FC = () => {
           </FadeInOnScroll>
         </div>
       </section>
+      */}
 
       {/* Features Section */}
       <section id="features" className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
