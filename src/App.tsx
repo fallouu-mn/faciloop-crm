@@ -13,7 +13,10 @@ import { RegisterPage } from './pages/auth/RegisterPage';
 import { PendingActivationPage } from './pages/auth/PendingActivationPage';
 import { SuspendedPage } from './pages/auth/SuspendedPage';
 import { ExpiredPage } from './pages/auth/ExpiredPage';
-import { DemoAuthProvider } from './contexts/DemoAuthProvider';
+// Mode démo — désactivé à la demande du client. Import conservé en commentaire
+// (avec le bloc de routes plus bas) : il suffit de le réactiver pour rétablir
+// l'accès à /demo sans authentification.
+// import { DemoAuthProvider } from './contexts/DemoAuthProvider';
 import { WelcomeOnboardingPage } from './pages/auth/WelcomeOnboardingPage';
 import { ForgotPinPage } from './pages/auth/ForgotPinPage';
 import PrivacyPage from './pages/public/PrivacyPage';
@@ -177,7 +180,11 @@ function App() {
             <Route path="*" element={<Navigate to="/super-admin/dashboard" replace />} />
           </Route>
 
-          {/* Demo Mode — public, no auth required, mock data */}
+          {/* Mode démo — désactivé à la demande du client (mode public sans
+              authentification). Rien n'est supprimé : pour le réactiver,
+              décommenter l'import DemoAuthProvider en haut de ce fichier puis
+              retirer les délimiteurs de ce commentaire.
+              /demo/* retombe désormais sur la page 404.
           <Route path="/demo" element={
             <DemoAuthProvider>
               <AppLayout />
@@ -201,6 +208,7 @@ function App() {
             <Route path="notifications" element={<NotificationsAdminPage />} />
             <Route path="*" element={<Navigate to="/demo/dashboard" replace />} />
           </Route>
+          */}
 
           {/* Fallback 404 Route */}
           <Route
