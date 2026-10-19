@@ -43,7 +43,12 @@ export function useProspectNotes(prospectId?: string) {
             message: `${user!.prenom} ${user!.nom} vous a mentionné sur la fiche de ${prospectLabel}`,
             lien: user!.role === 'admin_org' ? `/admin/prospects/${prospectId}` : `/app/prospects/${prospectId}`,
             lue: false,
-          }).catch(() => {});
+          }).catch((err) => {
+            // Ne plus avaler l'erreur en silence : c'est ce qui masquait le
+            // refus RLS sur notifications_commercial (cf. migration
+            // 20261019000001_fix_notifications_insert_rls.sql).
+            console.error('Erreur création de la notification de mention:', err);
+          });
         }
       }
     },
